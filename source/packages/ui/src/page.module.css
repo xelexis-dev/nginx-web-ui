@@ -1,0 +1,150 @@
+.pageHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4) var(--sp-6);
+}
+.heading {
+  display: grid;
+  gap: var(--sp-1);
+  flex: 1;
+  min-width: 0;
+}
+.eyebrow {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+}
+:where(.eyebrow a) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  color: inherit;
+  text-decoration: none;
+}
+:where(.eyebrow a:hover) {
+  color: var(--text-1);
+  text-decoration: underline;
+}
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+.title {
+  min-width: 0;
+  margin: 0;
+  color: var(--text-1);
+  font-size: var(--fs-2xl);
+  font-weight: 600;
+  line-height: var(--lh-2xl);
+  overflow-wrap: anywhere;
+}
+.description,
+.surfaceDescription {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+}
+.actions,
+.surfaceActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-actions);
+}
+.surface {
+  min-width: 0;
+  border-top: 1px solid var(--line-strong);
+  padding-top: var(--pad-section-top);
+}
+.surfaceHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-bottom: var(--gap-section-head);
+}
+.surfaceHeading {
+  display: grid;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.surfaceTitle {
+  margin: 0;
+  color: var(--text-1);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  line-height: var(--lh-lg);
+}
+.surfaceBody {
+  min-width: 0;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--gap-toolbar);
+  min-width: 0;
+  margin-bottom: var(--sp-4);
+}
+.empty {
+  display: grid;
+  justify-items: start;
+  gap: var(--sp-2);
+  padding: var(--sp-6) 0;
+  text-align: start;
+}
+.emptyTitle {
+  margin: 0;
+  color: var(--text-1);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: var(--lh-md);
+}
+.emptyText {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+}
+.emptyAction {
+  margin-top: var(--sp-2);
+}
+:where(
+  .description a:not([class]),
+  .surfaceDescription a:not([class]),
+  .surfaceBody a:not([class]),
+  .emptyText a:not([class])
+) {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+:where(
+  .eyebrow a:focus-visible,
+  .description a:not([class]):focus-visible,
+  .surfaceDescription a:not([class]):focus-visible,
+  .surfaceBody a:not([class]):focus-visible,
+  .emptyText a:not([class]):focus-visible
+) {
+  outline: var(--bw-2) solid var(--focus);
+  outline-offset: var(--sp-0-5);
+  border-radius: var(--r-1);
+}
+@media (max-width: 768px) {
+  .pageHeader,
+  .surfaceHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .title {
+    font-size: var(--fs-xl);
+    line-height: var(--lh-xl);
+  }
+  .actions {
+    width: 100%;
+  }
+}

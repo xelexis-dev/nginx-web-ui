@@ -1,0 +1,106 @@
+/* Native dialog owns focus, Escape and background inertness. */
+.dialog {
+  box-sizing: border-box;
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 128px);
+  margin: var(--sp-16) auto auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-3);
+  background: var(--bg-raised);
+  box-shadow: var(--shadow-2);
+  color: var(--text-1);
+}
+.dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+.dialog::backdrop {
+  background: var(--scrim);
+}
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--pad-dialog) var(--pad-dialog) 0;
+  flex: none;
+}
+.icon {
+  flex: none;
+  color: var(--warning);
+  margin-top: var(--sp-0-5);
+}
+.icon[data-tone="danger"] {
+  color: var(--danger);
+}
+.heading {
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  gap: var(--sp-2);
+}
+.title {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  line-height: var(--lh-lg);
+  overflow-wrap: anywhere;
+}
+.description {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  line-height: var(--lh-sm);
+  overflow-wrap: anywhere;
+}
+.close {
+  flex: none;
+}
+.body {
+  min-height: 0;
+  padding: var(--sp-3) var(--pad-dialog) var(--pad-dialog);
+  overflow-y: auto;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  overflow-wrap: anywhere;
+}
+.body:focus-visible {
+  outline: var(--bw-2) solid var(--focus);
+  outline-offset: calc(-1 * var(--bw-2));
+}
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--pad-dialog);
+  border-top: 1px solid var(--line-strong);
+  background: var(--bg-sunken);
+  flex: none;
+}
+.target {
+  padding: var(--sp-3) var(--sp-4);
+  display: grid;
+  gap: var(--sp-1);
+  background: var(--bg-sunken);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-2);
+}
+.target span {
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  color: var(--text-3);
+  font-weight: 500;
+}
+.target strong {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 768px) {
+  .footer > * {
+    flex: 1 1 100%;
+  }
+}

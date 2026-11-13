@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "attemptId": null,
+  "pairId": null,
+  "mode": "migration",
+  "phase": "not_started",
+  "operation": "idle",
+  "nextPhase": null,
+  "ready": false,
+  "source": null,
+  "target": {
+    "major": 17,
+    "architecture": "arm64",
+    "systemIdentifier": null
+  },
+  "inputsSha256": null,
+  "destinations": null,
+  "checks": {
+    "sourceUnchanged": false,
+    "rolePassword": false,
+    "encryptedData": false,
+    "logicalData": false,
+    "collations": false,
+    "cleanShutdown": false,
+    "pairAgreement": false
+  },
+  "summary": {
+    "databaseCount": null,
+    "tableCounts": null,
+    "sourceDbBytes": null,
+    "sourceAppBytes": null,
+    "largestIndexBytes": null,
+    "requiredBytes": null,
+    "availableBytes": null
+  },
+  "lastError": null
+}

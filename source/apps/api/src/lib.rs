@@ -1,0 +1,32 @@
+#[cfg(test)]
+extern crate self as nwui_api;
+
+pub mod app;
+pub mod admin;
+pub mod auth;
+pub mod certificates;
+pub mod config;
+pub mod dns_guard;
+pub mod db_upgrade;
+pub mod control;
+pub mod contracts;
+pub mod crypto;
+pub mod error;
+pub mod healthcheck;
+pub mod http_policy;
+pub(crate) mod outbound;
+pub mod migrations;
+pub mod nodes;
+pub mod observability;
+pub mod notifications;
+pub mod notify;
+pub mod request_context;
+pub mod runtime_boot;
+pub mod runtime_backfill;
+pub mod server;
+pub mod state;
+pub mod ui_views;
+pub mod upgrade;
+pub mod nonroot;
+pub mod publisher;
+pub mod publisher_client;

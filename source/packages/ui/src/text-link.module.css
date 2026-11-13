@@ -1,0 +1,29 @@
+/* Inline links keep a visible cue in prose, including descriptions rendered as divs. */
+.link {
+  color: var(--accent-text);
+  font-size: inherit;
+  font-weight: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: from-font;
+  text-underline-offset: var(--sp-0-5);
+  overflow-wrap: anywhere;
+}
+.link:hover {
+  text-decoration: underline;
+}
+.link:focus-visible {
+  outline: var(--bw-2) solid var(--focus);
+  outline-offset: var(--sp-0-5);
+  border-radius: var(--r-2);
+}
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-inline-icon);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  text-decoration: none;
+}
+.back:hover {
+  text-decoration: underline;
+}

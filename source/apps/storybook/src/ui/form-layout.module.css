@@ -1,0 +1,23 @@
+.preview {
+  width: 100%;
+  max-width: 1200px;
+  min-width: 0;
+  margin-inline: auto;
+}
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--gap-card);
+  align-items: start;
+  min-width: 0;
+}
+.sections {
+  display: grid;
+  gap: var(--gap-card);
+  min-width: 0;
+}
+@media (max-width: 1023px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

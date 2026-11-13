@@ -1,0 +1,9 @@
+.control {
+  display: grid;
+  gap: var(--sp-3);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}

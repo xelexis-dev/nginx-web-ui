@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+export PATH=/command:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+install -d -m 0700 -o root -g root /run/nwui-locks
+exec /command/s6-fdholder-daemon -1 -i /etc/s6-overlay/scripts/storage-locks-rules /run/nwui-locks/fdholder.sock

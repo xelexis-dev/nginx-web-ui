@@ -1,0 +1,94 @@
+import { Meta, Subtitle, Title } from "@storybook/addon-docs/blocks";
+import { DocExample, DocTable } from "../docs";
+import { Box } from "./components";
+import { mediaQueries, shellLayout } from "./source";
+
+<Meta title="Foundations/Layout" />
+
+<Title>레이아웃</Title>
+
+<Subtitle>본문은 가운데 {shellLayout.contentMaxWidth} 폭에 두고, 그 안은 좁은 고정 폭 대신 반응형 그리드로 채운다.</Subtitle>
+
+## 앱 셸
+
+값은 모든 화면(앱·노드·관리자)이 쓰는 `@repo/ui`의 `AppShell`(`packages/ui/src/app-shell.module.css`)과 그 모듈이 읽는 `tokens.css`에서 가져온다. 셸이 바뀌면 이 표도 바뀐다.
+
+<DocTable
+  columns={["항목", "값", "설명"]}
+  rows={[
+    ["본문 최대 폭", <code>{shellLayout.contentMaxWidth}</code>, "모든 페이지의 본문을 셸이 가운데 정렬로 감싼다. 페이지에서 따로 지정하지 않는다"],
+    ["본문 안쪽 여백", <code>{shellLayout.contentPadding}</code>, "넓은 화면"],
+    ["한 열로 접는 기준", <code>{shellLayout.narrowQuery}</code>, "그리드가 한 열로 접힌다"],
+    ["서랍 기준", <code>{shellLayout.drawerQuery}</code>, "사이드바가 햄버거로 여는 서랍으로 바뀐다"],
+    ["좁은 화면 본문 여백", <code>{shellLayout.contentPaddingNarrow}</code>, ""],
+    ["사이드바 폭", <code>{shellLayout.sidebarWidth}</code>, "넓은 화면에서 고정. 로고와 바닥(사용자·버전)은 고정되고 메뉴만 스크롤된다"],
+    ["머리줄 높이", <code>{shellLayout.topbarHeight}</code>, "위치와 빠른 동작. 스크롤해도 위에 붙어 있으며 별도의 상태 줄은 두지 않는다"],
+    ["서랍 폭", <code>{shellLayout.drawerWidth}</code>, "좁은 화면에서 여는 서랍"],
+  ]}
+/>
+
+## 폭을 채우는 규칙
+
+- 폼 480, 카드 640, 섹션 720 같은 **좁은 고정 `max-width`를 쓰지 않는다.** 넓은 화면에서 내용이 왼쪽에 몰리고 오른쪽이 비지 않게 한다.
+- 대신 아래 세 그리드로 폭을 채우고, 좁은 화면에서는 한 열로 접는다.
+- 로그나 설정 원문처럼 한 줄을 읽어야 하는 곳은 억지로 늘리지 않는다.
+
+아래 예제는 이 문서의 폭에 반응한다. 좁은 화면(모바일 뷰포트)에서 보면 접힌 모습을 볼 수 있다.
+
+<DocExample label="상세 정보: 넓은 화면에서 항목·값 두 쌍을 한 줄에">
+  <dl className="nwui-found-detail">
+    <dt>server_name</dt>
+    <dd>app.example.test</dd>
+    <dt>listen</dt>
+    <dd>80</dd>
+    <dt>대상</dt>
+    <dd>http://10.0.0.5:3000</dd>
+    <dt>상태</dt>
+    <dd>적용됨</dd>
+  </dl>
+</DocExample>
+
+```css
+grid-template-columns: minmax(120px, max-content) 1fr minmax(120px, max-content) 1fr;
+/* ≤768px: minmax(120px, max-content) 1fr */
+```
+
+<DocExample label="폼: 필드는 두 열, 긴 입력·동작·폼 오류는 전폭">
+  <div className="nwui-found-form">
+    <Box>server_name</Box>
+    <Box>listen</Box>
+    <Box>proxy_pass</Box>
+    <Box>인증서</Box>
+    <Box style={{ gridColumn: "1 / -1", minHeight: 72 }}>추가 디렉티브(전폭)</Box>
+    <Box style={{ gridColumn: "1 / -1" }}>저장 · 취소(전폭)</Box>
+  </div>
+</DocExample>
+
+```css
+grid-template-columns: 1fr 1fr;      /* ≤768px: 1fr */
+.fullWidth { grid-column: 1 / -1; }  /* textarea, 동작 줄, 폼 오류 */
+```
+
+<DocExample label="반복 패널: 폭에 맞춰 개수가 바뀐다">
+  <div className="nwui-found-panels">
+    <Box>변경 전</Box>
+    <Box>변경 후</Box>
+    <Box>스냅샷</Box>
+  </div>
+</DocExample>
+
+```css
+grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+```
+
+## 페이지 구성
+
+- 생성과 수정은 모달이나 인라인이 아니라 **별도 페이지**다: `/<resource>/new`, `/<resource>/[id]/edit`.
+- 각 항목은 상세 페이지 `/<resource>/[id]`를 가진다.
+- 드롭다운은 native `<select>` 대신 항상 `@repo/ui`의 [Select](?path=/docs/ui-select--docs)를 쓴다.
+
+## 현재 코드의 화면 폭 기준
+
+CSS에 선언된 폭 기준 `@media` 조건과 그 수다. 새 화면은 <code>{shellLayout.narrowQuery}</code> 하나로 접는 것을 기본으로 한다.
+
+<DocTable columns={["조건", "선언 수"]} rows={mediaQueries().filter(([condition]) => condition.includes("width")).map(([condition, count]) => [<code>{condition}</code>, String(count)])} />

@@ -1,0 +1,42 @@
+/* Shared node failure state: hairline content, with existing message and recovery link. */
+.card {
+  display: grid;
+  gap: var(--sp-4);
+  width: 100%;
+  box-sizing: border-box;
+  padding-top: var(--sp-6);
+  border-top: 1px solid var(--line-strong);
+}
+.cardError .icon {
+  color: var(--danger);
+}
+.cardWarning .icon {
+  color: var(--warning);
+}
+.cardNeutral .icon {
+  color: var(--text-3);
+}
+.title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--fs-md);
+  line-height: var(--lh-md);
+  font-weight: 600;
+  color: var(--text-1);
+}
+.body {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--text-2);
+}
+.actions {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+.badgeVersion {
+  color: var(--text-2);
+}

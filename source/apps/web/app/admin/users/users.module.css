@@ -1,0 +1,83 @@
+/* Users page (F7, admin-only): list/detail/form pages, mirroring
+   reverse-proxy.module.css / stream.module.css / audit.module.css so every
+   data-table + detail + form page in the app shares one visual language.
+   Tokens only (var(--*)) — no hardcoded hex, per DESIGN.md. */
+
+.headerActions,
+.listActions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+/* Stretched link: the entire row is clickable, not just the label cell.
+   The overlay is transparent (captures clicks only) so cell text stays
+   visible; `tr { position: relative }` above is the positioning context. */
+
+/* Two term/value pairs per row so metadata fills the page width instead of a
+   single narrow column; collapses to one pair per row on small screens. */
+
+.detailActionsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: 0;
+  flex-wrap: wrap;
+}
+
+.emptyCell {
+  text-align: left;
+  color: var(--text-2);
+  font-size: var(--fs-md);
+  padding: var(--sp-6) var(--sp-4);
+  white-space: normal;
+}
+
+.youTag {
+  margin-left: var(--sp-2);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+/* Wide fields (textarea) plus the actions row and any form-level error span
+   both columns; simple fields flow two-up to use the page width. */
+
+.formActions {
+  grid-column: 1 / -1;
+}
+
+
+
+.formActions {
+  display: flex;
+  gap: var(--sp-2);
+  margin-top: var(--sp-1);
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+/* 승인 대기 — 활성/비활성과 다른 축이라 색도 따로 준다(주의를 끌되 오류는 아님). */
+
+/* OAuth 계정은 이름이 주 식별자이고 이메일은 "누구인지 알아보라"고 붙는 보조줄이다. */
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-selected);
+  color: var(--accent);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.methods {
+  color: var(--text-2);
+  font-size: var(--fs-md);
+}
+
+/* Table owns the border, scrolling and narrow reflow. */

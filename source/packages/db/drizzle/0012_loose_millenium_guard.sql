@@ -1,0 +1,1 @@
+ALTER TABLE "certificates" ADD COLUMN "issue_log" jsonb DEFAULT '[]'::jsonb NOT NULL;

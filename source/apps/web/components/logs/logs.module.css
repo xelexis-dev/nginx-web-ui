@@ -1,0 +1,380 @@
+/* Log viewer (F5): live tail panel with access/error tabs, per
+   DESIGN.md's log-viewer component. Tokens only (var(--*)) — no hardcoded
+   hex; floating controls use the shared overlay shadow token. */
+
+.panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-3);
+  background: var(--bg-canvas);
+  overflow: hidden;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--line-strong);
+  background: var(--bg-canvas);
+}
+
+.viewport {
+  height: 60vh;
+  min-height: 320px;
+  overflow-y: auto;
+  margin: 0;
+  padding: var(--sp-3) var(--sp-4);
+  font-family: var(--font);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  background: var(--bg-sunken);
+  color: var(--text-1);
+}
+
+.line {
+  display: grid;
+  grid-template-columns: 76px 56px minmax(0, 1fr);
+  gap: var(--sp-2);
+  padding-block: var(--sp-1);
+  border-bottom: 1px solid var(--line);
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-1);
+}
+
+.levelError {
+  color: var(--danger-text);
+}
+
+.levelWarn {
+  color: var(--warning-text);
+}
+
+.levelNotice {
+  color: var(--info-text);
+}
+
+.levelMuted {
+  color: var(--text-3);
+}
+
+/* Empty / waiting state — left-aligned and muted.
+   Fills the viewport (min-height:100%) so it reads as a deliberate state
+   even when the table viewport strips its own padding (.viewportTable). */
+.empty {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  min-height: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: var(--sp-6);
+  text-align: left;
+  color: var(--text-2);
+  font-family: var(--font);
+  font-size: var(--fs-md);
+}
+
+.resumeButton {
+  position: absolute;
+  bottom: var(--sp-4);
+  right: var(--sp-4);
+  box-shadow: var(--shadow-1);
+}
+
+/* Reconnection spans the viewer; a failed retry keeps its action beside the message. */
+.connectionBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-4);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--warning-text);
+  background: var(--warning-bg);
+  border-bottom: 1px solid var(--line-strong);
+}
+
+/* --- toolbar right (view toggle + Clear) --- */
+.toolbarRight {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+/* --- filter bar (table view only) --- */
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3) var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--line-strong);
+  background: var(--bg-canvas);
+}
+
+.search {
+  flex: 1 1 200px;
+  min-width: 160px;
+}
+
+.methodSelect {
+  width: 160px;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  cursor: pointer;
+}
+.checkbox input {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.hiddenCount {
+  margin-left: var(--sp-0-5);
+  color: var(--info-text);
+  font-weight: 500;
+}
+
+/* 표시 시간대 안내: 필터 줄 오른쪽 끝에 조용히 붙는다. */
+.timeZoneNote {
+  margin-left: auto;
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+/* --- table view --- */
+.viewportTable {
+  padding: 0;
+  overflow-x: auto;
+  background: var(--bg-canvas);
+  color: var(--text-1);
+}
+
+.accessTable {
+  min-width: 1040px;
+}
+.row {
+  cursor: pointer;
+}
+.row:focus-visible {
+  outline: var(--bw-2) solid var(--focus);
+  outline-offset: calc(-1 * var(--bw-2));
+}
+.rawTime {
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.rawLevel {
+  font-weight: var(--fw-semibold);
+}
+.rawMessage {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.viewport:not(.viewportTable) .empty {
+  color: var(--text-3);
+}
+
+.mono {
+  font-family: var(--font);
+}
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 날짜까지 표시한다: 2026-07-24 19:31:18 */
+.colTime {
+  width: 158px;
+  color: var(--text-2);
+}
+.colHost {
+  width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.colIp {
+  width: 118px;
+}
+.colMethod {
+  width: 66px;
+}
+.colStatus {
+  width: 80px;
+}
+/* StatusBadge is an atomic label, not text to ellipsize. 80px leaves 48px after cell padding. */
+.viewportTable td.colStatus {
+  overflow: visible;
+  text-overflow: clip;
+}
+.colBytes {
+  width: 74px;
+}
+.colUa {
+  width: 200px;
+}
+/* The access table's last three <col> tracks: size, path, UA on wide screens. A full-width row
+   (detail or unparsed line) spans all 8 tracks, so they exist even when narrow screens hide the
+   size and UA cells (see the ≤768px rule below). */
+.trackSize {
+  width: 74px;
+}
+.trackUa {
+  width: 200px;
+}
+.colLevel {
+  width: 86px;
+}
+
+.pathCell {
+  color: var(--text-1);
+}
+.uaCell {
+  color: var(--text-2);
+  font-family: var(--font);
+  font-size: var(--fs-xs);
+}
+.msgCell {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* status badge — tint derives from the semantic text color (no hardcoded hex) */
+
+/* unparsed line shown as a full-width raw row inside the table */
+.rawCell {
+  color: var(--text-2);
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: var(--fs-xs);
+}
+
+/* expanded detail row */
+.detailRow td {
+  background: var(--bg-sunken);
+  padding: var(--sp-3) var(--sp-4);
+  white-space: normal;
+}
+.detailGrid {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--sp-1) var(--sp-4);
+  margin: 0;
+  font-size: var(--fs-xs);
+}
+.detailGrid dt {
+  color: var(--text-2);
+  font-family: var(--font);
+}
+.detailGrid dd {
+  margin: 0;
+  color: var(--text-1);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 768px) {
+  .colUa,
+  .uaCell,
+  .colBytes {
+    display: none;
+  }
+  /* Hidden cells take no column, so the path cell moves into the size track and the last two
+     tracks stay empty. They must be 0 wide, or a full-width row splits the path's width with them. */
+  .trackSize {
+    width: auto;
+  }
+  .trackPath,
+  .trackUa {
+    width: 0;
+  }
+}
+
+@media (max-width: 1100px) {
+  .colHost {
+    width: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .toolbar,
+  .toolbarRight {
+    flex-wrap: wrap;
+  }
+  .toolbarRight {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .timeZoneNote {
+    margin-left: 0;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 768px) {
+  .accessTable {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .line {
+    grid-template-columns: 64px 52px minmax(0, 1fr);
+    gap: var(--sp-1-5);
+  }
+  .colTime,
+  .colHost,
+  .colIp,
+  .colMethod,
+  .colStatus,
+  .colLevel,
+  .colBytes {
+    width: auto;
+  }
+  .detailGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .methodSelect {
+    width: 100%;
+  }
+}
+
+/* The existing viewport owns scrolling/autoscroll; Table contributes only its named focus stop. */
+.viewportTable [role="region"] {
+  margin-inline: 0;
+  overflow: visible;
+}
+.rawTime,
+.rawLevel {
+  user-select: none;
+}
+
+/* Bind metadata tracks so a long UA cannot steal path width; the viewport owns both axes. */
+@media (min-width: 769px) {
+  .viewportTable table {
+    table-layout: fixed;
+  }
+  .viewportTable thead th {
+    position: sticky;
+    background: var(--bg-canvas);
+    top: 0;
+    z-index: 1;
+  }
+  .viewportTable td.uaCell {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

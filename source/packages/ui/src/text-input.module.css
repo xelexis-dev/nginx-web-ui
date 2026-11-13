@@ -1,0 +1,32 @@
+/* Native semantics; invalid focus keeps the danger ring. */
+.control {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  min-height: var(--size-ctl);
+  height: var(--size-ctl);
+  margin: 0;
+  padding: 0 var(--ctl-x);
+  border: var(--bw) solid var(--border-control);
+  border-radius: var(--r-2);
+  background: var(--bg-input);
+  color: var(--text-1);
+  font-family: var(--font);
+  font-size: var(--fs-md);
+  line-height: var(--lh-md);
+  color-scheme: var(--color-scheme);
+  transition: var(--t-ctl);
+}
+.control[type="date"] { height: var(--size-ctl); }
+.control::placeholder { color: var(--text-3); opacity: 1; }
+.control:where(:hover):not(:disabled):not([aria-invalid="true"]) { border-color: var(--border-control-hover); }
+.control:read-only:not(:disabled) { background: var(--bg-sunken); border-color: var(--line); color: var(--text-2); }
+.control:focus-visible:not(:disabled) { border-color: var(--focus); outline: none; box-shadow: 0 0 0 var(--bw) var(--focus); }
+.control[aria-invalid="true"]:not(:disabled),
+.control[aria-invalid="true"]:hover:not(:disabled) { border-color: var(--danger); }
+.control[aria-invalid="true"]:focus-visible:not(:disabled) { border-color: var(--danger); box-shadow: 0 0 0 var(--bw) var(--danger); }
+.control:disabled { background: var(--bg-disabled); border-color: var(--line); color: var(--text-disabled); cursor: not-allowed; }
+.control:disabled::placeholder { color: var(--text-disabled); }
+.textarea { height: auto; min-height: var(--size-textarea); padding: var(--sp-2) var(--ctl-x); resize: vertical; }
+.textarea[data-mono] { font-size: var(--fs-sm); line-height: var(--lh-sm); font-variant-numeric: tabular-nums; tab-size: 4; }

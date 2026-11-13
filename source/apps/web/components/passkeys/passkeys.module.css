@@ -1,0 +1,74 @@
+.title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.notice {
+  padding: 0 var(--pad-panel) var(--sp-4);
+}
+.notice p {
+  margin: 0;
+}
+.hint {
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-sm);
+}
+.hint {
+  margin: 0;
+}
+.badge {
+  display: table;
+  margin-top: var(--sp-1);
+  white-space: normal;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--gap-actions);
+  padding-top: var(--sp-6);
+  margin-top: var(--sp-6);
+  border-top: 1px solid var(--line-strong);
+}
+.actions > .hint {
+  margin-right: auto;
+}
+.readout {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background: var(--bg-hover);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-3);
+  font-size: var(--fs-sm);
+}
+.stack {
+  display: grid;
+  gap: var(--gap-section);
+  min-width: 0;
+}
+.remove {
+  margin: 0 var(--pad-panel) var(--pad-panel);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line-strong);
+}
+.remove h3 {
+  margin: 0 0 var(--sp-4);
+  color: var(--danger-text);
+  font-size: var(--fs-lg);
+}
+@media (max-width: 768px) {
+  .actions {
+    justify-content: flex-start;
+  }
+  .actions > .hint {
+    width: 100%;
+  }
+  .actions > :is(a, button) {
+    flex: 1;
+  }
+}

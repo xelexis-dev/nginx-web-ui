@@ -1,0 +1,307 @@
+.shell {
+  --shell-nav-width: var(--size-nav);
+  min-height: 100dvh;
+  background: var(--bg-canvas);
+  color: var(--text-1);
+}
+.skip {
+  position: fixed;
+  z-index: var(--z-scrim);
+  top: -100px;
+  left: var(--sp-4);
+  padding: var(--sp-3);
+  background: var(--bg-inverse);
+  color: var(--text-inverse);
+  border-radius: var(--r-2);
+}
+.skip:focus {
+  top: var(--sp-3);
+}
+.sidebar {
+  box-sizing: border-box;
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--shell-nav-width);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-chrome);
+  color: var(--text-1);
+  border-right: 1px solid var(--line);
+  z-index: var(--z-scrim);
+}
+.brand {
+  box-sizing: border-box;
+  height: var(--size-topbar);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-4);
+  flex: none;
+  border-bottom: 1px solid var(--line);
+}
+.brandIdentity {
+  min-width: 0;
+}
+.brandIdentity svg {
+  color: var(--text-1);
+}
+.nav {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-control) transparent;
+  padding: var(--sp-3) var(--sp-2);
+}
+.navGroup + .navGroup {
+  margin-top: var(--sp-4);
+}
+.navLabel {
+  margin: 0 var(--sp-2) var(--sp-1);
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  line-height: var(--lh-xs);
+}
+.navList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.navItem {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: var(--size-ctl);
+  padding: 0 var(--sp-2);
+  border-radius: var(--r-2);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: 400;
+  line-height: var(--lh-sm);
+  text-decoration: none;
+}
+.navItem svg {
+  flex: none;
+  color: var(--text-3);
+}
+.navItem:hover {
+  background: var(--bg-hover);
+  color: var(--text-1);
+}
+.navItem[aria-current="page"] {
+  background: var(--bg-nav-active);
+  color: var(--text-1);
+  font-weight: 500;
+}
+.navItem[aria-current="page"] svg {
+  color: var(--accent-text);
+}
+.navItem:focus-visible {
+  outline: var(--bw-2) solid var(--focus);
+  outline-offset: calc(-1 * var(--bw-2));
+}
+.navText {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.sidebarFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  border-top: 1px solid var(--line);
+}
+.version {
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+}
+.mainCol {
+  margin-left: var(--shell-nav-width);
+  min-width: 0;
+}
+.topbar {
+  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  min-height: var(--size-topbar);
+  background: var(--bg-canvas);
+  border-bottom: 1px solid var(--line);
+}
+.topbarInner {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  min-height: calc(var(--size-topbar) - var(--bw));
+  width: 100%;
+  max-width: calc(var(--size-content) + 2 * var(--page-x));
+  margin-inline: auto;
+  padding: var(--sp-1-5) var(--page-x);
+}
+.context {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.topbarActions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--gap-actions);
+}
+.main {
+  min-width: 0;
+  outline: none;
+}
+.content {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-section);
+  width: 100%;
+  max-width: calc(var(--size-content) + 2 * var(--page-x));
+  margin-inline: auto;
+  padding: var(--page-top) var(--page-x) var(--page-bottom);
+}
+.content :where(a, button, input, textarea, [tabindex]) {
+  scroll-margin-top: calc(
+    var(--shell-topbar-height, var(--size-topbar)) + var(--sp-4)
+  );
+  scroll-margin-bottom: var(--sp-6);
+}
+.menuToggle,
+.drawerClose,
+.backdrop {
+  display: none;
+}
+:global(html[data-nav-collapsed="true"]) .shell {
+  --shell-nav-width: var(--size-nav-collapsed);
+}
+:global(html[data-nav-collapsed="true"]) .navLabel,
+:global(html[data-nav-collapsed="true"]) .navText {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+:global(html[data-nav-collapsed="true"]) .navItem {
+  justify-content: center;
+}
+:global(html[data-nav-collapsed="true"]) .brandIdentity {
+  width: var(--size-icon);
+  overflow: hidden;
+}
+:global(html[data-nav-collapsed="true"]) .brandIdentity svg {
+  max-width: none;
+}
+:global(html[data-nav-collapsed="true"]) .sidebarFoot {
+  justify-content: center;
+}
+@media (min-width: 769px) and (max-width: 1279px) {
+  .shell {
+    --shell-nav-width: var(--size-nav-collapsed);
+  }
+  .navLabel,
+  .navText {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .navItem,
+  .sidebarFoot {
+    justify-content: center;
+  }
+  .brandIdentity {
+    width: var(--size-icon);
+    overflow: hidden;
+  }
+  .brandIdentity svg {
+    max-width: none;
+  }
+  .collapseToggle {
+    display: none;
+  }
+}
+@media (max-width: 768px) {
+  .shell,
+  :global(html[data-nav-collapsed="true"]) .shell {
+    --shell-nav-width: var(--size-nav);
+  }
+  .mainCol {
+    margin-left: 0;
+  }
+  .sidebar {
+    /* Inherited visibility transitions can prevent initial drawer focus. */
+    display: none;
+    transform: translateX(-100%);
+    box-shadow: var(--shadow-1);
+  }
+  .menuToggle,
+  .drawerClose {
+    display: inline-flex;
+    flex: none;
+  }
+  .collapseToggle {
+    display: none;
+  }
+  .shell[data-drawer="open"] .sidebar {
+    display: flex;
+    transform: none;
+  }
+  .shell[data-drawer="open"] .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: var(--scrim);
+    z-index: calc(var(--z-scrim) - 1);
+  }
+  .topbarInner {
+    gap: var(--sp-2);
+  }
+  :global(html[data-nav-collapsed="true"]) .navLabel,
+  :global(html[data-nav-collapsed="true"]) .navText {
+    position: static;
+    width: auto;
+    height: auto;
+    clip-path: none;
+    white-space: normal;
+  }
+  :global(html[data-nav-collapsed="true"]) .navItem {
+    justify-content: flex-start;
+  }
+  :global(html[data-nav-collapsed="true"]) .brandIdentity {
+    width: auto;
+    overflow: visible;
+  }
+}
+:global(body:not(:has(main .nwui-btn-primary:not(dialog *))))
+  .shell
+  [data-shell-apply]:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+:global(body:not(:has(main .nwui-btn-primary:not(dialog *))))
+  .shell
+  [data-shell-apply]:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+:global(body:not(:has(main .nwui-btn-primary:not(dialog *))))
+  .shell
+  [data-shell-apply]:active:not(:disabled) {
+  background: var(--accent-press);
+  border-color: var(--accent-press);
+}

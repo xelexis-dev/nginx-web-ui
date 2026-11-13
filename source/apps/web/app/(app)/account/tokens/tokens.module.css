@@ -1,0 +1,124 @@
+/* Token-specific layout and the one-time secret value. Shared UI owns cards, fields and actions. */
+
+.listActions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+/* ── 목록 ─────────────────────────────────────────────────────────────── */
+
+.emptyCell {
+  text-align: left;
+  color: var(--text-2);
+  font-size: var(--fs-md);
+  padding: var(--sp-6) var(--sp-4);
+  white-space: normal;
+}
+
+/* 행 전체가 클릭 대상이 된다(투명 오버레이 — 셀 글자는 그대로 보인다).
+   `.table tbody tr { position: relative }` 가 그 기준점이다. */
+
+.mono {
+  font-family: var(--font);
+  font-size: var(--fs-xs);
+  color: var(--text-1);
+}
+
+.scopeTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ── 상세 ─────────────────────────────────────────────────────────────── */
+
+.detailActionsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: 0;
+  flex-wrap: wrap;
+}
+
+/* 액션 행 **안쪽**의 줄(해지 확인 등). `.detailActionsRow` 를 그대로 쓰면 그 클래스의
+   `margin-top: 24px` 가 한 번 더 붙어 옆 버튼과 세로로 어긋난다(실측). */
+.inlineActions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+/* ── 폼 ───────────────────────────────────────────────────────────────── */
+
+.formActions {
+  grid-column: 1 / -1;
+}
+
+/* scope 체크박스는 좁은 열에 몰아두지 않고 auto-fit 그리드로 폭을 채운다
+   (DESIGN.md "Layout & Content Width" — 반복 패널 규칙). */
+.scopeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: var(--sp-3) var(--gap-field);
+}
+
+.scopeItemName {
+  font-family: var(--font);
+  font-size: var(--fs-xs);
+  color: var(--text-1);
+}
+
+.hintWarning {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--warning-text);
+}
+
+.formActions {
+  display: flex;
+  gap: var(--sp-2);
+  margin-top: var(--sp-1);
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+.secretValue {
+  margin: 0;
+  padding: var(--sp-4) var(--sp-4);
+  background: var(--bg-sunken);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-2);
+  font-family: var(--font);
+  font-size: var(--fs-md);
+  line-height: var(--lh-sm);
+  color: var(--text-1);
+  word-break: break-all;
+  user-select: all;
+}
+
+.secretMeta {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+
+.secretActions {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+/* Table owns the border, scrolling and narrow reflow. */
+
+.secretContent {
+  display: grid;
+  gap: var(--sp-3);
+}

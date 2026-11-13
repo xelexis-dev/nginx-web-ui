@@ -1,0 +1,10 @@
+# Persistent roots that the API must never mutate. Trusted path overrides add to this list.
+/etc/nginx/conf.d
+/etc/nginx/stream.d
+/var/lib/nginx-web-ui
+/var/lib/nginx-web-ui/certs
+/var/lib/nginx-web-ui/secrets
+/var/lib/nginx-web-ui/tls
+/var/lib/nginx-web-ui/.nwui-auto
+/var/lib/nginx-web-ui/.nwui-publisher
+/var/lib/postgresql/data

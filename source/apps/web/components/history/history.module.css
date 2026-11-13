@@ -1,0 +1,88 @@
+/* Config history (FU-C) list: data-table of config_snapshots rows + the
+   rollback confirm/result banner. Lives in components/history/ (not
+   app/(app)/history/) because both the local screen and the node-context
+   screen (app/(node)/nodes/[id]/history/) render history-list.tsx.
+   The detail-page-only classes (definition list, JSON
+   panes, diff section) stay in app/(app)/history/history.module.css since
+   the node has no detail screen (no `GET /api/v1/history/:id` — patch
+   release can't add it). Tokens only (var(--*)) — no hardcoded hex, per
+   DESIGN.md. */
+
+.emptyCell {
+  text-align: start;
+  color: var(--text-2);
+  font-size: var(--fs-md);
+  padding: var(--sp-6) var(--sp-4);
+  white-space: normal;
+}
+
+/* 행마다 덧붙는 조작 UI(노드 전용) — 같은 높이의 버튼을 나란히 두고 결과는 그 아래에 표시한다. */
+.rowActions {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  justify-content: end;
+  align-items: start;
+  gap: var(--sp-2);
+}
+
+.rowActions > a:only-child {
+  grid-column: 2;
+}
+
+.rowFeedback {
+  grid-column: 1 / -1;
+  /* Feedback wraps inside the buttons' width rather than expanding the table. */
+  min-width: 100%;
+  max-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 768px) {
+  .rowActions {
+    grid-template-columns: repeat(2, minmax(0, max-content));
+    justify-content: start;
+  }
+
+  .rowActions > a:only-child {
+    grid-column: 1;
+  }
+}
+
+.rollbackCell {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sp-2);
+  max-width: 100%;
+  margin-inline-start: auto;
+}
+
+/* Table owns the border, scrolling and narrow reflow. */
+
+.label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.label a {
+  color: var(--text-1);
+  text-decoration: none;
+}
+.label a:is(:hover, :focus-visible) {
+  text-decoration: underline;
+}
+
+.rollbackCell > form {
+  align-self: flex-end;
+}
+.rollbackCell:has(> [role]) {
+  width: 480px;
+}
+
+.label .current[data-tag] {
+  color: var(--accent-text);
+  background: var(--bg-selected);
+  border-color: var(--line-selected);
+}

@@ -1,0 +1,15 @@
+import { Meta, Subtitle, Title } from "@storybook/addon-docs/blocks";
+import { DocTable } from "../docs";
+import { token } from "./tokens";
+
+<Meta title="Foundations/Typography" />
+<Title>타이포그래피</Title>
+<Subtitle>Pretendard 하나로 본문·코드·로그를 쓴다.</Subtitle>
+
+글꼴은 `--font`이며 같은 출처에서 직접 호스팅한다. 굵기는 400·500·600, 행간은 4px의 배수다. 숫자·주소·시간·버전은 tabular figures로 정렬한다.
+
+export const scale = ["xs", "sm", "md", "lg", "xl", "2xl"];
+
+<DocTable columns={["크기", "행간"]} rows={scale.map((size) => [<span><code>{`--fs-${size}`}</code> {token(`--fs-${size}`)}</span>, token(`--lh-${size}`)])} />
+
+본문과 컨트롤은 14/20, 설명과 표 셀은 13/20, 도움말·메타는 12/16이다. 제목은 24/32, 좁은 화면은 20/28이다. 코드도 같은 글꼴로 13/20이며 공백과 줄바꿈을 보존한다.

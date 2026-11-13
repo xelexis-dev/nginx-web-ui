@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "pairId": "bbad3e95-af9b-4aa7-96d3-0ab5f8970146",
+  "mode": "fresh",
+  "ready": false,
+  "major": 17,
+  "architecture": "arm64",
+  "systemIdentifier": null,
+  "encryptionKeyRequired": false,
+  "freshStep": "secrets"
+}

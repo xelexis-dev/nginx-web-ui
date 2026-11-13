@@ -1,0 +1,71 @@
+import { Meta, Subtitle, Title } from "@storybook/addon-docs/blocks";
+import { Button, Select } from "@repo/ui";
+import { DocExample } from "./docs";
+
+<Meta title="Introduction" />
+
+<Title>nginx-web-ui 디자인 시스템</Title>
+
+<Subtitle>nginx를 웹에서 관리하는 운영 도구의 공통 컴포넌트와 디자인 기준</Subtitle>
+
+`@repo/ui`는 제품 웹(`apps/web`)과 이 Storybook이 함께 쓰는 공통 패키지다. 컴포넌트(`Button`, `Select`, `Combobox`, `Modal`), 테마 전환(`applyTheme`), 색·모서리·그림자 토큰(`tokens.css`)을 담는다. 여기서 보는 컴포넌트는 제품과 같은 코드와 토큰으로 그려진다. 이 Storybook은 개발용이라 제품 이미지에는 들어가지 않는다.
+
+<DocExample label="제품과 같은 컴포넌트">
+  <Button>설정 적용</Button>
+  <Button variant="secondary">취소</Button>
+  <Button variant="danger">삭제</Button>
+  <Select aria-label="프로토콜" options={[{ value: "tcp", label: "TCP" }, { value: "udp", label: "UDP" }]} defaultValue="tcp" />
+</DocExample>
+
+## 둘러보기
+
+**Product**: Figma의 Operator console 디자인을 적용한 실제 화면. `apps/web` 의 페이지 컴포넌트(인증, 운영, 리소스, 계정, 관리자)를 공통 컴포넌트 위에 그대로 그린다. 값은 예시이고, 로그인·저장·적용은 하지 않는다(미리보기).
+
+- [로그인](?path=/story/product-login--default) · [개요](?path=/story/product-operations-overview--default) · [리버스 프록시 목록](?path=/story/product-operations-server-list--editor) · [서버 상세](?path=/story/product-operations-server-detail--default) · [서버 수정](?path=/story/product-operations-server-form--edit)
+
+
+
+**Foundations**: 디자인 기준
+
+- [색상](?path=/docs/foundations-colors--docs): 라이트·다크 토큰 쌍, 상태색과 차트 계열색
+- [타이포그래피](?path=/docs/foundations-typography--docs): 글꼴 스택, 크기 단계, 현재 코드의 사용 현황
+- [레이아웃](?path=/docs/foundations-layout--docs): 1200px 본문, 폭을 채우는 그리드, 좁은 화면
+- [간격 · 모서리 · 높이](?path=/docs/foundations-spacing--docs): 4px 간격, 모서리 토큰, 떠 있는 층의 그림자
+- [접근성](?path=/docs/foundations-accessibility--docs): 토큰 대비 측정값, 키보드와 포커스
+
+**UI**: 컴포넌트별 문서와 상태별 예제. 문서 페이지의 Controls로 속성을 바꿔 볼 수 있다.
+
+- [Button](?path=/docs/ui-button--docs) · [Select](?path=/docs/ui-select--docs) · [Combobox](?path=/docs/ui-combobox--docs) · [Modal](?path=/docs/ui-modal--docs)
+
+상단 도구 막대의 **테마**로 라이트와 다크를 바꾼다. 문서 페이지도 함께 바뀐다.
+
+## 원칙
+
+- **푸른 강조색과 단계별 면.** Figma의 Operator console을 기준으로 `--accent`를 주요 동작에 쓰고, 상태와 차트는 각각의 의미에 맞는 색을 쓴다. 면은 그림자 대신 `--line-strong` 선으로 나눈다.
+- **라이트와 다크는 동등하다.** 다크는 따로 고른 팔레트이며, 새 화면은 두 테마를 함께 확인한다.
+- **토큰만 쓴다.** 색·간격·글자 크기·컨트롤 높이 모두 `var(--토큰)`으로 쓴다. 16진수 색과 임의의 px 값을 새로 넣지 않는다.
+- **컨트롤은 한 계열.** 버튼, 입력, Select는 같은 높이와 `--border-control` 경계를 쓰고, 마우스를 올림·키보드 포커스·비활성을 같은 방식으로 보인다.
+- **본문은 1200px, 그 안은 채운다.** 좁은 고정 폭 대신 반응형 그리드를 쓰고 768px 이하에서 한 열로 접는다.
+- **드롭다운은 `Select`.** native `<select>`는 쓰지 않는다.
+- **생성·수정은 별도 페이지.** 모달이나 인라인 편집으로 만들지 않는다.
+- **상태는 글자로도.** 색만으로 뜻을 전달하지 않는다.
+
+## 사용 방법
+
+```tsx
+import "@repo/ui/tokens.css";
+import { Button, Select, applyTheme } from "@repo/ui";
+
+applyTheme("dark"); // <html data-theme="dark">
+
+<Select name="protocol" aria-label="프로토콜" options={[{ value: "tcp", label: "TCP" }]} defaultValue="tcp" />
+<Button type="submit">저장</Button>
+<Button type="button" variant="secondary">취소</Button>
+<Button type="button" variant="ghost" size="sm">편집</Button>
+```
+
+## 기준 문서와 실행
+
+- 디자인 토큰: `packages/ui/src/tokens.css`. Foundations 페이지는 tokens.css와 제품 CSS를 직접 읽어 값을 표시한다.
+- `source/`에서 `yarn storybook`으로 띄우고, `yarn build-storybook`으로 정적 사이트를 만든다.
+- 컴포넌트를 추가하거나 바꿀 때: `packages/ui/src`에 작성해 `index.ts`로 내보낸다. `apps/storybook/src/ui`에 상태별 예제를 추가한 뒤 라이트·다크와 좁은 화면을 확인한다.

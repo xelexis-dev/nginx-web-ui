@@ -1,0 +1,25 @@
+{
+  "hint": "resolver는 직접 설정할 수 없습니다. 대상 주소가 바뀌는 경우 「실행 중에 이름 확인」을 켜고, DNS 서버는 NWUI_TARGET_DNS_SERVERS로 지정하세요.",
+  "cases": [
+    {
+      "name": "resolver",
+      "context": "server",
+      "argument": "1.1.1.1"
+    },
+    {
+      "name": "resolver_timeout",
+      "context": "server",
+      "argument": "5s"
+    },
+    {
+      "name": "resolver",
+      "context": "location",
+      "argument": "1.1.1.1"
+    },
+    {
+      "name": "resolver_timeout",
+      "context": "location",
+      "argument": "5s"
+    }
+  ]
+}

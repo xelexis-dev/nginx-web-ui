@@ -1,0 +1,132 @@
+"use client";
+
+import { useState } from "react";
+import { Button, Icon, IconButton, Modal, StatusBadge } from "@repo/ui";
+import type { ConfigDiff } from "@/lib/config-diff";
+import { ConfigDiffView } from "./config-diff-view";
+import styles from "./pending-changes-badge.module.css";
+
+/**
+ * 모달 첫 문장. 적용에서 제외된 행은 「설정 적용」을 다시 눌러도 제외되므로, 그런 행이 있으면
+ * 「반영됩니다」만 말하지 않는다.
+ */
+export function pendingIntro(
+  diff: ConfigDiff,
+  confirmLabel = "설정 적용",
+): string {
+  const items = [...diff.servers, ...diff.streams, ...diff.upstreams];
+  const skipped = items.filter((item) => item.status === "skipped").length;
+  if (skipped === 0)
+    return `"${confirmLabel}"을 누르면 아래 내용이 nginx에 반영됩니다.`;
+  if (skipped === items.length) {
+    return "아래 항목은 적용에서 제외돼 있습니다. 표시된 이유를 고친 뒤 다시 적용하세요.";
+  }
+  return `"${confirmLabel}"을 누르면 아래 내용이 nginx에 반영됩니다. 다만 「적용에서 제외됨」 항목은 표시된 이유를 고치기 전에는 다시 적용해도 제외됩니다.`;
+}
+
+/**
+ * 적용 상태 배지. 미적용이 있으면 버튼이 되어 "무엇이 미적용인지"를 모달로 보여준다
+ * (적용 전에 확인할 수 있어야 하므로 — 적용 후 확인은 /history/[id]가 담당).
+ * count와 diff는 같은 서버 계산에서 나오므로 숫자와 목록이 어긋나지 않는다.
+ */
+export function PendingChangesBadge({
+  count,
+  hasBaseline,
+  diff,
+  inline = false,
+}: {
+  count: number;
+  hasBaseline: boolean;
+  diff: ConfigDiff;
+  inline?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+
+  if (count === 0) {
+    if (!hasBaseline)
+      return (
+        <StatusBadge tone="warning" size="sm" dot={false} role="status">
+          적용 상태 확인 필요
+        </StatusBadge>
+      );
+    return (
+      <StatusBadge tone="success" size="sm" role="status">
+        모두 적용됨
+      </StatusBadge>
+    );
+  }
+
+  if (inline)
+    return (
+      <StatusBadge tone="warning" size="sm" dot={false} role="status">
+        {hasBaseline
+          ? "미적용 " + count + "건"
+          : "적용 상태 확인 필요 · " + count + "건"}
+      </StatusBadge>
+    );
+
+  return (
+    <>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => setOpen(true)}
+        aria-haspopup="dialog"
+      >
+        <StatusBadge tone="warning" size="sm">
+          {hasBaseline
+            ? `미적용 변경 ${count}건`
+            : `적용 상태 확인 필요 · ${count}건`}
+        </StatusBadge>
+      </Button>
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title={`미적용 변경 ${count}건`}
+        footer={
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setOpen(false)}
+          >
+            닫기
+          </Button>
+        }
+      >
+        <p className={styles.modalIntro}>{pendingIntro(diff)}</p>
+        <ConfigDiffView diff={diff} />
+      </Modal>
+    </>
+  );
+}
+
+/** Placement, route gating and per-session dismissal belong to the shell. */
+export function PendingBanner({
+  count,
+  onReview,
+  onDismiss,
+}: {
+  count: number;
+  onReview: () => void;
+  onDismiss: () => void;
+}) {
+  if (count <= 0) return null;
+  return (
+    <div className={styles.banner} role="status">
+      <Icon name="alert" size={16} />
+      <p>미적용 변경 {count}건은 설정을 적용해야 nginx에 반영됩니다.</p>
+      <button type="button" className={styles.review} onClick={onReview}>
+        변경 내용 보기
+      </button>
+      <IconButton
+        label="미적용 변경 알림 닫기"
+        variant="ghost"
+        size="sm"
+        onClick={onDismiss}
+      >
+        <Icon name="close" size={16} />
+      </IconButton>
+    </div>
+  );
+}

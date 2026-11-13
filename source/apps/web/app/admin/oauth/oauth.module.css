@@ -1,0 +1,94 @@
+/* Admin OAuth providers — list, detail, form. notifications.module.css 와 같은 모양을 쓴다
+   (CSS module 은 파일 단위라 공유 형태는 복사한다).
+   Tokens only (var(--*)), Light/Dark. */
+
+.pageNote {
+  margin: var(--sp-3) 0 0;
+  color: var(--text-2);
+  font-size: var(--fs-md);
+  line-height: var(--lh-sm);
+}
+
+.headerActions {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ---------------------------------------------------------------- cards */
+
+/* A wide field: the local class, or a shared Field/FieldGroup with `wide` (data-wide). */
+
+.hint {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  line-height: var(--lh-sm);
+}
+
+.hintCode {
+  font-family: var(--font);
+  font-size: inherit;
+  color: var(--text-1);
+  word-break: break-word;
+}
+
+.rowNote {
+  margin: var(--sp-1) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+/* ---------------------------------------------------------------- toggle */
+
+.emptyCell {
+  padding: var(--sp-8) var(--sp-4);
+  text-align: left;
+  color: var(--text-2);
+}
+
+/* ---------------------------------------------------------------- badges */
+
+/* ---------------------------------------------------------------- detail */
+
+.mono {
+  font-family: var(--font);
+  font-size: var(--fs-sm);
+}
+
+.actions {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ---------------------------------------------------------------- banner */
+
+/* 콜백 URL — 운영자가 공급자 쪽에 그대로 붙여 넣는 값이라 통째로 선택되게 둔다. */
+.callback {
+  display: block;
+  padding: var(--sp-3) var(--sp-3);
+  border-radius: var(--r-2);
+  border: 1px solid var(--line-strong);
+  background: var(--bg-canvas);
+  color: var(--text-1);
+  font-family: var(--font);
+  font-size: var(--fs-sm);
+  word-break: break-all;
+  user-select: all;
+}
+
+/* Table owns the border, scrolling and narrow reflow. */
+
+.secretValue {
+  display: block;
+  padding: var(--sp-3);
+  border: 1px dashed var(--border-control);
+  border-radius: var(--r-2);
+  background: var(--bg-hover);
+  font-family: var(--font);
+  font-size: var(--fs-sm);
+  overflow-wrap: anywhere;
+}

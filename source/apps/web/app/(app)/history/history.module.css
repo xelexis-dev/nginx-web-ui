@@ -1,0 +1,37 @@
+/* Config history (FU-C) detail page (/history/[id]): pageHeader + definition
+   list + config-diff section + JSON panes. The list-page classes (table,
+   rowLink, rollback banner) moved to components/history/history.module.css
+   when the list body was extracted into components/history/history-list.tsx
+   (Task 4) — the node has no detail screen, so this file stays detail-only
+   and local-only. Mirrors audit.module.css / reverse-proxy.module.css so all
+   data-table + detail pages share one visual language. Tokens only
+   (var(--*)) — no hardcoded hex, per DESIGN.md. */
+
+/* Two term/value pairs per row so metadata fills the page width instead of a
+   single narrow column; collapses to one pair per row on small screens. */
+
+.jsonSection {
+  display: grid;
+  align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: var(--gap-cols);
+}
+
+/* config-diff 섹션의 페이지 크롬(카드·제목·빈 상태). 항목/필드 렌더는
+   components/config-diff-view.module.css가 담당한다(미적용 모달과 공유). */
+
+.diffEmpty {
+  margin: 0;
+  font-size: var(--fs-md);
+  color: var(--text-2);
+}
+
+@media (max-width: 768px) {
+  .jsonSection {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.detailPage > header > :last-child {
+  max-width: 100%;
+}

@@ -1,0 +1,347 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "nwui build inputs v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "product",
+    "architecture",
+    "baseImages",
+    "debian",
+    "directPins",
+    "integrity",
+    "locks",
+    "packageManager",
+    "nodeVersions",
+    "inventories",
+    "crateGraph"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "product": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "revision"
+      ],
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      }
+    },
+    "architecture": {
+      "enum": [
+        "amd64",
+        "arm64"
+      ]
+    },
+    "baseImages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node",
+        "rust"
+      ],
+      "properties": {
+        "node": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "image",
+            "indexDigest",
+            "childDigest"
+          ],
+          "properties": {
+            "image": {
+              "type": "string",
+              "minLength": 1
+            },
+            "indexDigest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "childDigest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            }
+          }
+        },
+        "rust": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "image",
+            "indexDigest",
+            "childDigest"
+          ],
+          "properties": {
+            "image": {
+              "type": "string",
+              "minLength": 1
+            },
+            "indexDigest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "childDigest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            }
+          }
+        }
+      }
+    },
+    "debian": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "snapshot",
+        "securitySnapshot"
+      ],
+      "properties": {
+        "snapshot": {
+          "type": "string",
+          "pattern": "^[0-9]{8}T[0-9]{6}Z$"
+        },
+        "securitySnapshot": {
+          "type": "string",
+          "pattern": "^[0-9]{8}T[0-9]{6}Z$"
+        }
+      }
+    },
+    "directPins": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "nginx",
+        "postgresMeta",
+        "postgresServer",
+        "tzdata",
+        "openssl",
+        "caCertificates",
+        "s6Overlay"
+      ],
+      "properties": {
+        "nginx": {
+          "type": "string",
+          "minLength": 1
+        },
+        "postgresMeta": {
+          "type": "string",
+          "minLength": 1
+        },
+        "postgresServer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tzdata": {
+          "type": "string",
+          "minLength": 1
+        },
+        "openssl": {
+          "type": "string",
+          "minLength": 1
+        },
+        "caCertificates": {
+          "type": "string",
+          "minLength": 1
+        },
+        "s6Overlay": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pg15Helper": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "frontend",
+        "nginxSigningKeySha256",
+        "nginxDebSha256",
+        "s6NoarchSha256",
+        "s6ArchSha256"
+      ],
+      "properties": {
+        "frontend": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nginxSigningKeySha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "nginxDebSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "s6NoarchSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "s6ArchSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "pg15ServerSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "pg15ClientSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "locks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "yarnSha256",
+        "cargoSha256",
+        "turboSha256"
+      ],
+      "properties": {
+        "yarnSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "cargoSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "turboSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "packageManager": {
+      "type": "string",
+      "pattern": "^yarn@[0-9]+\\.[0-9]+\\.[0-9]+\\+sha224\\.[0-9a-f]{56}$"
+    },
+    "nodeVersions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "required": [
+        "node",
+        "openssl"
+      ]
+    },
+    "inventories": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime",
+        "apiBuilder",
+        "keyring"
+      ],
+      "properties": {
+        "runtime": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sha256"
+          ],
+          "properties": {
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "apiBuilder": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sha256"
+          ],
+          "properties": {
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "keyring": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sha256"
+          ],
+          "properties": {
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        }
+      }
+    },
+    "crateGraph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "target",
+        "treeSha256",
+        "normal",
+        "build",
+        "lockedOnly"
+      ],
+      "properties": {
+        "kind": {
+          "const": "build-graph"
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "treeSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "normal": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "build": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "lockedOnly": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

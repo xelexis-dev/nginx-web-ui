@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "attemptId": "2362e981-bfb1-46a2-937d-1cbe84861291",
+  "pairId": "bbad3e95-af9b-4aa7-96d3-0ab5f8970146",
+  "mode": "migration",
+  "phase": "checked",
+  "operation": "idle",
+  "nextPhase": null,
+  "ready": false,
+  "source": {
+    "major": 15,
+    "architecture": "unrecorded",
+    "systemIdentifier": "7382591915349309145",
+    "manifestSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "backupId": "example-cold-backup"
+  },
+  "target": {
+    "major": 17,
+    "architecture": "arm64",
+    "systemIdentifier": "7382591915349309999"
+  },
+  "inputsSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "destinations": {
+    "db": {
+      "kind": "volume",
+      "source": "nwui-example-new-db"
+    },
+    "app": {
+      "kind": "volume",
+      "source": "nwui-example-new-app"
+    }
+  },
+  "checks": {
+    "sourceUnchanged": true,
+    "rolePassword": true,
+    "encryptedData": true,
+    "logicalData": false,
+    "collations": false,
+    "cleanShutdown": true,
+    "pairAgreement": false
+  },
+  "summary": {
+    "databaseCount": 3,
+    "tableCounts": {
+      "public.example": 2
+    },
+    "sourceDbBytes": 33554432,
+    "sourceAppBytes": 8192,
+    "largestIndexBytes": 8192,
+    "requiredBytes": 1140883456,
+    "availableBytes": 8589934592
+  },
+  "lastError": null
+}

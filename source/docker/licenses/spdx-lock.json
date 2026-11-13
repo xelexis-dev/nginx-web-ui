@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "release": "v3.27.0",
+  "commit": "d46e94e2c78ceede1cfc63cfa0396472d2798d4c",
+  "archiveSha256": "634424621659b5d8ecf40c61c659d7f9a2edb5505eaad42f94716231ecf463b4",
+  "files": {
+    "MIT": {
+      "path": "json/details/MIT.json",
+      "sha256": "ff6b1bdaf34abe3a1299a34bca1bd15f8a721d2b1853cc7da32d5c0d99818c75",
+      "textSha256": "25c4576db4a90ddaddaf1b5cd83dc1a537e600041009f6ca71ec62d770ea4390"
+    },
+    "BSD-2-Clause": {
+      "path": "json/details/BSD-2-Clause.json",
+      "sha256": "e9620746906378f8a9d3d50b632c11b081327f4e8037e013c6fb20dfec18ae39",
+      "textSha256": "f6036f79d054f42e11f2dd52458b4d2282e901d197955e598bf1a23600280cf0"
+    }
+  }
+}

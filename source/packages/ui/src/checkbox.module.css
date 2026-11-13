@@ -1,0 +1,22 @@
+.checkbox { display: inline-flex; align-items: flex-start; gap: var(--gap-row-icon); max-width: 100%; color: var(--text-1); font-size: var(--fs-md); line-height: var(--lh-md); cursor: pointer; }
+.checkbox:has(.input:disabled) { color: var(--text-disabled); cursor: not-allowed; }
+.tile { display: flex; box-sizing: border-box; width: 100%; padding: var(--sp-3); border: var(--bw) solid var(--line-strong); border-radius: var(--r-2); background: var(--bg-canvas); }
+.tile:has(.input:disabled) { background: var(--bg-disabled); }
+.box { display: inline-grid; flex: none; width: var(--size-check); height: var(--lh-md); align-items: center; justify-items: center; }
+.input { appearance: none; grid-area: 1 / 1; box-sizing: border-box; width: var(--size-check); height: var(--size-check); margin: 0; border: var(--bw) solid var(--border-strong); border-radius: var(--r-1); background: var(--bg-control); cursor: inherit; transition: var(--t-ctl); }
+.box > svg { grid-area: 1 / 1; color: var(--on-accent); pointer-events: none; visibility: hidden; }
+.input:checked, .input:indeterminate { background: var(--accent); border-color: var(--accent); }
+.input:checked + svg { visibility: visible; }
+.input:indeterminate + svg { visibility: hidden; }
+.input:indeterminate ~ svg:last-child { visibility: visible; }
+.checkbox:hover .input:not(:disabled) { border-color: var(--text-2); }
+.checkbox:hover .input:checked:not(:disabled), .checkbox:hover .input:indeterminate:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+.input[aria-invalid="true"]:not(:disabled), .checkbox:hover .input[aria-invalid="true"]:not(:disabled) { border-color: var(--danger); }
+.input:focus-visible { outline: var(--bw-2) solid var(--focus); outline-offset: var(--sp-0-5); }
+.input:disabled { background: var(--bg-disabled); border-color: var(--line); }
+.input:disabled:checked, .input:disabled:indeterminate { background: var(--text-disabled); border-color: var(--text-disabled); }
+.text { display: grid; min-width: 0; overflow-wrap: anywhere; }
+.text > span:first-child { font-weight: var(--fw-regular); }
+.description { color: var(--text-3); font-size: var(--fs-xs); line-height: var(--lh-xs); }
+.checkbox:has(.input:disabled) .description { color: var(--text-disabled); }
+@media (forced-colors: active) { .input { appearance: auto; } .box > svg { display: none; } }

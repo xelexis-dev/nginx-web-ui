@@ -1,0 +1,16 @@
+{
+  "extends": "@repo/config-typescript/nextjs.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": { "@/*": ["./*"] },
+    // Same TS2742 declaration-portability limit as packages/auth/tsconfig.json:
+    // next-auth v5's `auth` export (and the NextMiddleware it produces when
+    // wrapped, as in middleware.ts) is a deeply overloaded function type that
+    // isn't nameable in a .d.ts outside its own package. apps/web is a Next.js
+    // app, never consumed as a library, so declaration output is unused here
+    // anyway — disabling it only skips that unused/impossible-to-satisfy check.
+    "declaration": false
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}

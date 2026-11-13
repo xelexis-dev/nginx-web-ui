@@ -1,0 +1,1 @@
+/command/with-contenv /bin/sh -ec "export PATH=/command:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; . /etc/s6-overlay/scripts/nwui-gate.sh; nwui_gate_oneshot; exec /etc/s6-overlay/scripts/secrets-init.sh"

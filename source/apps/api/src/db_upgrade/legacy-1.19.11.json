@@ -1,0 +1,146 @@
+{
+  "release": "1.19.11",
+  "commit": "567956d954bb5f272c1640dec249903f8c58635b",
+  "signatures": [
+    {
+      "tag": "0000_concerned_rocket_raccoon",
+      "hash": "a3a124904d5be56c5df59e91932da787eda44124909339d1fa55fb56e2cbdcf2",
+      "createdAt": 1783931970972
+    },
+    {
+      "tag": "0001_bizarre_lady_ursula",
+      "hash": "4a8a2ab99b34e76a3cead27bd606c1ae35e5771312acb64f8077477a1d0f8497",
+      "createdAt": 1784004806676
+    },
+    {
+      "tag": "0002_dizzy_avengers",
+      "hash": "fc5d9a0603912f5c6f56a80a318f5a9e2a8ef5705c73ba3e57e1f0417f29fde5",
+      "createdAt": 1784084876605
+    },
+    {
+      "tag": "0003_lively_mercury",
+      "hash": "57fa896fcbdc9ca7d04370263d4ff222415994a9eee2e74c5459f3e9e8e0bb77",
+      "createdAt": 1784171528493
+    },
+    {
+      "tag": "0004_sticky_scrambler",
+      "hash": "439f056bbb82595951a03faa17d19818e3c5343f727d9ed269249beabb9d2909",
+      "createdAt": 1784267082018
+    },
+    {
+      "tag": "0005_bitter_gabe_jones",
+      "hash": "9df888e24ec083ea76b7e644b2212a799ae0d86efec14b6c79a6865e8d300f9f",
+      "createdAt": 1784534378153
+    },
+    {
+      "tag": "0006_messy_mandroid",
+      "hash": "630ebb450661ff2f71435b7479c7be9e60c234131f5d0e5865e5e9e626862291",
+      "createdAt": 1784700230182
+    },
+    {
+      "tag": "0007_exotic_hedge_knight",
+      "hash": "bd32d13ad1e45ce6ad3e19f0b931478f2afc909aaca8753990f6bad704e8ba4f",
+      "createdAt": 1784712283487
+    },
+    {
+      "tag": "0008_lying_enchantress",
+      "hash": "4812e05e4b2662b8de64ea393dca7230cb706deedb37f863adc2376c37025607",
+      "createdAt": 1784715255292
+    },
+    {
+      "tag": "0009_aromatic_sebastian_shaw",
+      "hash": "3daecad9d909272a73e34de707b4eee76b50ba40db28aef935c930efeda93a0f",
+      "createdAt": 1784868255208
+    },
+    {
+      "tag": "0010_young_shockwave",
+      "hash": "24cf9262d5b10767b847ab1f6b20ac115c62878143b0c001047a1d7ad08d3782",
+      "createdAt": 1784889358313
+    },
+    {
+      "tag": "0011_hard_cardiac",
+      "hash": "fec0fff57df9f848639cba9f3783ced4f426a9f73bb0f5c06f5b315898c133fe",
+      "createdAt": 1784953072046
+    },
+    {
+      "tag": "0012_loose_millenium_guard",
+      "hash": "c6fa2eec3baa93f73996f8ca7c52e40a2a9933b9b3e4f8a44ac87898467f4481",
+      "createdAt": 1784982252448
+    },
+    {
+      "tag": "0013_chilly_nova",
+      "hash": "1d070610d342c4a95a75ee1a0005f060e2e9616f44d887e15d101615653efb51",
+      "createdAt": 1786287303721
+    },
+    {
+      "tag": "0014_demonic_sentinels",
+      "hash": "b6e682b690fc5ec3a382f333a9081361148cd9365c4a63a366ad25b9698d282f",
+      "createdAt": 1786290809977
+    },
+    {
+      "tag": "0015_misty_ikaris",
+      "hash": "8a81d9db770733b7e9b39167cd5b033682b92ae746473aaa21009f3f243244ba",
+      "createdAt": 1786362518548
+    },
+    {
+      "tag": "0016_careless_darkhawk",
+      "hash": "00fdaa5b742b2d97937b11b463bd599bd6b09f22157ffb64437ebeeb4b655ed1",
+      "createdAt": 1786366093393
+    },
+    {
+      "tag": "0017_numerous_amazoness",
+      "hash": "adbe14af3234098a3d961e6ef99b750c1d4d0b7006bc27c762c36d1dff9ca916",
+      "createdAt": 1786369684456
+    },
+    {
+      "tag": "0018_furry_lethal_legion",
+      "hash": "c066786d8859efe7f7cfc19ebe088b2716e57635c69016ba0f93ec27bd172d8d",
+      "createdAt": 1786629029721
+    },
+    {
+      "tag": "0019_messy_warstar",
+      "hash": "b25b8fc1c6ae4155264c9590ae589e53f3852153422cd3a970d7cfba051a4105",
+      "createdAt": 1787414348075
+    },
+    {
+      "tag": "0020_next_randall_flagg",
+      "hash": "dcaa912c7d17fad24bad2f03f710be6f6e498cc77f526a98f05c70d6b6f24cb4",
+      "createdAt": 1787827596156
+    },
+    {
+      "tag": "0021_panoramic_hammerhead",
+      "hash": "50661de0265a71d1afc1593690acdab3013bbd4f926c0bd9c3b20e9cecb44456",
+      "createdAt": 1787883835066
+    },
+    {
+      "tag": "0022_sleepy_the_hand",
+      "hash": "0bc4ccc6653bc9b9cb39a5544b9661f9f8e5bb2fdf40ae77d84e5ffba94dcb46",
+      "createdAt": 1787893156897
+    },
+    {
+      "tag": "0023_first_thunderball",
+      "hash": "596a718bb2cf1e9181a8e79aa17666ddc358c56550b7a258b88e24a40fa5961e",
+      "createdAt": 1788044316841
+    },
+    {
+      "tag": "0024_certificate_alias",
+      "hash": "d14d2ba88ce5bb86251f64007492a66918804f9ef5a0628f8c5ce31fb617e693",
+      "createdAt": 1790042642387
+    },
+    {
+      "tag": "0025_totp_replay_guard",
+      "hash": "f9ad48f6f5e7d6c591d9e06ff17251cfb831415839b86615ee3722588b29c785",
+      "createdAt": 1790086578847
+    },
+    {
+      "tag": "0026_certificate_jobs",
+      "hash": "f0c7bec711628a3cfcffcfaf235aa6633c221a07d6f7d30821f8e443d788487b",
+      "createdAt": 1790089088212
+    },
+    {
+      "tag": "0027_notification_delivery_queue",
+      "hash": "fc0824e7b04cc56c8a415229f00a1646a796f6e0a5252173b203ef6a7726cb64",
+      "createdAt": 1790091200521
+    }
+  ]
+}

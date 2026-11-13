@@ -1,0 +1,97 @@
+[
+  {
+    "name": "unknown",
+    "config": {
+      "proxyPass": "http://192.0.2.1:19000",
+      "realIp": {
+        "preset": "typo"
+      }
+    },
+    "expected": "server {\n    listen 18081;\n    server_name legacy.test;\n    include /etc/nginx/snippets/acme-challenge.conf;\n    location / {\n        proxy_pass http://192.0.2.1:19000;\n        proxy_set_header Host $host;\n    }\n}\n"
+  },
+  {
+    "name": "null-header",
+    "config": {
+      "proxyPass": "http://192.0.2.1:19000",
+      "realIp": {
+        "preset": "custom",
+        "trustedRanges": [
+          "10.0.0.0/8"
+        ],
+        "header": null
+      }
+    },
+    "expected": "server {\n    listen 18081;\n    server_name legacy.test;\n    include /etc/nginx/snippets/acme-challenge.conf;\n    set_real_ip_from 10.0.0.0/8;\n    real_ip_header X-Forwarded-For;\n    location / {\n        proxy_pass http://192.0.2.1:19000;\n        proxy_set_header Host $host;\n    }\n}\n"
+  },
+  {
+    "name": "unknown-header",
+    "config": {
+      "proxyPass": "http://192.0.2.1:19000",
+      "realIp": {
+        "preset": "custom",
+        "trustedRanges": [
+          "10.0.0.0/8"
+        ],
+        "header": "X-Other",
+        "recursive": "true"
+      }
+    },
+    "expected": "server {\n    listen 18081;\n    server_name legacy.test;\n    include /etc/nginx/snippets/acme-challenge.conf;\n    set_real_ip_from 10.0.0.0/8;\n    real_ip_header X-Forwarded-For;\n    location / {\n        proxy_pass http://192.0.2.1:19000;\n        proxy_set_header Host $host;\n    }\n}\n"
+  },
+  {
+    "name": "nonstrings",
+    "config": {
+      "proxyPass": "http://192.0.2.1:19000",
+      "realIp": {
+        "preset": "custom",
+        "trustedRanges": [
+          [
+            "10.0.0.0/8"
+          ],
+          " 192.0.2.0/24 "
+        ]
+      }
+    },
+    "expected": "server {\n    listen 18081;\n    server_name legacy.test;\n    include /etc/nginx/snippets/acme-challenge.conf;\n    set_real_ip_from 10.0.0.0/8;\n    set_real_ip_from 192.0.2.0/24;\n    real_ip_header X-Forwarded-For;\n    location / {\n        proxy_pass http://192.0.2.1:19000;\n        proxy_set_header Host $host;\n    }\n}\n"
+  },
+  {
+    "name": "cloudflare",
+    "config": {
+      "proxyPass": "http://192.0.2.1:19000",
+      "realIp": {
+        "preset": "cloudflare",
+        "header": false,
+        "recursive": "false"
+      }
+    },
+    "expected": "server {\n    listen 18081;\n    server_name legacy.test;\n    include /etc/nginx/snippets/acme-challenge.conf;\n    set_real_ip_from 173.245.48.0/20;\n    set_real_ip_from 103.21.244.0/22;\n    set_real_ip_from 103.22.200.0/22;\n    set_real_ip_from 103.31.4.0/22;\n    set_real_ip_from 141.101.64.0/18;\n    set_real_ip_from 108.162.192.0/18;\n    set_real_ip_from 190.93.240.0/20;\n    set_real_ip_from 188.114.96.0/20;\n    set_real_ip_from 197.234.240.0/22;\n    set_real_ip_from 198.41.128.0/17;\n    set_real_ip_from 162.158.0.0/15;\n    set_real_ip_from 104.16.0.0/13;\n    set_real_ip_from 104.24.0.0/14;\n    set_real_ip_from 172.64.0.0/13;\n    set_real_ip_from 131.0.72.0/22;\n    set_real_ip_from 2400:cb00::/32;\n    set_real_ip_from 2606:4700::/32;\n    set_real_ip_from 2803:f800::/32;\n    set_real_ip_from 2405:b500::/32;\n    set_real_ip_from 2405:8100::/32;\n    set_real_ip_from 2a06:98c0::/29;\n    set_real_ip_from 2c0f:f248::/32;\n    real_ip_header CF-Connecting-IP;\n    location / {\n        proxy_pass http://192.0.2.1:19000;\n        proxy_set_header Host $host;\n    }\n}\n"
+  },
+  {
+    "name": "target-0",
+    "config": {
+      "proxyPass": "http://192.0.2.1:19000/a\\b"
+    },
+    "expected": "server {\n    listen 18081;\n    server_name legacy.test;\n    include /etc/nginx/snippets/acme-challenge.conf;\n    location / {\n        proxy_pass http://192.0.2.1:19000/a\\b;\n        proxy_set_header Host $host;\n    }\n}\n"
+  },
+  {
+    "name": "target-1",
+    "config": {
+      "proxyPass": "http://192.0.2.1:19000/a\u007fb"
+    },
+    "expected": "server {\n    listen 18081;\n    server_name legacy.test;\n    include /etc/nginx/snippets/acme-challenge.conf;\n    location / {\n        proxy_pass http://192.0.2.1:19000/a\u007fb;\n        proxy_set_header Host $host;\n    }\n}\n"
+  },
+  {
+    "name": "target-2",
+    "config": {
+      "proxyPass": "http://192.0.2.1:19000/a\u0001b"
+    },
+    "expected": "server {\n    listen 18081;\n    server_name legacy.test;\n    include /etc/nginx/snippets/acme-challenge.conf;\n    location / {\n        proxy_pass http://192.0.2.1:19000/a\u0001b;\n        proxy_set_header Host $host;\n    }\n}\n"
+  },
+  {
+    "name": "target-3",
+    "config": {
+      "proxyPass": "http://192.0.2.1:19000/a\\"
+    },
+    "expected": "server {\n    listen 18081;\n    server_name legacy.test;\n    include /etc/nginx/snippets/acme-challenge.conf;\n    location / {\n        proxy_pass http://192.0.2.1:19000/a\\;\n        proxy_set_header Host $host;\n    }\n}\n"
+  }
+]

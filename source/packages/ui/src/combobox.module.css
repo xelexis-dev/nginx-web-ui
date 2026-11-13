@@ -1,0 +1,202 @@
+/* Shared free-text combobox. Deliberately shares Select's box + popover
+   treatment (same padding, radius, hairline, elevated surface, shadow) so a
+   dropdown and a combobox sitting in the same form read as one control family.
+   Tokens only; Light/Dark comes from the token layer. */
+
+.wrap {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Mirrors the app's text input AND Select's trigger — same box, but typable. */
+.input {
+  /* ⚠ 이 프로젝트에는 전역 box-sizing 리셋이 없다(body 도 content-box). width:100% 에
+     좌우 padding(34+12)과 테두리가 그대로 더해져 셀을 47px 넘치고, 그리드에서 옆 칸을
+     덮는다 — 헤더 행의 「삭제」 버튼이 거의 다 가려졌다. Select 의 trigger 는 이 속성을
+     갖고 있어서 멀쩡했고, 콤보박스를 만들 때 padding·border 만 맞추고 이걸 빠뜨렸다.
+     지우지 말 것. */
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--size-ctl);
+  height: var(--size-ctl);
+  padding: 0 var(--sp-8) 0 var(--ctl-x);
+  line-height: var(--lh-md); /* right pad clears the chevron */
+  background: var(--bg-input);
+  border: 1px solid var(--border-control);
+  border-radius: var(--r-2);
+  color: var(--text-1);
+  font-size: var(--fs-md);
+  font-family: inherit;
+  transition: border-color var(--dur-2) var(--ease-out);
+}
+
+.input:hover:not(:disabled) {
+  border-color: var(--border-control-hover);
+}
+
+.input::placeholder {
+  color: var(--text-3);
+}
+
+.input:focus-visible {
+  border-color: var(--focus);
+  outline: 1px solid var(--focus);
+  outline-offset: 0;
+}
+
+.input:disabled {
+  background: var(--bg-disabled);
+  border-color: var(--line-strong);
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
+.input:disabled::placeholder,
+.input:disabled + .chevron {
+  color: var(--text-disabled);
+}
+
+/* Invalid, as Select: the error border holds on hover and while the list is open. */
+.input[aria-invalid="true"]:not(:disabled),
+.input[aria-invalid="true"]:hover:not(:disabled),
+.input[aria-invalid="true"][aria-expanded="true"] {
+  border-color: var(--danger);
+}
+
+/* Focus/open has a solid indicator; the Field message still carries the error. */
+.input[aria-expanded="true"]:not(:disabled),
+.input[aria-invalid="true"][aria-expanded="true"]:not(:disabled),
+.input[aria-invalid="true"]:focus:not(:disabled),
+.input[aria-invalid="true"]:focus-visible:not(:disabled) {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 1px var(--focus);
+}
+
+/* Affordance only — the list is reachable from the input with ArrowDown, so
+   this is not a second tab stop. */
+.chevron {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  padding: 0 var(--sp-3);
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  color: var(--text-2);
+  font-size: var(--fs-md);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.chevron:disabled {
+  cursor: not-allowed;
+}
+
+.popover {
+  position: absolute;
+  top: calc(100% + var(--sp-1));
+  left: 0;
+  right: 0;
+  z-index: var(--z-pop);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: min(240px, 100%);
+  max-height: 320px;
+  padding: var(--pad-popover);
+  background: var(--bg-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-3);
+  box-shadow: var(--shadow-1);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+}
+
+.option {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding: var(--sp-1-5) var(--sp-2);
+  min-height: var(--size-ctl);
+  box-sizing: border-box;
+  line-height: var(--lh-md);
+  border-radius: var(--r-1);
+  color: var(--text-1);
+  font-size: var(--fs-md);
+  cursor: pointer;
+}
+
+/* Visible on the elevated popover in both themes (--bg-canvas was nearly identical in light). */
+.optionActive,
+.option[aria-selected="true"] {
+  background: var(--bg-hover);
+}
+
+/* The literal that gets inserted, in the caption size (every text is Pretendard; --font is
+   an alias of --font). Keeps the value visually separate from the prose hint beside it. */
+.optionName {
+  min-width: 0;
+  font-family: var(--font);
+  font-size: var(--fs-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* An option whose value is the empty string (e.g. `Connection ""`). Labelled,
+   not blank, so it is selectable. */
+.optionEmpty {
+  color: var(--text-2);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+}
+
+.optionHint {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.check {
+  flex-shrink: 0;
+  color: var(--accent);
+  font-size: var(--fs-sm);
+}
+
+.empty {
+  padding: var(--sp-3);
+  color: var(--text-2);
+  font-size: var(--fs-md);
+  text-align: center;
+}
+
+/* Narrow columns cannot hold name + hint on one line; the hint is supporting
+   detail, so it yields rather than squeezing the value it explains. */
+@media (max-width: 768px) {
+  .optionHint {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .input {
+    transition: none;
+  }
+}
+
+.option[aria-selected="true"] .optionName {
+  font-weight: 500;
+}

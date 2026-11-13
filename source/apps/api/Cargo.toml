@@ -1,0 +1,60 @@
+[package]
+license = "MIT"
+name = "nwui-api"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.98.1"
+publish = false
+default-run = "nwui-api"
+
+[features]
+test-support = []
+
+[dependencies]
+aws-lc-rs = "=1.18.1"
+anyhow = "=1.0.104"
+aes-gcm = "=0.11.1"
+base64 = "=0.23.1"
+bcrypt = "=0.19.3"
+axum = { version = "=0.8.9", features = ["multipart", "macros"] }
+chrono = { version = "=0.4.45", features = ["serde"] }
+deadpool-postgres = "=0.14.2"
+hex = "=0.4.3"
+futures-core = "=0.3.34"
+hkdf = "=0.13.0"
+hickory-resolver = "=0.26.3"
+instant-acme = "=0.8.5"
+josekit = "=0.10.3"
+libc = "=0.2.189"
+lettre = { version = "=0.11.23", default-features = false, features = ["builder", "smtp-transport", "tokio1-rustls", "aws-lc-rs", "rustls-native-certs"] }
+getrandom = "=0.4.3"
+percent-encoding = "=2.3.2"
+regex = "=1.13.1"
+rcgen = { version = "=0.14.10", default-features = false, features = ["aws_lc_rs", "pem"] }
+reqwest = { version = "=0.13.5", default-features = false, features = ["json", "rustls"] }
+rustls-pki-types = { version = "=1.15.1", features = ["std"] }
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.151"
+sha2 = "=0.11.0"
+sha1 = "=0.11.0"
+thiserror = "=2.0.20"
+subtle = "=2.6.1"
+totp-rs = "=6.0.0"
+tokio = { version = "=1.53.3", features = ["full"] }
+tokio-postgres = { version = "=0.7.18", features = ["with-serde_json-1", "with-chrono-0_4", "with-uuid-1"] }
+uuid = { version = "=1.26.1", features = ["v4", "serde"] }
+url = "=2.5.8"
+x509-parser = { version = "=0.18.1", features = ["verify"] }
+
+[dev-dependencies]
+tokio = { version = "=1.53.3", features = ["test-util"] }
+nwui-api = { path = ".", features = ["test-support"] }
+jsonschema = { version = "=0.56.0", default-features = false }
+http-body-util = "=0.1.5"
+tempfile = "=3.27.0"
+tower = { version = "=0.5.3", features = ["util"] }
+
+[profile.release]
+strip = true
+lto = "thin"
+codegen-units = 1

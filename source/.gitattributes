@@ -1,0 +1,8 @@
+# This project is built into a Linux Docker image and run there. Files consumed
+# by s6-overlay, the shell, and nginx MUST use LF. On Windows (core.autocrlf) a
+# checkout or `git archive` would otherwise write CRLF, which breaks
+# `s6-rc-compile` at container boot:
+#   fatal: invalid /etc/s6-overlay/s6-rc.d/<svc>/type: must be oneshot, longrun, or bundle
+# Pinning eol=lf here keeps rebuilds safe regardless of the builder's platform.
+docker/** text eol=lf
+*.sh text eol=lf

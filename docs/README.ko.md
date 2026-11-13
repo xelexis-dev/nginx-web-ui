@@ -1,0 +1,535 @@
+# nginx-web-ui
+
+<div align="center">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../source/packages/ui/src/brand/nginx-web-ui-logo-dark.png">
+  <img alt="nginx-web-ui" src="../source/packages/ui/src/brand/nginx-web-ui-logo-light.png" width="400">
+</picture>
+
+[English](../README.md) · **한국어**
+
+[설치](#1-설치-준비와-이미지-선택) · [업데이트 내역](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPDATE.md) · [업그레이드 경로](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPGRADE_PATH.md) · [릴리스](https://github.com/xelexis-dev/nginx-web-ui/releases) · [문의](https://github.com/xelexis-dev/nginx-web-ui/issues) · [라이선스](#라이선스와-기여)
+
+</div>
+
+**nginx-web-ui는 nginx를 웹 화면에서 관리하는 도구입니다.** nginx 설정 파일을 직접 편집하지 않고 리버스 프록시(HTTP/HTTPS), TCP/UDP 프록시, 인증서, 캐시와 gzip 압축을 설정할 수 있습니다. 사용자 권한 관리, 변경 이력과 복원, 로그 조회, 여러 노드 관리도 제공합니다.
+
+관리 화면, nginx, 데이터베이스가 **하나의 Docker 이미지**에 들어 있습니다. 별도의 nginx·데이터베이스 설치는 필요하지 않습니다. 필요한 설정 파일은 아래 내용을 복사해 직접 만듭니다.
+
+## 주요 기능
+
+- **프록시:** 리버스 프록시(HTTP/HTTPS)와 TCP/UDP 프록시를 설정 파일 편집 없이 만들고 적용합니다.
+- **인증서:** Let's Encrypt 인증서를 HTTP-01 또는 DNS-01 방식으로 발급해 프록시에 연결합니다.
+- **캐시와 gzip 압축:** 서버 단위로 설정하고 경로별로 켜거나 끕니다.
+- **대상 연결:** 「실행 중에 이름 확인」으로 대상이 꺼져 있어도 설정을 적용하고, 「재시작 중 다른 인스턴스로 재시도」로 대상을 재시작하는 동안의 끊김을 줄입니다.
+- **사용자와 기록:** 사용자 권한 관리, 감사 로그, 변경 이력과 복원, 로그 조회를 제공합니다.
+- **로그인과 알림:** OAuth(OIDC) 로그인, 패스키 로그인과 메일·웹훅 알림을 사용할 수 있습니다.
+- **여러 노드:** 여러 노드를 관리할 수 있습니다.
+
+## 목차
+
+1. [설치 준비와 이미지 선택](#1-설치-준비와-이미지-선택)
+2. [Docker Compose로 설치](#2-docker-compose로-설치)
+3. [최초 관리자 생성](#3-최초-관리자-생성)
+4. [설치 성공 확인](#4-설치-성공-확인)
+5. [프록시 사용 시작](#5-프록시-사용-시작)
+6. [업데이트와 중지](#6-업데이트와-중지)
+7. [설치 문제 해결](#7-설치-문제-해결)
+8. [문의와 보안 신고](#8-문의와-보안-신고)
+
+## 1. 설치 준비와 이미지 선택
+
+- Linux 컨테이너를 실행할 수 있는 Docker가 필요합니다. Linux에서는 Docker Engine과 Compose 플러그인을, Windows/macOS에서는 Linux 컨테이너 모드의 Docker Desktop을 사용할 수 있습니다. [Docker·Compose 설치 안내](https://docs.docker.com/compose/install/)
+- **Linux 호스트는 커널 5.11 이상과 최신 Docker 엔진이 필요합니다.** Docker 서버에서 `uname -r`로 확인하세요. 커널이 낮거나 오래된 Docker의 시스템 호출 필터가 필요한 동작을 막으면 `isolation_unavailable`로 시작하지 못합니다. 신규 설치는 로그인 화면이 열리지 않고, 1.19.x에서 업그레이드하면 PG15를 복원한 뒤 대기하므로 해당 환경은 1.19.11을 유지하고 1.19.11 설치 안내를 따르세요. macOS/Windows의 Docker Desktop에는 호스트 커널 조건이 적용되지 않습니다.
+- **지원 버전:** 새 수정은 2.0 계열에만 나옵니다. **1.19.11이 1.x의 마지막 버전**이며 이후 1.x 릴리스(보안 수정 포함)는 없습니다.
+- **2.0.0을 검증한 환경:** AMD64 Linux 커널의 Docker 엔진과 macOS의 OrbStack(ARM64)입니다. Windows·macOS의 Docker Desktop은 2.0.0 최종본으로 검증하지 않았습니다.
+- 이미지 주소는 `ghcr.io/xelexis-dev/nginx-web-ui`입니다.
+- 아래 예제는 **2.0.0** 버전을 기준으로 합니다.
+- 버전별 변경 내용은 [업데이트 내역](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPDATE.md)에, 새 버전 소식은 [릴리스](https://github.com/xelexis-dev/nginx-web-ui/releases)에 정리되어 있습니다.
+
+다음 명령으로 Docker 연결, Compose 설치, **컨테이너를 실행할 Docker 서버의 아키텍처**를 확인합니다. 원격 Docker context를 사용한다면 명령을 입력하는 PC와 실행 대상이 다를 수 있습니다.
+
+```sh
+docker version
+docker compose version
+docker context show
+docker info --format '{{.OSType}}/{{.Architecture}}'
+```
+
+| Docker 서버 | 사용할 이미지 |
+| --- | --- |
+| `linux/x86_64` 또는 `linux/amd64` | `ghcr.io/xelexis-dev/nginx-web-ui:2.0.0` |
+| `linux/aarch64` 또는 `linux/arm64` | `ghcr.io/xelexis-dev/nginx-web-ui:2.0.0-arm64` |
+
+**`latest`는 1.19.11에 머물며 메이저 버전을 넘어 이동하지 않습니다.** `latest`를 쓰던 설치가 의도하지 않게 2.0으로 넘어가 DB 이전을 시작하지 않도록 하기 위해서입니다. 2.0은 위 표의 버전 태그로 설치하고, 운영 중인 설치는 항상 버전 태그를 고정해 사용하세요. `latest`와 접미사 없는 버전 태그는 **AMD64 전용**입니다. ARM64 새 설치에는 `-arm64` 태그를 선택하세요. 아키텍처가 자동으로 선택되는 공통 태그가 아닙니다. **기존 설치를 업데이트할 때는 호스트가 아니라 기존 컨테이너 이미지의 아키텍처를 유지**해야 합니다. 확인 방법은 6절을 따르세요.
+
+설치 전에 `docker ps -a`로 기존 컨테이너를 확인하세요. 아래 예제는 새 설치용이며, 기존 `nginx-web-ui` 컨테이너나 `nwu-*` 볼륨이 있다면 먼저 기존 설치인지 확인해야 합니다. 사용 중인 서비스를 임의로 삭제하거나 그 데이터 볼륨을 새 설치에 재사용하지 마세요.
+
+## 2. Docker Compose로 설치
+
+설치 전용 폴더를 만들고 이동합니다. 아래 명령은 Bash와 PowerShell 모두에서 실행할 수 있습니다.
+
+```sh
+mkdir nginx-web-ui
+cd nginx-web-ui
+```
+
+이 폴더에 **`compose.yaml`** 파일을 만들고 다음 내용을 그대로 저장합니다. **ARM64라면 `image`의 태그를 `2.0.0-arm64`로 바꾼 뒤 실행하세요.**
+
+```yaml
+services:
+  nginx-web-ui:
+    image: ghcr.io/xelexis-dev/nginx-web-ui:2.0.0
+    container_name: nginx-web-ui
+    restart: unless-stopped
+    stop_grace_period: 10m
+    security_opt: ["no-new-privileges:true"]
+    ports:
+      - "8080:8080"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - app-data:/var/lib/nginx-web-ui
+      - nginx-log:/var/log/nginx
+      - app-log:/var/log/nginx-web-ui
+
+volumes:
+  pg-data:
+    name: nwu-pg
+  app-data:
+    name: nwu-app
+  nginx-log:
+    name: nwu-nginx-log
+  app-log:
+    name: nwu-app-log
+```
+
+`security_opt: ["no-new-privileges:true"]`는 시스템 프로그램의 특수 권한을 이용해 더 높은 권한을 얻는 동작을 막습니다.
+
+브라우저 없이 관리자 계정까지 생성할 경우에는 **실행 전에 3절의 `admin.env`와 `env_file` 설정도 추가**하세요. 웹에서 계정을 만들 경우에는 그대로 진행합니다.
+
+같은 폴더에서 설정을 검사하고 이미지를 받아 실행합니다.
+
+```sh
+docker compose -f compose.yaml config --quiet
+docker compose -f compose.yaml pull
+docker compose -f compose.yaml up -d
+```
+
+볼륨은 없으면 자동으로 생성됩니다. Docker 관리 볼륨은 Linux·Windows·macOS에서 사용할 수 있습니다. macOS에서 호스트 폴더를 사용하려면 아래 안내를 따르세요. Windows 호스트 폴더의 DB 권한 동작은 검증하지 않았으므로 관리 볼륨을 사용하세요.
+
+### 포트와 접속 주소
+
+포트 표기는 `호스트 포트:컨테이너 포트`입니다.
+
+| 컨테이너 포트 | 용도 | 기본 접속 |
+| --- | --- | --- |
+| `8080/tcp` | 관리 화면 | 설치한 컴퓨터에서 `http://localhost:8080` |
+| `80/tcp` | HTTP 프록시와 Let's Encrypt HTTP-01 인증 | 등록한 도메인의 HTTP 요청 |
+| `443/tcp` | HTTPS 프록시 | 인증서를 연결한 도메인의 HTTPS 요청 |
+
+다른 컴퓨터에서는 `http://<Docker 서버 주소>:8080`으로 접속합니다. `<Docker 서버 주소>`는 실제 설치 대상의 주소로 바꾸세요. 방화벽과 네트워크에서도 필요한 포트가 허용되어야 합니다.
+
+관리 포트가 이미 사용 중이면 `"8080:8080"`을 `"18080:8080"`으로 바꾸고 `http://localhost:18080`을 사용합니다. 설치한 컴퓨터에서만 관리 화면에 접근하려면 `"127.0.0.1:8080:8080"`으로 설정할 수 있습니다. 최초 관리자 생성 전에는 관리 포트에 설치 담당자만 접근할 수 있게 하세요. 최초 설정에 사용할 주소 조건은 3절을 확인하세요.
+
+내부 웹 서버 `3000/tcp`, API 서버 `3001/tcp`, PostgreSQL `5432/tcp`는 별도로 공개하지 않습니다. 컨테이너의 기본 포트와 내부 프로세스 설정은 그대로 사용하세요.
+
+### 영구 보관되는 데이터
+
+| Docker 볼륨 | 컨테이너 경로 | 내용 |
+| --- | --- | --- |
+| `nwu-pg` | `/var/lib/postgresql/data` | 사용자, 프록시 설정, 감사 로그, 설정 이력 등 데이터베이스 |
+| `nwu-app` | `/var/lib/nginx-web-ui` | 인증·암호화 키, DB 접속 비밀값, 인증서 등 앱 데이터 |
+| `nwu-nginx-log` | `/var/log/nginx` | nginx 접근·오류 로그 |
+| `nwu-app-log` | `/var/log/nginx-web-ui` | 로그인 실패 등 앱 로그 |
+
+**같은 DB·앱 볼륨을 두 컨테이너에서 동시에 사용하지 마세요.** 이전 버전과 새 버전을 비교할 때도 독립된 복원 사본을 사용합니다.
+
+**`nwu-pg`와 `nwu-app`은 함께 보존하고 백업해야 합니다.** 앱 볼륨만 지우면 기존 DB에 접속하거나 암호화된 설정을 읽지 못할 수 있습니다. `/etc/nginx`, `conf.d`, `stream.d`에는 별도 볼륨을 덮어씌우지 마세요. nginx 설정은 저장된 논리 설정으로부터 앱이 생성하고 다시 적용합니다.
+
+호스트 폴더를 로그 경로에 연결하면 nginx 로그는 root:nginx·0750, 앱 로그는 root·0755로 정리됩니다. 외부 프로그램이 로그를 쓰거나 root가 아닌 계정으로 읽는 경우 접근 권한을 확인하세요. root로 읽는 로그 감시는 유지됩니다.
+
+**로그는 자동으로 정리되지 않습니다.** `nwu-nginx-log`·`nwu-app-log`에는 프록시를 거치는 모든 요청과 앱 로그가 계속 쌓이므로 디스크 여유를 확인하고 호스트에서 주기적으로 회전하세요. 로그 파일을 옮기거나 이름을 바꾼 뒤에는 `docker exec nginx-web-ui nginx -s reopen`을 실행해야 nginx가 새 파일에 기록하며, 그렇지 않으면 이전 파일에 계속 쓰고 접속 통계가 0으로 보일 수 있습니다. 파일을 옮기지 않고 비우는 방식(logrotate의 `copytruncate`)을 써도 됩니다. 컨테이너 자체 출력(`docker logs`)은 Compose의 `logging` 설정(`max-size` 등)으로 크기를 제한할 수 있습니다.
+
+### macOS에서 호스트 폴더 사용
+
+<details>
+<summary>펼쳐 보기</summary>
+
+macOS의 Docker Desktop과 OrbStack에서 Mac 폴더를 저장소로 연결할 수 있습니다. Docker Desktop은 해당 폴더를 파일 공유에 허용해야 합니다. 저장소의 쓰기·파일 잠금·데이터 동기화가 정상 동작하는지 확인하세요.
+
+Docker Desktop과 OrbStack의 Mac 공유 폴더에서는 사용자 간 파일 권한 제한이 적용되지 않아 API·웹 화면·nginx 작업 프로세스도 해당 저장소의 DB 파일·암호화 키·비밀 값·설정 게시 파일·로그를 읽고 바꿀 수 있습니다. 이 프로세스 중 하나가 침해되면 컨테이너 안의 root 권한까지 이어질 수 있습니다. 감지된 저장소에 경고를 표시하고 설치·자동 업그레이드를 진행합니다. 컨테이너 내부 프로세스 간 권한 분리가 필요하면 Docker 관리 볼륨을 사용하세요. macOS에서는 가능하면 OrbStack과 Docker 관리 볼륨 사용을 권장합니다.
+
+공유 폴더의 소유자·그룹 번호는 읽는 사용자에 따라 다르게 보일 수 있으며, 소유권 변경 명령이 성공해도 숫자만으로 접근 제한이 보장되지는 않습니다. 읽기 전용 저장소와 지원하는 공유 방식으로 확인되지 않은 마운트는 기존 검사를 유지합니다. OrbStack 가상 머신 안의 경로를 직접 연결하는 방식은 현재 지원 대상으로 확인되지 않았으므로 Docker 관리 볼륨을 사용하세요.
+
+호스트 폴더를 사용한다면 위 Compose 서비스의 `volumes`를 다음처럼 바꿉니다. `/absolute/path/nwui`는 실제 저장 경로로 바꾸고 Docker Desktop을 쓴다면 파일 공유에서 접근할 수 있게 합니다. 새 설치는 네 폴더를 먼저 만듭니다. 기존 설치는 같은 DB·앱 폴더를 유지합니다. PostgreSQL 15(PG15) 데이터는 2.0.0을 처음 시작할 때 검사·백업 후 자동 이전합니다. 다른 컨테이너가 같은 폴더를 동시에 쓰면 안 됩니다.
+
+```yaml
+    security_opt: ["no-new-privileges:true"]
+    volumes:
+      - /absolute/path/nwui/postgres:/var/lib/postgresql/data
+      - /absolute/path/nwui/app:/var/lib/nginx-web-ui
+      - /absolute/path/nwui/nginx-log:/var/log/nginx
+      - /absolute/path/nwui/app-log:/var/log/nginx-web-ui
+```
+
+DB 볼륨은 `/var/lib/postgresql/data`에 연결합니다. 2.0.0의 실제 PG17 데이터는 그 안의 `17/data`에 생성되므로 `17/data` 자체를 마운트하거나 `PGDATA`·`PGROOT` 환경변수로 경로를 덮어쓰지 마세요. **새 설치는 DB와 앱 볼륨이 모두 비어 있어야 합니다.** 기존 PG15 설치는 원래 마운트를 유지하고 6절의 백업·자동 이전 안내를 따릅니다.
+
+이전 이미지가 `postgres/pgdata/PG_VERSION`에 PG15를 저장했다면 기존에 연결하던 **부모 `postgres` 폴더를 그대로 유지**합니다. 루트와 기존 `pgdata` 하위 배치를 알아보며 완료 후 같은 DB 루트의 `17/data`를 사용합니다. 폴더를 옮기거나 `PG_VERSION`을 수정하지 마세요. [macOS 이전 안내](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPGRADE_PATH.md#macos의-기존-하위-폴더)를 확인하세요.
+
+로그에 `pg-init: FATAL: PostgreSQL data ownership could not be set to postgres:postgres.`가 나오면 소유권을 설정하지 못해 시작이 중단된 것입니다. 공유 폴더의 쓰기 권한과 연결 경로를 점검하세요. 기존 데이터를 지우거나 새 빈 폴더로 바꾸지 마세요.
+
+</details>
+
+## 3. 최초 관리자 생성
+
+### 웹 화면에서 생성
+
+1. 컨테이너 부팅 후 `http://localhost:8080/setup`으로 접속합니다. 원격 설치나 포트 변경 시 주소를 맞춥니다. 최초 관리자 생성은 `AUTH_URL`, 미설정이면 `NEXTAUTH_URL`로 지정한 관리 주소에서 진행합니다. 두 값이 모두 미설정이라면 `localhost` 또는 IP 주소로 접속해야 합니다. 도메인을 쓰려면 먼저 `AUTH_URL`에 그 주소를 지정하세요.
+2. 최초 관리자 이메일과 비밀번호를 입력합니다. 비밀번호는 **8자 이상이며 영문자와 숫자를 포함**해야 합니다.
+3. 생성한 계정으로 로그인해 관리 화면이 열리는지 확인합니다.
+
+설치 후 바로 최초 관리자를 만들거나 아래 환경변수로 미리 생성하세요. 최초 설정 전에는 설치 담당자만 관리 포트에 접근하게 합니다.
+
+기본 비밀번호는 없습니다. 관리자 비밀번호가 자동 생성되거나 로그에 출력되지도 않습니다. 사용자가 생성된 뒤에는 최초 설정 화면을 다시 사용할 수 없습니다.
+
+### 패스키로 로그인
+
+계정 화면의 「패스키」에서 패스키를 등록하면 로그인 화면의 「패스키로 로그인」으로 이메일·비밀번호 없이 로그인할 수 있습니다. 등록과 삭제에는 현재 비밀번호가 필요하며 계정당 10개까지 등록할 수 있습니다. 패스키는 다음 주소로 접속할 때만 사용할 수 있습니다.
+
+- 이 제품의 리버스 프록시로 관리 화면(포트 `8080`)을 연결한 HTTPS 도메인
+- 외부 HTTPS 프록시 뒤에서 `AUTH_URL`에 지정한 HTTPS 주소
+- nginx-web-ui를 설치한 컴퓨터에서 접속한 `http://localhost`
+
+IP 주소나 일반 HTTP 주소로 접속하면 패스키를 사용할 수 없으며 로그인 화면에 패스키 버튼이 나타나지 않습니다. `AUTH_URL`을 지정했다면 그 주소로 접속할 때만 사용할 수 있습니다. 패스키는 등록한 주소에서만 동작하며 포트도 같아야 합니다. 접속 주소나 포트를 바꾸면 새 주소에서 다시 등록하세요. 비밀번호 로그인은 그대로 사용할 수 있으며 관리 주소 설정을 따릅니다. `AUTH_URL`을 지정했다면 그 주소에서만 로그인할 수 있습니다.
+
+### 에이전트·자동화로 관리자까지 생성
+
+브라우저의 최초 설정을 생략하려면 **첫 실행 전에** 운영자가 정한 이메일과 비밀번호를 전달합니다. `compose.yaml`과 같은 폴더에 `admin.env`를 만들고 다음 두 값을 실제 값으로 바꾸세요.
+
+```dotenv
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD='REPLACE_WITH_YOUR_UNIQUE_PASSWORD_123'
+```
+
+예제 비밀번호를 그대로 사용하지 마세요. Compose의 환경 파일에서 비밀번호를 작은따옴표로 감싸면 `$` 같은 문자를 그대로 전달할 수 있습니다. 파일에는 설치 담당자만 접근하게 하고 저장소에 커밋하지 않습니다. [Compose 환경 파일 문법](https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/#env-file-syntax)
+
+`compose.yaml`의 `nginx-web-ui` 서비스에 다음 설정을 합칩니다. `env_file`의 들여쓰기는 `image`, `ports`, `volumes`와 같은 수준입니다. 이미 있는 `security_opt`는 한 번만 작성합니다.
+
+```yaml
+    security_opt: ["no-new-privileges:true"]
+    env_file:
+      - ./admin.env
+```
+
+이후 위의 `pull`·`up -d` 명령을 실행합니다. 빈 DB이면 계정이 생성되고 `/setup` 대신 로그인 화면을 사용합니다. 기존 사용자가 있으면 이 환경변수로 비밀번호가 변경되지 않습니다.
+
+기본 설치에는 이외의 환경변수가 필요하지 않습니다. `AUTH_SECRET`을 지정하지 않으면 최초 부팅 시 생성해 앱 볼륨에 보관하며, 직접 지정하면 그 값을 사용합니다. 이후 시작에서도 직접 지정한 `AUTH_SECRET`·`ADMIN_PASSWORD`가 보관된 값보다 우선합니다. `ADMIN_PASSWORD`를 바꿔도 이미 생성된 사용자 비밀번호는 바뀌지 않습니다. 내장 DB 접속 비밀값도 앱 볼륨에 보관되므로 `DATABASE_URL`을 별도로 지정하거나 외부 DB를 준비하지 마세요.
+
+관리 화면을 외부 리버스 프록시 뒤의 HTTPS 도메인으로만 쓰거나 OAuth(OIDC) 로그인을 쓴다면, 선택적으로 `AUTH_URL`에 그 주소(예: `https://admin.example.com`)를 지정할 수 있습니다. 지정하면 로그인과 설정 변경 요청을 그 주소에서 온 것만 받습니다. 최초 관리자 생성에 사용할 주소는 위 「웹 화면에서 생성」의 조건을 따릅니다.
+
+`AUTH_URL`과 호환 설정 `NEXTAUTH_URL`의 빈 값은 미설정입니다. 호스트가 있는 HTTP(S) 주소를 사용하세요. 유효한 `AUTH_URL`이 우선하며 이때 `NEXTAUTH_URL`은 사용하지 않습니다. 유효하지 않은 주소는 경고 후 미설정으로 처리하므로 외부 로그인과 관리 주소가 의도대로 동작하는지 확인하세요.
+
+관리 요청 처리·화면 서버·대상 이름 확인 서비스는 필요한 일반 사용자 권한으로 실행합니다. 기존 설치에서 실행 사용자를 바꿀 필요는 없으며 컨테이너는 기본 관리자 권한으로 시작합니다. 앱 데이터의 비밀파일을 공개하지 않으며, 공유 폴더 권한을 무조건 넓히거나 Compose에 임의의 `user:`를 추가하지 마세요. 저장소의 소유권 조건이 맞지 않으면 데이터를 보존하고 초기화나 이전을 거부합니다.
+
+기존 `DATA_KEY_FILE`은 특정 파일 모드만 요구하지 않습니다. 관리 요청 처리 사용자가 파일을 소유하거나 쓸 수 없어야 하며, 누구나 쓸 수 있는 상위 폴더는 sticky bit로 보호되어야 합니다. **키가 없는 설치에서 사용자 지정 경로가 읽기 전용이면 원본을 바꾸기 전에 거부합니다.** 기존 키 파일을 지우거나 임의의 새 키로 바꾸지 마세요. Docker Desktop·OrbStack의 macOS 호스트 폴더 환경에서는 사용자 지정 `DATA_KEY_FILE`을 앱 저장소 안(기본 경로 또는 `/var/lib/nginx-web-ui` 아래)이나 Docker 관리 볼륨에 두어야 합니다. 그 밖의 위치에 따로 연결한 호스트 폴더의 키 파일은 접근 제한을 확인할 수 없어 거부합니다. 2.0 시작에서는 `pair_mismatch`, 1.19에서 업그레이드할 때는 `key_path_invalid`로 표시되며 데이터는 바꾸지 않습니다.
+
+### 다른 사이트 안에 관리 화면 표시
+
+<details>
+<summary>펼쳐 보기</summary>
+
+기본적으로 같은 출처의 프레임만 허용합니다. 다른 사이트 안에 표시하려면 Compose 서비스의 `environment`에 허용할 HTTP(S) 출처를 공백으로 구분해 지정합니다. 경로나 와일드카드를 넣지 않습니다.
+
+```yaml
+    environment:
+      NWUI_FRAME_ANCESTORS: "https://portal.example.com https://ops.example.com"
+```
+
+미설정·잘못된 값은 같은 출처만 허용하는 기본값을 유지합니다. IPv6 주소 형식은 지원하지 않으므로 도메인 또는 IPv4를 사용하세요. 이 설정은 프레임 표시만 허용하며 로그인·권한 검사를 생략하지 않습니다.
+
+</details>
+
+## 4. 설치 성공 확인
+
+```sh
+docker compose -f compose.yaml ps
+docker compose -f compose.yaml logs --tail=100 nginx-web-ui
+docker exec nginx-web-ui nginx -t
+docker exec nginx-web-ui pg_isready -h 127.0.0.1 -p 5432
+```
+
+`nginx -t`는 설정 검사 성공, `pg_isready`는 `accepting connections`가 나와야 합니다. 컨테이너가 `running`이라는 것만으로 웹 서비스가 준비됐다고 판단하지 마세요. 초기화 중이면 잠시 기다린 뒤 HTTP까지 확인합니다.
+
+Bash에서는 다음 명령을 사용합니다.
+
+```sh
+curl --fail --silent --show-error --location --output /dev/null --write-out '%{http_code}\n' http://localhost:8080/setup
+```
+
+PowerShell에서는 다음 명령을 사용합니다.
+
+```powershell
+(Invoke-WebRequest -Uri 'http://localhost:8080/setup').StatusCode
+```
+
+정상적으로 부팅된 새 설치는 최초 설정 페이지에서 **HTTP 200**을 반환합니다. 관리자가 이미 생성된 경우에는 로그인 화면으로 이동합니다. 최종적으로 실제 계정으로 로그인되는지 확인하세요. 원격 Docker 서버나 다른 호스트 포트를 사용했다면 확인 URL도 변경해야 합니다.
+
+## 5. 프록시 사용 시작
+
+### 포트와 대상 연결
+
+- nginx 작업 프로세스는 `nginx` 사용자로 실행됩니다. 호스트에서 연결한 Unix 소켓을 대상으로 쓰면 이 사용자가 소켓에 연결하고 모든 상위 폴더를 통과할 권한이 있어야 하며, 부족하면 502가 발생합니다.
+- 관리 화면에서 업스트림(대상 서비스)을 등록하고 리버스 프록시의 도메인·포트·대상을 설정한 뒤 적용합니다. 캐시와 gzip 압축은 서버 단위로 설정하고 경로별로 켜거나 끌 수 있습니다.
+- 프록시 대상으로 입력하는 `localhost`·`127.0.0.1`은 **nginx-web-ui 컨테이너 자신**입니다. 다른 컨테이너는 같은 Docker 네트워크에 연결한 뒤 서비스 이름과 내부 포트로 지정합니다. 외부 서비스는 컨테이너에서 접근할 수 있는 주소와 포트를 사용합니다. [Docker 네트워크 안내](https://docs.docker.com/engine/network/)
+- 관리 화면에서 포트를 추가해도 Docker 포트가 자동으로 공개되지는 않습니다. 예를 들어 컨테이너에서 TCP `15432`를 사용하는 stream은 `ports`에 `"15432:15432/tcp"`를, UDP `15353`은 `"15353:15353/udp"`를 추가하고 `docker compose -f compose.yaml up -d`를 다시 실행합니다. TCP/UDP 구분도 맞춰야 합니다.
+- Let's Encrypt HTTP-01 인증서를 발급하려면 도메인의 DNS A/AAAA가 설치 대상으로 연결되고 인터넷에서 **80번 포트**에 접근할 수 있어야 합니다. 발급한 인증서를 프록시에 연결하고 **443번 포트**로 HTTPS를 제공합니다. HTTP-01을 사용할 수 없는 환경은 인증서 화면에서 DNS-01 방식을 선택할 수 있습니다.
+- 프록시 도메인을 등록하기 전 `http://localhost:80`의 **404는 정상**입니다. 기본 관리 화면 주소는 `:8080`입니다. 인증서를 연결하지 않은 도메인의 443 접속에는 기본 인증서 경고가 나타날 수 있습니다.
+
+### WebSocket 헤더 채우기
+
+리버스 프록시 경로를 만들거나 수정할 때 「**WebSocket 헤더 채우기**」로 HTTP/1.1, Upgrade와 Connection 헤더를 채울 수 있습니다. 업그레이드 요청이 아닌 경우에는 Connection이 close가 되도록 구성합니다. 기존 값과 충돌하면 내용을 확인하고 교체를 선택하며, Host·다른 헤더·시간 제한·버퍼링 설정은 유지합니다.
+
+### 실행 중에 대상 이름 확인
+
+<details>
+<summary>펼쳐 보기</summary>
+
+추가 지시문에 `resolver`나 `resolver_timeout`을 직접 쓸 수 없으며, 대신 「실행 중에 이름 확인」 기능을 사용합니다.
+
+리버스 프록시의 직접 대상·경로, Upstream 또는 TCP/UDP Stream에서 「**실행 중에 이름 확인**」을 선택하면 대상이 꺼져 있어 이름을 찾을 수 없어도 설정을 적용할 수 있습니다. 대상이 준비되면 연결을 다시 시도하며, 이름이 가리키는 주소가 바뀌어도 다시 적용할 필요가 없습니다. 기존 항목은 자동으로 이 모드로 바뀌지 않습니다.
+
+이름 확인이나 연결이 되지 않는 동안 HTTP 요청은 502 또는 504를 받을 수 있고, TCP 연결은 종료되거나 UDP 응답이 없을 수 있습니다. 이름 확인 결과를 잠시 보관하므로 대상 시작·주소 변경이 모든 요청에 즉시 반영되는 것은 아닙니다. 직접 대상의 IP 주소에는 이 옵션을 켜지 않습니다. 이름으로 등록한 Upstream을 쓰는 경로는 해당 Upstream의 설정을 따릅니다.
+
+다른 컨테이너를 이름으로 연결하려면 두 컨테이너를 같은 Docker 네트워크에 둡니다. 예를 들어 다른 컨테이너의 `px-web:3001`은 사용할 수 있지만, 동적으로 확인된 루프백·미지정·멀티캐스트·링크 로컬 주소는 허용하지 않습니다. 컨테이너의 `/etc/hosts`에만 추가한 별칭은 실행 중 DNS 이름 확인에 사용되지 않습니다. 관리 화면을 위한 기존 정적 대상 `http://127.0.0.1:8080`은 계속 사용할 수 있습니다.
+
+기본 설정은 컨테이너의 DNS 서버를 사용하며, Docker DNS가 있으면 이를 우선합니다. 아래 설정이 필요하다면 Compose 서비스의 `environment`에 추가합니다.
+
+| 환경변수 | 기본값 / 동작 | 사용할 때 확인할 내용 |
+| --- | --- | --- |
+| `NWUI_TARGET_DNS_PORT` | 컨테이너 내부 TCP/UDP `5354` | 꺼 둔 프록시·Stream을 포함해 기존 포트와 겹치지 않아야 합니다. 충돌하면 비어 있는 포트로 바꾸고 컨테이너를 재시작합니다. 외부에 공개할 포트가 아닙니다. |
+| `NWUI_TARGET_DNS_SERVERS` | 컨테이너의 DNS 서버 | IP 주소 또는 `IP:포트`를 1~3개 지정하며 쉼표나 공백으로 구분합니다. 포트를 생략하면 `53`을 사용하고, IPv6에 포트를 붙일 때는 `[IPv6]:포트`로 씁니다. 별도 지정 없이 외부 공용 DNS로 자동 변경하지 않습니다. |
+| `NWUI_TARGET_DNS_IPV6` | IPv4·IPv6 대상 이름 확인 | 대상의 IPv6 연결을 사용할 수 없는 환경에서는 `off`로 지정합니다. |
+
+`NWUI_TARGET_DNS_SERVERS`를 지정할 때는 해당 환경에서 연결할 수 있는 DNS 서버의 실제 IP를 넣습니다. 예를 들어 Compose의 `environment` 아래에 다음 중 한 줄을 추가할 수 있습니다.
+
+```yaml
+# IPv4 예시: 기본 포트와 별도 포트, 쉼표 구분
+NWUI_TARGET_DNS_SERVERS: "10.0.0.53,10.0.0.54:5353"
+# IPv6 예시: 별도 포트는 대괄호 사용, 공백 구분
+NWUI_TARGET_DNS_SERVERS: "[fd00::53]:5353 fd00::54"
+```
+
+업데이트 때 기본 내부 DNS 포트가 기존 항목과 충돌하면 기존 정적 설정을 유지하면서 충돌 이유를 표시합니다. 운영자가 포트를 정리하기 전에는 실행 중 이름 확인을 새로 켤 수 없습니다. 내부 DNS 서비스가 잠시 멈추면 새 이름 확인은 실패할 수 있으며, 이전에 확인한 주소로 연결이 당분간 이어질 수도 있습니다.
+
+</details>
+
+### 대상 서비스를 하나씩 재시작할 때 끊김 줄이기
+
+<details>
+<summary>펼쳐 보기</summary>
+
+대상 컨테이너가 하나뿐이면 재시작하는 동안 요청을 받을 곳이 없습니다. 다음 준비를 함께 하면 인스턴스 하나를 재시작하는 동안 다른 인스턴스가 요청을 처리할 수 있습니다.
+
+1. **같은 서비스를 2개 이상 실행합니다.** 예를 들어 대상 서비스가 `web`이면 `docker compose up -d --scale web=2 web`으로 늘릴 수 있습니다. 대상 서비스에는 고정 `container_name:`을 지정하지 않습니다. 하나를 멈춰도 남은 인스턴스가 전체 요청을 처리할 수 있어야 하며, 로그인 상태와 공유 데이터는 인스턴스 밖의 데이터베이스 등에 보관해야 합니다. nginx-web-ui 자체를 여러 개로 늘리는 설정이 아닙니다.
+2. **대상을 서비스 이름으로 지정하고 「실행 중에 이름 확인」을 켭니다.** nginx-web-ui와 대상 서비스를 같은 Docker 네트워크에 연결하고, 컨테이너 IP 대신 서비스 이름과 내부 포트(예: `http://web:3000` 또는 Upstream의 `web:3000`)를 넣습니다. 서비스 이름이 실행 중인 여러 인스턴스의 주소를 돌려주는지 확인하세요. 이 옵션은 주소가 바뀌면 다시 적용하지 않아도 따라가지만, 주소 정보 갱신은 즉시 끝나지 않을 수 있습니다. 옵션을 끄면 처음 확인한 주소를 계속 사용하므로, 컨테이너를 다시 만들었을 때 그 주소를 이어받은 다른 서비스로 요청이 갈 수도 있습니다. Upstream을 쓰는 경로는 해당 Upstream에서 이 옵션을 켭니다.
+3. **경로의 「재시작 중 다른 인스턴스로 재시도」를 켭니다.** 연결 실패나 재시도 가능한 시간 초과, 502·503·504 응답이 발생하면 다른 인스턴스로 한 번 더 보냅니다. 처음 시도를 포함해 **최대 2회**이며, **첫 시도부터 3초 안에 다음 시도를 시작**할 수 있습니다. 3초는 전체 요청의 완료 제한이 아닙니다. 연결을 맺는 데는 최대 **2초**를 기다리되, 경로에 연결 대기를 따로 정했다면 그 값을 사용합니다. 연결 뒤 응답 대기는 읽기 제한을 따릅니다. 경로의 연결 대기가 3초 이상이면 연결 시간 초과 후 다른 인스턴스로 넘어가지 못할 수 있습니다. 인스턴스가 하나뿐이면 다른 곳으로 다시 보낼 수 없지만 연결 대기 제한은 적용됩니다. 이 스위치는 기본적으로 꺼져 있으며, 꺼도 nginx의 기본 재시도 동작은 유지됩니다.
+4. **앱이 종료 신호를 처리하도록 준비합니다.** `SIGTERM`을 받으면 새 연결을 받지 않고 처리 중인 요청을 마친 뒤 종료해야 합니다. 셸 스크립트에서는 마지막에 `exec`로 앱을 실행하거나, 신호를 앱에 전달하고 처리 중인 요청이 끝나 앱이 종료할 때까지 기다리는 실행기를 사용하세요. Compose의 `init: true`는 남은 자식 프로세스 정리에 도움이 되지만, 신호 전달과 요청 마무리를 대신하지 않습니다. `stop_grace_period`도 요청 처리 시간보다 넉넉하게 둡니다.
+5. **한 번에 하나씩 교체하고, nginx를 거쳐 새 인스턴스에 도착하는지 확인합니다.** 하나를 교체한 뒤 우선 **20초 이상** 기다립니다. 이는 주소 정보 갱신을 위한 초기 대기일 뿐, 준비 완료를 보장하지 않습니다. 다음 인스턴스를 멈추기 전에 새 인스턴스의 준비 상태와 함께 **nginx-web-ui를 거친 요청이 새 인스턴스에 실제로 도착하는지** 확인하세요. 새 인스턴스의 접속 로그나 응답에 넣은 인스턴스 식별값으로 확인할 수 있습니다. 확인되지 않으면 다음 인스턴스를 멈추지 않습니다. `docker compose restart web`이나 이미지 갱신 후 `docker compose up -d`는 모든 인스턴스를 함께 재시작하거나 다시 만들 수 있으므로, 실행 방식이 하나씩 교체하는지 먼저 확인하세요. `healthcheck`를 추가해도 nginx가 그 상태를 직접 읽지는 않습니다.
+
+**함께 알아둘 제한**
+
+- 이미 보낸 POST·PATCH 요청은 다른 인스턴스로 다시 보내지 않습니다. 처리 중 강제로 종료하면 해당 요청은 실패할 수 있으므로 정상 종료를 지원해야 합니다. 결제·등록처럼 중복되면 안 되는 작업은 앱에서도 중복 처리를 막아야 합니다. GET·PUT·DELETE는 다시 전달될 수 있으므로 같은 요청이 반복돼도 결과가 달라지지 않게 구성합니다.
+- 모든 인스턴스가 멈추거나 응답하지 않으면 요청은 **502 또는 504**로 실패할 수 있습니다. 연결 대기와 읽기 제한에 따라 시간이 걸릴 수 있어 항상 빠르게 실패하는 것은 아닙니다. 클라이언트도 재시도한다면 횟수를 제한해 남은 인스턴스에 요청이 몰리지 않도록 하세요.
+- 연결은 됐지만 응답하지 않는 인스턴스는 읽기 제한까지 기다립니다. **읽기 대기로 재시도 시작 한도 3초가 지난 경우**에는 다른 인스턴스로 다시 보내지 않습니다. 읽기 제한을 짧게 정해 3초 안에 실패한 경우에는 재시도할 수 있습니다.
+- 이미 연결된 WebSocket·스트리밍·TCP 연결은 다른 인스턴스로 옮겨지지 않습니다. 클라이언트가 다시 연결하도록 구성하세요.
+- TCP/UDP Stream에는 이 스위치가 없습니다. TCP Stream은 대상이 재시작하는 동안 시작한 연결이 연결 제한 시간까지 기다릴 수 있습니다. UDP는 인스턴스가 멈춘 것을 연결 실패로 알 수 없습니다.
+- Docker Swarm처럼 서비스 이름이 가상 IP 하나만 가리키는 환경에서는 nginx가 개별 인스턴스를 구분하지 못합니다. 서비스 이름이 실제로 여러 주소를 돌려주는지 확인하세요.
+
+</details>
+
+## 6. 업데이트와 중지
+
+**1.19.x는 기존 볼륨과 설정을 유지하고 이미지 태그를 바꿔 시작하면 DB 이전을 자동으로 진행합니다.** 1.19.0–1.19.11에는 필수 중간 버전이나 별도의 수동 이전이 없습니다. 1.18.x는 직접 이전 검증 범위 밖이므로 1.19.11을 거치는 것을 권장하며 필수 경유는 아닙니다. **1.18.0 미만은 먼저 1.19.11로 올린 뒤 진행해야 합니다.** 처음 PG15에서 PG17로 바뀌는 동안 프록시 사이트가 중지되며, 관리 포트에는 진행 상태만 표시됩니다.
+
+자동 DB 이전 중에는 autoheal 등 상태 점검 실패를 이유로 컨테이너를 자동 재시작하는 도구를 꺼 두세요. 중지가 필요하면 `docker stop -t 600 nginx-web-ui`처럼 최대 600초를 기다리거나 Compose에 `stop_grace_period: 10m`를 설정합니다. 중지 요청 직후 강제 종료하지 말고 로그에서 종료 결과를 확인하세요.
+
+이전 도중 재시작하면 보존된 기록을 확인해 복구하거나 시작 단계를 이어갑니다. PG17로 전환하기 전에 원본 복원이 필요한 상태라면 PG15를 검증 후 복원하고 그 시작에서는 대기하므로, 표시된 다음 조치를 따르세요. PG17로 전환한 뒤에는 PG17을 유지한 채 시작을 다시 준비합니다. 성공 직후 재시작해도 보관 PG15를 자동으로 선택하지 않습니다. 같은 DB·앱 볼륨을 유지하고 진행 기록을 지우지 마세요.
+
+1. [업데이트 내역](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPDATE.md)과 [업그레이드 경로](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPGRADE_PATH.md)를 확인합니다. 구 이미지·Compose·환경 설정과 같은 시점의 DB·앱 백업 쌍을 보관하고 복원 가능 여부를 확인하세요. 실제 명령은 [업그레이드 경로](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPGRADE_PATH.md)의 「중지 후 DB·앱을 함께 백업하고 복원하기」를 따릅니다. 자동 PG15 백업은 독립 백업을 대신하지 않습니다.
+2. 기존 이미지의 아키텍처를 확인하고 컨테이너를 정상 종료한 뒤 백업합니다. 다른 컨테이너가 같은 DB·앱 볼륨을 동시에 쓰지 못하게 하세요.
+3. 기존 Compose의 이미지 태그를 `2.0.0`(AMD64) 또는 `2.0.0-arm64`(ARM64)로 바꿉니다. 볼륨명·마운트·포트·인증 설정을 유지합니다. `@sha256:…`로 고정했다면 태그만 바꾸지 말고 `image:`의 전체 이미지 주소를 교체하세요. 이전 digest가 남으면 이전 이미지가 실행됩니다. 새 빈 DB나 앱 볼륨을 만들지 않습니다.
+4. 이미지를 받아 시작하고 관리 포트의 진행 상태와 로그를 확인합니다. 여유 공간은 대략 DB 크기의 4배 + 가장 큰 인덱스의 2배 + max(1 GiB, DB 크기의 1/5)에 고정 예약 공간과 앱 사본 공간을 더해 준비하며, 작은 DB도 약 1.3 GB 이상이 필요합니다. DB·앱이 같은 파일시스템이면 합산합니다. 상태에 표시된 필요 공간(`requiredBytes`)과 inode를 기준으로 준비하되, 서로 다른 파일시스템이면 각각 필요한 용량·inode를 충족해야 합니다. 표시된 합계에 여유가 있어도 한쪽의 부족분을 다른 쪽 공간으로 채울 수 없으므로 공간 부족 안내를 따라 해당 저장소를 확보하세요. macOS는 Docker Desktop 디스크 한도도 확인하세요.
+5. 완료 후 화면 오른쪽 위 계정 버튼을 눌러 열리는 메뉴의 버전이 **2.0.0**인지 확인하고 기존 계정 로그인과 실제 HTTP/HTTPS·TCP/UDP 응답, 인증서·알림·노드 연결을 확인합니다. 기존 설치에 최초 관리자 생성 화면이 나타나면 진행을 멈추고 데이터 마운트부터 확인합니다.
+
+
+기존 컨테이너 이름이 다르면 아래 이름을 바꿉니다. **호스트가 아니라 기존 이미지의 아키텍처를 유지**하세요. DB 파일을 그대로 두고 다른 아키텍처로 바꾸는 것은 지원하지 않습니다.
+
+```sh
+docker image inspect "$(docker inspect nginx-web-ui --format '{{.Image}}')" --format '{{.Architecture}}'
+docker compose -f compose.yaml stop -t 600
+docker logs --tail=100 nginx-web-ui
+# 정상 종료 확인 후 업그레이드 경로의 절차로 DB·앱 데이터를 같은 시점으로 백업하고 이미지 태그 변경
+docker compose -f compose.yaml config --quiet
+docker compose -f compose.yaml pull
+docker compose -f compose.yaml up -d
+docker logs --tail=100 nginx-web-ui
+docker exec nginx-web-ui nwui-db-upgrade auto-status
+```
+
+진행 상태는 기존 호스트 관리 포트(기본 `http://<Docker 서버 주소>:8080`)로 직접 확인합니다. 같은 컨테이너의 80/443을 거치는 관리 도메인은 이전 중 사용할 수 없습니다. 컨테이너가 실행 중이라는 표시만으로 이전·서비스 시작이 끝났다고 판단하지 마세요.
+
+컨테이너가 중지돼 관리 화면을 열 수 없을 때도 같은 DB·앱 볼륨으로 상태를 확인할 수 있습니다. 다음은 중지된 기존 컨테이너를 남겨 둔 기본 설치의 읽기 전용 조회 예시입니다. ARM64는 이미지 태그를 `2.0.0-arm64`로 바꾸고, 별도로 지정한 저장 경로 환경변수도 기존 설치와 맞춥니다.
+
+```sh
+docker run --rm --pull=never --security-opt no-new-privileges:true --network none \
+  --volumes-from nginx-web-ui \
+  --entrypoint /usr/local/bin/nwui-db-upgrade \
+  ghcr.io/xelexis-dev/nginx-web-ui:2.0.0 auto-status
+```
+
+이전이 끝난 뒤 정리가 남아 있으면 「정리 대기」로 안내합니다. 서비스가 정상인데 정리만 대기하는 상태는 업그레이드 실패가 아니며, 이 상태만으로 「업그레이드 후 서비스 시작에 실패했습니다」 알림을 보내지 않습니다. 보관 PG15 백업의 크기·제거 명령은 별도로 표시하고, 실패·대기 상태에는 다음 조치를 안내합니다.
+
+업그레이드 중 생성되는 「PG15 백업을 보관하고 있습니다」 안내는 앱의 알림 목록에서 확인하세요. 메일·웹훅은 알림이 생성될 때 이미 구독 중인 대상에만 전달되므로, 1.19에서 이전할 때 생기는 첫 백업 안내는 외부로 전달되지 않습니다. 이후 알림을 받으려면 「관리자」의 「메일」 또는 「Webhook」 탭에서 수신자나 웹훅을 만들거나 수정할 때 「시스템」에서 받을 사건을 선택하세요. 「업그레이드 후 서비스 시작에 실패했습니다」 알림은 구독 중인 메일·웹훅 대상으로 전달됩니다.
+
+### 보류·재시도와 실패
+
+<details>
+<summary>펼쳐 보기</summary>
+
+두 환경변수는 **PG15에서 업그레이드가 대기 중일 때만** 동작하며 컨테이너를 시작할 때 한 번 읽습니다.
+
+- `NWUI_DB_UPGRADE=off`: 이전을 보류하고 서비스를 대기 상태로 둡니다. 관리 포트에는 상태 페이지를 표시합니다. 변수를 제거하고 컨테이너를 재시작하면 다시 이전을 진행할 수 있습니다.
+- `NWUI_DB_UPGRADE_RETRY=<식별 문자열>`: 서로 다른 값마다 정확히 한 번 재시도를 요청합니다. 같은 값을 다시 설정해도 그 값으로 추가 재시도를 요청하지 않습니다. 비어 있지 않은 128자 이하 문자열이며 NUL 문자는 사용할 수 없습니다. 값을 바꾸기 전에 원인을 먼저 확인하세요.
+
+자동 이전 실패 후 원본 PG15를 검증 후 복원하면 결과를 표시하고 같은 시작에서는 다시 이전하지 않고 대기합니다. 다음 시작의 재시도 가능 여부·가능 시각·새 재시도 값 필요 여부는 표시된 다음 조치를 따르세요.
+
+- **원본 미변경**: 안내된 원인을 고쳐 다시 시작하거나 같은 볼륨으로 1.19.11 이미지로 돌아갈 수 있습니다.
+- **원본 PG15 복원 완료**: 복원 결과를 확인하고 표시된 재시도 조건을 따르거나 같은 볼륨으로 1.19.11 이미지로 돌아갑니다.
+- **복원 미완료**: 이미지를 낮추지 말고 보존 위치와 오류를 확인합니다. 용량·권한 등 원인을 고쳐 같은 2.0.0 이미지에서 재시작해 복구를 마쳐야 합니다.
+- **PG17 전환 뒤 서비스 시작 실패**: PG17은 유지합니다. 재시작해 시작을 이어가거나 다음 명시적 PG15 복원을 사용합니다.
+- **DB 이전 완료·설정 적용 확인 대기**: 서비스는 시작됐지만 설정 적용 상태가 아직 확인되지 않아 이전 데이터 정리를 보류합니다. 서비스 시작 실패와 다르며, 상태를 다시 확인한 뒤 정리를 이어갑니다.
+- **이전 데이터 정리만 보류·서비스 정상**: 정상 운영은 유지하며 다음 컨테이너 시작에서 남은 정리를 재개합니다. 별도 보관 PG15 백업을 자동 삭제하는 단계는 아닙니다.
+
+이전 진단 로그는 `<pgdata volume>/.nwui-auto-work/logs/<attempt>`에 최신 시도 한 건만 보관하며 복원 후에도 남습니다. DB 접속 실패 로그에는 비밀번호가 거부됐는지, 서버에 연결할 수 없는지 등 원인을 구분하는 짧은 내용이 표시되며 접속 비밀값은 남기지 않습니다. `<pgdata volume>`은 연결한 DB 볼륨이고 `<attempt>`는 시도 식별값입니다.
+
+상태 페이지가 열리지 않으면 `docker logs --tail=100 nginx-web-ui`를 확인합니다. 기록을 삭제하거나 PG17 파일을 PG15처럼 고쳐서는 안 됩니다.
+
+</details>
+
+### 성공 후 1.19.11 복원과 백업 정리
+
+<details>
+<summary>펼쳐 보기</summary>
+
+**성공 후 이미지 태그만 낮추면 안 됩니다.** 보관된 PG15를 먼저 복원해야 하며 업그레이드 이후 모든 쓰기를 잃습니다. 복원 상태·실제 백업 ID를 확인하고 컨테이너를 중지한 뒤 2.0.0 이미지의 명령을 실행합니다. 아래는 기본 설치 예시입니다. DB·앱 마운트와 저장 경로 환경변수는 기존 설치와 일치해야 합니다. `restore-pg15`는 데이터 암호화 키를 읽습니다. 기본 키는 앱 볼륨에 있어 아래 마운트로 함께 연결되지만, 사용자 지정 `DATA_KEY_FILE`을 쓴다면 함수의 `docker run`에 `-e DATA_KEY_FILE=<기존과 같은 절대 경로>`를 추가하고 그 키 파일의 마운트도 유지하세요. `--volumes-from`은 환경변수를 복사하지 않습니다. `auto-status`·`remove-pg15-backup`·`remove-discarded`는 키를 읽지 않습니다.
+
+```sh
+docker exec nginx-web-ui nwui-db-upgrade auto-status
+docker compose -f compose.yaml stop -t 600
+NWUI_UPGRADE_IMAGE=ghcr.io/xelexis-dev/nginx-web-ui:2.0.0
+NWUI_BACKUP_ID=REPLACE_WITH_STATUS_BACKUP_ID
+
+nwui_upgrade() {
+  docker run --rm --pull=never --security-opt no-new-privileges:true --network none \
+    --volumes-from nginx-web-ui \
+    --entrypoint /usr/local/bin/nwui-db-upgrade \
+    "$NWUI_UPGRADE_IMAGE" "$@"
+}
+
+nwui_upgrade restore-pg15 --confirm-loss "$NWUI_BACKUP_ID"
+```
+
+`restore-pg15`는 복원 완료와 재시도 조건에 맞는 다음 조치를 출력합니다. 1.19.11로 시작하거나, 2.0 이미지를 다시 시작할 때 표시된 대기 시각·새 `NWUI_DB_UPGRADE_RETRY` 값 조건을 따르세요. 정확한 안내 문구는 [업그레이드 경로](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPGRADE_PATH.md)를 확인하세요.
+
+기존 이미지가 ARM64라면 변수의 태그를 `2.0.0-arm64`로 바꿉니다. `--volumes-from`은 중지된 컨테이너의 마운트를 연결하지만 환경변수를 복사하지는 않습니다. 저장 경로를 별도로 지정한 설치라면 그 환경변수도 명시적으로 전달합니다. 복원 명령이 성공한 뒤에만 Compose 이미지 주소를 `1.19.11` 또는 같은 아키텍처의 `1.19.11-arm64`로 바꾸고 `pull`·`up -d`를 실행하세요. digest로 고정했다면 태그만 바꾸지 말고 보관한 1.19.11의 전체 이미지 주소로 교체하세요. 2.0.0의 digest가 남으면 2.0.0이 다시 실행됩니다. 분리 보관된 PG17 데이터는 자동 삭제하지 않습니다.
+
+
+PG15 백업은 운영자가 지울 때까지 남습니다. 2.0.0 정상 시작과 독립 백업을 확인하고 PG15로 돌아갈 필요가 없다고 판단했을 때만 `auto-status`에서 보이는 실제 ID로 정리하세요. **삭제 후에는 그 백업으로 PG15를 복원할 수 없습니다.** 위 함수·이미지를 사용하는 별도의 정리 예시이며 복원 명령과 함께 연속 실행하는 절차가 아닙니다.
+
+```sh
+docker exec nginx-web-ui nwui-db-upgrade auto-status
+docker compose -f compose.yaml stop -t 600
+nwui_upgrade remove-pg15-backup --confirm "$NWUI_BACKUP_ID"
+docker compose -f compose.yaml start
+```
+
+복원·정리 명령은 **종료 코드 0이면 성공, 그 밖에는 실패**입니다. 메시지와 `auto-status`를 함께 확인하세요. PG15 복원을 마치면 백업이 현재 데이터로 이동해 소비되므로 `remove-pg15-backup`은 사용할 수 없습니다. 복원이 남긴 분리 보관 PG17만 상태의 `discarded[].id`를 사용해 `remove-discarded --confirm <id>`로 별도 정리할 수 있습니다. 두 명령 모두 서비스 중지 상태와 같은 DB·앱 마운트가 필요합니다. 독립 백업을 지우는 명령이 아닙니다. 전체 실패·재시도·분리 보관 데이터 정리 안내는 [업그레이드 경로](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPGRADE_PATH.md)를 따르세요.
+
+</details>
+
+### 이후 업데이트와 중지
+
+PG17을 사용하는 이후 업데이트도 해당 버전 안내를 읽고 DB·앱 데이터를 함께 백업한 뒤 같은 아키텍처·볼륨으로 이미지 태그를 바꿉니다. 게이트웨이와 노드는 2.0·1.19를 혼용해 단계적으로 업데이트할 수 있지만 이전 노드에서는 새 기능을 쓸 수 없습니다. 2.x 안에서는 게이트웨이를 먼저 올린 뒤 노드를 올리세요. 노드는 자기보다 새 minor의 게이트웨이를 받아들이지만, 게이트웨이는 자기보다 새 minor의 노드를 관리하지 않습니다. 더 새 버전이 사용한 DB로 이전 버전 이미지를 시작하면 `database_newer`로 시작하지 않으므로, 되돌릴 때는 업데이트 전 백업 쌍을 복원하세요. 2.0 전용 설정을 쓰는 항목을 1.19 관리 화면에서 저장하면 설정을 지우지 않고 거부합니다.
+
+2.0.0을 다시 발행하기 전의 2.0.0이나 2.0.1 이미지를 설치했다면 이미지 태그를 `2.0.0`으로 지정하고 이미지를 다시 받으세요. 2.0.1을 쓰던 설치도 같습니다. 이전 2.0.0과 태그 이름이 같아 다시 받지 않으면 이전 이미지가 계속 실행됩니다. 위처럼 먼저 백업합니다. 처음 시작할 때 패스키용 DB 구조를 추가하며, 그 뒤에는 이전 이미지가 이 DB로 시작하지 않습니다(`database_newer`). 업데이트 후에는 계정 화면에 「패스키」 영역이 보입니다.
+
+다시 발행하기 전의 2.0.0 이미지를 중지할 때는 정상 종료여도 `Error: interrupted: 시작 준비를 중단했습니다…` 한 줄이 로그에 남을 수 있습니다. 종료 코드가 0이고 DB 종료 로그(`database system is shut down`)가 있으면 정상 종료입니다. 지금의 2.0.0은 이 오류 줄 대신 `[upgrade] 중지 요청을 받아 종료합니다.` 한 줄만 남깁니다.
+
+일시 중지와 다시 시작:
+
+```sh
+docker compose -f compose.yaml stop -t 600
+docker compose -f compose.yaml start
+```
+
+컨테이너를 제거하되 데이터를 유지하려면 `docker compose -f compose.yaml down`을 사용합니다. **`down -v`는 데이터 볼륨까지 삭제하므로 일반 중지·업데이트에 사용하지 마세요.**
+
+
+## 7. 설치 문제 해결
+
+| 증상 | 확인할 내용 |
+| --- | --- |
+| Docker에 연결할 수 없음 | Docker 서비스 실행 여부, 현재 context, Docker 명령 실행 권한 확인 |
+| `port is already allocated` | 호스트에서 해당 포트를 쓰는 서비스 확인. 관리 포트는 호스트 쪽 숫자를 변경. 기존 서비스를 임의로 중지하지 않음 |
+| 아키텍처 불일치·`exec format error` | 새 설치는 Docker 서버와 이미지 아키텍처 비교. 기존 설치는 6절의 기존 컨테이너 이미지 확인 방법에 따라 같은 아키텍처 유지 |
+| 이미지 다운로드 실패 | 이미지 주소와 버전 태그, 네트워크·DNS·레지스트리 HTTPS 연결 확인 |
+| 컨테이너는 실행 중인데 관리 화면에 접속 불가 | `docker logs --tail=100 nginx-web-ui`, `nginx -t`, `pg_isready` 결과와 호스트 포트·방화벽 확인 |
+| 새 설치인데 `/setup`이 나오지 않음 | 기존 DB 볼륨 또는 `ADMIN_PASSWORD`로 계정이 이미 생성됐는지 확인 |
+| 프록시가 502 또는 504를 반환 | 대상 주소·포트와 Docker 네트워크 확인. 실행 중 이름 확인을 켠 경우 대상의 시작·DNS 응답·내부 DNS 서비스 상태를 확인. `localhost`는 이 컨테이너 자신을 가리킴 |
+| DB 비밀번호나 암호화 키 관련 오류 | `nwu-pg`와 `nwu-app`이 같은 설치의 볼륨인지 확인. 한쪽만 삭제·교체하지 말고 함께 보존한 백업 확인 |
+
+### 데이터 경로 때문에 시작이 거부될 때
+
+<details>
+<summary>펼쳐 보기</summary>
+
+새 이미지는 잘못 연결된 데이터에서 새 키나 빈 DB를 만들지 않고 중단할 수 있습니다. 복구 기록이 생기기 전 시작 확인에서 거부된 경우에도 원인을 표시한 채 대기하므로, 원인을 해결한 뒤 컨테이너를 다시 시작하세요. 상태 페이지가 남거나 관리 화면 자체가 열리지 않을 수 있으므로 다음 명령으로 안내를 확인합니다.
+
+```sh
+docker logs --tail=100 nginx-web-ui
+```
+
+| 안내 코드 | 확인할 내용 |
+| --- | --- |
+| `insufficient_space` | 상태에 표시된 필요 용량·inode와 사용 가능한 공간 확인. 원인을 고친 뒤 같은 이미지로 재시작 |
+| 복원 미완료 | 보존 위치와 오류를 확인하고 같은 2.0.0 이미지에서 복구를 이어감. 복원 완료 전에 이미지를 낮추지 않음 |
+| `storage_busy` | 같은 DB·앱 볼륨을 쓰는 컨테이너·관리 명령이 있는지 확인. 동시 사용을 중지 |
+| `nginx_test_failed` | 로그의 nginx 오류 줄이 가리키는 파일 확인. 기본 설정·추가 포함 파일 오류를 고친 뒤 재시작. 사용자 설정 격리를 끝내지 못하거나 최종 검사가 실패한 경우에도 시작이 중단될 수 있음 |
+| `trusted_input_unsafe` | 관리 요청을 처리하는 사용자가 오류에 지정된 nginx 실행파일·설정·포함 파일을 소유하거나 쓸 수 있는지 확인 |
+| `pair_mismatch` | DB·앱 데이터 쌍이 맞지 않거나 필요한 키가 없습니다. macOS 호스트 폴더 환경에서 사용자 지정 `DATA_KEY_FILE`을 앱 저장소 밖의 별도 호스트 폴더에 둔 경우에도 키 접근 제한 검사가 실패해 이 코드가 표시되므로, 키를 앱 저장소 안이나 Docker 관리 볼륨으로 옮기세요. 한쪽만 교체하거나 새 키를 만들지 않습니다. |
+| `unsupported_layout` | 지원하지 않는 버전·경로 또는 다른 파일이 있습니다. 원본을 지우지 말고 실제 DB 루트와 마운트를 확인합니다. OrbStack 가상 머신 내부 경로를 직접 연결한 경우에도 발생할 수 있습니다. 원본 DB·앱 데이터를 보존하고 마운트를 확인하세요. 새 설치에는 Docker 관리 볼륨을 권장합니다. |
+| `storage_override` | 기존 `PGDATA`·`PGROOT` 설정이 새 저장 경로와 다릅니다. 이전 컨테이너 설정을 복사하는 재생성 도구 대신 Compose 파일로 재생성하고, 이전 이미지에서 복사된 환경변수를 제거하세요. 데이터는 옮기지 않습니다. |
+| `verification_failed` | 이미지 빌드 정보 등 검증 실패입니다. 빌드 정보 오류라면 이전 이미지에서 복사된 `APP_GIT_SHA` 등 환경변수를 제거하고 Compose 파일로 재생성하세요. 그 밖에는 로그에 표시된 원인을 확인합니다. |
+| `isolation_unavailable` | Linux 호스트의 커널 5.11 이상과 최신 Docker 엔진을 확인하세요. 시스템 호출 필터가 필요한 동작을 막아도 발생합니다. 지원하는 공유 방식으로 확인되지 않은 호스트 폴더의 접근 제한 실패도 원인이므로 Docker 관리 볼륨을 사용하세요. 해당 환경을 준비할 수 없으면 1.19.11을 유지합니다. |
+| `database_newer` | 더 새 버전의 이미지가 이 DB를 사용했습니다. 데이터는 바꾸지 않았습니다. 더 새 이미지로 시작하거나, 이전 버전으로 돌아가려면 업데이트 전에 만든 DB·앱 백업 쌍을 복원한 뒤 시작합니다. |
+| `log_dir_unsafe` | 시작할 때마다 로그 폴더를 nginx 로그는 root:nginx·0750, 앱 로그는 root·0755로 맞추고 접근 제한을 검사합니다. 감지된 Docker Desktop·OrbStack 공유 로그 폴더는 소유자·그룹 표시가 다를 수 있고 접근 제한 실패를 경고로 표시하지만 요청한 접근 모드(0750/0755)는 유지합니다. 이를 보장할 수 없는 root squash NFS·CIFS·읽기 전용 마운트는 거부하므로 권한을 지원하는 저장소를 사용하세요. |
+
+nginx 설정 디렉터리를 포함해 실행파일·기본 설정·모듈·포함 파일을 관리 요청 처리 사용자(UID/GID 10001)가 소유하거나 쓸 수 있으면 시작을 거부합니다. nginx·adm 그룹과 ACL을 통한 쓰기 권한도 확인합니다. root 소유일 필요는 없으며 오류에 지정된 경로의 소유자·쓰기 권한과 ACL 조건을 맞추세요. 설정 디렉터리에 관리 요청 처리 사용자가 쓸 수 없도록 조정한 뒤 다시 시작합니다. 전체 데이터의 권한을 넓혀 해결하지 않습니다.
+
+</details>
+
+2.0 노드 주소는 같은 노드임을 확인한 뒤 바꿀 수 있습니다. 기존 연결에 확인 정보가 없으면 원래 주소에서 상태를 새로고침하세요. 1.19 노드나 다른 노드로 확인된 주소는 연결을 해제하고 새 토큰으로 다시 연결합니다.
+
+## 8. 문의와 보안 신고
+
+- 설치·업데이트 문제와 버그는 [Issues](https://github.com/xelexis-dev/nginx-web-ui/issues)에 남겨 주세요. 사용 중인 버전, 이미지 아키텍처, Docker 엔진(Docker Engine·Docker Desktop·OrbStack 등)과 저장소 방식(Docker 관리 볼륨·호스트 폴더), 화면이나 로그에 표시된 안내 코드를 함께 적어 주면 확인이 빨라집니다.
+- 보안 취약점은 공개 Issue에 올리지 말고 [비공개 보안 신고](https://github.com/xelexis-dev/nginx-web-ui/security/advisories/new)로 알려 주세요.
+- 로그를 첨부할 때는 비밀번호·토큰·암호화 키·인증서 개인 키·백업 파일을 넣지 말고, 도메인·주소 등 공개하고 싶지 않은 값은 가려 주세요.
+
+## 라이선스와 기여
+
+- nginx-web-ui는 [MIT 라이선스](https://github.com/xelexis-dev/nginx-web-ui/blob/main/LICENSE)로 배포됩니다. 적용 범위는 [NOTICE](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/NOTICE)를, 포함된 외부 구성요소의 고지는 [THIRD_PARTY_NOTICES.md](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/THIRD_PARTY_NOTICES.md)를 확인하세요.
+- 기여 방법은 [CONTRIBUTING.md](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/CONTRIBUTING.md)를, 보안 신고 방법은 [SECURITY.md](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/SECURITY.md)를 확인하세요.

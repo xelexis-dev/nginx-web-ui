@@ -1,0 +1,16 @@
+#!/command/with-contenv /bin/sh
+set -eu
+export PATH=/command:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+. /etc/s6-overlay/scripts/nwui-gate.sh
+nwui_gate_longrun
+cd /app
+web_tz=${TZ:-UTC}
+case "$web_tz" in
+  /*|*..*|*[!A-Za-z0-9_+/-]*) web_tz=UTC ;;
+esac
+[ -f "/usr/share/zoneinfo/$web_tz" ] || web_tz=UTC
+# SSR gets only its local HTTP peer and public display settings.
+exec env -i PATH="$PATH" NODE_ENV=production HOSTNAME=127.0.0.1 TZ="$web_tz" \
+  PORT="${PORT:-3000}" API_URL="http://127.0.0.1:${API_PORT:-3001}" \
+  NWUI_FRAME_ANCESTORS="${NWUI_FRAME_ANCESTORS:-}" \
+  NEXT_TELEMETRY_DISABLED=1 /command/s6-setuidgid node /usr/local/bin/node apps/web/server.js

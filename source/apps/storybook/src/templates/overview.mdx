@@ -1,0 +1,32 @@
+import { Meta, Subtitle, Title } from "@storybook/addon-docs/blocks";
+
+<Meta title="Templates/소개" id="templates-introduction" />
+
+<Title>화면 틀</Title>
+
+<Subtitle>모든 화면이 따르는 일곱 가지 페이지 구성. `@repo/ui` 공통 부품과 실제 표시 컴포넌트로 만들었고 값은 예시다.</Subtitle>
+
+## 페이지의 흐름
+
+- 페이지는 한 덩어리(`--gap-section` 16px(좁은 화면 12px) 간격의 세로 줄)다: 머리말(`PageHeader`), 알림(`Banner`, 있을 때만), 카드와 표.
+- 카드 여러 장이 나란히 놓이거나 겹쳐 쌓이는 곳은 `--gap-section`(16px, 좁은 화면 12px)이다.
+- 카드 안쪽은 `--pad-panel`(20px, 좁은 화면 16px), 카드 안의 블록 사이는 12px, 목록 항목과 동작 줄의 버튼 사이는 8px이다.
+- 자세한 값과 정해진 예외는 [Foundations/Spacing](?path=/docs/foundations-spacing--docs)에 있다.
+
+## 일곱 가지 틀
+
+- [개요](?path=/story/templates-overview--default): 수치 요약 → 본문과 주의 항목 → 최근 활동과 연결된 자원. 좁은 화면에서 한 열로 접힌다.
+
+- [목록](?path=/story/templates-list--default): 머리말(만들기 동작) → 가장자리까지 닿는 카드 하나(거르기·검색·개수 줄, 그 아래 표). 행이 없으면 표 자리에 `EmptyState`.
+- [상세](?path=/story/templates-detail--default): 머리말(돌아가기 링크, 수정·삭제) → 알림 → 넓은 화면에서 본문(설정 `Facts`, 관련 행 표)과 옆 칸(생성되는 설정 `CodePane`).
+- [폼](?path=/story/templates-form--default): 머리말(돌아가기) → 저장 실패 알림 → 제목 있는 섹션(`FormSection columns={2}`, 긴 칸은 `wide`) → 동작 줄(저장, 취소). 만들기와 수정은 별도 페이지다.
+- [설정](?path=/story/templates-settings--default): 머리말 → 저장 알림 → 묶음마다 카드 하나. 고르는 설정은 이름·설명 왼쪽, 컨트롤 오른쪽(`SegmentedControl`, `Switch`), 값을 넣는 설정은 폼 틀의 두 열 `FormSection`을 쓴다. 저장은 페이지에 하나.
+
+- [적용 검토](?path=/story/templates-review--default): 적용 대상 이름 → 변경 diff → 검사 순서 → 대상 이름이 담긴 확인 버튼. 보기 전용과 연결할 수 없는 노드에는 적용 버튼이 없다.
+- [인증](?path=/story/templates-auth--default): 소개와 폼을 나란히 두며, 960px 이하에서는 소개를 접고 테마 전환을 유지한다.
+
+## 부품을 고르는 기준
+
+- 글자 입력 `TextInput`·`TextArea`, 고르기 `Select`, 몇 개 중 하나 `SegmentedControl`, 켜기/끄기 `Switch`, 파일 `FileInput`, 이름표·도움말·오류 `Field`.
+- 표 `Table`(좁은 화면에서 뜻을 알 수 없는 값은 `Td label`, 긴 주소는 `Td wrap`), 이름/값 목록 `Facts`, 수치 줄 `KpiRow`, 상태 `StatusBadge`.
+- 알림 `Banner`, 빈 상태 `EmptyState`, 생성되는 설정 `CodePane`, 링크를 버튼 모양으로 `buttonClassName`.

@@ -1,0 +1,374 @@
+/* FormSection, Card and Field. Tokens only. */
+
+.card,
+.formCard {
+  min-width: 0;
+  margin: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-3);
+  background: var(--bg-canvas);
+  scroll-margin-top: calc(var(--size-topbar) + var(--sp-6));
+}
+.cardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--pad-card-head) var(--pad-card);
+  border-bottom: 1px solid var(--line);
+}
+.cardHead :is(h2, h3) {
+  margin: 0;
+  color: var(--text-1);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  line-height: var(--lh-lg);
+}
+.cardHead:last-child {
+  border-bottom: 0;
+}
+.cardFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-4);
+  padding: var(--pad-card-foot) var(--pad-card);
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  color: var(--text-3);
+}
+.cardHead :is(h2, h3):focus-visible {
+  outline: var(--bw-2) solid var(--focus);
+  outline-offset: var(--sp-0-5);
+  border-radius: var(--r-1);
+}
+.sectionTitle {
+  display: grid;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.sectionTitle > p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+}
+.titleRow,
+.labelRow,
+.cardActions,
+.blockActions,
+.formActions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+.titleRow {
+  flex-wrap: wrap;
+}
+.cardBody {
+  padding: var(--pad-card);
+}
+.formCard {
+  padding: var(--pad-card);
+}
+.cardBody,
+.columns2,
+.sectionBody[data-columns="2"],
+.groupBody[data-columns="2"] {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--gap-field);
+  align-items: start;
+}
+.cardBody:has(> .columns1, > .columns2) {
+  row-gap: var(--gap-card-group);
+}
+.cardBody > * {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+.cardBody > .field,
+.cardBody > .group,
+.columns2 > *,
+.sectionBody[data-columns="2"] > *,
+.groupBody[data-columns="2"] > * {
+  grid-column: span 6;
+  min-width: 0;
+}
+:is(.cardBody, .columns2, .sectionBody, .groupBody) > [data-span="3"] {
+  grid-column: span 3;
+}
+:is(.cardBody, .columns2, .sectionBody, .groupBody) > [data-span="4"] {
+  grid-column: span 4;
+}
+:is(.cardBody, .columns2, .sectionBody, .groupBody) > [data-span="6"] {
+  grid-column: span 6;
+}
+:is(.cardBody, .columns2, .sectionBody, .groupBody) > [data-span="8"] {
+  grid-column: span 8;
+}
+:is(.cardBody, .columns2, .sectionBody, .groupBody)
+  > :is([data-wide], [data-span="12"]) {
+  grid-column: 1 / -1;
+}
+.sectionBody {
+  min-width: 0;
+}
+.columns1,
+.formCard,
+.groupBody[data-columns="1"] {
+  display: grid;
+  align-content: start;
+  gap: var(--gap-field);
+  min-width: 0;
+}
+.formCard.columns2 {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.field,
+.group {
+  display: grid;
+  align-content: start;
+  gap: var(--gap-field-inner);
+  min-width: 0;
+}
+.label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  color: var(--text-1);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  line-height: var(--lh-sm);
+  overflow-wrap: anywhere;
+}
+.group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.group > legend {
+  width: 100%;
+  margin-bottom: var(--gap-field-inner);
+  padding: 0;
+}
+.optional,
+.hint {
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  line-height: var(--lh-xs);
+}
+.hint {
+  margin: 0;
+}
+.hint > p {
+  margin: 0;
+}
+.hint > p + p {
+  margin-top: var(--sp-2);
+}
+.error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-1);
+  margin: 0;
+  color: var(--danger-text);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+}
+.error svg {
+  flex: none;
+  margin-top: 1px;
+}
+.field[data-layout="inline"] {
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--gap-field);
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--line);
+}
+.field[data-layout="inline"] > :is(.label, .labelRow, .hint, .error) {
+  grid-column: 1;
+}
+.field[data-layout="inline"] > :is(.label, .labelRow) {
+  grid-row: 1;
+}
+.inlineControl {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  align-self: center;
+  min-width: 0;
+}
+.labelRow > .label {
+  min-width: 0;
+}
+.formStack {
+  display: grid;
+  gap: var(--gap-card);
+  min-width: 0;
+}
+.blocks {
+  display: grid;
+  gap: var(--gap-block);
+  min-width: 0;
+}
+.block {
+  min-width: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-2);
+}
+.blockHead {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  min-height: var(--size-ctl-lg);
+  padding: var(--sp-1) var(--pad-block);
+  border-radius: calc(var(--r-2) - var(--bw)) calc(var(--r-2) - var(--bw)) 0 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-sunken);
+}
+.blockNumber {
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.blockTitle {
+  margin: 0;
+  min-width: 0;
+  color: var(--text-1);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: var(--lh-md);
+  overflow-wrap: anywhere;
+}
+.blockSummary {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.blockActions {
+  margin-left: auto;
+  flex: none;
+}
+.blockBody {
+  display: grid;
+  gap: var(--gap-field);
+  padding: var(--pad-block);
+  min-width: 0;
+}
+.cardBody[hidden],
+.blockBody[hidden] {
+  display: none;
+}
+.block:has(> .blockBody[hidden]) > .blockHead,
+.card:has(> .cardBody[hidden]) > .cardHead {
+  border-bottom: 0;
+}
+.card[data-error],
+.block[data-error],
+.card[data-error] > .cardHead {
+  border-color: var(--danger-line);
+}
+.block[data-error] > .blockHead {
+  background: var(--danger-bg);
+  border-color: var(--danger-line);
+}
+.block[data-error] .blockNumber {
+  color: var(--danger-text);
+}
+.errorTag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 var(--sp-1-5);
+  border: 1px solid var(--danger-line);
+  border-radius: var(--r-1);
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+}
+.skeleton {
+  height: var(--size-textarea);
+  border-radius: var(--r-1);
+  background: var(--bg-skeleton);
+}
+.formBar {
+  box-sizing: border-box;
+  position: sticky;
+  bottom: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  min-height: var(--size-formbar);
+  padding: var(--sp-3) 0;
+  border-top: 1px solid var(--line-strong);
+  background: var(--bg-canvas);
+}
+.formNote {
+  min-width: 0;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.formActions {
+  margin-left: auto;
+}
+@media (max-width: 768px) {
+  .cardHead {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .cardBody,
+  .columns2,
+  .formCard.columns2,
+  .sectionBody[data-columns="2"],
+  .groupBody[data-columns="2"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :is(.cardBody, .columns2, .sectionBody, .groupBody) > *,
+  .sectionBody[data-columns="2"] > *,
+  .groupBody[data-columns="2"] > *,
+  :is(.cardBody, .columns2, .sectionBody, .groupBody)
+    > :is(.field, .group, [data-span], [data-wide]) {
+    grid-column: 1 / -1;
+  }
+  .blockSummary {
+    flex-basis: 100%;
+    order: 1;
+  }
+  .formBar {
+    flex-wrap: wrap;
+  }
+  .formNote {
+    flex-basis: 100%;
+  }
+  .formActions {
+    width: 100%;
+  }
+  .formActions > * {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1023px) {
+  :is(.cardBody, .columns2, .sectionBody, .groupBody)
+    > :is([data-span="3"], [data-span="4"]) {
+    grid-column: span 6;
+  }
+  :is(.cardBody, .columns2, .sectionBody, .groupBody) > [data-span="8"] {
+    grid-column: 1 / -1;
+  }
+}

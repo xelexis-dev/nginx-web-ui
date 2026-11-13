@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="286 84 432 432" role="img" aria-label="nginx-web-ui">
+  <defs><linearGradient id="logo" x1="286" y1="0" x2="1713" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#00a33a"/><stop offset="0.48" stop-color="#00896c"/><stop offset="1" stop-color="#00539a"/></linearGradient></defs>
+  <path fill="url(#logo)" fill-rule="evenodd" d="M426 326 366 383 317 334V475H451L411 431 468 370Z M316 163C316 136 333 117 357 117C373 117 386 122 397 128L618 375V314L653 276 687 314V434C687 458 669 477 647 477C638 477 630 477 624 476L604 466 385 220V284L357 314 316 265Z M688 117H546L588 161 535 216 578 263 639 204 688 253Z" />
+</svg>

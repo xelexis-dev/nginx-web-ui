@@ -1,0 +1,6 @@
+# 다른 OS 의 작업자와 공유되므로 텍스트는 LF 로 고정한다.
+# CRLF 혼입에 따른 플랫폼별 파일 내용 차이를 막는다.
+* text=auto eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.mjs text eol=lf

@@ -1,0 +1,27 @@
+/* 「연결된 게이트웨이」 표. Light/Dark 는 전역 토큰(--text-1/--text-2/--line-strong/--bg-canvas)으로만
+   표현한다 — 색을 직접 박으면 다크에서 깨진다. */
+
+/* 좁은 화면에서 표가 페이지를 가로로 밀지 않도록 자기 안에서 스크롤한다. */
+
+.revoked {
+  color: var(--text-2);
+}
+
+/* Table owns the border, scrolling and narrow reflow. */
+
+.notice {
+  padding: var(--sp-4) var(--sp-8);
+}
+
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+@media (max-width: 768px) {
+  .statusCell {
+    flex-basis: 100%;
+  }
+}

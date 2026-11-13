@@ -1,0 +1,173 @@
+.screen {
+  min-height: 100dvh;
+  padding-inline: var(--page-x);
+  box-sizing: border-box;
+  background: var(--bg-canvas);
+  color: var(--text-1);
+  font-family: var(--font);
+  font-size: var(--fs-md);
+  line-height: var(--lh-md);
+}
+.frame {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: 100%;
+  max-width: var(--size-content);
+  min-height: 100dvh;
+  margin-inline: auto;
+}
+.panelUtility {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-4);
+  min-height: var(--size-topbar);
+}
+.panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding-block: var(--sp-12);
+}
+.authContent {
+  display: grid;
+  gap: var(--sp-6);
+  width: 100%;
+  max-width: var(--size-auth);
+  min-width: 0;
+}
+.heading { display: grid; gap: var(--sp-1); }
+.heading h1 {
+  margin: 0;
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-2xl);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-tight);
+  overflow-wrap: anywhere;
+}
+.heading p {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--text-2);
+  word-break: keep-all;
+}
+.panelFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  min-height: var(--size-topbar);
+  border-top: var(--bw) solid var(--line);
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+}
+.panelFooter p { margin: 0; }
+.panelFooter > span { font-variant-numeric: tabular-nums; }
+.stack { display: grid; gap: var(--sp-6); min-width: 0; }
+.form { display: grid; gap: var(--gap-field); min-width: 0; }
+.form input { min-height: var(--size-ctl-lg); border-radius: var(--r-2); }
+.form label { color: var(--text-2); }
+.inputWithIcon { position: relative; display: block; }
+.inputWithIcon input { width: 100%; padding-left: var(--sp-10); }
+.assetIcon {
+  display: inline-block;
+  width: var(--size-icon);
+  height: var(--size-icon);
+  flex-shrink: 0;
+  background: currentColor;
+  mask: var(--auth-icon) center / contain no-repeat;
+}
+.inputWithIcon > .assetIcon {
+  position: absolute;
+  top: calc((var(--size-ctl-lg) - var(--size-icon)) / 2);
+  left: var(--sp-3);
+  pointer-events: none;
+  color: var(--text-2);
+}
+.userIcon { --auth-icon: url("./assets/user.svg"); }
+.lockIcon { --auth-icon: url("./assets/lock-keyhole.svg"); }
+.loginIcon { --auth-icon: url("./assets/log-in.svg"); }
+.keyIcon { --auth-icon: url("./assets/key-round.svg"); }
+.error {
+  margin: 0;
+  color: var(--danger-text);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-xs);
+}
+.submit, .providerButton, .fullWidth, .passkeyButton {
+  width: 100%;
+  min-height: var(--size-ctl-lg);
+}
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+}
+.divider::before, .divider::after { content: ""; flex: 1; height: var(--bw); background: var(--line-strong); }
+.providers { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-2); }
+.altMethod { margin: 0; text-align: center; font-size: var(--fs-sm); line-height: var(--lh-sm); }
+.passkey { display: grid; gap: var(--sp-2); }
+.passkeyStatus {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  min-height: var(--lh-xs);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  color: var(--text-2);
+  text-align: center;
+}
+.passkeyStatus.error { color: var(--danger-text); }
+.passkeyStatus button { border: 0; padding: 0; background: transparent; color: inherit; font: inherit; text-decoration: underline; cursor: pointer; }
+.passkeyStatus button:focus-visible { outline: var(--bw-2) solid var(--focus); outline-offset: var(--sp-0-5); }
+@media (max-width: 768px) {
+  .panelFooter { flex-direction: column; align-items: flex-start; justify-content: center; gap: var(--sp-1); padding-block: var(--sp-3); }
+}
+
+/* One real input owns selection, validation and submission; the cells only display its value. */
+.code { position: relative; display: block; width: 100%; max-width: calc(6 * var(--size-otp) + 5 * var(--sp-2)); }
+.form .code { max-width: none; }
+.code .codeInput {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: var(--size-otp);
+  min-height: var(--size-otp);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  opacity: 0;
+  box-shadow: none;
+  outline: 0;
+}
+.codeCells { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--sp-2); pointer-events: none; }
+.codeCell {
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  height: var(--size-otp);
+  border: var(--bw) solid var(--border-control);
+  border-radius: var(--r-2);
+  background: var(--bg-input);
+  color: var(--text-1);
+  font-size: var(--fs-xl);
+  line-height: var(--lh-xl);
+  font-weight: var(--fw-medium);
+  font-variant-numeric: tabular-nums;
+}
+.codeCell[data-invalid="true"] { border-color: var(--danger); }
+.codeCell[data-focus="true"] { border-color: var(--focus); box-shadow: 0 0 0 var(--bw) var(--focus); }
+
+.codeInput:disabled + .codeCells .codeCell { background: var(--bg-disabled); border-color: var(--line); color: var(--text-disabled); }

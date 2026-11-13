@@ -1,0 +1,8 @@
+.root { display: inline-flex; flex: none; vertical-align: middle; }
+.trigger { position: relative; display: inline-grid; place-items: center; flex: none; width: var(--size-ctl-xs); height: var(--size-ctl-xs); padding: 0; border: 0; border-radius: var(--r-1); background: transparent; color: var(--text-3); cursor: pointer; }
+.trigger:hover { color: var(--text-1); }
+.trigger[aria-expanded="true"] { color: var(--accent-text); }
+.trigger:focus-visible { outline: var(--bw-2) solid var(--focus); outline-offset: var(--sp-0-5); }
+.bubble { position: fixed; z-index: var(--z-pop); box-sizing: border-box; width: min(var(--size-toast), calc(100vw - 2 * var(--sp-4))); max-height: calc(100vh - 2 * var(--sp-4)); overflow-y: auto; padding: var(--sp-1) var(--sp-2); border-radius: var(--r-1); background: var(--bg-inverse); box-shadow: var(--shadow-1); color: var(--text-inverse); font-family: var(--font); font-size: var(--fs-xs); font-weight: var(--fw-regular); line-height: var(--lh-xs); text-align: left; overflow-wrap: anywhere; }
+.bubble p { margin: 0; }
+.bubble p + p { margin-top: var(--sp-2); }

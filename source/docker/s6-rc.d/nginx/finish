@@ -1,0 +1,14 @@
+#!/command/with-contenv /bin/sh
+set -eu
+record=/run/nginx-web-ui/nginx-process-group
+[ -f "$record" ] || exit 0
+group=$(cat "$record")
+case "$group" in ''|*[!0-9]*) exit 1 ;; esac
+[ "$group" -gt 1 ] || exit 1
+# A normal exit already drained workers; never shorten graceful shutdown.
+if [ "${1:-0}" != 0 ]; then
+    kill -s TERM -- "-$group" 2>/dev/null || true
+    sleep 1
+    kill -s KILL -- "-$group" 2>/dev/null || true
+fi
+rm -f -- "$record"

@@ -1,0 +1,13 @@
+# Local development overrides — admin UI on :20080 and published stream test
+# ports for local browser and TCP/UDP checks.
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+# `!override` replaces (not merges) the base port list; needs compose v2.24+.
+services:
+  nginx-web-ui:
+    ports: !override
+      - "80:80"
+      - "443:443"
+      - "20080:8080" # admin UI (dev)
+      - "20090:20090" # stream test (tcp)
+      - "20091:20091" # stream test (tcp)
+      - "20092:20092/udp" # stream test (udp)

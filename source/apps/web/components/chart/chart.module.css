@@ -1,0 +1,139 @@
+/* 차트 공통 스타일. 색은 전부 토큰 참조다 — JS 로 색을 읽어 그리면 테마를
+   토글했을 때 차트만 옛 색으로 남는다(applyTheme 은 속성만 바꾸고 이벤트를
+   쏘지 않는다). SVG 도 CSS 변수를 그대로 쓸 수 있으므로 그럴 이유가 없다. */
+
+.wrap {
+  position: relative;
+  width: 100%;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-4);
+  margin: 0 0 var(--sp-3);
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  /* 계열색은 표식에만 쓴다. 글자는 텍스트 토큰을 입는다. */
+  color: var(--text-2);
+}
+
+/* 계열 표식: 선과 같은 색·같은 무늬의 짧은 선(SeriesKey). */
+.key {
+  flex: none;
+}
+
+.key line {
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.plot {
+  display: block;
+  width: 100%;
+  cursor: crosshair;
+  touch-action: pan-y;
+}
+
+.grid {
+  stroke: var(--chart-grid);
+  stroke-width: 1;
+}
+
+.axis {
+  stroke: var(--line-strong);
+  stroke-width: 1;
+}
+
+.tick {
+  fill: var(--text-3);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.area {
+  stroke: none;
+}
+
+.crosshair {
+  stroke: var(--text-2);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  pointer-events: none;
+}
+
+.dot {
+  /* 겹치는 표식은 배경색 링으로 떼어놓는다. */
+  stroke: var(--bg-canvas);
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: var(--z-pop);
+  min-width: 140px;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-2);
+  background: var(--bg-raised);
+  box-shadow: var(--shadow-1);
+  font-size: var(--fs-xs);
+  color: var(--text-1);
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 12px));
+  white-space: nowrap;
+}
+
+.tooltipTime {
+  color: var(--text-2);
+  margin-bottom: var(--sp-1);
+  font-variant-numeric: tabular-nums;
+}
+
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  justify-content: space-between;
+}
+
+.tooltipName {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.tooltipValue {
+  font-variant-numeric: tabular-nums;
+  margin-left: 0;
+}
+
+.empty {
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  color: var(--text-2);
+  font-size: var(--fs-md);
+  text-align: left;
+  padding: var(--sp-6);
+}

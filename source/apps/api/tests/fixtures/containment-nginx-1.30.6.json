@@ -1,0 +1,123 @@
+{
+  "root": "/tmp/m1-real",
+  "image": "sha256:6a725ba8513931cf171d4badb9fb3da7bd384975bd93f8d1c5d9cfda30a72fff",
+  "cases": [
+    {
+      "name": "server-directive",
+      "args": [
+        "nginx",
+        "-p",
+        "/tmp/m1-real/",
+        "-c",
+        "/tmp/m1-real/nginx.conf",
+        "-t"
+      ],
+      "code": 1,
+      "stdout": "",
+      "stderr": "nginx: [emerg] unknown directive \"BAD\" in /tmp/m1-real/conf/server-bad.conf:1\nnginx: configuration file /tmp/m1-real/nginx.conf test failed\n",
+      "files": {
+        "conf/server-bad.conf": "server { listen 127.0.0.1:19080; BAD; }\n"
+      }
+    },
+    {
+      "name": "upstream-host",
+      "args": [
+        "nginx",
+        "-p",
+        "/tmp/m1-real/",
+        "-c",
+        "/tmp/m1-real/nginx.conf",
+        "-t"
+      ],
+      "code": 1,
+      "stdout": "",
+      "stderr": "nginx: [emerg] host not found in upstream \"invalid!host.invalid\" in /tmp/m1-real/conf/upstreams.conf:2\nnginx: configuration file /tmp/m1-real/nginx.conf test failed\n",
+      "files": {
+        "conf/upstreams.conf": "upstream broken_group {\n server invalid!host.invalid;\n}\n"
+      }
+    },
+    {
+      "name": "duplicate-upstream",
+      "args": [
+        "nginx",
+        "-p",
+        "/tmp/m1-real/",
+        "-c",
+        "/tmp/m1-real/nginx.conf",
+        "-t"
+      ],
+      "code": 1,
+      "stdout": "",
+      "stderr": "nginx: [emerg] duplicate upstream \"duplicate\" in /tmp/m1-real/conf/upstreams.conf:2\nnginx: configuration file /tmp/m1-real/nginx.conf test failed\n",
+      "files": {
+        "conf/upstreams.conf": "upstream duplicate { server 192.0.2.1:80; }\nupstream duplicate { server 192.0.2.2:80; }\n"
+      }
+    },
+    {
+      "name": "stream-value",
+      "args": [
+        "nginx",
+        "-p",
+        "/tmp/m1-real/",
+        "-c",
+        "/tmp/m1-real/nginx.conf",
+        "-t"
+      ],
+      "code": 1,
+      "stdout": "",
+      "stderr": "nginx: [emerg] \"proxy_timeout\" directive invalid value in /tmp/m1-real/stream/stream-bad.conf:1\nnginx: configuration file /tmp/m1-real/nginx.conf test failed\n",
+      "files": {
+        "stream/stream-bad.conf": "server { listen 127.0.0.1:19081; proxy_pass 192.0.2.1:80; proxy_timeout invalid; }\n"
+      }
+    },
+    {
+      "name": "cert-load",
+      "args": [
+        "nginx",
+        "-p",
+        "/tmp/m1-real/",
+        "-c",
+        "/tmp/m1-real/nginx.conf",
+        "-t"
+      ],
+      "code": 1,
+      "stdout": "",
+      "stderr": "nginx: [emerg] cannot load certificate \"/tmp/m1-real/certs/51f19cb6-336c-4fb0-a3cb-5cfe55ec98f0/fullchain.pem\": BIO_new_file() failed (SSL: error:80000002:system library::No such file or directory:calling fopen(/tmp/m1-real/certs/51f19cb6-336c-4fb0-a3cb-5cfe55ec98f0/fullchain.pem, r) error:10000080:BIO routines::no such file)\nnginx: configuration file /tmp/m1-real/nginx.conf test failed\n",
+      "files": {
+        "conf/server-bad.conf": "server { listen 127.0.0.1:19080 ssl; ssl_certificate /tmp/m1-real/certs/51f19cb6-336c-4fb0-a3cb-5cfe55ec98f0/fullchain.pem; ssl_certificate_key /tmp/m1-real/certs/51f19cb6-336c-4fb0-a3cb-5cfe55ec98f0/privkey.pem; }\n"
+      }
+    },
+    {
+      "name": "key-mismatch",
+      "args": [
+        "nginx",
+        "-p",
+        "/tmp/m1-real/",
+        "-c",
+        "/tmp/m1-real/nginx.conf",
+        "-t"
+      ],
+      "code": 1,
+      "stdout": "",
+      "stderr": "nginx: [emerg] SSL_CTX_use_PrivateKey(\"/tmp/m1-real/certs/51f19cb6-336c-4fb0-a3cb-5cfe55ec98f0/privkey.pem\") failed (SSL: error:05800074:x509 certificate routines::key values mismatch)\nnginx: configuration file /tmp/m1-real/nginx.conf test failed\n",
+      "files": {
+        "conf/server-bad.conf": "server { listen 127.0.0.1:19080 ssl; ssl_certificate /tmp/m1-real/certs/51f19cb6-336c-4fb0-a3cb-5cfe55ec98f0/fullchain.pem; ssl_certificate_key /tmp/m1-real/certs/51f19cb6-336c-4fb0-a3cb-5cfe55ec98f0/privkey.pem; }\n"
+      }
+    },
+    {
+      "name": "main-directive",
+      "args": [
+        "nginx",
+        "-p",
+        "/tmp/m1-real/",
+        "-c",
+        "/tmp/m1-real/nginx.conf",
+        "-t"
+      ],
+      "code": 1,
+      "stdout": "",
+      "stderr": "nginx: [emerg] unknown directive \"BAD\" in /tmp/m1-real/nginx.conf:1\nnginx: configuration file /tmp/m1-real/nginx.conf test failed\n",
+      "files": {}
+    }
+  ]
+}

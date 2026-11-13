@@ -1,0 +1,15 @@
+{
+  "extends": "@repo/config-typescript/base.json",
+  "compilerOptions": {
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "jsx": "react-jsx",
+    // Product stories import the real apps/web components through the web app's own `@/` alias.
+    "baseUrl": ".",
+    "paths": { "@/*": ["../web/*"] },
+    "noEmit": true,
+    "declaration": false
+  },
+  // @repo/ui's sources import CSS modules; its declaration makes them resolve here too.
+  "include": [".storybook/**/*.ts", ".storybook/**/*.tsx", "src/**/*.ts", "src/**/*.tsx", "../../packages/ui/src/css-modules.d.ts"],
+  "exclude": ["node_modules", "storybook-static"]
+}

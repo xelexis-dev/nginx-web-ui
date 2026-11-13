@@ -1,0 +1,101 @@
+/* Design tokens live in @repo/ui/tokens.css (imported first in layout.tsx); this file only applies
+   them. Everything here is in the `base` cascade layer, so any unlayered style — every CSS module in
+   the app and in @repo/ui — wins over it whatever the load order or specificity. These rules only
+   fill in what a component leaves unset. */
+@layer base {
+  html,
+  body {
+    margin: 0;
+    background: var(--bg-canvas);
+    color: var(--text-1);
+    font-family: var(--font);
+  }
+
+  body {
+    font-size: var(--fs-md);
+    line-height: var(--lh-md);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Form controls take the page's type instead of the browser's small system font. */
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* Native checks share the same accent and browser theme in every form. */
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: var(--accent);
+    color-scheme: var(--color-scheme);
+  }
+
+  input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    flex: none;
+  }
+
+  input[type="radio"]:disabled {
+    background: var(--bg-disabled);
+    color: var(--text-disabled);
+    cursor: not-allowed;
+  }
+
+  /* One visible ring for anything a keyboard reaches that no component styled itself. */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  summary:focus-visible,
+  [tabindex]:focus-visible {
+    outline: var(--bw-2) solid var(--focus);
+    outline-offset: var(--sp-0-5);
+  }
+
+  /* Raw data reads as raw data (DESIGN.md typography); numbers in tables line up. */
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font);
+  }
+
+  table {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Headings: a tighter line than body text (DESIGN.md display 1.2, title 1.3). Many page titles
+     set only their size inline, so this is where their line height comes from. */
+  h1 {
+    line-height: var(--lh-2xl);
+  }
+
+  h2,
+  h3,
+  h4 {
+    line-height: var(--lh-lg);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-2);
+    opacity: 1;
+  }
+
+  /* The drawer slide and hover transitions stop for people who ask for less motion. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

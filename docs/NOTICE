@@ -1,0 +1,30 @@
+nginx-web-ui
+Copyright (c) 2026 Xelexis
+
+The MIT grant in LICENSE covers the project's code and documentation. It does
+not relicense third-party components, fonts, or brand artwork.
+
+Brand artwork excluded from MIT:
+- packages/ui/src/brand/nginx-web-ui-clean-logo.svg
+- packages/ui/src/brand/nginx-web-ui-logo-light.svg
+- packages/ui/src/brand/nginx-web-ui-logo-dark.svg
+- packages/ui/src/brand/nginx-web-ui-logo-light.png
+- packages/ui/src/brand/nginx-web-ui-logo-dark.png
+- apps/web/app/icon.svg (favicon)
+- copies and derivatives of these logos, including README and Release PNGs
+
+This brand artwork is owned by Xelexis. You may redistribute it only
+unmodified, as part of the official source and images of this project.
+Modified versions and derived products must replace it with their own artwork.
+
+Interface icons are taken from Lucide (ISC, with some icons derived from
+Feather under MIT) and Tabler Icons (MIT), with their line weight adjusted.
+Their licences are in apps/web/public/licenses/lucide-LICENSE.txt and
+apps/web/public/licenses/tabler-icons-LICENSE.txt.
+
+Pretendard retains its upstream copyright and SIL Open Font License 1.1, in
+apps/web/public/licenses/pretendard-OFL.txt. Do not replace upstream attribution.
+
+THIRD_PARTY_NOTICES.md contains the locked dependency and image inventory's
+licence and copyright texts. Those components retain their respective terms;
+the Docker image as a whole is not licensed solely under MIT.

@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NWUI matching DB and app volume pair record v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "pairId",
+    "mode",
+    "ready",
+    "major",
+    "architecture",
+    "systemIdentifier",
+    "encryptionKeyRequired",
+    "freshStep"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "pairId": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+    },
+    "mode": {
+      "enum": [
+        "migration",
+        "fresh"
+      ]
+    },
+    "ready": {
+      "type": "boolean"
+    },
+    "major": {
+      "const": 17
+    },
+    "architecture": {
+      "enum": [
+        "arm64",
+        "amd64"
+      ]
+    },
+    "systemIdentifier": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[1-9][0-9]{0,19}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "encryptionKeyRequired": {
+      "type": "boolean"
+    },
+    "freshStep": {
+      "anyOf": [
+        {
+          "enum": [
+            "secrets",
+            "initdb",
+            "role",
+            "database",
+            "verify"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "ready": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "systemIdentifier": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$"
+          },
+          "freshStep": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "migration"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "freshStep": {
+            "type": "null"
+          },
+          "systemIdentifier": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "fresh"
+          },
+          "ready": {
+            "const": false
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "freshStep": {
+            "enum": [
+              "secrets",
+              "initdb",
+              "role",
+              "database",
+              "verify"
+            ]
+          },
+          "encryptionKeyRequired": {
+            "const": false
+          }
+        }
+      }
+    }
+  ]
+}

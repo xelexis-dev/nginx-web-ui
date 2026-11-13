@@ -1,0 +1,20 @@
+#!/command/with-contenv /bin/sh
+. /etc/s6-overlay/scripts/nwui-gate.sh
+nwui_gate_longrun
+# Publish startup identity before the guard releases its locks.
+( umask 077; mkdir -p /run/nginx-web-ui && printf '%s\n' "$$" > /run/nginx-web-ui/nginx-process-group ) || exit 1
+# s6 restarts nginx whenever it exits, not only at container start. Re-run the
+# managed-file guard first, as 1.17.2 did here: a saved upstream that no longer
+# resolves must not keep nginx and the admin UI (:8080) down. The guard is best
+# effort for validation warnings; file ownership must be exclusive before startup.
+/usr/local/bin/nwui-api guard
+code=$?
+if [ "$code" = 75 ]; then
+    exit 75
+fi
+if [ "$code" != 0 ]; then
+    echo "[nginx-guard] guard did not complete; starting nginx with the current files" >&2
+fi
+# s6 starts run as a session leader; workers inherit this process group.
+umask 077
+exec nginx -g 'daemon off;'

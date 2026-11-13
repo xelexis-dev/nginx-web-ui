@@ -1,0 +1,42 @@
+/* Admin 2FA policy page. Tokens only (var(--*)), Light/Dark. */
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-6);
+  flex-wrap: wrap;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.row:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* 설명이 길어도 토글이 아래로 밀리지 않게, 텍스트 쪽이 줄어들 수 있어야 한다.
+   min-width:0 이 없으면 flex 자식은 콘텐츠 폭 아래로 줄지 않는다. */
+.rowText {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+.rowTitle {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-1);
+}
+
+.rowNote {
+  margin: var(--sp-1) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+.actions {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  max-width: 100%;
+}

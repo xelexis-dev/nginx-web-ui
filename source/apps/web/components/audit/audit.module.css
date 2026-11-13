@@ -1,0 +1,69 @@
+/* Audit log viewer (F6): data-table + filter toolbar + pagination on the
+   list, definition-list + pretty-printed before/after JSON on the detail
+   page. Lives in components/audit/ (not app/(app)/audit/) because both the
+   local screen and the node-context screen (app/(node)/nodes/[id]/audit/)
+   render audit-list.tsx / audit-detail.tsx / action-filter.tsx, which import
+   this module. Mirrors reverse-proxy.module.css / stream.module.css so all
+   data-table + detail pages share one visual language. Tokens only
+   (var(--*)) — no hardcoded hex, per DESIGN.md. */
+
+/* Stretched link: the entire row is clickable, not just the "보기" cell.
+   The overlay is transparent (captures clicks only) so cell text stays
+   visible; `tr { position: relative }` below is the positioning context. */
+
+/* Two term/value pairs per row so metadata fills the page width instead of a
+   single narrow column; collapses to one pair per row on small screens. */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-top: 0;
+  margin-bottom: 0;
+  flex-wrap: wrap;
+}
+
+/* Width container for the action-filter <Select> in the toolbar. */
+.filter {
+  width: var(--size-filter);
+  max-width: 100%;
+}
+
+.totalLabel {
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.emptyCell {
+  text-align: start;
+  color: var(--text-2);
+  font-size: var(--fs-md);
+  padding: var(--sp-6) var(--sp-4);
+  white-space: normal;
+}
+
+@media (min-width: 769px) {
+  .detailCell {
+    width: 1%;
+    white-space: nowrap;
+  }
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-4);
+  margin-top: var(--sp-4);
+}
+
+.pageStatus {
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+/* Table owns the border, scrolling and narrow reflow. */

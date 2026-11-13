@@ -1,0 +1,4 @@
+#!/command/with-contenv /bin/sh
+# Root opens the trusted handles before the binary drops all API privileges.
+set -eu
+exec /usr/local/bin/nwui-api api-pre-exec

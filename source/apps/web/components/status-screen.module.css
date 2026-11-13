@@ -1,0 +1,45 @@
+/* Shared by standalone and in-shell error screens. */
+.standalone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: var(--sp-6) var(--page-x);
+  background: var(--bg-canvas);
+  box-sizing: border-box;
+}
+.card {
+  display: grid;
+  gap: var(--sp-4);
+  width: 100%;
+  max-width: var(--size-content);
+  box-sizing: border-box;
+  padding-top: var(--pad-section-top);
+  border-top: var(--bw) solid var(--line-strong);
+  color: var(--text-1);
+  background: var(--bg-canvas);
+}
+.protocol { font-size: var(--fs-xs); line-height: var(--lh-xs); font-weight: var(--fw-medium); color: var(--text-3); }
+.status {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-row-icon);
+  margin: 0;
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-2xl);
+  font-weight: var(--fw-semibold);
+  color: var(--text-2);
+  letter-spacing: var(--ls-tight);
+  font-variant-numeric: tabular-nums;
+}
+.status::before { content: ""; width: var(--size-dot); height: var(--size-dot); flex: none; box-sizing: border-box; border: var(--bw) solid var(--neutral-dot); border-radius: var(--r-full); }
+.statusError { color: var(--danger-text); }
+.statusError::before { border: 0; border-radius: var(--r-0); background: var(--danger); }
+.rule { display: none; }
+.title { margin: 0; font-size: var(--fs-2xl); line-height: var(--lh-2xl); font-weight: var(--fw-semibold); letter-spacing: var(--ls-tight); overflow-wrap: anywhere; }
+.description { margin: 0; font-size: var(--fs-md); line-height: var(--lh-md); color: var(--text-2); }
+.actions { display: flex; gap: var(--gap-actions); flex-wrap: wrap; }
+.digest { display: flex; align-items: baseline; gap: var(--sp-2); flex-wrap: wrap; margin: 0; padding: var(--sp-3) var(--sp-4); background: var(--bg-sunken); border-radius: var(--r-2); }
+.digestLabel { font-size: var(--fs-xs); line-height: var(--lh-xs); color: var(--text-2); }
+.digestValue { font-size: var(--fs-xs); line-height: var(--lh-xs); color: var(--text-1); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+@media (max-width: 768px) { .title { font-size: var(--fs-xl); line-height: var(--lh-xl); } }

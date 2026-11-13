@@ -1,0 +1,25 @@
+.errorLinks {
+  display: grid;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
+.errorLink {
+  width: fit-content;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--danger-text);
+  font: inherit;
+  font-weight: var(--fw-medium);
+  text-align: left;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.errorLink:focus-visible {
+  outline: var(--bw-2) solid var(--focus);
+  outline-offset: var(--sp-0-5);
+}

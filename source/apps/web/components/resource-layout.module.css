@@ -1,0 +1,28 @@
+.form {
+  display: grid;
+  gap: var(--gap-card);
+  min-width: 0;
+}
+
+/* Bound the flex item when feedback appears, preserving the heading width. */
+.detailActions {
+  display: grid;
+  gap: var(--sp-2);
+  max-width: 100%;
+  min-width: 0;
+  margin-inline-start: auto;
+}
+
+.detailActions:has(> [role]) {
+  width: 480px;
+  max-width: 100%;
+}
+
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--gap-actions);
+  min-width: 0;
+}

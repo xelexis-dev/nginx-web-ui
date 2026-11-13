@@ -1,0 +1,211 @@
+/* Readouts and 8/4 sections use only real overview data. */
+.telemetry {
+  display: grid;
+  gap: var(--sp-4);
+}
+.sectionHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
+.sectionHeading h2 {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+.configuration {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  margin: 0;
+}
+.configuration > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--sp-3);
+  padding-block: var(--sp-3);
+  border-bottom: 1px solid var(--line-strong);
+  min-width: 0;
+}
+.configuration > div:last-child {
+  border-bottom: 0;
+}
+.configuration dt {
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+.configuration dd {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.configuration small {
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  color: var(--text-2);
+}
+.configurationFooter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding-top: var(--sp-4);
+  margin-top: var(--sp-4);
+  border-top: 1px solid var(--line-strong);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+.kpiNote {
+  margin: var(--sp-3) 0 0;
+  color: var(--warning-text);
+  font-size: var(--fs-xs);
+}
+
+.panelError {
+  margin: 0;
+  color: var(--warning-text);
+  font-size: var(--fs-xs);
+}
+
+/* Only in a flush card, whose body has no padding of its own. */
+.inset {
+  padding: var(--pad-panel);
+}
+
+/* Separate blocks inside a card body (a list and the notes under it). */
+.stack {
+  display: grid;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+
+.name {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+  min-width: 0;
+}
+
+.list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list li {
+  padding-block: var(--sp-3);
+  border-bottom: 1px solid var(--line-strong);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.events {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.events li {
+  padding-block: var(--sp-3);
+  border-bottom: 1px solid var(--line-strong);
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  overflow-wrap: anywhere;
+}
+
+.time {
+  color: var(--text-2);
+  font-family: var(--font);
+  white-space: nowrap;
+}
+
+.strong {
+  color: var(--text-1);
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--text-2);
+}
+
+.small {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+}
+
+/* Inline links in descriptions and notices: ink with an underline, not the browser's blue. */
+
+.list li:first-child,
+.events li:first-child {
+  padding-top: 0;
+}
+.list li:last-child,
+.events li:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.activityIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-2);
+  background: var(--bg-sunken);
+  color: var(--text-3);
+}
+.events .time {
+  grid-column: 3;
+  grid-row: 1;
+  font-size: var(--fs-xs);
+}
+.events li > span:last-child {
+  grid-column: 2;
+  grid-row: 1;
+}
+@media (max-width: 768px) {
+  .events li {
+    grid-template-columns: 28px minmax(0, 1fr);
+  }
+  .events .time {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .sectionHeading {
+    flex-wrap: wrap;
+  }
+}
+
+.overviewGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--gap-cols);
+  align-items: start;
+  min-width: 0;
+}
+.overviewGrid > * {
+  min-width: 0;
+}
+@media (max-width: 1023px) {
+  .overviewGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

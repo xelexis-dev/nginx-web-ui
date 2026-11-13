@@ -1,0 +1,83 @@
+{
+  "rpId": "localhost",
+  "origin": "http://localhost:54130",
+  "challenge": "ns3WfFOGnLp1pJT-e_Jmfq86py4ApiUR16S4NEoVvXY",
+  "assertionChallenge": "nZpuDnAzm4OVLdUN8TriizmJtel2vZbqIq6TUNoMF0k",
+  "userHandle": "dzKCjFVq9vZ4ZUFf4SNU0sZ_EBNNA9LWmh_upW_X9DA",
+  "registration": {
+    "authenticatorAttachment": "platform",
+    "clientExtensionResults": {
+      "credProps": {
+        "rk": true
+      }
+    },
+    "id": "zogfrZMSeWsl9yytZABZI4InfNE45-kAiY0dc9IjaE8",
+    "rawId": "zogfrZMSeWsl9yytZABZI4InfNE45-kAiY0dc9IjaE8",
+    "response": {
+      "attestationObject": "o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YVikSZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2NFAAAAAQECAwQFBgcIAQIDBAUGBwgAIM6IH62TEnlrJfcsrWQAWSOCJ3zROOfpAImNHXPSI2hPpQECAyYgASFYIMBYam58VClLiIVWG2uJoH-MRyeHXCt9j94Hr6x1uKgoIlggRn1ulg1RyLHqDmhnpbaVc4MprtPi8K54vl06Rrxwqiw",
+      "authenticatorData": "SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2NFAAAAAQECAwQFBgcIAQIDBAUGBwgAIM6IH62TEnlrJfcsrWQAWSOCJ3zROOfpAImNHXPSI2hPpQECAyYgASFYIMBYam58VClLiIVWG2uJoH-MRyeHXCt9j94Hr6x1uKgoIlggRn1ulg1RyLHqDmhnpbaVc4MprtPi8K54vl06Rrxwqiw",
+      "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoibnMzV2ZGT0duTHAxcEpULWVfSm1mcTg2cHk0QXBpVVIxNlM0TkVvVnZYWSIsIm9yaWdpbiI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTQxMzAiLCJjcm9zc09yaWdpbiI6ZmFsc2V9",
+      "publicKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEwFhqbnxUKUuIhVYba4mgf4xHJ4dcK32P3gevrHW4qChGfW6WDVHIseoOaGeltpVzgymu0-Lwrni-XTpGvHCqLA",
+      "publicKeyAlgorithm": -7,
+      "transports": [
+        "internal"
+      ]
+    },
+    "type": "public-key"
+  },
+  "assertion": {
+    "authenticatorAttachment": "platform",
+    "clientExtensionResults": {},
+    "id": "zogfrZMSeWsl9yytZABZI4InfNE45-kAiY0dc9IjaE8",
+    "rawId": "zogfrZMSeWsl9yytZABZI4InfNE45-kAiY0dc9IjaE8",
+    "response": {
+      "authenticatorData": "SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2MFAAAAAg",
+      "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiblpwdURuQXptNE9WTGRVTjhUcmlpem1KdGVsMnZaYnFJcTZUVU5vTUYwayIsIm9yaWdpbiI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTQxMzAiLCJjcm9zc09yaWdpbiI6ZmFsc2V9",
+      "signature": "MEYCIQCCFY-khlgThGvXfcyHacsD7ZXq0wKl2rfcvIHCEW87wgIhAKo7DALAH41HOsyT_H18e3kBBpZopVcRk2sX5qB9ywi-",
+      "userHandle": "dzKCjFVq9vZ4ZUFf4SNU0sZ_EBNNA9LWmh_upW_X9DA"
+    },
+    "type": "public-key"
+  },
+  "counterAssertions": [
+    {
+      "challenge": "oKsMX8RCpFEAESynlk4EtXoaCSb4B-ZMmVo0K5Q71pw",
+      "assertion": {
+        "authenticatorAttachment": "platform",
+        "clientExtensionResults": {},
+        "id": "zogfrZMSeWsl9yytZABZI4InfNE45-kAiY0dc9IjaE8",
+        "rawId": "zogfrZMSeWsl9yytZABZI4InfNE45-kAiY0dc9IjaE8",
+        "response": {
+          "authenticatorData": "SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2MFAAAABg",
+          "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoib0tzTVg4UkNwRkVBRVN5bmxrNEV0WG9hQ1NiNEItWk1tVm8wSzVRNzFwdyIsIm9yaWdpbiI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTQxMzAiLCJjcm9zc09yaWdpbiI6ZmFsc2V9",
+          "signature": "MEUCIGBLu0ilIGt5o8HVqevEX-Z_S2vHmeFG9Igihze_YIpoAiEA4lvJ4mmyFkRxajliE1SnMd4njap6GqFJqCEw4fg43Lk",
+          "userHandle": "dzKCjFVq9vZ4ZUFf4SNU0sZ_EBNNA9LWmh_upW_X9DA"
+        },
+        "type": "public-key"
+      },
+      "signCount": 6,
+      "rpId": "localhost",
+      "origin": "http://localhost:54130",
+      "userHandle": "dzKCjFVq9vZ4ZUFf4SNU0sZ_EBNNA9LWmh_upW_X9DA"
+    },
+    {
+      "challenge": "rqs-RvZ-20Sh0XaF-QPtAFtXH_Mhm7XUYshHxbxTo1M",
+      "assertion": {
+        "authenticatorAttachment": "platform",
+        "clientExtensionResults": {},
+        "id": "zogfrZMSeWsl9yytZABZI4InfNE45-kAiY0dc9IjaE8",
+        "rawId": "zogfrZMSeWsl9yytZABZI4InfNE45-kAiY0dc9IjaE8",
+        "response": {
+          "authenticatorData": "SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2MFAAAABg",
+          "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoicnFzLVJ2Wi0yMFNoMFhhRi1RUHRBRnRYSF9NaG03WFVZc2hIeGJ4VG8xTSIsIm9yaWdpbiI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTQxMzAiLCJjcm9zc09yaWdpbiI6ZmFsc2UsIm90aGVyX2tleXNfY2FuX2JlX2FkZGVkX2hlcmUiOiJkbyBub3QgY29tcGFyZSBjbGllbnREYXRhSlNPTiBhZ2FpbnN0IGEgdGVtcGxhdGUuIFNlZSBodHRwczovL2dvby5nbC95YWJQZXgifQ",
+          "signature": "MEQCIGkQE8Qk2Y9cKT533HPT0N8ty57fgftoEDnH1WMeMjXwAiActDSt2BPoUAsTgZOS0bKln_vUFY3tmbyAbBhJ-c7ppw",
+          "userHandle": "dzKCjFVq9vZ4ZUFf4SNU0sZ_EBNNA9LWmh_upW_X9DA"
+        },
+        "type": "public-key"
+      },
+      "signCount": 6,
+      "rpId": "localhost",
+      "origin": "http://localhost:54130",
+      "userHandle": "dzKCjFVq9vZ4ZUFf4SNU0sZ_EBNNA9LWmh_upW_X9DA"
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+/* config-diff 표시(항목 마커 + 필드 before→after). /history/[id]와 미적용 모달이
+   같은 시각 언어를 쓰도록 공유한다. 토큰만 사용. */
+.diffGroups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: var(--sp-4);
+  margin: 0;
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--sp-4);
+  border-radius: var(--r-3);
+  font-family: var(--font);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--lh-sm);
+  min-width: 0;
+  align-items: start;
+}
+
+.diffGroupTitle {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+
+  color: var(--text-2);
+}
+
+.diffNone {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+
+.diffList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.diffItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.diffHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-2);
+  font-size: var(--fs-md);
+  /* flex 자식의 기본 min-width:auto 는 줄바꿈할 곳 없는 긴 이름을 그대로 밀어낸다.
+     390px 실측: 이 선언이 없으면 scrollWidth 659px. */
+  min-width: 0;
+}
+
+.diffMarker {
+  flex-shrink: 0;
+  width: 16px;
+  font-weight: 600;
+  font-family: var(--font);
+}
+
+.markerAdded {
+  color: var(--success-text);
+}
+
+.markerRemoved {
+  color: var(--danger-text);
+}
+
+.markerChanged {
+  color: var(--warning-text);
+}
+
+.markerSkipped {
+  color: var(--danger-text);
+}
+
+/* 「적용에서 제외됨」 — 대기 중인 변경과 눈으로 구분되어야 한다. */
+
+.skippedReason {
+  margin: 0;
+  padding-left: var(--sp-6);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+
+.diffLabel {
+  color: var(--text-1);
+  font-weight: 500;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.fieldList {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.fieldChange {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  font-family: var(--font);
+}
+
+.fieldName {
+  min-width: 0;
+  flex: 0 1 120px;
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+}
+
+.fieldBefore {
+  padding: var(--sp-0-5) var(--sp-1);
+  background: var(--danger-bg);
+  border-radius: var(--r-1);
+  color: var(--danger-text);
+  word-break: break-word;
+}
+
+.fieldArrow {
+  color: var(--text-2);
+}
+
+.fieldAfter {
+  padding: var(--sp-0-5) var(--sp-1);
+  background: var(--success-bg);
+  border-radius: var(--r-1);
+  color: var(--success-text);
+  word-break: break-word;
+}
+
+.inline {
+  border: 1px solid var(--line-strong);
+  background: var(--bg-canvas);
+}
+.panel {
+  gap: var(--sp-4);
+  padding: var(--sp-4);
+  color: var(--text-1);
+  background: var(--bg-sunken);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+}
+.panel .diffLabel {
+  color: var(--text-1);
+}
+.panel
+  :is(.diffGroupTitle, .diffNone, .fieldName, .fieldArrow, .skippedReason) {
+  color: var(--text-3);
+}
+.panel :is(.markerAdded, .fieldAfter) {
+  color: var(--success-text);
+}
+.panel :is(.markerRemoved, .fieldBefore, .markerSkipped) {
+  color: var(--danger-text);
+}
+.panel .markerChanged {
+  color: var(--text-1);
+}

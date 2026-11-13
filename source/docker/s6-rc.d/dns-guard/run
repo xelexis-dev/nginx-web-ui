@@ -1,0 +1,12 @@
+#!/command/with-contenv /bin/sh
+set -eu
+export PATH=/command:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+. /etc/s6-overlay/scripts/nwui-gate.sh
+nwui_gate_longrun
+# Root owns setup/downgrades; the binary drops to node before readiness and serving.
+# The DNS command needs no database, authentication or data-key environment.
+exec env -i PATH="$PATH" NWUI_READY_FD=3 \
+  NWUI_TARGET_DNS_PORT="${NWUI_TARGET_DNS_PORT:-5354}" \
+  NWUI_TARGET_DNS_IPV6="${NWUI_TARGET_DNS_IPV6:-on}" \
+  NWUI_TARGET_DNS_SERVERS="${NWUI_TARGET_DNS_SERVERS:-}" \
+  /usr/local/bin/nwui-api dns-guard

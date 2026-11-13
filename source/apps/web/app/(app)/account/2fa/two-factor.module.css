@@ -1,0 +1,122 @@
+/* 2FA enrollment / management. Tokens only, except the QR quiet-zone which
+   MUST stay light in both themes for scanners (functional, not theming). */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-section);
+}
+
+.enrollGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: var(--gap-section);
+  align-items: start;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.qrBox {
+  /* White quiet zone so the code scans on dark backgrounds too. */
+  align-self: flex-start;
+  padding: var(--sp-3);
+  background: var(--qr-quiet-zone);
+  border-radius: var(--r-2);
+}
+
+.qr {
+  display: block;
+  width: 220px;
+  height: 220px;
+}
+
+.secretLabel {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+
+.secret {
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+  font-family: var(--font);
+  font-size: var(--fs-md);
+  color: var(--text-1);
+  word-break: break-all;
+  background: var(--bg-sunken);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-2);
+}
+
+.backupCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-card-group);
+}
+
+.warn {
+  margin: 0;
+  font-size: var(--fs-md);
+  line-height: var(--lh-sm);
+  color: var(--text-1);
+}
+
+.backupGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--sp-2);
+  margin: var(--sp-3) 0;
+}
+
+.backupCode {
+  padding: var(--sp-2) var(--sp-3);
+  font-family: var(--font);
+  font-size: var(--fs-sm);
+  text-align: center;
+  color: var(--text-1);
+  background: var(--bg-sunken);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-2);
+}
+
+.doneAction {
+  align-self: flex-start;
+  margin-top: var(--sp-2);
+}
+
+/* The TXT save and what it last did. */
+.saveRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.saveNote {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  overflow-wrap: anywhere;
+}
+
+.form {
+  display: grid;
+  gap: var(--gap-card);
+  min-width: 0;
+}
+
+.stepBody {
+  display: grid;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+.qrBox {
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+}

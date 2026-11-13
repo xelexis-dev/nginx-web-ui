@@ -1,0 +1,109 @@
+.anchor {
+  position: fixed;
+  bottom: var(--sp-6);
+  right: var(--sp-6);
+  width: min(var(--size-toast), calc(100vw - var(--sp-8)));
+  z-index: var(--z-toast);
+  pointer-events: none;
+}
+.viewport {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--bg-raised);
+  color: var(--text-1);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-2);
+  box-shadow: var(--shadow-1);
+  pointer-events: auto;
+}
+.clickable {
+  cursor: pointer;
+}
+.bar {
+  flex: none;
+  color: var(--info);
+  margin-top: var(--sp-0-5);
+}
+.bar.success {
+  color: var(--success);
+}
+.bar.warning {
+  color: var(--warning);
+}
+.bar.error {
+  color: var(--danger);
+}
+.content {
+  flex: 1;
+  min-width: 0;
+}
+.title {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: var(--lh-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.body {
+  margin: var(--sp-1) 0 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--text-2);
+  white-space: pre-line;
+  max-height: min(160px, 25dvh);
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+.output {
+  margin: var(--sp-2) 0 0;
+  padding: var(--sp-2);
+  max-height: min(160px, 25dvh);
+  overflow: auto;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-1);
+  background: var(--bg-sunken);
+  color: var(--text-1);
+  font-family: var(--font);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  white-space: pre;
+  font-variant-numeric: tabular-nums;
+}
+.body:focus-visible,
+.output:focus-visible {
+  outline: var(--bw-2) solid var(--focus);
+  outline-offset: calc(-1 * var(--bw-2));
+}
+.close {
+  flex: none;
+  padding: 0;
+  min-width: var(--size-ctl-sm);
+  min-height: var(--size-ctl-sm);
+  width: var(--size-ctl-sm);
+  height: var(--size-ctl-sm);
+  color: var(--text-2);
+}
+.action {
+  display: inline-block;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--text-1);
+  text-decoration: underline;
+}
+@media (max-width: 768px) {
+  .anchor {
+    right: var(--sp-4);
+    bottom: var(--sp-4);
+    width: calc(100vw - var(--sp-8));
+  }
+}

@@ -1,0 +1,107 @@
+/* Major page blocks follow Foundations; inner cards/grids own --gap-section. */
+.page {
+  display: grid;
+  gap: var(--gap-section);
+  min-width: 0;
+}
+.page > * {
+  min-width: 0;
+}
+/* This page owns block spacing: legacy card/paragraph margins must not add a second gap.
+   Only opted-in page children are reset; nested content and overlays keep their own rhythm. */
+.page > :is(header, section, div, form, p, a) {
+  margin-block: 0;
+}
+.section {
+  display: grid;
+  gap: var(--gap-section);
+  min-width: 0;
+}
+.sectionTitle {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+.note {
+  margin: 0;
+  color: var(--text-2);
+}
+
+.page > header:first-child {
+  margin-bottom: calc(var(--gap-header) - var(--gap-section));
+}
+.overviewMain,
+.overviewPair,
+.detail,
+.split,
+.cards,
+.formWithRail {
+  display: grid;
+  gap: var(--gap-cols);
+  align-items: start;
+  min-width: 0;
+}
+:is(
+    .overviewMain,
+    .overviewPair,
+    .detail,
+    .split,
+    .cards,
+    .formWithRail
+  )
+  > * {
+  min-width: 0;
+}
+.overviewMain {
+  grid-template-columns: minmax(0, 1.9fr) minmax(260px, 0.8fr);
+}
+.overviewPair {
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
+}
+.detail {
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.7fr);
+}
+.split {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.cards {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.formWithRail {
+  grid-template-columns: minmax(0, 1fr) var(--size-rail);
+}
+.summaryRail {
+  position: sticky;
+  top: calc(var(--size-topbar) + var(--sp-4));
+}
+@media (max-width: 1180px) {
+  .overviewPair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1023px) {
+  .overviewMain,
+  .detail,
+  .formWithRail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .summaryRail {
+    position: static;
+  }
+}
+@media (max-width: 768px) {
+  .split,
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+}

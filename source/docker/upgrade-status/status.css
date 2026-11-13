@@ -1,0 +1,35 @@
+*{box-sizing:border-box}html{background:var(--bg-canvas)}body{margin:0;background:var(--bg-canvas);color:var(--text-1);font:var(--fw-regular) var(--fs-md)/var(--lh-md) var(--font);color-scheme:var(--color-scheme)}
+p,h1,h2,h3,ul,dl,dd{margin:0}[hidden]{display:none!important}
+main{max-width:var(--size-content);margin-inline:auto;padding:var(--page-top) var(--page-x) var(--page-bottom);display:grid;grid-template-columns:minmax(0,1fr);gap:var(--gap-section)}
+header{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);min-height:var(--size-topbar)}
+.brand{display:flex;align-items:center;gap:var(--gap-row-icon);font-size:var(--fs-lg);line-height:var(--lh-lg);font-weight:var(--fw-semibold);letter-spacing:var(--ls-snug)}
+.brand-mark{width:var(--size-logo-mark);height:var(--size-logo-mark);display:grid;place-items:center;color:var(--text-1)}.brand-mark svg{width:var(--size-icon-lg);height:var(--size-icon-lg)}
+.page-heading{display:grid;gap:var(--sp-1)}.eyebrow{color:var(--text-3);font-size:var(--fs-xs);line-height:var(--lh-xs);font-weight:var(--fw-medium)}
+h1{font-size:var(--fs-2xl);font-weight:var(--fw-semibold);line-height:var(--lh-2xl);letter-spacing:var(--ls-tight);overflow-wrap:anywhere}
+.guidance{color:var(--text-2);font-size:var(--fs-sm);line-height:var(--lh-sm);overflow-wrap:anywhere}
+.surface{display:grid;gap:var(--gap-section-head);min-width:0;padding-top:var(--pad-section-top);border-top:var(--bw) solid var(--line-strong)}
+.surface-heading{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4)}
+.surface-heading h2,.checks-heading{min-width:0;font-size:var(--fs-lg);font-weight:var(--fw-semibold);line-height:var(--lh-lg);overflow-wrap:anywhere}
+.badge{flex:none;display:inline-flex;align-items:center;gap:var(--gap-row-icon);font-size:var(--fs-sm);font-weight:var(--fw-medium);line-height:var(--lh-sm)}
+.badge::before{content:"";width:var(--size-dot);height:var(--size-dot);flex:none;border-radius:var(--r-full);background:var(--info)}
+.badge[data-tone=info]{color:var(--info-text)}.badge[data-tone=warning]{color:var(--warning-text)}.badge[data-tone=error]{color:var(--danger-text)}.badge[data-tone=success]{color:var(--success-text)}
+.badge[data-tone=warning]::before{background:var(--warning);border-radius:var(--r-0);transform:rotate(45deg)}.badge[data-tone=error]::before{background:var(--danger);border-radius:var(--r-0)}.badge[data-tone=success]::before{background:var(--success)}
+.progress-block{display:grid;gap:var(--sp-2)}
+progress{appearance:none;-webkit-appearance:none;display:block;width:100%;height:var(--size-progress);border:0;background:var(--bg-active);color:var(--chart-line)}progress::-webkit-progress-bar{background:var(--bg-active)}progress::-webkit-progress-value{background:var(--chart-line)}progress::-moz-progress-bar{background:var(--chart-line)}
+.progress-meta{display:flex;justify-content:space-between;gap:var(--sp-4);color:var(--text-2);font-size:var(--fs-sm);line-height:var(--lh-sm);font-variant-numeric:tabular-nums}.progress-percent{color:var(--text-1);font-weight:var(--fw-medium)}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-6) var(--gap-cols);padding-top:var(--sp-6);border-top:var(--bw) solid var(--line-strong)}.facts div{display:grid;align-content:start;gap:var(--sp-1);min-width:0}.facts dt{color:var(--text-3);font-size:var(--fs-xs);line-height:var(--lh-xs);font-weight:var(--fw-medium)}.facts dd{font-weight:var(--fw-medium);overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.checks-stack{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-4)}
+.notice{display:grid;grid-template-columns:var(--size-icon) minmax(0,1fr);gap:var(--sp-1) var(--sp-3);min-width:0;padding:var(--sp-3) var(--sp-4);border:var(--bw) solid;border-radius:var(--r-2);overflow-wrap:anywhere}.notice[data-tone=warning]{background:var(--warning-bg);border-color:var(--warning-line)}.notice[data-tone=error]{background:var(--danger-bg);border-color:var(--danger-line)}.notice[data-tone=success]{background:var(--success-bg);border-color:var(--success-line)}
+.notice-title{grid-column:2;color:var(--text-1);font-size:var(--fs-sm);line-height:var(--lh-sm);font-weight:var(--fw-semibold)}
+.notice-body{grid-column:2;color:var(--text-2);font-size:var(--fs-sm);line-height:var(--lh-sm)}.notice-body ul,.data-list{display:grid;gap:var(--sp-2);padding-left:var(--sp-5);overflow-wrap:anywhere}
+.failure-detail{grid-column:2;margin:0;color:var(--text-1);font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}.failure-detail:focus-visible{outline:var(--bw-2) solid var(--focus);outline-offset:var(--sp-0-5)}
+.detail-section{display:grid;gap:var(--sp-2);min-width:0}.detail-section h3{font-size:var(--fs-md);line-height:var(--lh-md);font-weight:var(--fw-semibold)}
+.retry{padding:var(--sp-3) var(--sp-4);border-radius:var(--r-2);background:var(--bg-sunken);overflow-wrap:anywhere}
+.general-note{padding-top:var(--sp-4);border-top:var(--bw) solid var(--line-strong);color:var(--text-2);font-size:var(--fs-sm);line-height:var(--lh-sm);overflow-wrap:anywhere}
+.connection{display:flex;align-items:center;gap:var(--gap-row-icon);min-height:var(--size-ctl);color:var(--text-2);font-size:var(--fs-sm);line-height:var(--lh-sm);overflow-wrap:anywhere}.connection::before{content:"";flex:none;width:var(--size-dot);height:var(--size-dot);border-radius:var(--r-full);background:var(--info)}
+@media(max-width:768px){h1{font-size:var(--fs-xl);line-height:var(--lh-xl)}.facts{grid-template-columns:1fr;gap:var(--sp-4)}.progress-meta{align-items:flex-start;flex-direction:column;gap:var(--sp-1)}}
+@media(max-width:390px){header{align-items:flex-start}.surface-heading{align-items:flex-start;flex-direction:column;gap:var(--sp-3)}}
+
+/* Lucide 1.70.0 (ISC): triangle-alert, circle-alert and circle-check, matching the shared Icon. */
+.notice-icon{display:none;grid-column:1;grid-row:1;align-self:start;margin-top:var(--sp-0-5);width:var(--size-icon);height:var(--size-icon)}
+.notice[data-tone=warning]>.notice-warning{display:block;color:var(--warning)}.notice[data-tone=error]>.notice-error{display:block;color:var(--danger)}.notice[data-tone=success]>.notice-success{display:block;color:var(--success)}

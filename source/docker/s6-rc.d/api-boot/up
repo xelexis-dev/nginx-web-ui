@@ -1,0 +1,1 @@
+/command/with-contenv /bin/sh -ec ". /etc/s6-overlay/scripts/nwui-gate.sh; nwui_gate_oneshot; exec /usr/local/bin/nwui-api boot --verify"

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Normalized installed dpkg inventory row",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "binary",
+    "arch",
+    "version",
+    "source",
+    "sourceVersion",
+    "origin"
+  ],
+  "properties": {
+    "binary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "arch": {
+      "enum": [
+        "all",
+        "amd64",
+        "arm64"
+      ]
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sourceVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "origin": {
+      "enum": [
+        "base",
+        "debian",
+        "debian-security",
+        "nginx.org",
+        "pgdg"
+      ]
+    }
+  }
+}

@@ -1,0 +1,5 @@
+#!/command/with-contenv /bin/sh
+. /etc/s6-overlay/scripts/nwui-gate.sh
+nwui_gate_longrun
+export NWUI_READY_FD=3
+exec /usr/local/bin/api-pre-exec

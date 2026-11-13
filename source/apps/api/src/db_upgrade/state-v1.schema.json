@@ -1,0 +1,893 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NWUI database upgrade public status and durable migration state v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "attemptId",
+    "pairId",
+    "mode",
+    "phase",
+    "operation",
+    "nextPhase",
+    "ready",
+    "source",
+    "target",
+    "inputsSha256",
+    "destinations",
+    "checks",
+    "summary",
+    "lastError"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "attemptId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "pairId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "mode": {
+      "enum": [
+        "migration",
+        "fresh"
+      ]
+    },
+    "phase": {
+      "enum": [
+        "not_started",
+        "validated",
+        "copied",
+        "checked",
+        "converted",
+        "verified",
+        "ready"
+      ]
+    },
+    "operation": {
+      "enum": [
+        "idle",
+        "running",
+        "failed"
+      ]
+    },
+    "nextPhase": {
+      "anyOf": [
+        {
+          "enum": [
+            "validated",
+            "copied",
+            "checked",
+            "converted",
+            "verified",
+            "ready"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "ready": {
+      "type": "boolean"
+    },
+    "source": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "major",
+            "architecture",
+            "systemIdentifier",
+            "manifestSha256",
+            "backupId"
+          ],
+          "properties": {
+            "major": {
+              "const": 15
+            },
+            "architecture": {
+              "enum": [
+                "arm64",
+                "amd64",
+                "unrecorded"
+              ]
+            },
+            "systemIdentifier": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,19}$"
+            },
+            "manifestSha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "backupId": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "major",
+        "architecture",
+        "systemIdentifier"
+      ],
+      "properties": {
+        "major": {
+          "const": 17
+        },
+        "architecture": {
+          "enum": [
+            "arm64",
+            "amd64"
+          ]
+        },
+        "systemIdentifier": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,19}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "inputsSha256": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "destinations": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "db",
+            "app"
+          ],
+          "properties": {
+            "db": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "source"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "volume"
+                    },
+                    "source": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,254}$"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "source"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "bind"
+                    },
+                    "source": {
+                      "type": "string",
+                      "minLength": 2,
+                      "maxLength": 4096,
+                      "pattern": "^/[^\\u0000-\\u001f]*$"
+                    }
+                  }
+                }
+              ]
+            },
+            "app": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "source"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "volume"
+                    },
+                    "source": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,254}$"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "source"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "bind"
+                    },
+                    "source": {
+                      "type": "string",
+                      "minLength": 2,
+                      "maxLength": 4096,
+                      "pattern": "^/[^\\u0000-\\u001f]*$"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceUnchanged",
+        "rolePassword",
+        "encryptedData",
+        "logicalData",
+        "collations",
+        "cleanShutdown",
+        "pairAgreement"
+      ],
+      "properties": {
+        "sourceUnchanged": {
+          "type": "boolean"
+        },
+        "rolePassword": {
+          "type": "boolean"
+        },
+        "encryptedData": {
+          "type": "boolean"
+        },
+        "logicalData": {
+          "type": "boolean"
+        },
+        "collations": {
+          "type": "boolean"
+        },
+        "cleanShutdown": {
+          "type": "boolean"
+        },
+        "pairAgreement": {
+          "type": "boolean"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "databaseCount",
+        "tableCounts",
+        "sourceDbBytes",
+        "sourceAppBytes",
+        "largestIndexBytes",
+        "requiredBytes",
+        "availableBytes"
+      ],
+      "properties": {
+        "databaseCount": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tableCounts": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceDbBytes": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceAppBytes": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "largestIndexBytes": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requiredBytes": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "availableBytes": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "lastError": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message"
+          ],
+          "properties": {
+            "code": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$"
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512,
+              "pattern": "^[^\\u0000-\\u001f]*$"
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "running"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "nextPhase": {
+            "enum": [
+              "validated",
+              "copied",
+              "checked",
+              "converted",
+              "verified",
+              "ready"
+            ]
+          },
+          "ready": {
+            "const": false
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "nextPhase": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "failed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "lastError": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,63}$"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512,
+                "pattern": "^[^\\u0000-\\u001f]*$"
+              }
+            }
+          },
+          "ready": {
+            "const": false
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "lastError": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "ready": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "phase": {
+            "const": "ready"
+          },
+          "operation": {
+            "const": "idle"
+          },
+          "nextPhase": {
+            "type": "null"
+          },
+          "lastError": {
+            "type": "null"
+          },
+          "attemptId": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "pairId": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "inputsSha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "destinations": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "db",
+              "app"
+            ],
+            "properties": {
+              "db": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "kind",
+                      "source"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "const": "volume"
+                      },
+                      "source": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,254}$"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "kind",
+                      "source"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "const": "bind"
+                      },
+                      "source": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 4096,
+                        "pattern": "^/[^\\u0000-\\u001f]*$"
+                      }
+                    }
+                  }
+                ]
+              },
+              "app": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "kind",
+                      "source"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "const": "volume"
+                      },
+                      "source": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,254}$"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "kind",
+                      "source"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "const": "bind"
+                      },
+                      "source": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 4096,
+                        "pattern": "^/[^\\u0000-\\u001f]*$"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "target": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "major",
+              "architecture",
+              "systemIdentifier"
+            ],
+            "properties": {
+              "major": {
+                "const": 17
+              },
+              "architecture": {
+                "enum": [
+                  "arm64",
+                  "amd64"
+                ]
+              },
+              "systemIdentifier": {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,19}$"
+              }
+            }
+          },
+          "checks": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "sourceUnchanged",
+              "rolePassword",
+              "encryptedData",
+              "logicalData",
+              "collations",
+              "cleanShutdown",
+              "pairAgreement"
+            ],
+            "properties": {
+              "sourceUnchanged": {
+                "const": true
+              },
+              "rolePassword": {
+                "const": true
+              },
+              "encryptedData": {
+                "const": true
+              },
+              "logicalData": {
+                "const": true
+              },
+              "collations": {
+                "const": true
+              },
+              "cleanShutdown": {
+                "const": true
+              },
+              "pairAgreement": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "phase": {
+            "const": "ready"
+          },
+          "operation": {
+            "const": "idle"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "ready": {
+            "const": true
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "fresh"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "migration"
+          },
+          "phase": {
+            "enum": [
+              "validated",
+              "copied",
+              "checked",
+              "converted",
+              "verified",
+              "ready"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "major",
+              "architecture",
+              "systemIdentifier",
+              "manifestSha256",
+              "backupId"
+            ],
+            "properties": {
+              "major": {
+                "const": 15
+              },
+              "architecture": {
+                "enum": [
+                  "arm64",
+                  "amd64",
+                  "unrecorded"
+                ]
+              },
+              "systemIdentifier": {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,19}$"
+              },
+              "manifestSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "backupId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+              }
+            }
+          },
+          "attemptId": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "pairId": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+          },
+          "inputsSha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "destinations": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "db",
+              "app"
+            ],
+            "properties": {
+              "db": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "kind",
+                      "source"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "const": "volume"
+                      },
+                      "source": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,254}$"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "kind",
+                      "source"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "const": "bind"
+                      },
+                      "source": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 4096,
+                        "pattern": "^/[^\\u0000-\\u001f]*$"
+                      }
+                    }
+                  }
+                ]
+              },
+              "app": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "kind",
+                      "source"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "const": "volume"
+                      },
+                      "source": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,254}$"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "kind",
+                      "source"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "const": "bind"
+                      },
+                      "source": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 4096,
+                        "pattern": "^/[^\\u0000-\\u001f]*$"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

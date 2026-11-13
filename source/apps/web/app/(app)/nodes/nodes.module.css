@@ -1,0 +1,92 @@
+/*
+ * `/nodes` 리소스 전체가 공유하는 스타일 시트 — 이 저장소의 관용
+ * (certificates.module.css, users.module.css 와 같은 구조). Task 5 는 폼에
+ * 필요한 클래스만 채웠다; 아래 목록 블록(페이지 헤더·테이블·배너)은 Task 6
+ * (`page.tsx`)이 더했다 — 값은 certificates.module.css 를 그대로 옮겼다(같은
+ * 모양의 목록 화면이라 클래스 블록을 미러링하는 이 저장소 관용을 따른다).
+ */
+
+.headerActions,
+.listActions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+.headerActions {
+  margin-inline-start: auto;
+}
+
+.emptyCell {
+  text-align: center;
+  color: var(--text-2);
+  font-size: var(--fs-md);
+  padding: var(--sp-6) var(--sp-4);
+  white-space: normal;
+}
+
+/* Stretched link: the entire row is clickable, not just the label cell.
+   The overlay is transparent (captures clicks only) so cell text stays
+   visible; `.table tbody tr { position: relative }` above is the anchor. */
+
+/* 상세 화면(정의 목록 카드) — reverse-proxy.module.css 의 같은 이름 블록을
+   그대로 옮겼다(위 .formCard 주석과 같은 이유: 같은 모양의 상세 화면이라
+   클래스 블록을 미러링하는 이 저장소 관용). */
+
+.detailActionsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: 0;
+  flex-wrap: wrap;
+}
+
+.formActions {
+  grid-column: 1 / -1;
+}
+
+/* 전폭(.formRowWide와 함께 씀) — 짝지을 필드가 없어 그리드 폭을 다 채운다. */
+
+.hint {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+.hintWarning {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--warning-text);
+}
+
+/*
+ * 필드에 붙지 않는 페어링 실패(연결 거부·자기 자신 등록 등)를 **폼 맨 위**에
+ * 그린다. 예전에는 제출 버튼 옆 한 줄이었는데, 폼이 창보다 길어(실측 935px vs
+ * 552px) 실패하면 화면 밖이었다 — 사용자에게는 「입력만 지워지고 아무 말이 없다」로
+ * 보였다.
+ *
+ * 색은 토큰만 쓴다. `--danger` 를 테두리·제목에, 본문은 `--text-1` 로 둬서 라이트·
+ * 다크 양쪽에서 대비가 유지된다(배경을 칠하지 않는 이유 — 칠하면 테마마다 대비를
+ * 따로 맞춰야 한다).
+ */
+
+.formActions {
+  display: flex;
+  gap: var(--sp-2);
+  margin-top: var(--sp-1);
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+/* Table owns the border, scrolling and narrow reflow. */
+
+.nodeTitle { color: inherit; overflow-wrap: anywhere; }
+
+.formStack {
+  display: grid;
+  gap: var(--gap-card);
+  min-width: 0;
+}

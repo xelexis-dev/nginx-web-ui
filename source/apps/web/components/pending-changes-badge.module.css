@@ -1,0 +1,53 @@
+.modalIntro {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--text-2);
+}
+.banner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 40px;
+  padding: var(--sp-1) var(--page-x);
+  gap: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--warning-line);
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+}
+.banner > svg {
+  flex: none;
+  color: var(--warning);
+}
+.banner p {
+  flex: 1;
+  min-width: min(100%, 200px);
+  margin: 0;
+  color: var(--text-2);
+}
+.review {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-1);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.review:focus-visible {
+  outline: var(--bw-2) solid var(--focus);
+  outline-offset: var(--sp-0-5);
+}
+
+.banner p {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.banner > button:last-child {
+  margin-left: auto;
+}

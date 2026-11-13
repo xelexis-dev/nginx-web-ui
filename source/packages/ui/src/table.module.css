@@ -1,0 +1,325 @@
+/* Semantic table; one set of links and forms reflows by cell role at <=768px. */
+
+.wrap {
+  /* Positioned, so absolutely placed content in the cells (a visually hidden column name) stays
+     inside the scroll box instead of widening the page when the table scrolls. */
+  position: relative;
+  margin-inline: calc(-1 * var(--cell-x));
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.wrap:focus-visible {
+  outline: var(--bw-2) solid var(--focus);
+  outline-offset: calc(-1 * var(--bw-2));
+}
+
+.table {
+  --table-row-size: var(--size-row);
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.table th {
+  padding: var(--sp-1) var(--cell-x);
+  height: 32px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--line-strong);
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  font-weight: 500;
+  text-align: start;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.table th[data-align="end"] {
+  text-align: end;
+}
+
+.table td {
+  box-sizing: border-box;
+  height: var(--table-row-size);
+  padding: var(--sp-1-5) var(--cell-x);
+  border-bottom: 1px solid var(--line);
+  color: var(--text-2);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.table td[data-numeric] {
+  text-align: end;
+}
+
+.table td[data-mono] {
+  font-family: var(--font);
+  color: var(--text-2);
+}
+
+.table td[data-truncate] {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table td:first-child,
+.table td[data-cell="primary"] {
+  color: var(--text-1);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+}
+.cellContent {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  max-width: 100%;
+  min-width: 0;
+}
+.cellIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: var(--text-3);
+}
+.cellText {
+  min-width: 0;
+}
+.primaryText {
+  display: block;
+}
+.secondary {
+  display: block;
+  margin-top: var(--sp-0-5);
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.table td[data-truncate] .primaryText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.table td[data-wrap] .primaryText {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Long values (URLs, tokens) wrap instead of widening the table. The minimum keeps the column from
+   collapsing to one character, since `anywhere` lets a word break at any point. */
+.table td[data-wrap] {
+  min-width: 16ch;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* A row that spans the table (e.g. an EmptyState when there are no rows) lays out as a block. */
+.table td[colspan] {
+  white-space: normal;
+}
+
+.table td[data-tone="success"] {
+  color: var(--success-text);
+}
+.table td[data-tone="warning"] {
+  color: var(--warning-text);
+}
+.table td[data-tone="error"] {
+  color: var(--danger-text);
+  font-weight: 600;
+}
+.table td[data-tone="info"] {
+  color: var(--info-text);
+}
+
+/* The row name link (primary cell): ink, not the browser's blue. Zero specificity
+   (:where), so a caller's own link class wins. */
+:where(.table td[data-cell="primary"] a) {
+  color: var(--text-1);
+  font-weight: inherit;
+  text-decoration: none;
+  text-underline-offset: 3px;
+}
+
+:where(.table td[data-cell="primary"] a:hover, .table td[data-cell="primary"] a:focus-visible) {
+  text-decoration: underline;
+  text-decoration-color: currentColor;
+}
+
+:where(.table td[data-cell="primary"] a:focus-visible) {
+  outline: var(--bw-2) solid var(--focus);
+  outline-offset: var(--sp-0-5);
+  border-radius: 2px;
+}
+
+.table tbody tr:hover td {
+  background: var(--bg-hover);
+}
+
+.table tbody tr[data-state="pending"] td {
+  background: var(--bg-selected);
+}
+
+/* ---- ≤768px: rows become summary blocks -------------------------------------------------------- */
+@media (max-width: 768px) {
+  .table,
+  .table tbody {
+    display: block;
+  }
+
+  /* The header stays for screen readers only. */
+  .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .table tbody tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px var(--sp-2);
+    min-height: var(--table-row-size);
+    box-sizing: border-box;
+    padding: var(--cell-y) var(--cell-x);
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .table tbody tr:first-child {
+    border-top: 0;
+  }
+
+  /* Breaks the line between the first-line cells and the meta cells. */
+  .table tbody tr::after {
+    content: "";
+    order: 3;
+    flex-basis: 100%;
+    height: 0;
+  }
+
+  .table td {
+    display: block;
+    height: auto;
+    padding: 0;
+    border: 0;
+    white-space: normal;
+    background: none;
+  }
+
+  .table tbody tr:hover td,
+  .table tbody tr[data-state="pending"] td {
+    background: none;
+  }
+
+  .table tbody tr[data-state="pending"] {
+    background: var(--bg-selected);
+  }
+
+  .table td[data-cell="status"] {
+    order: 0;
+  }
+
+  .table td[data-cell="primary"] {
+    order: 1;
+    flex: 1 1 0;
+    min-width: 0;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+  }
+
+  .table td[data-wrap] {
+    min-width: 0;
+  }
+  .table td[data-truncate] .primaryText {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .table td[data-cell="action"] {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .table td[data-cell="meta"] {
+    order: 4;
+    color: var(--text-2);
+    font-size: var(--fs-xs);
+    text-align: start;
+    overflow-wrap: anywhere;
+  }
+
+  .table td[data-cell="meta"][data-truncate] {
+    max-width: 100%;
+  }
+
+  .table td[data-cell="meta"] ~ td[data-cell="meta"]:not([data-label])::before {
+    content: "·";
+    margin-right: var(--sp-2);
+    color: var(--text-2);
+  }
+
+  /* With its column header hidden, a labelled cell names itself ("만료 2026. 9. 27."). The label is
+     for sight only: screen readers still have the header, so its alternative text is empty (the
+     first declaration is the fallback where that syntax is not supported). */
+  .table td[data-label]::before {
+    content: attr(data-label);
+    content: attr(data-label) / "";
+    margin-right: var(--sp-1);
+    color: var(--text-2);
+    font-weight: 600;
+  }
+
+  /* A spanning row (the empty state) takes the whole line, in body text. */
+  .table td[colspan] {
+    flex: 1 1 100%;
+    order: 0;
+    color: var(--text-1);
+    font-size: var(--fs-md);
+  }
+
+  .table td[data-cell="hide-narrow"] {
+    display: none;
+  }
+}
+
+.table tbody tr[data-current] > td:first-child {
+  box-shadow: inset 2px 0 var(--accent);
+}
+@media (max-width: 768px) {
+  .table tbody tr {
+    border-top: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .table tbody tr[data-current] {
+    box-shadow: inset 2px 0 var(--accent);
+  }
+  .table tbody tr[data-current] > td:first-child {
+    box-shadow: none;
+  }
+}
+
+.table[data-density="comfortable"] {
+  --table-row-size: calc(var(--size-row) + var(--sp-2));
+  --cell-y: var(--cell-y-comfy);
+}
+@media (min-width: 769px) {
+  .table[data-density="comfortable"] td {
+    padding: var(--cell-y) var(--cell-x);
+    border-bottom: 0;
+    /* An inset rule preserves the 44px row with 20px text and 12px vertical padding. */
+    box-shadow: inset 0 calc(-1 * var(--bw)) var(--line);
+  }
+  .table[data-density="comfortable"] tr[data-current] > td:first-child {
+    box-shadow: inset var(--bw-2) 0 var(--accent), inset 0 calc(-1 * var(--bw)) var(--line);
+  }
+}

@@ -1,0 +1,107 @@
+/* Stream (L4 tcp/udp) 화면: data-table + form-set + detail, per DESIGN.md.
+   `(app)/reverse-proxy/reverse-proxy.module.css` 와 같은 시각 언어를 쓴다.
+   Tokens only (var(--*)) — no hardcoded hex.
+
+   **이 시트는 `(app)/stream/` 에서 여기로 옮겨왔다**(복사가 아니다 —
+   `components/audit/audit.module.css`, `components/history/history.module.css`
+   와 같은 방식이고 `(app)/stream/` 에는 CSS 모듈이 남지 않았다).
+
+   **옮길 수 있었던 이유:** 이 클래스들을 쓰던 다섯 파일(`page.tsx`,
+   `[id]/page.tsx`, `[id]/detail-actions.tsx`, `stream-form.tsx`,
+   `[id]/edit/page.tsx`)이 전부 이 디렉터리의 공유 컴포넌트가 되어, 로컬에
+   남는 화면 중 이 시트를 쓰는 것이 하나도 없다. `composes: buttonSecondary`
+   (`.buttonDanger`)의 짝도 이 파일 안에 함께 있어 그대로 풀린다. Upstream 쪽이
+   「못 옮겨서 라우트 그룹 시트를 가져다 쓴」 반대 경우다
+   (`components/upstreams/upstream-list.tsx` 헤더).
+
+   **적용 바 클래스(.applyBar/.applyRow/.banner*)는 여기 없다** —
+   `components/apply-bar.module.css` 로 따로 옮겼다(그 파일 헤더 참고).
+
+   소비자: `components/streams/*` 와 그것을 렌더하는 로컬(`(app)/stream/**`)·
+   노드(`(node)/nodes/[id]/stream/**`) 화면. **여기를 고치면 양쪽이 같이 바뀐다.** */
+
+/* Stretched link: the entire row is clickable, not just the label cell.
+   The overlay is transparent (captures clicks only) so cell text stays
+   visible; `tr { position: relative }` above is the positioning context. */
+
+/* Two term/value pairs per row so metadata fills the page width instead of a
+   single narrow column; collapses to one pair per row on small screens. */
+
+.detailActionsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+/* Wide fields (textarea) plus the actions row and any form-level error span
+   both columns; simple fields flow two-up to use the page width. */
+
+.formActions {
+  grid-column: 1 / -1;
+}
+
+/* 필드 아래 안내 한 줄. `.fieldError` 와 같은 자리·같은 크기지만 색이 muted 라
+   「경고」가 아니라 「설명」으로 읽힌다. 둘이 동시에 뜰 수 있다. */
+
+/* 예약 포트를 잡은 stream 이 있을 때 목록 위에 뜨는 배너. 부팅 가드가 그 행을
+   격리했다는 사실이 `docker logs` 에만 남지 않게 하는 자리다. */
+
+/* 표 안에서 그 행만 짚는 한 줄. 셀이 `white-space: nowrap` 이라 여기서 되돌린다. */
+.rowWarning {
+  margin: var(--sp-2) 0 0;
+  max-width: 46ch;
+  white-space: normal;
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  color: var(--danger-text);
+}
+
+.formActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-1);
+}
+
+/* "생성되는 nginx 설정" block on the stream detail page — read-only rendered
+   config with its whitespace kept, full width, horizontal-scroll for long lines. */
+
+/* Detail page (Operations): the summary beside the generated config at >=1024px, as on the
+   reverse-proxy detail (.opsDetail there). The page blocks themselves use page-layout .page. */
+.headerMeta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+  overflow-wrap: anywhere;
+}
+
+.previewHint {
+  display: block;
+  min-width: 0;
+  margin-top: var(--sp-3);
+  color: var(--info-text);
+  overflow-wrap: anywhere;
+}
+
+.opsDetailActions {
+  margin-inline-start: auto;
+  display: grid;
+  gap: var(--sp-2);
+  justify-items: end;
+  max-width: min(480px, 100%);
+}
+.opsDetailActions .detailActionsRow {
+  justify-content: flex-end;
+}
+.opsDetailActions > [role] {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.opsDetailActions:has(> [role]) {
+  width: 480px;
+  max-width: 100%;
+}

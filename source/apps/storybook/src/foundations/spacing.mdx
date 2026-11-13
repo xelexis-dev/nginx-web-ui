@@ -1,0 +1,20 @@
+import { Meta, Subtitle, Title } from "@storybook/addon-docs/blocks";
+import { DocTable } from "../docs";
+import { token } from "./tokens";
+
+<Meta title="Foundations/Spacing" />
+<Title>간격 · 모서리 · 높이</Title>
+<Subtitle>4px 기반 간격과 역할별 치수. 터치에서도 같은 크기를 쓴다.</Subtitle>
+
+export const names = [
+  ...["0-5", "1", "1-5", "2", "3", "4", "5", "6", "8", "10", "12", "16"].map((n) => `--sp-${n}`),
+  "--gap-field", "--gap-cols", "--gap-section", "--gap-header", "--gap-card", "--pad-card", "--page-x", "--page-top", "--page-bottom",
+  "--r-0", "--r-1", "--r-2", "--r-3", "--r-full",
+  "--size-ctl-xs", "--size-ctl-sm", "--size-ctl", "--size-ctl-lg", "--size-row",
+];
+
+<DocTable columns={["토큰", "값"]} rows={names.map((name) => [<code>{name}</code>, token(name)])} />
+
+폼 필드 간격은 20px, 두 열 섹션 간격은 32px이다. 카드 안쪽은 24px(좁은 화면 16px), 카드 사이는 16px(좁은 화면 12px)이다. 2px와 6px 간격은 높이 24px 이하인 작은 부품에서만 쓴다.
+
+떠 있는 메뉴에는 `--shadow-1`, 대화상자에는 `--shadow-2`를 쓴다. 페이지·섹션·카드에는 그림자를 쓰지 않는다.

@@ -1,0 +1,433 @@
+/* The form owns its rail breakpoint even before the shell lane is integrated. */
+form.pfForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--size-rail);
+  align-items: start;
+  gap: var(--gap-cols);
+  min-width: 0;
+}
+.pfMain {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  container-type: inline-size;
+}
+.pfCategory {
+  display: grid;
+  gap: var(--gap-card-group);
+  min-width: 0;
+  container-type: inline-size;
+}
+.pfIdentityFields,
+.pfFields {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--gap-field);
+  min-width: 0;
+}
+.pfIdentityFields > *,
+.pfFields > * {
+  grid-column: span 6;
+  min-width: 0;
+}
+.pfFields > [data-wide] {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: var(--gap-field-inner);
+}
+.pfIdentityStatus {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-row-icon);
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+}
+.pfNodeContext {
+  margin: 0;
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  overflow-wrap: anywhere;
+}
+.directiveGroup {
+  display: grid;
+  gap: var(--gap-field);
+  min-width: 0;
+}
+.directiveGroupTitle,
+.directiveSectionTitle {
+  color: var(--text-1);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: var(--fw-semibold);
+}
+.directiveGroupNote {
+  margin: 0;
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  overflow-wrap: anywhere;
+}
+.directiveEditor {
+  display: grid;
+  gap: var(--gap-field);
+  min-width: 0;
+}
+.directiveSection {
+  display: grid;
+  gap: var(--gap-field-inner);
+  min-width: 0;
+}
+.gridFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap-field);
+}
+.rewriteRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: var(--sp-2);
+  align-items: center;
+}
+.gridFields > *,
+.rewriteRow > * {
+  min-width: 0;
+}
+.pfEditor {
+  display: grid;
+  gap: var(--gap-field);
+  min-width: 0;
+  container-type: inline-size;
+}
+.pfRouteSummary {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--gap-row-icon);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.pfForm :is(input, button, textarea, summary, [tabindex]) {
+  scroll-margin-top: calc(var(--size-topbar) + var(--sp-6));
+}
+.pfForm [tabindex="-1"]:focus-visible {
+  outline: var(--bw-2) solid var(--focus);
+  outline-offset: var(--sp-0-5);
+}
+.pfDisclosure {
+  min-width: 0;
+  padding: 0;
+  border-top: var(--bw) solid var(--line);
+}
+.pfDisclosure > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--sp-1) var(--sp-2);
+  padding: var(--sp-4) 0;
+  color: var(--text-1);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  list-style: none;
+}
+.pfDisclosure > summary::-webkit-details-marker {
+  display: none;
+}
+.pfClosedValue {
+  grid-column: 1;
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  font-weight: var(--fw-regular);
+  overflow-wrap: anywhere;
+}
+.pfDisclosureMark {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  align-self: center;
+  display: inline-flex;
+  color: var(--text-3);
+}
+.pfDisclosureMark > svg:last-child,
+.pfDisclosure[open] .pfDisclosureMark > svg:first-child {
+  display: none;
+}
+.pfDisclosure[open] .pfDisclosureMark > svg:last-child {
+  display: block;
+}
+.pfDisclosureBody {
+  display: grid;
+  gap: var(--gap-field);
+  min-width: 0;
+  padding-bottom: var(--sp-4);
+}
+.pfOverrides {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-actions);
+}
+.pfOverrides:empty {
+  display: none;
+}
+.pfSummaryRail {
+  position: sticky;
+  top: calc(var(--size-topbar) + var(--sp-6));
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-height: calc(
+    100dvh - var(--pf-rail-top, var(--size-topbar)) - var(--sp-4)
+  );
+  border: var(--bw) solid var(--line-strong);
+  border-radius: var(--r-3);
+  background: var(--bg-canvas);
+}
+.pfSummaryRail > header,
+.pfSummarySheet > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--pad-panel);
+}
+.pfSummaryRail h2,
+.pfSummarySheet h2 {
+  margin: 0;
+  font-size: var(--fs-lg);
+  line-height: var(--lh-lg);
+  font-weight: var(--fw-semibold);
+}
+.pfSummaryBody {
+  display: grid;
+  gap: var(--sp-3);
+  min-height: 0;
+  padding: 0 var(--pad-panel) var(--pad-panel);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.pfSummaryList {
+  display: grid;
+  gap: var(--sp-3);
+  margin: 0;
+}
+.pfSummaryList > div {
+  display: grid;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.pfSummaryList dt {
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+}
+.pfSummaryList dd {
+  margin: 0;
+  min-width: 0;
+}
+.pfSummaryList button,
+.pfSummaryErrors button {
+  display: block;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-1);
+  font-family: var(--font);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: var(--fw-medium);
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.pfSummaryList button:hover,
+.pfSummaryErrors button:hover {
+  text-decoration: underline;
+}
+.pfSummaryList small {
+  display: block;
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+}
+.pfSummaryRail footer,
+.pfSummarySheet footer {
+  display: grid;
+  flex: none;
+  gap: var(--sp-3);
+  padding: var(--pad-panel);
+  border-top: var(--bw) solid var(--line);
+}
+.pfSaveActions {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-actions);
+}
+.pfSaveActions > * {
+  flex: 1;
+  min-width: 0;
+  justify-content: center;
+}
+.pfSaveTarget {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  overflow-wrap: anywhere;
+}
+.pfSummaryErrors {
+  display: grid;
+  gap: var(--sp-2);
+  max-height: calc(10 * var(--lh-xs));
+  overflow: auto;
+  padding: var(--sp-3);
+  border: var(--bw) solid var(--danger-line);
+  border-radius: var(--r-2);
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+}
+.pfSummaryErrors button {
+  color: var(--danger-text);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+}
+.pfConversionNote {
+  margin: 0;
+  color: var(--info-text);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+}
+.pfSaveBar {
+  display: none;
+}
+.pfSaveError {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  min-width: 0;
+  padding: var(--sp-2);
+  border: var(--bw) solid var(--danger-line);
+  border-radius: var(--r-2);
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+}
+.pfSaveError button {
+  color: inherit;
+}
+.pfWide {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+.pfSaveMessage:focus {
+  outline: var(--bw-2) solid var(--focus);
+  outline-offset: var(--sp-0-5);
+}
+.pfSummarySheet {
+  display: none;
+  position: fixed;
+  inset: auto 0 0;
+  box-sizing: border-box;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
+  max-height: 80dvh;
+  padding: 0;
+  border: var(--bw) solid var(--line-strong);
+  border-radius: var(--r-3) var(--r-3) 0 0;
+  background: var(--bg-raised);
+  color: var(--text-1);
+}
+.pfSummarySheet::backdrop {
+  background: var(--scrim);
+}
+@container (max-width: 520px) {
+  .pfFields,
+  .pfIdentityFields,
+  .gridFields,
+  .rewriteRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pfFields > *,
+  .pfIdentityFields > * {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 1023px) {
+  form.pfForm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pfSummaryRail {
+    position: static;
+    max-height: none;
+  }
+  .pfSummaryBody {
+    overflow: visible;
+  }
+  .pfSummaryList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 768px) {
+  form.pfForm::after {
+    content: "";
+    grid-column: 1 / -1;
+    height: var(--pf-mobile-bar-height, var(--size-formbar));
+  }
+  .pfSummaryRail {
+    display: none;
+  }
+  .pfFields,
+  .pfIdentityFields,
+  .gridFields,
+  .rewriteRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pfFields > *,
+  .pfIdentityFields > * {
+    grid-column: 1 / -1;
+  }
+  .pfSaveBar {
+    position: fixed;
+    z-index: var(--z-sticky);
+    inset: auto 0 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--gap-actions);
+    min-height: var(--size-formbar);
+    padding: var(--sp-3) var(--page-x);
+    border-top: var(--bw) solid var(--line-strong);
+    background: var(--bg-canvas);
+  }
+  .pfSaveBar > .pfSaveActions {
+    flex: 1;
+  }
+  .pfSaveBar > .pfSaveTarget,
+  .pfSaveBar > .pfSaveError,
+  .pfSaveBar > .pfConversionNote {
+    flex-basis: 100%;
+  }
+  .pfSummarySheet[open] {
+    display: flex;
+    flex-direction: column;
+  }
+  .pfSummarySheet .pfSummaryBody {
+    overflow: auto;
+  }
+  .pfSummaryList {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

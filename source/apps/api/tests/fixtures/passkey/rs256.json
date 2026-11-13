@@ -1,0 +1,41 @@
+{
+  "rpId": "localhost",
+  "origin": "http://localhost:54130",
+  "challenge": "ksJu4ZGNkPZAvglMzmakt5liMdHs5OFCg7V0IQqlvio",
+  "assertionChallenge": "7SULK8YiEijC7d6SR3EREE0-hpMxwYok1oog7JrBY1M",
+  "userHandle": "bB70LYwjhcc2WN6UvpzEkblARfCFYnLJqkIyDY0IiVM",
+  "registration": {
+    "authenticatorAttachment": "platform",
+    "clientExtensionResults": {
+      "credProps": {
+        "rk": true
+      }
+    },
+    "id": "MrULAAkt-G5kVDSdiiGQCMmsgU749HDM89Q5_p9YV0E",
+    "rawId": "MrULAAkt-G5kVDSdiiGQCMmsgU749HDM89Q5_p9YV0E",
+    "response": {
+      "attestationObject": "o2NmbXRkbm9uZWdhdHRTdG10oGhhdXRoRGF0YVkBZ0mWDeWIDoxodDQXD2R2YFuP5K65ooYyx5lc87qDHZdjRQAAAAEBAgMEBQYHCAECAwQFBgcIACAytQsACS34bmRUNJ2KIZAIyayBTvj0cMzz1Dn-n1hXQaQBAwM5AQAgWQEAvjn0iJZCVIFiIvNQzoZ__NO_IGp1vue2TvariccIFbqA_cH1VNgdter3cHrBSkWdRLL6GhZAlia6XWrwKsue0ytGkvFvWVt4I-C47s-dRAv2UPwuYDyGihSHc_pfwT2CxAv0QzGIpY12i8WLcWLgAKFOXC-OFck0KjhRU3E1Fo9rky1KheMks9lvGyTlsNfM_BIZF-Po8oi2Ar4Rp1Pnd26Z0EdSzL-ISwTZylW3QWJ76lyO2bFYDYC4oJouQ9cptxEczIg1itainDpTD91mEQ2tCj5m8CmobHsExzGd9YqC22qEhels4xqpeS1gU_P73aUUDZbi5fF4bE2DsePRdSFDAQAB",
+      "authenticatorData": "SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2NFAAAAAQECAwQFBgcIAQIDBAUGBwgAIDK1CwAJLfhuZFQ0nYohkAjJrIFO-PRwzPPUOf6fWFdBpAEDAzkBACBZAQC-OfSIlkJUgWIi81DOhn_8078ganW-57ZO9quJxwgVuoD9wfVU2B216vdwesFKRZ1EsvoaFkCWJrpdavAqy57TK0aS8W9ZW3gj4Ljuz51EC_ZQ_C5gPIaKFIdz-l_BPYLEC_RDMYiljXaLxYtxYuAAoU5cL44VyTQqOFFTcTUWj2uTLUqF4ySz2W8bJOWw18z8EhkX4-jyiLYCvhGnU-d3bpnQR1LMv4hLBNnKVbdBYnvqXI7ZsVgNgLigmi5D1ym3ERzMiDWK1qKcOlMP3WYRDa0KPmbwKahsewTHMZ31ioLbaoSF6WzjGql5LWBT8_vdpRQNluLl8XhsTYOx49F1IUMBAAE",
+      "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoia3NKdTRaR05rUFpBdmdsTXptYWt0NWxpTWRIczVPRkNnN1YwSVFxbHZpbyIsIm9yaWdpbiI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTQxMzAiLCJjcm9zc09yaWdpbiI6ZmFsc2V9",
+      "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvjn0iJZCVIFiIvNQzoZ__NO_IGp1vue2TvariccIFbqA_cH1VNgdter3cHrBSkWdRLL6GhZAlia6XWrwKsue0ytGkvFvWVt4I-C47s-dRAv2UPwuYDyGihSHc_pfwT2CxAv0QzGIpY12i8WLcWLgAKFOXC-OFck0KjhRU3E1Fo9rky1KheMks9lvGyTlsNfM_BIZF-Po8oi2Ar4Rp1Pnd26Z0EdSzL-ISwTZylW3QWJ76lyO2bFYDYC4oJouQ9cptxEczIg1itainDpTD91mEQ2tCj5m8CmobHsExzGd9YqC22qEhels4xqpeS1gU_P73aUUDZbi5fF4bE2DsePRdQIDAQAB",
+      "publicKeyAlgorithm": -257,
+      "transports": [
+        "internal"
+      ]
+    },
+    "type": "public-key"
+  },
+  "assertion": {
+    "authenticatorAttachment": "platform",
+    "clientExtensionResults": {},
+    "id": "MrULAAkt-G5kVDSdiiGQCMmsgU749HDM89Q5_p9YV0E",
+    "rawId": "MrULAAkt-G5kVDSdiiGQCMmsgU749HDM89Q5_p9YV0E",
+    "response": {
+      "authenticatorData": "SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2MFAAAAAg",
+      "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiN1NVTEs4WWlFaWpDN2Q2U1IzRVJFRTAtaHBNeHdZb2sxb29nN0pyQlkxTSIsIm9yaWdpbiI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTQxMzAiLCJjcm9zc09yaWdpbiI6ZmFsc2V9",
+      "signature": "iz-2ZTqzC-VGa3lyTJZGm_xh_OE6u2JOce0IXXBa0a1809waKD2qz-DXhsEAthPwGgCP7yYJBRe4P0FUdoPrOHvumfKU9lL_QNO3sl5bQDC2HY-baU5Mop6ct4hOpjgzv0FDcCYkC3tIsTC8zLrPcLLl-UgKDBd1-oHukXbg9Bfa5pCV6Gf2kWJbEea3Z4ASdOW8lnROG6yG1CHzhEc2CwiHMtYcnWMilshWV2nFq2Vz7TgIaYlNspM1Rqs8slYcDFOyTxNnm1ITVD0iHVzsPNRZx6ekHB7Om_ebl7FUryYwJpcVzSsPHMhk02q8xv8copjsSpirrf3HG8moRAe7LA",
+      "userHandle": "bB70LYwjhcc2WN6UvpzEkblARfCFYnLJqkIyDY0IiVM"
+    },
+    "type": "public-key"
+  }
+}

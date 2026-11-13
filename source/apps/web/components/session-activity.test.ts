@@ -1,0 +1,55 @@
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
+const mocks = vi.hoisted(() => ({ effect: undefined as undefined | (() => () => void), replace: vi.fn() }));
+vi.mock("react", () => ({ useEffect: (effect: () => () => void) => { mocks.effect = effect; } }));
+vi.mock("next/navigation", () => ({ usePathname: () => "/stream", useRouter: () => ({ replace: mocks.replace }) }));
+import { SessionActivity } from "./session-activity";
+let target: EventTarget;
+let fakeDocument: { visibilityState: string };
+let cleanup: undefined | (() => void);
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-09-22T00:00:00Z"));
+  vi.clearAllMocks();
+  target = new EventTarget();
+  vi.stubGlobal("window", target);
+  fakeDocument = { visibilityState: "visible" };
+  vi.stubGlobal("document", fakeDocument);
+});
+afterEach(() => { cleanup?.(); cleanup = undefined; vi.unstubAllGlobals(); vi.useRealTimers(); });
+const flush = async () => { await Promise.resolve(); await Promise.resolve(); };
+it("renews on activity, throttles requests and never renews an idle tab", async () => {
+  const fetch = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+  vi.stubGlobal("fetch", fetch);
+  SessionActivity(); cleanup = mocks.effect!();
+  await flush();
+  expect(fetch).toHaveBeenCalledTimes(1);
+  target.dispatchEvent(new Event("pointerdown"));
+  expect(fetch).toHaveBeenCalledTimes(1);
+  await vi.advanceTimersByTimeAsync(8 * 60 * 60 * 1000);
+  expect(fetch).toHaveBeenCalledTimes(1);
+  target.dispatchEvent(new Event("keydown")); await flush();
+  expect(fetch).toHaveBeenCalledTimes(2);
+  cleanup(); cleanup = undefined;
+  await vi.advanceTimersByTimeAsync(60_001);
+  target.dispatchEvent(new Event("focus"));
+  expect(fetch).toHaveBeenCalledTimes(2);
+});
+it("redirects a revoked session and sends cookies only to the same origin", async () => {
+  const fetch = vi.fn().mockResolvedValue(new Response(null, { status: 401 }));
+  vi.stubGlobal("fetch", fetch);
+  SessionActivity(); cleanup = mocks.effect!(); await flush();
+  expect(mocks.replace).toHaveBeenCalledWith("/login");
+  expect(fetch).toHaveBeenCalledWith("/api/ui/v1/session/refresh", expect.objectContaining({ method: "POST", credentials: "same-origin", redirect: "error" }));
+});
+it("does not renew hidden tabs or overlap an unresolved request", async () => {
+  const fetch = vi.fn().mockImplementation(() => new Promise(() => {}));
+  vi.stubGlobal("fetch", fetch);
+  fakeDocument.visibilityState = "hidden";
+  SessionActivity(); cleanup = mocks.effect!();
+  expect(fetch).not.toHaveBeenCalled();
+  fakeDocument.visibilityState = "visible";
+  target.dispatchEvent(new Event("focus"));
+  await vi.advanceTimersByTimeAsync(60_001);
+  target.dispatchEvent(new Event("pointerdown"));
+  expect(fetch).toHaveBeenCalledTimes(1);
+});

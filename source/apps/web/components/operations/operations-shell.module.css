@@ -1,0 +1,105 @@
+.crumbs {
+  min-width: 0;
+  width: 100%;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--text-2);
+}
+.crumbs nav {
+  min-width: 0;
+}
+.crumbs ol {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.crumbs li {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crumbs li + li::before {
+  content: "/";
+  color: var(--text-disabled);
+  flex: none;
+}
+.crumbs li > :is(a, span) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crumbs a {
+  color: inherit;
+  text-decoration: none;
+}
+.crumbs a:hover {
+  color: var(--text-1);
+  text-decoration: underline;
+}
+.crumbs [aria-current="page"] {
+  color: var(--text-1);
+  font-weight: 500;
+}
+.pendingLink,
+.pendingState {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1-5);
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+.pendingLink {
+  color: var(--warning-text);
+}
+.headerDivider {
+  flex: none;
+  width: var(--bw);
+  height: var(--sp-4);
+  background: var(--line-strong);
+}
+.shellColumn {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: calc(var(--size-content) + 2 * var(--page-x));
+  margin-inline: auto;
+  padding-inline: var(--page-x);
+}
+.nodeContextBand {
+  background: var(--bg-selected);
+  border-bottom: 1px solid var(--line-selected);
+}
+.nodeContextBand section {
+  min-height: calc(var(--size-ctl-lg) - var(--bw));
+  padding-inline: 0;
+  border-bottom: 0;
+}
+@media (max-width: 768px) {
+  .crumbs li:not(:last-child) {
+    display: none;
+  }
+  .crumbs li:last-child::before {
+    display: none;
+  }
+  .pendingText {
+    display: none;
+  }
+}
+
+.pendingBand {
+  background: var(--warning-bg);
+  border-bottom: 1px solid var(--warning-line);
+}
+.pendingBand [role="status"] {
+  padding-inline: 0;
+  border-bottom: 0;
+}

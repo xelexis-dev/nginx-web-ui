@@ -1,0 +1,39 @@
+/* The native chooser keeps file selection, accept and keyboard behaviour. */
+.fileInput {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  height: var(--size-ctl);
+  padding: 0 var(--ctl-x) 0 0;
+  border: var(--bw) solid var(--border-control);
+  border-radius: var(--r-2);
+  background: var(--bg-input);
+  color: var(--text-1);
+  font-family: var(--font);
+  font-size: var(--fs-md);
+  line-height: var(--lh-md);
+  color-scheme: var(--color-scheme);
+  cursor: pointer;
+  transition: var(--t-ctl);
+}
+.fileInput::file-selector-button {
+  box-sizing: border-box;
+  height: calc(var(--size-ctl) - 2 * var(--bw));
+  margin: 0 var(--sp-3) 0 0;
+  padding: 0 var(--ctl-x);
+  border: 0;
+  border-inline-end: var(--bw) solid var(--border-control);
+  background: var(--bg-sunken);
+  color: var(--text-1);
+  font: inherit;
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: var(--t-ctl);
+}
+.fileInput:where(:hover):not(:disabled):not([aria-invalid="true"]) { border-color: var(--border-control-hover); }
+.fileInput:hover:not(:disabled)::file-selector-button { background: var(--bg-hover); }
+.fileInput:focus-visible:not(:disabled) { border-color: var(--focus); outline: none; box-shadow: 0 0 0 var(--bw) var(--focus); }
+.fileInput[aria-invalid="true"]:not(:disabled) { border-color: var(--danger); }
+.fileInput[aria-invalid="true"]:focus-visible:not(:disabled) { box-shadow: 0 0 0 var(--bw) var(--danger); }
+.fileInput:disabled, .fileInput:disabled::file-selector-button { background: var(--bg-disabled); border-color: var(--line); color: var(--text-disabled); cursor: not-allowed; }

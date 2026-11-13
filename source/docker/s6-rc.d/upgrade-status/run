@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+export PATH=/command:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+exec env -i PATH="$PATH" /usr/local/bin/node /usr/share/nginx-web-ui/upgrade-status/server.mjs

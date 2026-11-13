@@ -1,0 +1,13 @@
+import { Meta, Subtitle, Title } from "@storybook/addon-docs/blocks";
+import { Swatches, colorTokenNames } from "./components";
+import { darkMismatches } from "./tokens";
+
+<Meta title="Foundations/Colors" />
+<Title>색상</Title>
+<Subtitle>Zinc 바탕과 Cobalt 동작 색. 라이트·다크는 같은 역할 이름을 쓴다.</Subtitle>
+
+글자는 `--text-1`, `--text-2`, `--text-3`를 쓴다. 상태 글자는 `--success-text`, `--warning-text`, `--danger-text`, `--info-text`를 쓴다. 접미사 없는 상태색은 점과 아이콘에만 쓴다. `--line-strong`은 체크박스·라디오 경계 전용이다.
+
+{darkMismatches.length > 0 && <p>다크 팔레트 불일치: {darkMismatches.join(", ")}</p>}
+
+<Swatches rows={colorTokenNames.filter((name) => !/^--(zinc|cobalt)-/.test(name)).map((name) => [name, name])} />

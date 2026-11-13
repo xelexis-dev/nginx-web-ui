@@ -1,0 +1,54 @@
+/* Zero specificity lets callers compose actions; these names also style the upgrade page. */
+:where(.button) {
+  box-sizing: border-box;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-inline-icon);
+  min-height: var(--size-ctl);
+  padding: 0 var(--ctl-x);
+  max-width: 100%;
+  min-width: 0;
+  border: var(--bw) solid transparent;
+  border-radius: var(--r-2);
+  background: transparent;
+  font-family: var(--font);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-md);
+  text-align: center;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  transition: var(--t-ctl);
+}
+:where(.sm) { min-height: var(--size-ctl-sm); padding-inline: var(--ctl-x-sm); font-size: var(--fs-sm); }
+:where(.lg) { min-height: var(--size-ctl-lg); padding-inline: var(--sp-4); }
+:where(.xs) { min-height: var(--size-ctl-xs); padding-inline: var(--ctl-x-sm); font-size: var(--fs-xs); line-height: var(--lh-xs); }
+:where(.icon) { flex: none; width: var(--size-ctl); height: var(--size-ctl); padding: 0; }
+:where(.icon.sm) { width: var(--size-ctl-sm); height: var(--size-ctl-sm); padding: 0; }
+:where(.icon.lg) { width: var(--size-ctl-lg); height: var(--size-ctl-lg); padding: 0; }
+:where(.icon.xs) { width: var(--size-ctl-xs); height: var(--size-ctl-xs); padding: 0; }
+:where(.button:focus-visible) { outline: var(--bw-2) solid var(--focus); outline-offset: var(--sp-0-5); }
+:where(.primary) { background: var(--accent); color: var(--on-accent); }
+:where(.primary:hover:not(:disabled)) { background: var(--accent-hover); }
+:where(.primary:active:not(:disabled)) { background: var(--accent-press); }
+:where(.secondary) { background: var(--bg-control); border-color: var(--border-control); color: var(--text-1); }
+:where(.secondary:hover:not(:disabled)) { background: var(--bg-hover); border-color: var(--border-control-hover); }
+:where(.secondary:active:not(:disabled)) { background: var(--bg-active); border-color: var(--border-control-hover); }
+:where(.danger) { background: var(--danger-solid); color: var(--on-accent); }
+:where(.danger:hover:not(:disabled)) { background: var(--danger-solid-hover); }
+:where(.danger:active:not(:disabled)) { background: var(--danger-solid-press); }
+:where(.ghost) { color: var(--text-2); }
+:where(.ghost:hover:not(:disabled)) { background: var(--bg-hover); color: var(--text-1); }
+:where(.ghost:active:not(:disabled), .ghost[aria-expanded="true"]:not(:disabled), .ghost[aria-pressed="true"]:not(:disabled)) { background: var(--bg-active); color: var(--text-1); }
+:where(.dangerQuiet) { color: var(--danger-text); }
+:where(.dangerQuiet:hover:not(:disabled)) { background: var(--danger-bg); }
+:where(.dangerQuiet:active:not(:disabled)) { background: var(--danger-bg); border-color: var(--danger-line); }
+:where(.button:disabled) { background: var(--bg-disabled); border-color: var(--line); color: var(--text-disabled); cursor: not-allowed; }
+:where(.ghost:disabled, .dangerQuiet:disabled) { background: transparent; border-color: transparent; }
+:where(.button[aria-busy="true"]) { cursor: progress; }
+:where(.button[aria-busy="true"] > svg:first-child) { animation: spin var(--dur-spin) linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { :where(.button) { transition: none; } :where(.button[aria-busy="true"] > svg:first-child) { animation: none; } }

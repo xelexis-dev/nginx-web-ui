@@ -1,0 +1,12 @@
+/* Storybook-only rules. The app's base reset comes from apps/web/app/globals.css itself, imported
+   in preview.tsx after tokens.css. */
+
+/* Storybook's own Docs blocks (not @repo/ui). The app's content rule (DESIGN.md): up to 1200px,
+   centered. On a narrow screen wide tables scroll inside themselves instead of widening the page. */
+.sbdocs.sbdocs-content {
+  max-width: 1200px;
+}
+.docblock-argstable {
+  display: block;
+  overflow-x: auto;
+}

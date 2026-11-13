@@ -1,0 +1,52 @@
+# nginx-web-ui — single-image deployment (node + nginx + PostgreSQL, s6-overlay).
+# Operator defaults; run with:  docker compose up -d --build
+# Local development overrides live in docker-compose.dev.yml (admin UI on :20080):
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+services:
+  nginx-web-ui:
+    build: .
+    image: nginx-web-ui
+    container_name: nginx-web-ui
+    restart: unless-stopped
+    ports:
+      - "80:80" # HTTP + ACME HTTP-01 challenge (required for certificate issuance)
+      - "443:443" # HTTPS (servers with a linked certificate)
+      - "8080:8080" # admin UI
+      # User-defined proxy/stream servers listen on their own container ports —
+      # publish each one you create in the UI, e.g.:
+      # - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - app-data:/var/lib/nginx-web-ui
+      # Logs. Swap either for a host path (e.g. /srv/nginx-web-ui/log/nginx) when
+      # a host-side fail2ban has to read them — see docker/fail2ban/README.md.
+      - nginx-log:/var/log/nginx
+      - app-log:/var/log/nginx-web-ui
+    networks:
+      - nginx-network
+    # All environment variables are optional (see .env.example). With none set,
+    # the container generates a persistent AUTH_SECRET and the first admin is
+    # created through the web /setup screen.
+    # environment:
+    #   ADMIN_EMAIL: admin@example.com
+    #   ADMIN_PASSWORD: change-me-1234
+    #   AUTH_SECRET: <64-hex>
+    #   ACME_DIRECTORY_URL: https://acme-staging-v02.api.letsencrypt.org/directory
+
+volumes:
+  # Fixed names (no compose project prefix) so `docker run`-era deployments and
+  # compose attach to the SAME data. Created automatically when missing.
+  pg-data:
+    name: nwu-pg
+  app-data:
+    name: nwu-app
+  nginx-log:
+    name: nwu-nginx-log
+  app-log:
+    name: nwu-app-log
+
+networks:
+  # Shared bridge so additional services can reach nginx-web-ui and be
+  # reached by name. Created on `up`; a sidecar joins via `--network nginx-network`.
+  nginx-network:
+    name: nginx-network

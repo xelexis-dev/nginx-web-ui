@@ -1,0 +1,9 @@
+{
+  "name": "nwui-turbo-bootstrap",
+  "license": "MIT",
+  "private": true,
+  "version": "1.0.0",
+  "dependencies": {
+    "turbo": "2.10.9"
+  }
+}

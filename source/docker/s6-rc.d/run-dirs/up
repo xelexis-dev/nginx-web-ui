@@ -1,0 +1,1 @@
+/command/with-contenv /bin/sh -ec "export PATH=/command:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; if [ -L /run/nginx-web-ui ] || { [ -e /run/nginx-web-ui ] && [ ! -d /run/nginx-web-ui ]; }; then echo 'run-dirs: /run/nginx-web-ui is not a directory' >&2; exit 1; fi; mkdir -p /run/nginx-web-ui; chown root:root /run/nginx-web-ui; chmod 0755 /run/nginx-web-ui"

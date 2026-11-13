@@ -1,0 +1,80 @@
+.applyBar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sp-4);
+  width: 100%;
+  min-width: 0;
+}
+.description {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+}
+.target {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--sp-3) var(--sp-4);
+  display: grid;
+  gap: var(--sp-1);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-2);
+  background: var(--bg-sunken);
+}
+.target > span {
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  color: var(--text-3);
+  font-weight: 500;
+}
+.target strong {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.steps {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-4);
+  list-style-position: inside;
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+}
+.applyRow {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--sp-4);
+  background: var(--bg-sunken);
+  border-top: 1px solid var(--line-strong);
+  flex-shrink: 0;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-left: auto;
+}
+@media (max-width: 768px) {
+  .actions {
+    width: 100%;
+  }
+  .actions > * {
+    flex: 1 1 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}

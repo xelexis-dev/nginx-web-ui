@@ -1,0 +1,98 @@
+/* Topbar notification bell + dropdown: a trigger button and an
+   panel docked below the top bar, within the viewport gutters. Tokens only — no
+   hardcoded hex, per DESIGN.md. */
+
+.wrap {
+  position: relative;
+}
+
+.trigger {
+  position: relative;
+  border-radius: var(--r-3);
+}
+
+.badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 var(--sp-1);
+  border-radius: var(--r-full);
+  background: var(--danger-solid);
+  color: var(--on-accent);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu {
+  box-sizing: border-box;
+  position: fixed;
+  top: calc(var(--size-topbar) + var(--sp-2));
+  right: var(--page-x);
+  width: var(--size-toast);
+  max-width: calc(100vw - var(--page-x) * 2);
+  max-height: 420px;
+  overflow-y: auto;
+  /* Header actions stay on one line; notification text must not inherit that. */
+  white-space: normal;
+  background: var(--bg-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-3);
+  box-shadow: var(--shadow-1);
+  z-index: var(--z-pop);
+  padding: var(--pad-popover);
+}
+
+.item {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: flex-start;
+  padding: var(--sp-3);
+  border-radius: var(--r-2);
+  text-decoration: none;
+}
+
+.item:hover {
+  background: var(--bg-hover);
+}
+
+.itemContent {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.itemTitle {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.itemBody {
+  margin: var(--sp-0-5) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  word-break: break-word;
+}
+
+.itemAt {
+  margin: var(--sp-1) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+.empty {
+  padding: var(--sp-6) var(--sp-3);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+
+.dotPosition {
+  margin-top: var(--sp-2);
+}

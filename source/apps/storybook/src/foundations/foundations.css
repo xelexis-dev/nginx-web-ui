@@ -1,0 +1,257 @@
+/* Foundation pages only. Tokens (var(--*)) only, no colour literals; the `nwui-found-` prefix keeps
+   these apart from the shared docs wrappers (`nwui-doc-`, src/docs). */
+
+.nwui-found-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin: 16px 0 32px;
+}
+
+.nwui-found-swatch {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-3);
+  background: var(--bg-canvas);
+  color: var(--text-1);
+}
+
+.nwui-found-chips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.nwui-found-chip {
+  padding: var(--sp-2);
+  border-radius: var(--r-2);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.nwui-found-chip-fill {
+  display: block;
+  height: 44px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-2);
+}
+
+.nwui-found-chip-label {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  overflow-wrap: anywhere;
+}
+
+.nwui-found-name {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.nwui-found-usage {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  line-height: 1.4;
+}
+
+/* Pass and fail are said in words (✓/✗ 충족/미달); the colour only repeats it. */
+.nwui-found-pass {
+  color: var(--text-1);
+}
+
+/* Not red text: --danger on --bg-canvas is 3.76:1 in light, below the 4.5:1 this page asks for.
+   The text stays --text-1; red is only the underline, a non-text mark above 3:1. */
+.nwui-found-fail {
+  color: var(--text-1);
+  font-weight: 600;
+  text-decoration: underline 2px var(--danger);
+  text-underline-offset: 3px;
+}
+
+/* A ratio and its verdict may wrap apart on a phone, never mid-number. */
+.nwui-found-nowrap {
+  white-space: nowrap;
+}
+
+/* Long values (font stacks, shadow strings) wrap inside this wrapper instead of widening the page.
+   Scoped to the wrapper because this stylesheet stays loaded on every docs page once imported.
+   `div.` outranks the docs typography rule for list code (`.css-… :where(li…) code`, nowrap). */
+div.nwui-found-wrap code,
+.nwui-found-swatch code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* A token name next to a long value stays whole; the value column takes the wrapping. The class sits
+   on a wrapping span: a className on <code> makes Storybook's MDX code mapping render a code block.
+   Outranks the rule above (0,2,2 over 0,1,2). */
+div.nwui-found-wrap .nwui-found-nowrap code {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+.nwui-found-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-2);
+  background: var(--bg-canvas);
+  color: var(--text-1);
+  font-size: var(--fs-sm);
+  box-sizing: border-box;
+}
+
+/* Layout demos: the same grids DESIGN.md prescribes, folding at the app's narrow breakpoint. */
+.nwui-found-detail {
+  display: grid;
+  grid-template-columns: minmax(120px, max-content) 1fr minmax(120px, max-content) 1fr;
+  gap: 8px 16px;
+  width: 100%;
+  margin: 0;
+}
+
+.nwui-found-detail dt {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+
+.nwui-found-detail dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.nwui-found-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  width: 100%;
+}
+
+.nwui-found-span {
+  grid-column: 1 / -1;
+}
+
+.nwui-found-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .nwui-found-detail {
+    grid-template-columns: minmax(120px, max-content) 1fr;
+  }
+
+  .nwui-found-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+.nwui-found-scale {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.nwui-found-scale-row {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+
+.nwui-found-scale-bar {
+  height: 12px;
+  border-radius: var(--r-2);
+  background: var(--text-1);
+}
+
+.nwui-found-type {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  color: var(--text-1);
+}
+
+.nwui-found-type-row {
+  display: grid;
+  grid-template-columns: minmax(96px, max-content) 1fr;
+  align-items: baseline;
+  gap: 16px;
+  min-width: 0;
+}
+
+.nwui-found-type-meta {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+
+.nwui-found-type-sample {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.nwui-found-mono {
+  font-family: var(--font);
+}
+
+@media (max-width: 480px) {
+  .nwui-found-type-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+.nwui-found-role-page { max-width: 1200px; margin-inline: auto; }
+.nwui-found-role-page > h1 { font-size: var(--fs-2xl); font-weight: 750; letter-spacing: -0.035em; }
+.nwui-found-role-controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-4); }
+.nwui-found-role-code {
+  padding: var(--sp-4); background: var(--bg-sunken); color: var(--text-1);
+  border: 1px solid var(--line); border-radius: var(--r-3);
+  font-size: var(--fs-sm); line-height: 1.8; overflow-wrap: anywhere;
+}
+.nwui-found-role-add { color: var(--success-text); }
+.nwui-found-role-remove { color: var(--danger-text); }
+.nwui-found-role-warn { color: var(--warning-text); }
+.nwui-found-role-toast {
+  padding: var(--sp-4); background: var(--bg-raised); color: var(--text-1);
+  border: 1px solid var(--line-strong); border-radius: var(--r-3);
+  font-size: var(--fs-md); margin-block: var(--sp-4);
+}
+
+.nwui-found-rollout {
+  max-width: var(--size-content);
+  margin-inline: auto;
+  display: grid;
+  gap: var(--gap-header);
+  padding: var(--pad-panel);
+  background: var(--bg-canvas);
+  color: var(--text-1);
+  font-family: var(--font);
+  font-size: var(--fs-md);
+  line-height: var(--lh-md);
+}
+.nwui-found-rollout h1 { margin: 0; font-size: var(--fs-2xl); line-height: var(--lh-2xl); font-weight: var(--fw-semibold); }
+.nwui-found-rollout h2 { margin: 0; font-size: var(--fs-lg); line-height: var(--lh-lg); font-weight: var(--fw-semibold); }
+.nwui-found-rollout-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap-cols); }
+.nwui-found-rollout-card { min-width: 0; display: grid; gap: var(--sp-3); padding: var(--pad-card); border: var(--bw) solid var(--line-strong); border-radius: var(--r-3); }
+.nwui-found-rollout-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap-field); }
+.nwui-found-rollout i { display: inline-block; width: var(--size-dot); height: var(--size-dot); border-radius: var(--r-full); }
+.nwui-found-rollout-primary { height: var(--size-ctl); padding: 0 var(--ctl-x); border: var(--bw) solid var(--accent); border-radius: var(--r-2); font: inherit; background: var(--accent); color: var(--on-accent); }
+.nwui-found-rollout-primary:disabled { background: var(--bg-disabled); color: var(--text-disabled); border-color: var(--border-control); }
+@media (max-width: 768px) { .nwui-found-rollout-cols { grid-template-columns: minmax(0, 1fr); } }
