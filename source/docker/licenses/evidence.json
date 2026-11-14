@@ -7,12 +7,12 @@
     "docker/pins/inventory/api-builder-arm64.tsv": "eb6903409a7bec9666b1b939c7989383245a42bfbdc8c5ef74660fa6d8eadcbc",
     "docker/pins/inventory/keyring-amd64.tsv": "1b2241077aae1e976c9571c93b6183baf890c195d4ee6f888cdec3402cd71ab1",
     "docker/pins/inventory/keyring-arm64.tsv": "2ff60de001f6b2f4c25bfa0b12269a626e893af3c8257ade30a785c1764822bd",
-    "docker/pins/inventory/runtime-amd64.tsv": "1cbd0cd8d2927b1bdea971d43dcc9633a8ada51e0f0a040c26a497b545302e2a",
-    "docker/pins/inventory/runtime-arm64.tsv": "796b37a693a88e4fbdb2476fcbf8acb8bade9bcb8a353184bc50e4403e3a48ae",
+    "docker/pins/inventory/runtime-amd64.tsv": "2f38ac7e5aa660c8e4a6659e2d72d1637f60f266552403393c8dc824d8258fb7",
+    "docker/pins/inventory/runtime-arm64.tsv": "04b09dd644e3728c789fabaf792abcd610972e8b834a7339e0e986beed5bc360",
     "docker/turbo/package-lock.json": "90541d8aac02c8edc1506278f64156743e6bc4f4278be7bb0ecb28a7b3e82254",
     "package.json": "91af8c58d9fa0674485207703d6ddc2e31aa5b95192e5295da22f1ad9cfe7731",
     "yarn.lock": "74210442b1d67c120df33431ae3a8928cdee817206bd9d044b18ae8d7ef527ed",
-    "Dockerfile:ARG": "8ab4bad5b5c15cbd1933a27864ebd10b321c583a9fe73417595014733cff9709"
+    "Dockerfile:ARG": "17a13def0cbf1c6feca54bff5f5b99ed5d596b85351257b037f1a790f2009a1b"
   },
   "entries": [
     {
@@ -46969,19 +46969,19 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:libpq5=17.11-0+deb13u1",
+      "id": "deb:runtime-amd64.tsv:libpq5=17.12-0+deb13u1",
       "name": "libpq5",
       "arch": "amd64",
-      "version": "17.11-0+deb13u1",
+      "version": "17.12-0+deb13u1",
       "source": "postgresql-17",
-      "sourceVersion": "17.11-0+deb13u1",
+      "sourceVersion": "17.12-0+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-344854d039233509f8002ba2",
-      "archiveSha256": "82851f4dfeb372c99b94b412e2e3046a8eee7771098e42ac1fa234bef2611cbd",
+      "archiveSha256": "2e02b8b27ec24abf8ee8ed3395703b02708bdf35284b65b254e84bc27351b5b6",
       "encodings": [
         {
-          "archiveSha256": "82851f4dfeb372c99b94b412e2e3046a8eee7771098e42ac1fa234bef2611cbd",
+          "archiveSha256": "2e02b8b27ec24abf8ee8ed3395703b02708bdf35284b65b254e84bc27351b5b6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "afcc052a946b4117667527211b4ca303f07044f5585222f4c8f577e0764b2123",
@@ -48096,26 +48096,26 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:postgresql-15=15.19-1.pgdg13+2",
+      "id": "deb:runtime-amd64.tsv:postgresql-15=15.20-1.pgdg13+1",
       "name": "postgresql-15",
       "arch": "amd64",
-      "version": "15.19-1.pgdg13+2",
+      "version": "15.20-1.pgdg13+1",
       "source": "postgresql-15",
-      "sourceVersion": "15.19-1.pgdg13+2",
+      "sourceVersion": "15.20-1.pgdg13+1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-cf3e2758a5f54f1fef2095df",
-      "archiveSha256": "d2b16b7fa4abc3154e3bdc0715e566085c0578d7c2100593df388d2d9a44e1c1",
+      "archiveSha256": "2aa1fe56821608958a049c0f836ed91e148c8dbfcb779e616d11e099af4a8e1f",
       "encodings": [
         {
-          "archiveSha256": "c6ee36b2de68ad055f72f682faf7abf47273194a66bafa82dfd35ec6e834d545",
+          "archiveSha256": "e4ddd08bda20717057f0d3137134bc10e45c3886bd0bbf803a10c7f2efae54cc",
           "source": "./control",
           "encoding": "utf-8",
-          "sha256": "a0356b8ea1932c5bc4b8b7f35446d2dd335083fe02977899d473d4404ee30acb",
+          "sha256": "4bdef07e97111a5699ef8006c78f7df7367b51dbe5f97a00d08b5c995f34a289",
           "replacementCharacters": 0
         },
         {
-          "archiveSha256": "4616d0c111a19c249805cbb184fe01367ba48ad7b0dd1d0238f8ff3d576e5453",
+          "archiveSha256": "7490eeeec9163bf6d8a50fec649c791695ea2c5d2765eed7265598afcde2dbdc",
           "source": "./usr/share/doc/postgresql-15/copyright",
           "encoding": "utf-8",
           "sha256": "afcc052a946b4117667527211b4ca303f07044f5585222f4c8f577e0764b2123",
@@ -48131,19 +48131,19 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:postgresql-17=17.11-0+deb13u1",
+      "id": "deb:runtime-amd64.tsv:postgresql-17=17.12-0+deb13u1",
       "name": "postgresql-17",
       "arch": "amd64",
-      "version": "17.11-0+deb13u1",
+      "version": "17.12-0+deb13u1",
       "source": "postgresql-17",
-      "sourceVersion": "17.11-0+deb13u1",
+      "sourceVersion": "17.12-0+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-344854d039233509f8002ba2",
-      "archiveSha256": "82851f4dfeb372c99b94b412e2e3046a8eee7771098e42ac1fa234bef2611cbd",
+      "archiveSha256": "2e02b8b27ec24abf8ee8ed3395703b02708bdf35284b65b254e84bc27351b5b6",
       "encodings": [
         {
-          "archiveSha256": "82851f4dfeb372c99b94b412e2e3046a8eee7771098e42ac1fa234bef2611cbd",
+          "archiveSha256": "2e02b8b27ec24abf8ee8ed3395703b02708bdf35284b65b254e84bc27351b5b6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "afcc052a946b4117667527211b4ca303f07044f5585222f4c8f577e0764b2123",
@@ -48159,26 +48159,26 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:postgresql-client-15=15.19-1.pgdg13+2",
+      "id": "deb:runtime-amd64.tsv:postgresql-client-15=15.20-1.pgdg13+1",
       "name": "postgresql-client-15",
       "arch": "amd64",
-      "version": "15.19-1.pgdg13+2",
+      "version": "15.20-1.pgdg13+1",
       "source": "postgresql-15",
-      "sourceVersion": "15.19-1.pgdg13+2",
+      "sourceVersion": "15.20-1.pgdg13+1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-a8725141465aba4877d58636",
-      "archiveSha256": "718b5a25eb99db5ee37b165ebeeefea50ecf993c9cde1db26eb401e6bbe0be08",
+      "archiveSha256": "53d423aa8601fe0377f469a71a71fb0b5e14618fea31157429f651ea95e7e07e",
       "encodings": [
         {
-          "archiveSha256": "0917011aadacb771e3e72fe848172bf17346950309a9fee15fc7418972220f60",
+          "archiveSha256": "056dcae00f5a224fc5a272cfed3e45750d83ba166580f9f6364b4ecd61ff4aba",
           "source": "./control",
           "encoding": "utf-8",
-          "sha256": "c00d2fb2c65b39e229594c7fb05a03d7e0d21059972ee8bef431e35c7d5b7844",
+          "sha256": "b9212c68d822c2613a933b6508ba03fe4686d44f3bb64238e6c106433d8f4c79",
           "replacementCharacters": 0
         },
         {
-          "archiveSha256": "df1a80c1ecaa5a72e69a6d44a79ce0f9727bdcb02fb4e8c7ddd83900f615c8eb",
+          "archiveSha256": "c39bcc839544937ac5031cc497fa4f983b543588331bb26797e6f5b691534df9",
           "source": "./usr/share/doc/postgresql-client-15/copyright",
           "encoding": "utf-8",
           "sha256": "afcc052a946b4117667527211b4ca303f07044f5585222f4c8f577e0764b2123",
@@ -48194,19 +48194,19 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:postgresql-client-17=17.11-0+deb13u1",
+      "id": "deb:runtime-amd64.tsv:postgresql-client-17=17.12-0+deb13u1",
       "name": "postgresql-client-17",
       "arch": "amd64",
-      "version": "17.11-0+deb13u1",
+      "version": "17.12-0+deb13u1",
       "source": "postgresql-17",
-      "sourceVersion": "17.11-0+deb13u1",
+      "sourceVersion": "17.12-0+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-344854d039233509f8002ba2",
-      "archiveSha256": "82851f4dfeb372c99b94b412e2e3046a8eee7771098e42ac1fa234bef2611cbd",
+      "archiveSha256": "2e02b8b27ec24abf8ee8ed3395703b02708bdf35284b65b254e84bc27351b5b6",
       "encodings": [
         {
-          "archiveSha256": "82851f4dfeb372c99b94b412e2e3046a8eee7771098e42ac1fa234bef2611cbd",
+          "archiveSha256": "2e02b8b27ec24abf8ee8ed3395703b02708bdf35284b65b254e84bc27351b5b6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "afcc052a946b4117667527211b4ca303f07044f5585222f4c8f577e0764b2123",
@@ -50616,19 +50616,19 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:libpq5=17.11-0+deb13u1",
+      "id": "deb:runtime-arm64.tsv:libpq5=17.12-0+deb13u1",
       "name": "libpq5",
       "arch": "arm64",
-      "version": "17.11-0+deb13u1",
+      "version": "17.12-0+deb13u1",
       "source": "postgresql-17",
-      "sourceVersion": "17.11-0+deb13u1",
+      "sourceVersion": "17.12-0+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-344854d039233509f8002ba2",
-      "archiveSha256": "82851f4dfeb372c99b94b412e2e3046a8eee7771098e42ac1fa234bef2611cbd",
+      "archiveSha256": "2e02b8b27ec24abf8ee8ed3395703b02708bdf35284b65b254e84bc27351b5b6",
       "encodings": [
         {
-          "archiveSha256": "82851f4dfeb372c99b94b412e2e3046a8eee7771098e42ac1fa234bef2611cbd",
+          "archiveSha256": "2e02b8b27ec24abf8ee8ed3395703b02708bdf35284b65b254e84bc27351b5b6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "afcc052a946b4117667527211b4ca303f07044f5585222f4c8f577e0764b2123",
@@ -51743,26 +51743,26 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:postgresql-15=15.19-1.pgdg13+2",
+      "id": "deb:runtime-arm64.tsv:postgresql-15=15.20-1.pgdg13+1",
       "name": "postgresql-15",
       "arch": "arm64",
-      "version": "15.19-1.pgdg13+2",
+      "version": "15.20-1.pgdg13+1",
       "source": "postgresql-15",
-      "sourceVersion": "15.19-1.pgdg13+2",
+      "sourceVersion": "15.20-1.pgdg13+1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-cf3e2758a5f54f1fef2095df",
-      "archiveSha256": "b39bdf5c6282378ca5989829ccf83ed4d79f55ea6fe59c805b3830b64177a3db",
+      "archiveSha256": "99baceaca6a56ec25944eee60724338bfebf5eed073fddc862ba75d92e8d1c6d",
       "encodings": [
         {
-          "archiveSha256": "758f9efa61d65151bd927a875bb5055340a5c3f9c60adbb02d13796de5ce253f",
+          "archiveSha256": "59b4b920f8e11d1647c5903ef9e02192da50fcda363a0f07418c5d9a725a29aa",
           "source": "./control",
           "encoding": "utf-8",
-          "sha256": "16f8e078fde103c26d89a53e7afebd12558241be4368f8166c4c40e40be75ec8",
+          "sha256": "754ac7cdc13e14d6ddca182a7ffadd828dcdeb35bb7fa84498ec1f8baa92794b",
           "replacementCharacters": 0
         },
         {
-          "archiveSha256": "01ed96f52594ab204b52711aa5df57f2a694875590243c7687ac1fcb035281ca",
+          "archiveSha256": "6003965f5ccee40245e6cce0b704dce19239488a573c3a19cda57f84638effbd",
           "source": "./usr/share/doc/postgresql-15/copyright",
           "encoding": "utf-8",
           "sha256": "afcc052a946b4117667527211b4ca303f07044f5585222f4c8f577e0764b2123",
@@ -51778,19 +51778,19 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:postgresql-17=17.11-0+deb13u1",
+      "id": "deb:runtime-arm64.tsv:postgresql-17=17.12-0+deb13u1",
       "name": "postgresql-17",
       "arch": "arm64",
-      "version": "17.11-0+deb13u1",
+      "version": "17.12-0+deb13u1",
       "source": "postgresql-17",
-      "sourceVersion": "17.11-0+deb13u1",
+      "sourceVersion": "17.12-0+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-344854d039233509f8002ba2",
-      "archiveSha256": "82851f4dfeb372c99b94b412e2e3046a8eee7771098e42ac1fa234bef2611cbd",
+      "archiveSha256": "2e02b8b27ec24abf8ee8ed3395703b02708bdf35284b65b254e84bc27351b5b6",
       "encodings": [
         {
-          "archiveSha256": "82851f4dfeb372c99b94b412e2e3046a8eee7771098e42ac1fa234bef2611cbd",
+          "archiveSha256": "2e02b8b27ec24abf8ee8ed3395703b02708bdf35284b65b254e84bc27351b5b6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "afcc052a946b4117667527211b4ca303f07044f5585222f4c8f577e0764b2123",
@@ -51806,26 +51806,26 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:postgresql-client-15=15.19-1.pgdg13+2",
+      "id": "deb:runtime-arm64.tsv:postgresql-client-15=15.20-1.pgdg13+1",
       "name": "postgresql-client-15",
       "arch": "arm64",
-      "version": "15.19-1.pgdg13+2",
+      "version": "15.20-1.pgdg13+1",
       "source": "postgresql-15",
-      "sourceVersion": "15.19-1.pgdg13+2",
+      "sourceVersion": "15.20-1.pgdg13+1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-a8725141465aba4877d58636",
-      "archiveSha256": "29b55286e8de51c79ad317968e03d7a311c66c101e8536e2b635d860da3648af",
+      "archiveSha256": "684d6394eaf3921e25bc9934c303f673dcd03c80d2e5b06e1a3e7feacc6a7c68",
       "encodings": [
         {
-          "archiveSha256": "bed9a9eae89bcefdc2e2c1fe4bbd6e2cfc9ad3f06be37f233d7f41878e3f2474",
+          "archiveSha256": "11a0329d6dcab069d853b2f21c153d9bba9396a6716504fbc388e93f8a451fac",
           "source": "./control",
           "encoding": "utf-8",
-          "sha256": "f008012c4666a571e497f2dd6eaeb59d4c37a6ead602e693163dc3a034fd72fc",
+          "sha256": "8a902c2f2e4be508ed82f8e5047e9659929c49100672ee40eda14500c87edcb2",
           "replacementCharacters": 0
         },
         {
-          "archiveSha256": "e5818dca104d486f922c16a5396bcc6f6a097ad46b31bca31750e9be60bc8855",
+          "archiveSha256": "ccbda75127c6901daf80a2ee24eee1fd9ce78c4d8f7502b4185108fe99ac31a9",
           "source": "./usr/share/doc/postgresql-client-15/copyright",
           "encoding": "utf-8",
           "sha256": "afcc052a946b4117667527211b4ca303f07044f5585222f4c8f577e0764b2123",
@@ -51841,19 +51841,19 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:postgresql-client-17=17.11-0+deb13u1",
+      "id": "deb:runtime-arm64.tsv:postgresql-client-17=17.12-0+deb13u1",
       "name": "postgresql-client-17",
       "arch": "arm64",
-      "version": "17.11-0+deb13u1",
+      "version": "17.12-0+deb13u1",
       "source": "postgresql-17",
-      "sourceVersion": "17.11-0+deb13u1",
+      "sourceVersion": "17.12-0+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-344854d039233509f8002ba2",
-      "archiveSha256": "82851f4dfeb372c99b94b412e2e3046a8eee7771098e42ac1fa234bef2611cbd",
+      "archiveSha256": "2e02b8b27ec24abf8ee8ed3395703b02708bdf35284b65b254e84bc27351b5b6",
       "encodings": [
         {
-          "archiveSha256": "82851f4dfeb372c99b94b412e2e3046a8eee7771098e42ac1fa234bef2611cbd",
+          "archiveSha256": "2e02b8b27ec24abf8ee8ed3395703b02708bdf35284b65b254e84bc27351b5b6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "afcc052a946b4117667527211b4ca303f07044f5585222f4c8f577e0764b2123",

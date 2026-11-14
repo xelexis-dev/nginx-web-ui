@@ -43,9 +43,9 @@
 - Linux 컨테이너를 실행할 수 있는 Docker가 필요합니다. Linux에서는 Docker Engine과 Compose 플러그인을, Windows/macOS에서는 Linux 컨테이너 모드의 Docker Desktop을 사용할 수 있습니다. [Docker·Compose 설치 안내](https://docs.docker.com/compose/install/)
 - **Linux 호스트는 커널 5.11 이상과 최신 Docker 엔진이 필요합니다.** Docker 서버에서 `uname -r`로 확인하세요. 커널이 낮거나 오래된 Docker의 시스템 호출 필터가 필요한 동작을 막으면 `isolation_unavailable`로 시작하지 못합니다. 신규 설치는 로그인 화면이 열리지 않고, 1.19.x에서 업그레이드하면 PG15를 복원한 뒤 대기하므로 해당 환경은 1.19.11을 유지하고 1.19.11 설치 안내를 따르세요. macOS/Windows의 Docker Desktop에는 호스트 커널 조건이 적용되지 않습니다.
 - **지원 버전:** 새 수정은 2.0 계열에만 나옵니다. **1.19.11이 1.x의 마지막 버전**이며 이후 1.x 릴리스(보안 수정 포함)는 없습니다.
-- **2.0.0을 검증한 환경:** AMD64 Linux 커널의 Docker 엔진과 macOS의 OrbStack(ARM64)입니다. Windows·macOS의 Docker Desktop은 2.0.0 최종본으로 검증하지 않았습니다.
+- **2.0.2를 검증한 환경:** AMD64 Linux 커널의 Docker 엔진과 macOS의 OrbStack(ARM64)입니다. Windows·macOS의 Docker Desktop은 2.0.2 최종본으로 검증하지 않았습니다.
 - 이미지 주소는 `ghcr.io/xelexis-dev/nginx-web-ui`입니다.
-- 아래 예제는 **2.0.0** 버전을 기준으로 합니다.
+- 아래 예제는 **2.0.2** 버전을 기준으로 합니다.
 - 버전별 변경 내용은 [업데이트 내역](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPDATE.md)에, 새 버전 소식은 [릴리스](https://github.com/xelexis-dev/nginx-web-ui/releases)에 정리되어 있습니다.
 
 다음 명령으로 Docker 연결, Compose 설치, **컨테이너를 실행할 Docker 서버의 아키텍처**를 확인합니다. 원격 Docker context를 사용한다면 명령을 입력하는 PC와 실행 대상이 다를 수 있습니다.
@@ -59,8 +59,8 @@ docker info --format '{{.OSType}}/{{.Architecture}}'
 
 | Docker 서버 | 사용할 이미지 |
 | --- | --- |
-| `linux/x86_64` 또는 `linux/amd64` | `ghcr.io/xelexis-dev/nginx-web-ui:2.0.0` |
-| `linux/aarch64` 또는 `linux/arm64` | `ghcr.io/xelexis-dev/nginx-web-ui:2.0.0-arm64` |
+| `linux/x86_64` 또는 `linux/amd64` | `ghcr.io/xelexis-dev/nginx-web-ui:2.0.2` |
+| `linux/aarch64` 또는 `linux/arm64` | `ghcr.io/xelexis-dev/nginx-web-ui:2.0.2-arm64` |
 
 **`latest`는 1.19.11에 머물며 메이저 버전을 넘어 이동하지 않습니다.** `latest`를 쓰던 설치가 의도하지 않게 2.0으로 넘어가 DB 이전을 시작하지 않도록 하기 위해서입니다. 2.0은 위 표의 버전 태그로 설치하고, 운영 중인 설치는 항상 버전 태그를 고정해 사용하세요. `latest`와 접미사 없는 버전 태그는 **AMD64 전용**입니다. ARM64 새 설치에는 `-arm64` 태그를 선택하세요. 아키텍처가 자동으로 선택되는 공통 태그가 아닙니다. **기존 설치를 업데이트할 때는 호스트가 아니라 기존 컨테이너 이미지의 아키텍처를 유지**해야 합니다. 확인 방법은 6절을 따르세요.
 
@@ -75,12 +75,12 @@ mkdir nginx-web-ui
 cd nginx-web-ui
 ```
 
-이 폴더에 **`compose.yaml`** 파일을 만들고 다음 내용을 그대로 저장합니다. **ARM64라면 `image`의 태그를 `2.0.0-arm64`로 바꾼 뒤 실행하세요.**
+이 폴더에 **`compose.yaml`** 파일을 만들고 다음 내용을 그대로 저장합니다. **ARM64라면 `image`의 태그를 `2.0.2-arm64`로 바꾼 뒤 실행하세요.**
 
 ```yaml
 services:
   nginx-web-ui:
-    image: ghcr.io/xelexis-dev/nginx-web-ui:2.0.0
+    image: ghcr.io/xelexis-dev/nginx-web-ui:2.0.2
     container_name: nginx-web-ui
     restart: unless-stopped
     stop_grace_period: 10m
@@ -164,7 +164,7 @@ Docker Desktop과 OrbStack의 Mac 공유 폴더에서는 사용자 간 파일 �
 
 공유 폴더의 소유자·그룹 번호는 읽는 사용자에 따라 다르게 보일 수 있으며, 소유권 변경 명령이 성공해도 숫자만으로 접근 제한이 보장되지는 않습니다. 읽기 전용 저장소와 지원하는 공유 방식으로 확인되지 않은 마운트는 기존 검사를 유지합니다. OrbStack 가상 머신 안의 경로를 직접 연결하는 방식은 현재 지원 대상으로 확인되지 않았으므로 Docker 관리 볼륨을 사용하세요.
 
-호스트 폴더를 사용한다면 위 Compose 서비스의 `volumes`를 다음처럼 바꿉니다. `/absolute/path/nwui`는 실제 저장 경로로 바꾸고 Docker Desktop을 쓴다면 파일 공유에서 접근할 수 있게 합니다. 새 설치는 네 폴더를 먼저 만듭니다. 기존 설치는 같은 DB·앱 폴더를 유지합니다. PostgreSQL 15(PG15) 데이터는 2.0.0을 처음 시작할 때 검사·백업 후 자동 이전합니다. 다른 컨테이너가 같은 폴더를 동시에 쓰면 안 됩니다.
+호스트 폴더를 사용한다면 위 Compose 서비스의 `volumes`를 다음처럼 바꿉니다. `/absolute/path/nwui`는 실제 저장 경로로 바꾸고 Docker Desktop을 쓴다면 파일 공유에서 접근할 수 있게 합니다. 새 설치는 네 폴더를 먼저 만듭니다. 기존 설치는 같은 DB·앱 폴더를 유지합니다. PostgreSQL 15(PG15) 데이터는 2.0.2를 처음 시작할 때 검사·백업 후 자동 이전합니다. 다른 컨테이너가 같은 폴더를 동시에 쓰면 안 됩니다.
 
 ```yaml
     security_opt: ["no-new-privileges:true"]
@@ -175,7 +175,7 @@ Docker Desktop과 OrbStack의 Mac 공유 폴더에서는 사용자 간 파일 �
       - /absolute/path/nwui/app-log:/var/log/nginx-web-ui
 ```
 
-DB 볼륨은 `/var/lib/postgresql/data`에 연결합니다. 2.0.0의 실제 PG17 데이터는 그 안의 `17/data`에 생성되므로 `17/data` 자체를 마운트하거나 `PGDATA`·`PGROOT` 환경변수로 경로를 덮어쓰지 마세요. **새 설치는 DB와 앱 볼륨이 모두 비어 있어야 합니다.** 기존 PG15 설치는 원래 마운트를 유지하고 6절의 백업·자동 이전 안내를 따릅니다.
+DB 볼륨은 `/var/lib/postgresql/data`에 연결합니다. 2.0의 실제 PG17 데이터는 그 안의 `17/data`에 생성되므로 `17/data` 자체를 마운트하거나 `PGDATA`·`PGROOT` 환경변수로 경로를 덮어쓰지 마세요. **새 설치는 DB와 앱 볼륨이 모두 비어 있어야 합니다.** 기존 PG15 설치는 원래 마운트를 유지하고 6절의 백업·자동 이전 안내를 따릅니다.
 
 이전 이미지가 `postgres/pgdata/PG_VERSION`에 PG15를 저장했다면 기존에 연결하던 **부모 `postgres` 폴더를 그대로 유지**합니다. 루트와 기존 `pgdata` 하위 배치를 알아보며 완료 후 같은 DB 루트의 `17/data`를 사용합니다. 폴더를 옮기거나 `PG_VERSION`을 수정하지 마세요. [macOS 이전 안내](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPGRADE_PATH.md#macos의-기존-하위-폴더)를 확인하세요.
 
@@ -360,9 +360,9 @@ NWUI_TARGET_DNS_SERVERS: "[fd00::53]:5353 fd00::54"
 
 1. [업데이트 내역](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPDATE.md)과 [업그레이드 경로](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPGRADE_PATH.md)를 확인합니다. 구 이미지·Compose·환경 설정과 같은 시점의 DB·앱 백업 쌍을 보관하고 복원 가능 여부를 확인하세요. 실제 명령은 [업그레이드 경로](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPGRADE_PATH.md)의 「중지 후 DB·앱을 함께 백업하고 복원하기」를 따릅니다. 자동 PG15 백업은 독립 백업을 대신하지 않습니다.
 2. 기존 이미지의 아키텍처를 확인하고 컨테이너를 정상 종료한 뒤 백업합니다. 다른 컨테이너가 같은 DB·앱 볼륨을 동시에 쓰지 못하게 하세요.
-3. 기존 Compose의 이미지 태그를 `2.0.0`(AMD64) 또는 `2.0.0-arm64`(ARM64)로 바꿉니다. 볼륨명·마운트·포트·인증 설정을 유지합니다. `@sha256:…`로 고정했다면 태그만 바꾸지 말고 `image:`의 전체 이미지 주소를 교체하세요. 이전 digest가 남으면 이전 이미지가 실행됩니다. 새 빈 DB나 앱 볼륨을 만들지 않습니다.
+3. 기존 Compose의 이미지 태그를 `2.0.2`(AMD64) 또는 `2.0.2-arm64`(ARM64)로 바꿉니다. 볼륨명·마운트·포트·인증 설정을 유지합니다. `@sha256:…`로 고정했다면 태그만 바꾸지 말고 `image:`의 전체 이미지 주소를 교체하세요. 이전 digest가 남으면 이전 이미지가 실행됩니다. 새 빈 DB나 앱 볼륨을 만들지 않습니다.
 4. 이미지를 받아 시작하고 관리 포트의 진행 상태와 로그를 확인합니다. 여유 공간은 대략 DB 크기의 4배 + 가장 큰 인덱스의 2배 + max(1 GiB, DB 크기의 1/5)에 고정 예약 공간과 앱 사본 공간을 더해 준비하며, 작은 DB도 약 1.3 GB 이상이 필요합니다. DB·앱이 같은 파일시스템이면 합산합니다. 상태에 표시된 필요 공간(`requiredBytes`)과 inode를 기준으로 준비하되, 서로 다른 파일시스템이면 각각 필요한 용량·inode를 충족해야 합니다. 표시된 합계에 여유가 있어도 한쪽의 부족분을 다른 쪽 공간으로 채울 수 없으므로 공간 부족 안내를 따라 해당 저장소를 확보하세요. macOS는 Docker Desktop 디스크 한도도 확인하세요.
-5. 완료 후 화면 오른쪽 위 계정 버튼을 눌러 열리는 메뉴의 버전이 **2.0.0**인지 확인하고 기존 계정 로그인과 실제 HTTP/HTTPS·TCP/UDP 응답, 인증서·알림·노드 연결을 확인합니다. 기존 설치에 최초 관리자 생성 화면이 나타나면 진행을 멈추고 데이터 마운트부터 확인합니다.
+5. 완료 후 화면 오른쪽 위 계정 버튼을 눌러 열리는 메뉴의 버전이 **2.0.2**인지 확인하고 기존 계정 로그인과 실제 HTTP/HTTPS·TCP/UDP 응답, 인증서·알림·노드 연결을 확인합니다. 기존 설치에 최초 관리자 생성 화면이 나타나면 진행을 멈추고 데이터 마운트부터 확인합니다.
 
 
 기존 컨테이너 이름이 다르면 아래 이름을 바꿉니다. **호스트가 아니라 기존 이미지의 아키텍처를 유지**하세요. DB 파일을 그대로 두고 다른 아키텍처로 바꾸는 것은 지원하지 않습니다.
@@ -381,13 +381,13 @@ docker exec nginx-web-ui nwui-db-upgrade auto-status
 
 진행 상태는 기존 호스트 관리 포트(기본 `http://<Docker 서버 주소>:8080`)로 직접 확인합니다. 같은 컨테이너의 80/443을 거치는 관리 도메인은 이전 중 사용할 수 없습니다. 컨테이너가 실행 중이라는 표시만으로 이전·서비스 시작이 끝났다고 판단하지 마세요.
 
-컨테이너가 중지돼 관리 화면을 열 수 없을 때도 같은 DB·앱 볼륨으로 상태를 확인할 수 있습니다. 다음은 중지된 기존 컨테이너를 남겨 둔 기본 설치의 읽기 전용 조회 예시입니다. ARM64는 이미지 태그를 `2.0.0-arm64`로 바꾸고, 별도로 지정한 저장 경로 환경변수도 기존 설치와 맞춥니다.
+컨테이너가 중지돼 관리 화면을 열 수 없을 때도 같은 DB·앱 볼륨으로 상태를 확인할 수 있습니다. 다음은 중지된 기존 컨테이너를 남겨 둔 기본 설치의 읽기 전용 조회 예시입니다. ARM64는 이미지 태그를 `2.0.2-arm64`로 바꾸고, 별도로 지정한 저장 경로 환경변수도 기존 설치와 맞춥니다.
 
 ```sh
 docker run --rm --pull=never --security-opt no-new-privileges:true --network none \
   --volumes-from nginx-web-ui \
   --entrypoint /usr/local/bin/nwui-db-upgrade \
-  ghcr.io/xelexis-dev/nginx-web-ui:2.0.0 auto-status
+  ghcr.io/xelexis-dev/nginx-web-ui:2.0.2 auto-status
 ```
 
 이전이 끝난 뒤 정리가 남아 있으면 「정리 대기」로 안내합니다. 서비스가 정상인데 정리만 대기하는 상태는 업그레이드 실패가 아니며, 이 상태만으로 「업그레이드 후 서비스 시작에 실패했습니다」 알림을 보내지 않습니다. 보관 PG15 백업의 크기·제거 명령은 별도로 표시하고, 실패·대기 상태에는 다음 조치를 안내합니다.
@@ -408,7 +408,7 @@ docker run --rm --pull=never --security-opt no-new-privileges:true --network non
 
 - **원본 미변경**: 안내된 원인을 고쳐 다시 시작하거나 같은 볼륨으로 1.19.11 이미지로 돌아갈 수 있습니다.
 - **원본 PG15 복원 완료**: 복원 결과를 확인하고 표시된 재시도 조건을 따르거나 같은 볼륨으로 1.19.11 이미지로 돌아갑니다.
-- **복원 미완료**: 이미지를 낮추지 말고 보존 위치와 오류를 확인합니다. 용량·권한 등 원인을 고쳐 같은 2.0.0 이미지에서 재시작해 복구를 마쳐야 합니다.
+- **복원 미완료**: 이미지를 낮추지 말고 보존 위치와 오류를 확인합니다. 용량·권한 등 원인을 고쳐 같은 2.0.2 이미지에서 재시작해 복구를 마쳐야 합니다.
 - **PG17 전환 뒤 서비스 시작 실패**: PG17은 유지합니다. 재시작해 시작을 이어가거나 다음 명시적 PG15 복원을 사용합니다.
 - **DB 이전 완료·설정 적용 확인 대기**: 서비스는 시작됐지만 설정 적용 상태가 아직 확인되지 않아 이전 데이터 정리를 보류합니다. 서비스 시작 실패와 다르며, 상태를 다시 확인한 뒤 정리를 이어갑니다.
 - **이전 데이터 정리만 보류·서비스 정상**: 정상 운영은 유지하며 다음 컨테이너 시작에서 남은 정리를 재개합니다. 별도 보관 PG15 백업을 자동 삭제하는 단계는 아닙니다.
@@ -424,12 +424,12 @@ docker run --rm --pull=never --security-opt no-new-privileges:true --network non
 <details>
 <summary>펼쳐 보기</summary>
 
-**성공 후 이미지 태그만 낮추면 안 됩니다.** 보관된 PG15를 먼저 복원해야 하며 업그레이드 이후 모든 쓰기를 잃습니다. 복원 상태·실제 백업 ID를 확인하고 컨테이너를 중지한 뒤 2.0.0 이미지의 명령을 실행합니다. 아래는 기본 설치 예시입니다. DB·앱 마운트와 저장 경로 환경변수는 기존 설치와 일치해야 합니다. `restore-pg15`는 데이터 암호화 키를 읽습니다. 기본 키는 앱 볼륨에 있어 아래 마운트로 함께 연결되지만, 사용자 지정 `DATA_KEY_FILE`을 쓴다면 함수의 `docker run`에 `-e DATA_KEY_FILE=<기존과 같은 절대 경로>`를 추가하고 그 키 파일의 마운트도 유지하세요. `--volumes-from`은 환경변수를 복사하지 않습니다. `auto-status`·`remove-pg15-backup`·`remove-discarded`는 키를 읽지 않습니다.
+**성공 후 이미지 태그만 낮추면 안 됩니다.** 보관된 PG15를 먼저 복원해야 하며 업그레이드 이후 모든 쓰기를 잃습니다. 복원 상태·실제 백업 ID를 확인하고 컨테이너를 중지한 뒤 2.0.2 이미지의 명령을 실행합니다. 아래는 기본 설치 예시입니다. DB·앱 마운트와 저장 경로 환경변수는 기존 설치와 일치해야 합니다. `restore-pg15`는 데이터 암호화 키를 읽습니다. 기본 키는 앱 볼륨에 있어 아래 마운트로 함께 연결되지만, 사용자 지정 `DATA_KEY_FILE`을 쓴다면 함수의 `docker run`에 `-e DATA_KEY_FILE=<기존과 같은 절대 경로>`를 추가하고 그 키 파일의 마운트도 유지하세요. `--volumes-from`은 환경변수를 복사하지 않습니다. `auto-status`·`remove-pg15-backup`·`remove-discarded`는 키를 읽지 않습니다.
 
 ```sh
 docker exec nginx-web-ui nwui-db-upgrade auto-status
 docker compose -f compose.yaml stop -t 600
-NWUI_UPGRADE_IMAGE=ghcr.io/xelexis-dev/nginx-web-ui:2.0.0
+NWUI_UPGRADE_IMAGE=ghcr.io/xelexis-dev/nginx-web-ui:2.0.2
 NWUI_BACKUP_ID=REPLACE_WITH_STATUS_BACKUP_ID
 
 nwui_upgrade() {
@@ -444,10 +444,10 @@ nwui_upgrade restore-pg15 --confirm-loss "$NWUI_BACKUP_ID"
 
 `restore-pg15`는 복원 완료와 재시도 조건에 맞는 다음 조치를 출력합니다. 1.19.11로 시작하거나, 2.0 이미지를 다시 시작할 때 표시된 대기 시각·새 `NWUI_DB_UPGRADE_RETRY` 값 조건을 따르세요. 정확한 안내 문구는 [업그레이드 경로](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPGRADE_PATH.md)를 확인하세요.
 
-기존 이미지가 ARM64라면 변수의 태그를 `2.0.0-arm64`로 바꿉니다. `--volumes-from`은 중지된 컨테이너의 마운트를 연결하지만 환경변수를 복사하지는 않습니다. 저장 경로를 별도로 지정한 설치라면 그 환경변수도 명시적으로 전달합니다. 복원 명령이 성공한 뒤에만 Compose 이미지 주소를 `1.19.11` 또는 같은 아키텍처의 `1.19.11-arm64`로 바꾸고 `pull`·`up -d`를 실행하세요. digest로 고정했다면 태그만 바꾸지 말고 보관한 1.19.11의 전체 이미지 주소로 교체하세요. 2.0.0의 digest가 남으면 2.0.0이 다시 실행됩니다. 분리 보관된 PG17 데이터는 자동 삭제하지 않습니다.
+기존 이미지가 ARM64라면 변수의 태그를 `2.0.2-arm64`로 바꿉니다. `--volumes-from`은 중지된 컨테이너의 마운트를 연결하지만 환경변수를 복사하지는 않습니다. 저장 경로를 별도로 지정한 설치라면 그 환경변수도 명시적으로 전달합니다. 복원 명령이 성공한 뒤에만 Compose 이미지 주소를 `1.19.11` 또는 같은 아키텍처의 `1.19.11-arm64`로 바꾸고 `pull`·`up -d`를 실행하세요. digest로 고정했다면 태그만 바꾸지 말고 보관한 1.19.11의 전체 이미지 주소로 교체하세요. 2.0.2의 digest가 남으면 2.0.2가 다시 실행됩니다. 분리 보관된 PG17 데이터는 자동 삭제하지 않습니다.
 
 
-PG15 백업은 운영자가 지울 때까지 남습니다. 2.0.0 정상 시작과 독립 백업을 확인하고 PG15로 돌아갈 필요가 없다고 판단했을 때만 `auto-status`에서 보이는 실제 ID로 정리하세요. **삭제 후에는 그 백업으로 PG15를 복원할 수 없습니다.** 위 함수·이미지를 사용하는 별도의 정리 예시이며 복원 명령과 함께 연속 실행하는 절차가 아닙니다.
+PG15 백업은 운영자가 지울 때까지 남습니다. 2.0.2 정상 시작과 독립 백업을 확인하고 PG15로 돌아갈 필요가 없다고 판단했을 때만 `auto-status`에서 보이는 실제 ID로 정리하세요. **삭제 후에는 그 백업으로 PG15를 복원할 수 없습니다.** 위 함수·이미지를 사용하는 별도의 정리 예시이며 복원 명령과 함께 연속 실행하는 절차가 아닙니다.
 
 ```sh
 docker exec nginx-web-ui nwui-db-upgrade auto-status
@@ -464,9 +464,9 @@ docker compose -f compose.yaml start
 
 PG17을 사용하는 이후 업데이트도 해당 버전 안내를 읽고 DB·앱 데이터를 함께 백업한 뒤 같은 아키텍처·볼륨으로 이미지 태그를 바꿉니다. 게이트웨이와 노드는 2.0·1.19를 혼용해 단계적으로 업데이트할 수 있지만 이전 노드에서는 새 기능을 쓸 수 없습니다. 2.x 안에서는 게이트웨이를 먼저 올린 뒤 노드를 올리세요. 노드는 자기보다 새 minor의 게이트웨이를 받아들이지만, 게이트웨이는 자기보다 새 minor의 노드를 관리하지 않습니다. 더 새 버전이 사용한 DB로 이전 버전 이미지를 시작하면 `database_newer`로 시작하지 않으므로, 되돌릴 때는 업데이트 전 백업 쌍을 복원하세요. 2.0 전용 설정을 쓰는 항목을 1.19 관리 화면에서 저장하면 설정을 지우지 않고 거부합니다.
 
-2.0.0을 다시 발행하기 전의 2.0.0이나 2.0.1 이미지를 설치했다면 이미지 태그를 `2.0.0`으로 지정하고 이미지를 다시 받으세요. 2.0.1을 쓰던 설치도 같습니다. 이전 2.0.0과 태그 이름이 같아 다시 받지 않으면 이전 이미지가 계속 실행됩니다. 위처럼 먼저 백업합니다. 처음 시작할 때 패스키용 DB 구조를 추가하며, 그 뒤에는 이전 이미지가 이 DB로 시작하지 않습니다(`database_newer`). 업데이트 후에는 계정 화면에 「패스키」 영역이 보입니다.
+2.0.0을 다시 발행하기 전의 2.0.0이나 2.0.1 이미지를 설치했다면 이미지 태그를 `2.0.2`로 지정하고 이미지를 다시 받으세요. 2.0.1을 쓰던 설치도 같습니다. 위처럼 먼저 백업합니다. 처음 시작할 때 패스키용 DB 구조를 추가하며, 그 뒤에는 이전 이미지가 이 DB로 시작하지 않습니다(`database_newer`). 업데이트 후에는 계정 화면에 「패스키」 영역이 보입니다.
 
-다시 발행하기 전의 2.0.0 이미지를 중지할 때는 정상 종료여도 `Error: interrupted: 시작 준비를 중단했습니다…` 한 줄이 로그에 남을 수 있습니다. 종료 코드가 0이고 DB 종료 로그(`database system is shut down`)가 있으면 정상 종료입니다. 지금의 2.0.0은 이 오류 줄 대신 `[upgrade] 중지 요청을 받아 종료합니다.` 한 줄만 남깁니다.
+다시 발행하기 전의 2.0.0 이미지를 중지할 때는 정상 종료여도 `Error: interrupted: 시작 준비를 중단했습니다…` 한 줄이 로그에 남을 수 있습니다. 종료 코드가 0이고 DB 종료 로그(`database system is shut down`)가 있으면 정상 종료입니다. 지금의 2.0.2는 이 오류 줄 대신 `[upgrade] 중지 요청을 받아 종료합니다.` 한 줄만 남깁니다.
 
 일시 중지와 다시 시작:
 
@@ -505,7 +505,7 @@ docker logs --tail=100 nginx-web-ui
 | 안내 코드 | 확인할 내용 |
 | --- | --- |
 | `insufficient_space` | 상태에 표시된 필요 용량·inode와 사용 가능한 공간 확인. 원인을 고친 뒤 같은 이미지로 재시작 |
-| 복원 미완료 | 보존 위치와 오류를 확인하고 같은 2.0.0 이미지에서 복구를 이어감. 복원 완료 전에 이미지를 낮추지 않음 |
+| 복원 미완료 | 보존 위치와 오류를 확인하고 같은 2.0.2 이미지에서 복구를 이어감. 복원 완료 전에 이미지를 낮추지 않음 |
 | `storage_busy` | 같은 DB·앱 볼륨을 쓰는 컨테이너·관리 명령이 있는지 확인. 동시 사용을 중지 |
 | `nginx_test_failed` | 로그의 nginx 오류 줄이 가리키는 파일 확인. 기본 설정·추가 포함 파일 오류를 고친 뒤 재시작. 사용자 설정 격리를 끝내지 못하거나 최종 검사가 실패한 경우에도 시작이 중단될 수 있음 |
 | `trusted_input_unsafe` | 관리 요청을 처리하는 사용자가 오류에 지정된 nginx 실행파일·설정·포함 파일을 소유하거나 쓸 수 있는지 확인 |

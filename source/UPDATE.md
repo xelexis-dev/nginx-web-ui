@@ -8,6 +8,20 @@ nginx-web-ui의 버전별 변경 사항입니다. 최신 버전이 맨 위에 �
 
 업데이트 절차와 확인 방법은 [설치 안내의 「업데이트와 중지」](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/README.ko.md#6-업데이트와-중지)를, 반드시 거쳐야 하는 중간 버전은 [업그레이드 경로](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPGRADE_PATH.md)를 확인하세요. 업데이트 전에는 DB(`/var/lib/postgresql/data`)와 앱 데이터(`/var/lib/nginx-web-ui`) 볼륨을 함께 백업하세요.
 
+## v2.0.2
+
+보안 수정 버전입니다. 기능과 설정, DB 구조는 2.0.0과 같습니다.
+
+### 보안 수정: 내장 PostgreSQL을 17.12로 올렸습니다
+
+- 이미지에 들어 있는 PostgreSQL 17을 17.11에서 17.12로 올려 PostgreSQL이 2026년 11월에 고친 보안 문제를 반영했습니다. DB는 컨테이너 안에서만 연결을 받지만 수정판이 나와 바로 반영했습니다.
+- 1.19.x에서 올릴 때 이전 데이터를 옮기는 데만 쓰는 PostgreSQL 15 도구도 같은 수정이 들어간 15.20으로 올렸습니다.
+
+### 업데이트할 때
+
+- 2.0.0에서 올리면 DB 구조를 바꾸거나 데이터를 옮기지 않습니다. 1.19.x와 다시 발행하기 전의 2.0.0·2.0.1도 중간 버전 없이 2.0.2로 올릴 수 있습니다.
+- 업데이트 방법은 [설치 안내의 「업데이트와 중지」](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/README.ko.md#6-업데이트와-중지)를, 버전별 경로와 백업은 [업그레이드 경로](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPGRADE_PATH.md)를 확인하세요.
+
 ## v2.0.0
 
 2.0.0 이미지를 다시 발행했습니다. 처음 배포한 2.0.0과 그 뒤에 나온 2.0.1의 변경을 모두 담고, 패스키 로그인, 관리 화면 프록시 수정, 소스 코드 공개와 새로운 관리 화면 디자인을 더했습니다. 2.0.1은 이 2.0.0에 합쳐졌으므로 2.0.1 대신 이 2.0.0을 사용하세요. 이전 2.0.0이나 2.0.1을 설치했다면 아래 「이전 2.0.0·2.0.1에서 업데이트할 때」를 먼저 확인하세요.

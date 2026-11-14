@@ -4,7 +4,7 @@ set -eu
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$here/guard.sh"
 arch=${1:?}; version=${2:?}; server=${3:?}; client=${4:?}; out=${5:?}
-case "$arch:$version" in amd64:15.19-1.pgdg13+2|arm64:15.19-1.pgdg13+2) ;; *) pin_failure 'pg15/unsupported-artifact';; esac
+case "$arch:$version" in amd64:15.20-1.pgdg13+1|arm64:15.20-1.pgdg13+1) ;; *) pin_failure 'pg15/unsupported-artifact';; esac
 mkdir -p "$out"
 : > "$out/transaction.txt"
 for package in postgresql-15 postgresql-client-15; do

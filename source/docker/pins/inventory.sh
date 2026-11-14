@@ -22,7 +22,7 @@ while IFS="$(printf '\t')" read -r package pkgarch version source source_version
        if($2~/^https:\/\/nginx.org\/packages\/debian\//) origins["nginx.org"]=1;
        else if($2~/^http:\/\/snapshot.debian.org\/archive\/debian-security\//)origins["debian-security"]=1;
        else if($2~/^http:\/\/snapshot.debian.org\/archive\/debian\//)origins["debian"]=1;
-       else if((p=="postgresql-15"||p=="postgresql-client-15")&&v=="15.19-1.pgdg13+2"&&$2=="https://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-15/" p "_" v "_" a ".deb")origins["pgdg"]=1;
+       else if((p=="postgresql-15"||p=="postgresql-client-15")&&v=="15.20-1.pgdg13+1"&&$2=="https://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-15/" p "_" v "_" a ".deb")origins["pgdg"]=1;
        else origins["invalid"]=1; }
       END {for(o in origins){count++;value=o};if(count==1&&value!="invalid")print value;else exit 1}' "$tmp/uris") || pin_failure "$stage/$arch/$package-origin"
     [ -n "$origin" ] || pin_failure "$stage/$arch/$package-origin"

@@ -67,7 +67,7 @@ libpam-runtime	all	1.7.0-5	pam	1.7.0-5	base
 libpam0g	arm64	1.7.0-5	pam	1.7.0-5	base
 libpcre2-8-0	arm64	10.46-1~deb13u3	pcre2	10.46-1~deb13u3	base
 libperl5.40	arm64	5.40.1-6+deb13u1	perl	5.40.1-6+deb13u1	debian
-libpq5	arm64	17.11-0+deb13u1	postgresql-17	17.11-0+deb13u1	debian
+libpq5	arm64	17.12-0+deb13u1	postgresql-17	17.12-0+deb13u1	debian-security
 libproc2-0	arm64	2:4.0.4-9	procps	2:4.0.4-9	debian
 libreadline8t64	arm64	8.2-6	readline	8.2-6	debian
 libsasl2-2	arm64	2.1.28+dfsg1-9	cyrus-sasl2	2.1.28+dfsg1-9	debian
@@ -108,10 +108,10 @@ perl	arm64	5.40.1-6+deb13u1	perl	5.40.1-6+deb13u1	debian
 perl-base	arm64	5.40.1-6+deb13u1	perl	5.40.1-6+deb13u1	base
 perl-modules-5.40	all	5.40.1-6+deb13u1	perl	5.40.1-6+deb13u1	debian
 postgresql	all	17+278	postgresql-common	278	debian
-postgresql-15	arm64	15.19-1.pgdg13+2	postgresql-15	15.19-1.pgdg13+2	pgdg
-postgresql-17	arm64	17.11-0+deb13u1	postgresql-17	17.11-0+deb13u1	debian
-postgresql-client-15	arm64	15.19-1.pgdg13+2	postgresql-15	15.19-1.pgdg13+2	pgdg
-postgresql-client-17	arm64	17.11-0+deb13u1	postgresql-17	17.11-0+deb13u1	debian
+postgresql-15	arm64	15.20-1.pgdg13+1	postgresql-15	15.20-1.pgdg13+1	pgdg
+postgresql-17	arm64	17.12-0+deb13u1	postgresql-17	17.12-0+deb13u1	debian-security
+postgresql-client-15	arm64	15.20-1.pgdg13+1	postgresql-15	15.20-1.pgdg13+1	pgdg
+postgresql-client-17	arm64	17.12-0+deb13u1	postgresql-17	17.12-0+deb13u1	debian-security
 postgresql-client-common	all	278	postgresql-common	278	debian
 postgresql-common	all	278	postgresql-common	278	debian
 postgresql-common-dev	all	278	postgresql-common	278	debian

@@ -164,8 +164,8 @@ test('only the two reviewed PGDG15 helper transactions receive pgdg origin',()=>
  const bin=root+'/bin';mkdirSync(bin);executable(bin+'/dpkg','echo arm64');executable(bin+'/apt-cache','echo proof');executable(bin+'/dpkg-query',`cat '${root}/rows'`);
  writeFileSync(root+'/base','');const env={PATH:bin+':'+process.env.PATH};
  for(const pkg of ['postgresql-15','postgresql-client-15','libpq5']){
-  writeFileSync(root+'/rows',`installed\t${pkg}\tarm64\t15.19-1.pgdg13+2\tpostgresql-15\t15.19-1.pgdg13+2\n`);
-  writeFileSync(root+'/tx',`'https://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-15/${pkg}_15.19-1.pgdg13+2_arm64.deb' ${pkg}_15.19-1.pgdg13+2_arm64.deb 1 SHA256:abc\n`);
+  writeFileSync(root+'/rows',`installed\t${pkg}\tarm64\t15.20-1.pgdg13+1\tpostgresql-15\t15.20-1.pgdg13+1\n`);
+  writeFileSync(root+'/tx',`'https://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-15/${pkg}_15.20-1.pgdg13+1_arm64.deb' ${pkg}_15.20-1.pgdg13+1_arm64.deb 1 SHA256:abc\n`);
   const r=run('inventory.sh',['runtime',root+'/actual',root+'/base',root+'/tx'],env);
   if(pkg==='libpq5')assert.notEqual(r.status,0);else{assert.equal(r.status,0,r.stderr);assert.match(readFileSync(root+'/actual','utf8'),/\tpgdg\n/);}
  }
@@ -175,8 +175,8 @@ test('PG15 artifact downloader checks both hashes and rejects unsupported inputs
  const bin=root+'/bin';mkdirSync(bin);writeFileSync(root+'/bytes','reviewed artifact');
  executable(bin+'/curl',`while [ "$#" -gt 0 ]; do if [ "$1" = -o ]; then cp '${root}/bytes' "$2"; exit; fi; shift; done; exit 9`);
  const env={PATH:bin+':'+process.env.PATH},hash=hashFile(root+'/bytes');
- let r=run('fetch-pg15.sh',['arm64','15.19-1.pgdg13+2',hash,hash,root+'/ok'],env);assert.equal(r.status,0,r.stderr);
- const tx=readFileSync(root+'/ok/transaction.txt','utf8');assert.equal(tx.trim().split('\n').length,2);assert.match(tx,/postgresql-client-15_15.19-1.pgdg13\+2_arm64.deb/);
- assert.notEqual(run('fetch-pg15.sh',['arm64','15.19-1.pgdg13+2','a'.repeat(64),hash,root+'/bad'],env).status,0);
- assert.notEqual(run('fetch-pg15.sh',['arm64','16.0',hash,hash,root+'/unsupported'],env).status,0);
+ let r=run('fetch-pg15.sh',['arm64','15.20-1.pgdg13+1',hash,hash,root+'/ok'],env);assert.equal(r.status,0,r.stderr);
+ const tx=readFileSync(root+'/ok/transaction.txt','utf8');assert.equal(tx.trim().split('\n').length,2);assert.match(tx,/postgresql-client-15_15.20-1.pgdg13\+1_arm64.deb/);
+ assert.notEqual(run('fetch-pg15.sh',['arm64','15.20-1.pgdg13+1','a'.repeat(64),hash,root+'/bad'],env).status,0);
+ for(const version of ['15.19-1.pgdg13+2','16.0']){const refusal=run('fetch-pg15.sh',['arm64',version,hash,hash,root+'/unsupported'],env);assert.notEqual(refusal.status,0);assert.match(refusal.stderr,/pg15\/unsupported-artifact/);}
 }));

@@ -16,12 +16,12 @@ are available from https://snapshot.debian.org/ at the source versions listed be
 - docker/pins/inventory/api-builder-arm64.tsv: eb6903409a7bec9666b1b939c7989383245a42bfbdc8c5ef74660fa6d8eadcbc
 - docker/pins/inventory/keyring-amd64.tsv: 1b2241077aae1e976c9571c93b6183baf890c195d4ee6f888cdec3402cd71ab1
 - docker/pins/inventory/keyring-arm64.tsv: 2ff60de001f6b2f4c25bfa0b12269a626e893af3c8257ade30a785c1764822bd
-- docker/pins/inventory/runtime-amd64.tsv: 1cbd0cd8d2927b1bdea971d43dcc9633a8ada51e0f0a040c26a497b545302e2a
-- docker/pins/inventory/runtime-arm64.tsv: 796b37a693a88e4fbdb2476fcbf8acb8bade9bcb8a353184bc50e4403e3a48ae
+- docker/pins/inventory/runtime-amd64.tsv: 2f38ac7e5aa660c8e4a6659e2d72d1637f60f266552403393c8dc824d8258fb7
+- docker/pins/inventory/runtime-arm64.tsv: 04b09dd644e3728c789fabaf792abcd610972e8b834a7339e0e986beed5bc360
 - docker/turbo/package-lock.json: 90541d8aac02c8edc1506278f64156743e6bc4f4278be7bb0ecb28a7b3e82254
 - package.json: 91af8c58d9fa0674485207703d6ddc2e31aa5b95192e5295da22f1ad9cfe7731
 - yarn.lock: 74210442b1d67c120df33431ae3a8928cdee817206bd9d044b18ae8d7ef527ed
-- Dockerfile:ARG: 8ab4bad5b5c15cbd1933a27864ebd10b321c583a9fe73417595014733cff9709
+- Dockerfile:ARG: 17a13def0cbf1c6feca54bff5f5b99ed5d596b85351257b037f1a790f2009a1b
 
 ## Text 000cbb5bea6f21829c8f0d9e1fe87410bd5ef0453412ffc017845982a3e19824
 
@@ -62687,16 +62687,16 @@ Referenced common licence texts are reproduced in the DEBIAN_COMMON_LICENSES blo
 <!-- /nwui-text:7c8965337f9188c9d17715441aad8b0ddac2783e119320409b7bcc3e7d33bd1d -->
 
 Applies to:
-- deb:runtime-amd64.tsv:libpq5=17.11-0+deb13u1 — debian/copyright
-- deb:runtime-amd64.tsv:postgresql-15=15.19-1.pgdg13+2 — ./usr/share/doc/postgresql-15/copyright
-- deb:runtime-amd64.tsv:postgresql-17=17.11-0+deb13u1 — debian/copyright
-- deb:runtime-amd64.tsv:postgresql-client-15=15.19-1.pgdg13+2 — ./usr/share/doc/postgresql-client-15/copyright
-- deb:runtime-amd64.tsv:postgresql-client-17=17.11-0+deb13u1 — debian/copyright
-- deb:runtime-arm64.tsv:libpq5=17.11-0+deb13u1 — debian/copyright
-- deb:runtime-arm64.tsv:postgresql-15=15.19-1.pgdg13+2 — ./usr/share/doc/postgresql-15/copyright
-- deb:runtime-arm64.tsv:postgresql-17=17.11-0+deb13u1 — debian/copyright
-- deb:runtime-arm64.tsv:postgresql-client-15=15.19-1.pgdg13+2 — ./usr/share/doc/postgresql-client-15/copyright
-- deb:runtime-arm64.tsv:postgresql-client-17=17.11-0+deb13u1 — debian/copyright
+- deb:runtime-amd64.tsv:libpq5=17.12-0+deb13u1 — debian/copyright
+- deb:runtime-amd64.tsv:postgresql-15=15.20-1.pgdg13+1 — ./usr/share/doc/postgresql-15/copyright
+- deb:runtime-amd64.tsv:postgresql-17=17.12-0+deb13u1 — debian/copyright
+- deb:runtime-amd64.tsv:postgresql-client-15=15.20-1.pgdg13+1 — ./usr/share/doc/postgresql-client-15/copyright
+- deb:runtime-amd64.tsv:postgresql-client-17=17.12-0+deb13u1 — debian/copyright
+- deb:runtime-arm64.tsv:libpq5=17.12-0+deb13u1 — debian/copyright
+- deb:runtime-arm64.tsv:postgresql-15=15.20-1.pgdg13+1 — ./usr/share/doc/postgresql-15/copyright
+- deb:runtime-arm64.tsv:postgresql-17=17.12-0+deb13u1 — debian/copyright
+- deb:runtime-arm64.tsv:postgresql-client-15=15.20-1.pgdg13+1 — ./usr/share/doc/postgresql-client-15/copyright
+- deb:runtime-arm64.tsv:postgresql-client-17=17.12-0+deb13u1 — debian/copyright
 
 ## Text 7ca6700600dfa9c9497bf5556365067daa802c871ea78239f129309c7a2048f7
 
@@ -136377,11 +136377,11 @@ Evidence: archive; source archive SHA-256: 5ee76db601d6f4638433ab9b0f5bd5cfb15b1
 Debian source: perl 5.40.1-6+deb13u1.
 - Text 28ea0909711bd5dac6f03a413b9b7de1c526bea1998bd8506ecfc82f67c54a5b
 
-### deb:runtime-amd64.tsv:libpq5=17.11-0+deb13u1
+### deb:runtime-amd64.tsv:libpq5=17.12-0+deb13u1
 
 Coverage: runtime; architecture: amd64; licence: LicenseRef-344854d039233509f8002ba2.
-Evidence: archive; source archive SHA-256: 82851f4dfeb372c99b94b412e2e3046a8eee7771098e42ac1fa234bef2611cbd.
-Debian source: postgresql-17 17.11-0+deb13u1.
+Evidence: archive; source archive SHA-256: 2e02b8b27ec24abf8ee8ed3395703b02708bdf35284b65b254e84bc27351b5b6.
+Debian source: postgresql-17 17.12-0+deb13u1.
 - Text 7c8965337f9188c9d17715441aad8b0ddac2783e119320409b7bcc3e7d33bd1d
 
 ### deb:runtime-amd64.tsv:libproc2-0=2:4.0.4-9
@@ -136657,32 +136657,32 @@ Evidence: archive; source archive SHA-256: 5ee76db601d6f4638433ab9b0f5bd5cfb15b1
 Debian source: perl 5.40.1-6+deb13u1.
 - Text 28ea0909711bd5dac6f03a413b9b7de1c526bea1998bd8506ecfc82f67c54a5b
 
-### deb:runtime-amd64.tsv:postgresql-15=15.19-1.pgdg13+2
+### deb:runtime-amd64.tsv:postgresql-15=15.20-1.pgdg13+1
 
 Coverage: runtime; architecture: amd64; licence: LicenseRef-cf3e2758a5f54f1fef2095df.
-Evidence: archive; source archive SHA-256: d2b16b7fa4abc3154e3bdc0715e566085c0578d7c2100593df388d2d9a44e1c1.
-Debian source: postgresql-15 15.19-1.pgdg13+2.
+Evidence: archive; source archive SHA-256: 2aa1fe56821608958a049c0f836ed91e148c8dbfcb779e616d11e099af4a8e1f.
+Debian source: postgresql-15 15.20-1.pgdg13+1.
 - Text 7c8965337f9188c9d17715441aad8b0ddac2783e119320409b7bcc3e7d33bd1d
 
-### deb:runtime-amd64.tsv:postgresql-17=17.11-0+deb13u1
+### deb:runtime-amd64.tsv:postgresql-17=17.12-0+deb13u1
 
 Coverage: runtime; architecture: amd64; licence: LicenseRef-344854d039233509f8002ba2.
-Evidence: archive; source archive SHA-256: 82851f4dfeb372c99b94b412e2e3046a8eee7771098e42ac1fa234bef2611cbd.
-Debian source: postgresql-17 17.11-0+deb13u1.
+Evidence: archive; source archive SHA-256: 2e02b8b27ec24abf8ee8ed3395703b02708bdf35284b65b254e84bc27351b5b6.
+Debian source: postgresql-17 17.12-0+deb13u1.
 - Text 7c8965337f9188c9d17715441aad8b0ddac2783e119320409b7bcc3e7d33bd1d
 
-### deb:runtime-amd64.tsv:postgresql-client-15=15.19-1.pgdg13+2
+### deb:runtime-amd64.tsv:postgresql-client-15=15.20-1.pgdg13+1
 
 Coverage: runtime; architecture: amd64; licence: LicenseRef-a8725141465aba4877d58636.
-Evidence: archive; source archive SHA-256: 718b5a25eb99db5ee37b165ebeeefea50ecf993c9cde1db26eb401e6bbe0be08.
-Debian source: postgresql-15 15.19-1.pgdg13+2.
+Evidence: archive; source archive SHA-256: 53d423aa8601fe0377f469a71a71fb0b5e14618fea31157429f651ea95e7e07e.
+Debian source: postgresql-15 15.20-1.pgdg13+1.
 - Text 7c8965337f9188c9d17715441aad8b0ddac2783e119320409b7bcc3e7d33bd1d
 
-### deb:runtime-amd64.tsv:postgresql-client-17=17.11-0+deb13u1
+### deb:runtime-amd64.tsv:postgresql-client-17=17.12-0+deb13u1
 
 Coverage: runtime; architecture: amd64; licence: LicenseRef-344854d039233509f8002ba2.
-Evidence: archive; source archive SHA-256: 82851f4dfeb372c99b94b412e2e3046a8eee7771098e42ac1fa234bef2611cbd.
-Debian source: postgresql-17 17.11-0+deb13u1.
+Evidence: archive; source archive SHA-256: 2e02b8b27ec24abf8ee8ed3395703b02708bdf35284b65b254e84bc27351b5b6.
+Debian source: postgresql-17 17.12-0+deb13u1.
 - Text 7c8965337f9188c9d17715441aad8b0ddac2783e119320409b7bcc3e7d33bd1d
 
 ### deb:runtime-amd64.tsv:postgresql-client-common=278
@@ -137280,11 +137280,11 @@ Evidence: archive; source archive SHA-256: 5ee76db601d6f4638433ab9b0f5bd5cfb15b1
 Debian source: perl 5.40.1-6+deb13u1.
 - Text 28ea0909711bd5dac6f03a413b9b7de1c526bea1998bd8506ecfc82f67c54a5b
 
-### deb:runtime-arm64.tsv:libpq5=17.11-0+deb13u1
+### deb:runtime-arm64.tsv:libpq5=17.12-0+deb13u1
 
 Coverage: runtime; architecture: arm64; licence: LicenseRef-344854d039233509f8002ba2.
-Evidence: archive; source archive SHA-256: 82851f4dfeb372c99b94b412e2e3046a8eee7771098e42ac1fa234bef2611cbd.
-Debian source: postgresql-17 17.11-0+deb13u1.
+Evidence: archive; source archive SHA-256: 2e02b8b27ec24abf8ee8ed3395703b02708bdf35284b65b254e84bc27351b5b6.
+Debian source: postgresql-17 17.12-0+deb13u1.
 - Text 7c8965337f9188c9d17715441aad8b0ddac2783e119320409b7bcc3e7d33bd1d
 
 ### deb:runtime-arm64.tsv:libproc2-0=2:4.0.4-9
@@ -137560,32 +137560,32 @@ Evidence: archive; source archive SHA-256: 5ee76db601d6f4638433ab9b0f5bd5cfb15b1
 Debian source: perl 5.40.1-6+deb13u1.
 - Text 28ea0909711bd5dac6f03a413b9b7de1c526bea1998bd8506ecfc82f67c54a5b
 
-### deb:runtime-arm64.tsv:postgresql-15=15.19-1.pgdg13+2
+### deb:runtime-arm64.tsv:postgresql-15=15.20-1.pgdg13+1
 
 Coverage: runtime; architecture: arm64; licence: LicenseRef-cf3e2758a5f54f1fef2095df.
-Evidence: archive; source archive SHA-256: b39bdf5c6282378ca5989829ccf83ed4d79f55ea6fe59c805b3830b64177a3db.
-Debian source: postgresql-15 15.19-1.pgdg13+2.
+Evidence: archive; source archive SHA-256: 99baceaca6a56ec25944eee60724338bfebf5eed073fddc862ba75d92e8d1c6d.
+Debian source: postgresql-15 15.20-1.pgdg13+1.
 - Text 7c8965337f9188c9d17715441aad8b0ddac2783e119320409b7bcc3e7d33bd1d
 
-### deb:runtime-arm64.tsv:postgresql-17=17.11-0+deb13u1
+### deb:runtime-arm64.tsv:postgresql-17=17.12-0+deb13u1
 
 Coverage: runtime; architecture: arm64; licence: LicenseRef-344854d039233509f8002ba2.
-Evidence: archive; source archive SHA-256: 82851f4dfeb372c99b94b412e2e3046a8eee7771098e42ac1fa234bef2611cbd.
-Debian source: postgresql-17 17.11-0+deb13u1.
+Evidence: archive; source archive SHA-256: 2e02b8b27ec24abf8ee8ed3395703b02708bdf35284b65b254e84bc27351b5b6.
+Debian source: postgresql-17 17.12-0+deb13u1.
 - Text 7c8965337f9188c9d17715441aad8b0ddac2783e119320409b7bcc3e7d33bd1d
 
-### deb:runtime-arm64.tsv:postgresql-client-15=15.19-1.pgdg13+2
+### deb:runtime-arm64.tsv:postgresql-client-15=15.20-1.pgdg13+1
 
 Coverage: runtime; architecture: arm64; licence: LicenseRef-a8725141465aba4877d58636.
-Evidence: archive; source archive SHA-256: 29b55286e8de51c79ad317968e03d7a311c66c101e8536e2b635d860da3648af.
-Debian source: postgresql-15 15.19-1.pgdg13+2.
+Evidence: archive; source archive SHA-256: 684d6394eaf3921e25bc9934c303f673dcd03c80d2e5b06e1a3e7feacc6a7c68.
+Debian source: postgresql-15 15.20-1.pgdg13+1.
 - Text 7c8965337f9188c9d17715441aad8b0ddac2783e119320409b7bcc3e7d33bd1d
 
-### deb:runtime-arm64.tsv:postgresql-client-17=17.11-0+deb13u1
+### deb:runtime-arm64.tsv:postgresql-client-17=17.12-0+deb13u1
 
 Coverage: runtime; architecture: arm64; licence: LicenseRef-344854d039233509f8002ba2.
-Evidence: archive; source archive SHA-256: 82851f4dfeb372c99b94b412e2e3046a8eee7771098e42ac1fa234bef2611cbd.
-Debian source: postgresql-17 17.11-0+deb13u1.
+Evidence: archive; source archive SHA-256: 2e02b8b27ec24abf8ee8ed3395703b02708bdf35284b65b254e84bc27351b5b6.
+Debian source: postgresql-17 17.12-0+deb13u1.
 - Text 7c8965337f9188c9d17715441aad8b0ddac2783e119320409b7bcc3e7d33bd1d
 
 ### deb:runtime-arm64.tsv:postgresql-client-common=278
