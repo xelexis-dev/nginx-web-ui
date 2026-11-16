@@ -6,6 +6,7 @@ import {
   StatusBadge,
   Banner,
   linkClassName,
+  EmptyState,
   Surface,
   buttonClassName,
   Table,
@@ -66,7 +67,7 @@ export function RecipientListView({
           }
           role="status"
         >
-          <p className={styles.hint} style={{ marginTop: "var(--sp-2)" }}>
+          <p className={styles.hint}>
             <Link href="/admin/settings/smtp" className={linkClassName()}>
               SMTP 설정
             </Link>
@@ -100,9 +101,16 @@ export function RecipientListView({
           <tbody>
             {recipients.length === 0 ? (
               <Tr>
-                <Td colSpan={4} className={styles.emptyCell}>
-                  등록된 수신처가 없습니다. 인증서 만기 안내를 받을 주소를
-                  추가하세요.
+                <Td colSpan={4}>
+                  <EmptyState
+                    description={
+                      <>
+                        {" "}
+                        등록된 수신처가 없습니다. 인증서 만기 안내를 받을 주소를
+                        추가하세요.{" "}
+                      </>
+                    }
+                  />
                 </Td>
               </Tr>
             ) : null}

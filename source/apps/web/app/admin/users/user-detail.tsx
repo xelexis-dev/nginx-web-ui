@@ -27,12 +27,14 @@ export function UserDetailView({
   detailActions,
   passkeys,
   twoFactor,
+  result,
 }: {
   user: AdminUserView;
   isSelf: boolean;
   detailActions: ReactNode;
   passkeys?: ReactNode;
   twoFactor?: ReactNode;
+  result?: ReactNode;
 }) {
   return (
     <section className={layout.page}>
@@ -42,6 +44,11 @@ export function UserDetailView({
             {user.email}
             {isSelf ? <span className={styles.youTag}>(나)</span> : null}
           </>
+        }
+        status={
+          <StatusBadge tone={user.enabled ? "success" : "neutral"}>
+            {user.enabled ? "활성" : "비활성"}
+          </StatusBadge>
         }
         eyebrow={
           <>
@@ -58,6 +65,7 @@ export function UserDetailView({
         actions={detailActions}
       />
 
+      {result}
       <Surface as="div">
         <Facts
           columns={2}

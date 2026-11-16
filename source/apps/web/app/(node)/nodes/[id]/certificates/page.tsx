@@ -1,3 +1,5 @@
+import { PageHeader } from "@repo/ui";
+import layout from "@/components/page-layout.module.css";
 import { can } from "@/lib/permissions";
 import { CertificateList } from "@/components/certificates/certificate-list";
 import {
@@ -98,7 +100,12 @@ export default async function NodeCertificatesPage({ params }: { params: Promise
     },
   });
 
-  if (!loaded.ok) return loaded.render;
+  if (!loaded.ok) return (
+    <section className={layout.page}>
+      <PageHeader title="인증서" />
+      {loaded.render}
+    </section>
+  );
 
   // **`canWrite` 를 손으로 만들지 않는다** — `loadNodePageAll` 이 실어 준
   // `effectiveRole`(= min(사용자 등급, 노드 토큰 등급))로 판정한다. 세션에서 다시

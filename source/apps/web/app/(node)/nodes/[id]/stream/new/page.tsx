@@ -21,7 +21,12 @@ export default async function NewNodeStreamPage({ params }: { params: Promise<{ 
     retryHref: `${basePath}/new`,
     listHref: basePath,
   });
-  if (!auth.ok) return auth.render;
+  if (!auth.ok) return (
+    <section className={layout.page}>
+      <PageHeader title="새 Stream" />
+      {auth.render}
+    </section>
+  );
 
   return (
     <section className={layout.page}>

@@ -2,7 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { TokenListRow } from "@/lib/token-presentation";
-import { tokenWireFixture, tokenScopeFixture } from "@/lib/token-api-fixtures.test-support";
+import {
+  tokenWireFixture,
+  tokenScopeFixture,
+} from "@/lib/token-api-fixtures.test-support";
 import type { ExpiryPreset, TokenRowView } from "./tokens";
 
 /**
@@ -26,28 +29,27 @@ import type { ExpiryPreset, TokenRowView } from "./tokens";
  *
  * 서버 렌더는 언제나 **초기 상태**를 그린다. 그래서 「발급 직후」와 「복사 실패」에
  * 도달할 방법이 렌더 경로에 없다. 컴포넌트에 `initialState` 같은 뒷문을 뚫는 대신
- * **훅만** 바꿔 끼운다: 그러면 `if (state.token)`·`copyStatus === "failed"` 분기까지
+ * **훅만** 바꿔 끼운다: 그러면 `if (state.token)` 분기까지
  * **진짜 컴포넌트**가 실행되고, 그 줄을 지우면 검사가 죽는다. 나머지(`useState` 의
  * 다른 호출 전부 포함)는 실제 React 그대로다.
  */
 
 let actionStateOverride: unknown;
-/** `COPY_IDLE` 로 시작하는 `useState` **하나만** 겨눈다(그 값은 이 파일에서 유일하다). */
-let copyStatusOverride: string | undefined;
+let copyStateOverride: "failed" | undefined;
 
 vi.mock("react", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react")>();
   return {
     ...actual,
+    useState: (initial: unknown) =>
+      copyStateOverride && initial === "idle"
+        ? [copyStateOverride, () => {}]
+        : actual.useState(initial as never),
     useActionState: (_action: unknown, initial: unknown) => [
       actionStateOverride ?? initial,
       () => {},
       false,
     ],
-    useState: (init: unknown) =>
-      copyStatusOverride !== undefined && init === COPY_IDLE
-        ? [copyStatusOverride, () => {}]
-        : actual.useState(init as never),
   };
 });
 
@@ -59,15 +61,29 @@ const listTokensMock = vi.fn();
 // Backend role/ownership enforcement is covered by Rust auth_tokens_db/admin_http.
 const readPageApiMock = vi.fn(async (path: string) => {
   const user = (await currentUserMock())?.user;
-  if (!user || (path.includes("/admin/") && user.role !== "admin")) redirectMock("/login");
+  if (!user || (path.includes("/admin/") && user.role !== "admin"))
+    redirectMock("/login");
 
-  const tokens = ((await listTokensMock()) as TokenListRow[]).map(tokenWireFixture);
+  const tokens = ((await listTokensMock()) as TokenListRow[]).map(
+    tokenWireFixture,
+  );
   const id = path.split("/tokens/")[1];
-  if (id !== undefined) return tokens.find((row) => row.id === decodeURIComponent(id)) ?? notFoundMock();
-  return { tokens, issuableScopes: tokenScopeFixture(path.includes("/admin/") ? "server" : "user", user!.role) };
+  if (id !== undefined)
+    return (
+      tokens.find((row) => row.id === decodeURIComponent(id)) ?? notFoundMock()
+    );
+  return {
+    tokens,
+    issuableScopes: tokenScopeFixture(
+      path.includes("/admin/") ? "server" : "user",
+      user!.role,
+    ),
+  };
 });
 vi.mock("@/lib/api-page", () => ({ readPageApi: readPageApiMock }));
-vi.mock("@/lib/use-api-action", () => ({ useApiAction: (action: unknown) => action }));
+vi.mock("@/lib/use-api-action", () => ({
+  useApiAction: (action: unknown) => action,
+}));
 
 const redirectMock = vi.fn((_to: string) => {
   throw new Error("NEXT_REDIRECT");
@@ -75,14 +91,17 @@ const redirectMock = vi.fn((_to: string) => {
 const notFoundMock = vi.fn(() => {
   throw new Error("NEXT_NOT_FOUND");
 });
-vi.mock("next/navigation", () => ({ redirect: redirectMock, notFound: notFoundMock }));
+vi.mock("next/navigation", () => ({
+  redirect: redirectMock,
+  notFound: notFoundMock,
+}));
 
 const { default: TokensPage } = await import("./page");
 const { default: NewTokenPage } = await import("./new/page");
 const { default: TokenDetailPage } = await import("./[id]/page");
 const { TokenList } = await import("./token-list");
 const { TokenDetail } = await import("./token-detail");
-const { TokenForm, COPY_IDLE, copyTokenToClipboard } = await import("./token-form");
+const { TokenForm } = await import("./token-form");
 
 // ──────────────────────────────────────────────────────────────────────────
 // 고정값
@@ -159,7 +178,10 @@ const noopRevoke = async () => ({ ok: false });
  * `custom` 분기를 애초에 겨눌 수 없었고, 그래서 날짜 입력칸이 통째로 사라져도
  * 아무 검사도 죽지 않았다.
  */
-function renderFormWithPreset(preset: ExpiryPreset, basePath = "/account/tokens"): string {
+function renderFormWithPreset(
+  preset: ExpiryPreset,
+  basePath = "/account/tokens",
+): string {
   return renderToStaticMarkup(
     <TokenForm
       kind="user"
@@ -185,15 +207,21 @@ function textOfHtml(fragment: string): string {
 function bodyRows(html: string): string[][] {
   const tbody = /<tbody>([\s\S]*?)<\/tbody>/.exec(html)?.[1] ?? "";
   return [...tbody.matchAll(/<tr>([\s\S]*?)<\/tr>/g)].map((tr) =>
-    [...(tr[1] ?? "").matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((td) => textOfHtml(td[1] ?? "")),
+    [...(tr[1] ?? "").matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((td) =>
+      textOfHtml(td[1] ?? ""),
+    ),
   );
 }
 
 /** 정의목록의 term→value. 키 순서까지 봐야 행 삭제가 잡힌다. */
 function dlPairs(html: string): Record<string, string> {
   const dl = /<dl[^>]*>([\s\S]*?)<\/dl>/.exec(html)?.[1] ?? "";
-  const terms = [...dl.matchAll(/<dt[^>]*>([\s\S]*?)<\/dt>/g)].map((m) => textOfHtml(m[1] ?? ""));
-  const values = [...dl.matchAll(/<dd[^>]*>([\s\S]*?)<\/dd>/g)].map((m) => textOfHtml(m[1] ?? ""));
+  const terms = [...dl.matchAll(/<dt[^>]*>([\s\S]*?)<\/dt>/g)].map((m) =>
+    textOfHtml(m[1] ?? ""),
+  );
+  const values = [...dl.matchAll(/<dd[^>]*>([\s\S]*?)<\/dd>/g)].map((m) =>
+    textOfHtml(m[1] ?? ""),
+  );
   return Object.fromEntries(terms.map((t, i) => [t, values[i] ?? ""]));
 }
 
@@ -220,7 +248,9 @@ function inputTags(html: string): string[] {
  */
 function tipAfterTitle(html: string, title: string): string {
   const after = html.split(`${title}</h1>`)[1] ?? "";
-  return textOfHtml(/<div[^>]*role="tooltip"[^>]*>([\s\S]*?)<\/div>/.exec(after)?.[1] ?? "");
+  return textOfHtml(
+    /<div[^>]*role="tooltip"[^>]*>([\s\S]*?)<\/div>/.exec(after)?.[1] ?? "",
+  );
 }
 
 /** 그 id 를 가진 `<input>` 태그 전체. 속성(`value=`)을 보려고 태그째 낸다. */
@@ -236,7 +266,7 @@ function hrefs(html: string): string[] {
 beforeEach(() => {
   vi.clearAllMocks();
   actionStateOverride = undefined;
-  copyStatusOverride = undefined;
+  copyStateOverride = undefined;
   signedInAs("editor");
   listTokensMock.mockResolvedValue([]);
 });
@@ -264,7 +294,12 @@ describe("발급 폼 — scope 체크박스", () => {
     signedInAs("admin");
     const boxes = scopeCheckboxes(await renderPage(NewTokenPage));
 
-    expect(boxes).toEqual(["config:read", "config:write", "nginx:reload", "user:manage"]);
+    expect(boxes).toEqual([
+      "config:read",
+      "config:write",
+      "nginx:reload",
+      "user:manage",
+    ]);
   });
 
   it("viewer 에게는 config:write 체크박스가 없다", async () => {
@@ -312,10 +347,20 @@ describe("발급 폼 — 폼이 보내는 것", () => {
 
   it("종류에 따라 이름 예시가 달라진다 — kind prop 이 실제로 쓰인다", () => {
     const user = renderToStaticMarkup(
-      <TokenForm kind="user" scopes={["config:read"]} action={noopIssue} basePath="/account/tokens" />,
+      <TokenForm
+        kind="user"
+        scopes={["config:read"]}
+        action={noopIssue}
+        basePath="/account/tokens"
+      />,
     );
     const server = renderToStaticMarkup(
-      <TokenForm kind="server" scopes={["node:pair"]} action={noopIssue} basePath="/admin/tokens" />,
+      <TokenForm
+        kind="server"
+        scopes={["node:pair"]}
+        action={noopIssue}
+        basePath="/admin/tokens"
+      />,
     );
 
     expect(user).toContain('placeholder="노트북 CLI"');
@@ -327,26 +372,52 @@ describe("발급 폼 — 폼이 보내는 것", () => {
 
   it("새 서버 토큰은 무기한을 고를 수 없고 사용자 토큰은 유지한다", () => {
     const server = renderToStaticMarkup(
-      <TokenForm kind="server" scopes={["node:pair"]} action={noopIssue} basePath="/admin/tokens" defaultPreset="never" />,
+      <TokenForm
+        kind="server"
+        scopes={["node:pair"]}
+        action={noopIssue}
+        basePath="/admin/tokens"
+        defaultPreset="never"
+      />,
     );
     expect(server).toContain('name="expiry" value="90d"');
     expect(server).not.toContain("무기한");
-    expect(renderFormWithPreset("never")).toContain('name="expiry" value="never"');
+    expect(renderFormWithPreset("never")).toContain(
+      'name="expiry" value="never"',
+    );
   });
 
   it("새 서버 토큰은 기본 editor 연결 권한을 미리 고른다", () => {
     const html = renderToStaticMarkup(
-      <TokenForm kind="server" scopes={["node:pair", "config:read", "config:write", "nginx:reload", "user:manage"]} action={noopIssue} basePath="/admin/tokens" />,
+      <TokenForm
+        kind="server"
+        scopes={[
+          "node:pair",
+          "config:read",
+          "config:write",
+          "nginx:reload",
+          "user:manage",
+        ]}
+        action={noopIssue}
+        basePath="/admin/tokens"
+      />,
     );
     const checked = [...html.matchAll(/<input\b[^>]*>/g)]
       .map((match) => match[0])
-      .filter((input) => input.includes('name="scopes"') && input.includes("checked"))
-      .map((input) => input.match(/value="([^"]+)"/)?.[1]).sort();
-    expect(checked).toEqual(["node:pair", "config:read", "config:write", "nginx:reload"].sort());
+      .filter(
+        (input) => input.includes('name="scopes"') && input.includes("checked"),
+      )
+      .map((input) => input.match(/value="([^"]+)"/)?.[1])
+      .sort();
+    expect(checked).toEqual(
+      ["node:pair", "config:read", "config:write", "nginx:reload"].sort(),
+    );
   });
 
   it("「취소」도 basePath 로 간다 — 경로가 박혀 있지 않다", () => {
-    expect(hrefs(renderFormWithPreset("90d", "/admin/tokens"))).toEqual(["/admin/tokens"]);
+    expect(hrefs(renderFormWithPreset("90d", "/admin/tokens"))).toEqual([
+      "/admin/tokens",
+    ]);
   });
 
   it("실패해도 다시 칠 필요가 없도록 입력이 제어형이다", () => {
@@ -403,7 +474,10 @@ describe("발급 폼 — 만료 입력칸", () => {
 
 describe("발급 폼 — 오류 표시", () => {
   it("폼 레벨 오류를 그린다 — Task 6 의 액션이 쓰는 자리다", () => {
-    actionStateOverride = { ok: false, error: "서버 토큰은 관리자만 발급할 수 있습니다." };
+    actionStateOverride = {
+      ok: false,
+      error: "서버 토큰은 관리자만 발급할 수 있습니다.",
+    };
     const html = renderFormWithPreset("90d");
 
     expect(html).toContain("토큰을 발급하지 못했습니다");
@@ -416,7 +490,12 @@ describe("발급 폼 — 오류 표시", () => {
 // ──────────────────────────────────────────────────────────────────────────
 
 describe("발급 직후", () => {
-  const ISSUED = { ok: true, token: PLAINTEXT, id: "tok-new", name: "노트북 CLI" };
+  const ISSUED = {
+    ok: true,
+    token: PLAINTEXT,
+    id: "tok-new",
+    name: "노트북 CLI",
+  };
 
   it("평문을 한 번만 그리고 다시 볼 수 없다고 말한다", async () => {
     actionStateOverride = ISSUED;
@@ -468,64 +547,21 @@ describe("발급 직후", () => {
     expect(html).not.toMatch(TOKEN_LIKE);
   });
 
-  /**
-   * `navigator.clipboard` 는 secure context 밖에서 **없다**. 이 제품은 흔히
-   * `http://<host>:8080` 에 놓이고, 그때 조용히 아무 일도 안 하면 사용자는
-   * **다시 볼 수 없는 값**을 잃는다.
-   */
-  it("복사에 실패하면 그 사실을 말한다", () => {
+  it("announces manual-copy guidance when the one-time secret cannot be copied", () => {
     actionStateOverride = ISSUED;
-    copyStatusOverride = "failed";
+    copyStateOverride = "failed";
     const html = renderFormWithPreset("90d");
-
-    expect(html).toContain("복사할 수 없습니다");
-    expect(html).toContain("직접 선택해 복사하세요");
+    expect(html).toMatch(
+      /<p[^>]*role="alert"[^>]*>복사할 수 없습니다 — 위 값을 직접 선택해 복사하세요\.<\/p>/,
+    );
+    expect(html).toContain(PLAINTEXT);
   });
-
-  it("복사에 성공하면 버튼이 그렇게 말한다", () => {
-    actionStateOverride = ISSUED;
-    copyStatusOverride = "copied";
-
-    expect(renderFormWithPreset("90d")).toContain("복사됨");
-  });
-
-  it("아직 누르지 않았으면 둘 다 없다", () => {
+  it("delegates the one-time value to the secret CodePane", () => {
     actionStateOverride = ISSUED;
     const html = renderFormWithPreset("90d");
-
-    expect(html).not.toContain("복사됨");
-    expect(html).not.toContain("복사할 수 없습니다");
+    expect(html).toContain('data-variant="secret"');
+    expect(html).toContain(PLAINTEXT);
     expect(html).toContain("복사");
-  });
-});
-
-/**
- * 복사 자체는 클릭 핸들러 안에서 일어나므로 서버 렌더로는 **절대 실행되지 않는다** —
- * 실제로 1차 수정에서 「옵셔널 체이닝으로 되돌리기」 변이가 그래서 살아남았다.
- * 그래서 그 판정만 컴포넌트 밖으로 꺼내 두고 여기서 직접 부른다.
- */
-describe("클립보드", () => {
-  it("클립보드가 없으면 실패로 낸다 — 조용히 넘기지 않는다", async () => {
-    // secure context 밖(`http://host:8080`)의 모습이다.
-    vi.stubGlobal("navigator", {});
-
-    await expect(copyTokenToClipboard(PLAINTEXT)).resolves.toBe("failed");
-  });
-
-  it("권한이 거부되면 실패로 낸다", async () => {
-    vi.stubGlobal("navigator", {
-      clipboard: { writeText: () => Promise.reject(new Error("NotAllowedError")) },
-    });
-
-    await expect(copyTokenToClipboard(PLAINTEXT)).resolves.toBe("failed");
-  });
-
-  it("복사되면 평문을 그대로 넘긴다", async () => {
-    const writeText = vi.fn(async () => {});
-    vi.stubGlobal("navigator", { clipboard: { writeText } });
-
-    await expect(copyTokenToClipboard(PLAINTEXT)).resolves.toBe("copied");
-    expect(writeText).toHaveBeenCalledExactlyOnceWith(PLAINTEXT);
   });
 });
 
@@ -543,12 +579,21 @@ describe("목록", () => {
     );
 
     expect(bodyRows(html)).toEqual([
-      ["노트북 CLI", MASKED, "config:read nginx:reload", "마지막사용-값", "만료-값", "유효"],
+      [
+        "노트북 CLI",
+        MASKED,
+        "config:read nginx:reload",
+        "마지막사용-값",
+        "만료-값",
+        "유효",
+      ],
     ]);
   });
 
   it("가림 표시만 그린다 — 평문 모양의 문자열이 없다", () => {
-    const html = renderToStaticMarkup(<TokenList rows={[view()]} basePath="/account/tokens" />);
+    const html = renderToStaticMarkup(
+      <TokenList rows={[view()]} basePath="/account/tokens" />,
+    );
 
     expect(html).toContain(MASKED);
     expect(html).not.toMatch(TOKEN_LIKE);
@@ -592,7 +637,11 @@ describe("목록", () => {
 
   it("비었으면 그 사실을 말한다", () => {
     const html = renderToStaticMarkup(
-      <TokenList rows={[]} basePath="/account/tokens" emptyMessage="아직 만든 토큰이 없습니다." />,
+      <TokenList
+        rows={[]}
+        basePath="/account/tokens"
+        emptyMessage="아직 만든 토큰이 없습니다."
+      />,
     );
 
     expect(bodyRows(html)).toEqual([["아직 만든 토큰이 없습니다."]]);
@@ -601,10 +650,14 @@ describe("목록", () => {
 
 describe("목록 페이지", () => {
   it("세션 범위로만 읽고, 읽은 것을 표로 그린다", async () => {
-    listTokensMock.mockResolvedValue([row({ lastUsedAt: null, expiresAt: null })]);
+    listTokensMock.mockResolvedValue([
+      row({ lastUsedAt: null, expiresAt: null }),
+    ]);
     const html = await renderPage(TokensPage);
 
-    expect(readPageApiMock).toHaveBeenCalledExactlyOnceWith("/api/ui/v1/account/tokens");
+    expect(readPageApiMock).toHaveBeenCalledExactlyOnceWith(
+      "/api/ui/v1/account/tokens",
+    );
     // 날짜 문자열은 도는 곳의 TZ 를 타므로 **없을 때의 문구**로 붙든다 — 그쪽이
     // TZ 와 무관하고, 칸이 비었는지도 함께 본다.
     expect(bodyRows(html)).toEqual([
@@ -665,7 +718,11 @@ describe("상세", () => {
 
   it("가림 표시만 그린다 — 평문은 여기 없다", () => {
     const html = renderToStaticMarkup(
-      <TokenDetail view={view()} basePath="/account/tokens" revoke={noopRevoke} />,
+      <TokenDetail
+        view={view()}
+        basePath="/account/tokens"
+        revoke={noopRevoke}
+      />,
     );
 
     expect(html).toContain(MASKED);
@@ -674,7 +731,11 @@ describe("상세", () => {
 
   it("해지 폼은 id 만 보낸다 — 범위를 폼에서 받지 않는다", () => {
     const html = renderToStaticMarkup(
-      <TokenDetail view={view({ id: "tok-7" })} basePath="/account/tokens" revoke={noopRevoke} />,
+      <TokenDetail
+        view={view({ id: "tok-7" })}
+        basePath="/account/tokens"
+        revoke={noopRevoke}
+      />,
     );
 
     expect(html).toContain('name="id"');
@@ -685,11 +746,19 @@ describe("상세", () => {
 
   it("해지된 토큰에는 해지 버튼이 없다", () => {
     const live = renderToStaticMarkup(
-      <TokenDetail view={view()} basePath="/account/tokens" revoke={noopRevoke} />,
+      <TokenDetail
+        view={view()}
+        basePath="/account/tokens"
+        revoke={noopRevoke}
+      />,
     );
     const dead = renderToStaticMarkup(
       <TokenDetail
-        view={view({ status: "revoked", revoked: true, revokedAt: "끊긴-시각" })}
+        view={view({
+          status: "revoked",
+          revoked: true,
+          revokedAt: "끊긴-시각",
+        })}
         basePath="/account/tokens"
         revoke={noopRevoke}
       />,
@@ -703,16 +772,27 @@ describe("상세", () => {
 
   it("「목록으로」는 basePath 로 간다 — 경로가 박혀 있지 않다", () => {
     const html = renderToStaticMarkup(
-      <TokenDetail view={view()} basePath="/admin/tokens" revoke={noopRevoke} />,
+      <TokenDetail
+        view={view()}
+        basePath="/admin/tokens"
+        revoke={noopRevoke}
+      />,
     );
 
     expect(hrefs(html)).toEqual(["/admin/tokens", "/admin/security"]);
   });
 
   it("해지 실패를 화면에 말한다", () => {
-    actionStateOverride = { ok: false, error: "해지할 항목이 없습니다 — 이미 해지되었거나 없는 토큰입니다." };
+    actionStateOverride = {
+      ok: false,
+      error: "해지할 항목이 없습니다 — 이미 해지되었거나 없는 토큰입니다.",
+    };
     const html = renderToStaticMarkup(
-      <TokenDetail view={view()} basePath="/account/tokens" revoke={noopRevoke} />,
+      <TokenDetail
+        view={view()}
+        basePath="/account/tokens"
+        revoke={noopRevoke}
+      />,
     );
 
     expect(html).toContain("해지하지 못했습니다");
@@ -737,11 +817,18 @@ describe("상세 페이지", () => {
    * 페이지 자신의 `<h1>` 에서 오는 이름 문자열뿐이었다.
    */
   it("찾은 행을 상세 카드로 그린다", async () => {
-    listTokensMock.mockResolvedValue([row({ id: "tok-1" }), row({ id: "tok-2", name: "다른 것" })]);
-    const html = await renderPage(() => TokenDetailPage({ params: Promise.resolve({ id: "tok-2" }) }));
+    listTokensMock.mockResolvedValue([
+      row({ id: "tok-1" }),
+      row({ id: "tok-2", name: "다른 것" }),
+    ]);
+    const html = await renderPage(() =>
+      TokenDetailPage({ params: Promise.resolve({ id: "tok-2" }) }),
+    );
     const pairs = dlPairs(html);
 
-    expect(readPageApiMock).toHaveBeenCalledExactlyOnceWith("/api/ui/v1/account/tokens/tok-2");
+    expect(readPageApiMock).toHaveBeenCalledExactlyOnceWith(
+      "/api/ui/v1/account/tokens/tok-2",
+    );
     expect(Object.keys(pairs)).toEqual([
       "이름",
       "토큰",
@@ -774,7 +861,9 @@ describe("상세 페이지", () => {
     listTokensMock.mockResolvedValue([row({ id: "tok-1" })]);
 
     await expect(
-      renderPage(() => TokenDetailPage({ params: Promise.resolve({ id: "someone-elses" }) })),
+      renderPage(() =>
+        TokenDetailPage({ params: Promise.resolve({ id: "someone-elses" }) }),
+      ),
     ).rejects.toThrow("NEXT_NOT_FOUND");
   });
 });

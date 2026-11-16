@@ -41,18 +41,19 @@ function DetailTemplate({ pending }: { pending: boolean }) {
           </a>
         }
         title="app_pool"
+        status={<StatusBadge tone="success">사용 중</StatusBadge>}
         description="리버스 프록시 서버 2개가 이 묶음으로 요청을 보냅니다."
         actions={
           <>
+            <Button variant="dangerQuiet" data-preview-action>
+              삭제
+            </Button>
             <a
               href="#edit"
               className={buttonClassName({ variant: "secondary" })}
             >
               수정
             </a>
-            <Button variant="danger" data-preview-action>
-              삭제
-            </Button>
           </>
         }
       />
@@ -64,7 +65,7 @@ function DetailTemplate({ pending }: { pending: boolean }) {
           머리줄의 「설정 적용」으로 반영합니다.
         </Banner>
       ) : null}
-      <div className={styles.split}>
+      <div className={styles.stack}>
         <div className={styles.stack}>
           <Surface title="설정">
             <Facts

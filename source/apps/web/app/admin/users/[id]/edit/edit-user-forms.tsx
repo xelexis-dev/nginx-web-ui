@@ -68,8 +68,8 @@ export function EditUserForms({
         />
       ) : null}
       <form action={roleAction} className={resourceStyles.form}>
+        <FormErrors errors={roleState.fieldErrors} />
         <FormStack>
-          <FormErrors errors={roleState.fieldErrors} />
           <Card
             id="admin-user-edit-0"
             title={<>역할 변경</>}
@@ -100,7 +100,7 @@ export function EditUserForms({
                   tone="error"
                   role="alert"
                   title={roleState.error}
-                  style={{ gridColumn: "1 / -1" }}
+                  data-wide
                 />
               ) : null}
               <footer className={adminStyles.foot}>
@@ -130,13 +130,13 @@ export function EditUserForms({
             setMismatch(null);
           }}
         >
+          <FormErrors
+            errors={{
+              ...passwordState.fieldErrors,
+              ...(mismatch ? { confirmPassword: mismatch } : {}),
+            }}
+          />
           <FormStack>
-            <FormErrors
-              errors={{
-                ...passwordState.fieldErrors,
-                ...(mismatch ? { confirmPassword: mismatch } : {}),
-              }}
-            />
             <Card
               id="admin-user-edit-1"
               title={<>{email ?? "이 사용자"} 비밀번호 재설정</>}
@@ -187,7 +187,7 @@ export function EditUserForms({
                     tone="error"
                     role="alert"
                     title={passwordState.error}
-                    style={{ gridColumn: "1 / -1" }}
+                    data-wide
                   />
                 ) : null}
                 <footer className={adminStyles.foot}>

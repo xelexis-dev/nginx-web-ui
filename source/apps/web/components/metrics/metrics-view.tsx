@@ -4,6 +4,7 @@ import { startVisibleInterval } from "@/lib/visible-interval";
 import { useCallback, useEffect, useState } from "react";
 import {
   Surface,
+  InfoTip,
   StatusDot,
   Banner,
   Select,
@@ -19,7 +20,6 @@ import {
 import { RANGES, type RangeKey } from "@/lib/metrics-view";
 import { collectionHealth } from "./health";
 import styles from "./metrics.module.css";
-import layout from "@/components/page-layout.module.css";
 
 // 데이터는 클라이언트에서 가져온다. 서버 컴포넌트로 그리면 범위를 바꿀 때마다
 // 전체 페이지가 다시 그려지고, 이 앱에는 Suspense/loading.tsx 관용이 아예 없다
@@ -158,34 +158,38 @@ export function MetricsView({
       : false;
 
   return (
-    <div className={layout.section}>
-      <div className={styles.toolbar}>
-        <div className={styles.rangePicker}>
-          <Select
-            options={RANGES.map((r) => ({ value: r.key, label: r.label }))}
-            value={range}
-            onChange={(v) => setRange(v as RangeKey)}
-            aria-label="표시 범위"
-          />
+    <Surface
+      title="연결과 요청"
+      toolbar={
+        <div className={styles.toolbar}>
+          <div className={styles.rangePicker}>
+            <Select
+              options={RANGES.map((r) => ({ value: r.key, label: r.label }))}
+              value={range}
+              onChange={(v) => setRange(v as RangeKey)}
+              aria-label="표시 범위"
+            />
+          </div>
+          {data &&
+            (() => {
+              const health = collectionHealth(
+                data.health.lastSampleAt,
+                now(),
+                (t) => new Date(t).toLocaleTimeString("ko-KR"),
+              );
+              return (
+                <div className={styles.health} data-state={health.state}>
+                  <StatusDot
+                    tone={health.state === "ok" ? "success" : "warning"}
+                  />
+                  {health.text}
+                </div>
+              );
+            })()}
         </div>
-        {data &&
-          (() => {
-            const health = collectionHealth(
-              data.health.lastSampleAt,
-              now(),
-              (t) => new Date(t).toLocaleTimeString("ko-KR"),
-            );
-            return (
-              <div className={styles.health} data-state={health.state}>
-                <StatusDot
-                  tone={health.state === "ok" ? "success" : "warning"}
-                />
-                {health.text}
-              </div>
-            );
-          })()}
-      </div>
-
+      }
+    >
+      <div className={styles.content}>
       {error && (
         <Banner
           tone="warning"
@@ -209,17 +213,16 @@ export function MetricsView({
           )}
 
           <div className={styles.panels}>
-            <Surface
-              title={<>활성 연결</>}
-              info={
-                <>
-                  nginx 인스턴스 전체 합계입니다(도메인별 분해는 stub_status 에
-                  없습니다).
-                </>
-              }
-              as="div"
-              className={styles.chartSection}
-            >
+            <div className={styles.chartSection}>
+              <div className={styles.chartHeading}>
+                <h3>활성 연결</h3>
+                <InfoTip label="활성 연결 설명">
+                  <>
+                    nginx 인스턴스 전체 합계입니다(도메인별 분해는 stub_status
+                    에 없습니다).
+                  </>
+                </InfoTip>
+              </div>
               <TimeSeriesChart
                 times={globalTimes}
                 area
@@ -234,18 +237,17 @@ export function MetricsView({
                 ariaLabel="활성 연결 추이"
                 emptyLabel="아직 표본이 없습니다. 수집은 1분마다 이뤄집니다."
               />
-            </Surface>
+            </div>
 
-            <Surface
-              title={<>초당 요청 / 연결</>}
-              info={
-                <>
-                  누적 카운터의 증분입니다. nginx 재시작 구간은 선이 끊깁니다.
-                </>
-              }
-              as="div"
-              className={styles.chartSection}
-            >
+            <div className={styles.chartSection}>
+              <div className={styles.chartHeading}>
+                <h3>초당 요청 / 연결</h3>
+                <InfoTip label="초당 요청 / 연결 설명">
+                  <>
+                    누적 카운터의 증분입니다. nginx 재시작 구간은 선이 끊깁니다.
+                  </>
+                </InfoTip>
+              </div>
               <TimeSeriesChart
                 times={globalTimes}
                 format={formatRate}
@@ -265,19 +267,18 @@ export function MetricsView({
                 ]}
                 ariaLabel="초당 요청 및 연결 추이"
               />
-            </Surface>
+            </div>
 
-            <Surface
-              title={<>드롭된 연결</>}
-              info={
-                <>
-                  accepts − handled. 0 이 아니면 워커 연결 한도에 닿고 있다는
-                  뜻입니다.
-                </>
-              }
-              as="div"
-              className={`${styles.chartSection} ${styles.panelWide}`}
-            >
+            <div className={`${styles.chartSection} ${styles.panelWide}`}>
+              <div className={styles.chartHeading}>
+                <h3>드롭된 연결</h3>
+                <InfoTip label="드롭된 연결 설명">
+                  <>
+                    accepts − handled. 0 이 아니면 워커 연결 한도에 닿고 있다는
+                    뜻입니다.
+                  </>
+                </InfoTip>
+              </div>
               <TimeSeriesChart
                 times={globalTimes}
                 format={formatRate}
@@ -293,24 +294,23 @@ export function MetricsView({
                 area
                 ariaLabel="드롭된 연결 추이"
               />
-            </Surface>
+            </div>
 
-            <Surface
-              title={<>도메인별 요청 수</>}
-              info={
-                <>
-                  access.log 를 서버에서 집계한 값입니다. 상위{" "}
-                  {data.domains.series.length}개 도메인만 그리고, 나머지는 아래
-                  표에 전부 있습니다
-                  {data.domains.source === "hours"
-                    ? " (30일이 넘는 범위는 시간 단위 롤업을 봅니다)"
-                    : ""}
-                  .
-                </>
-              }
-              as="div"
-              className={`${styles.chartSection} ${styles.panelWide}`}
-            >
+            <div className={`${styles.chartSection} ${styles.panelWide}`}>
+              <div className={styles.chartHeading}>
+                <h3>도메인별 요청 수</h3>
+                <InfoTip label="도메인별 요청 수 설명">
+                  <>
+                    access.log 를 서버에서 집계한 값입니다. 상위{" "}
+                    {data.domains.series.length}개 도메인만 그리고, 나머지는
+                    아래 표에 전부 있습니다
+                    {data.domains.source === "hours"
+                      ? " (30일이 넘는 범위는 시간 단위 롤업을 봅니다)"
+                      : ""}
+                    .
+                  </>
+                </InfoTip>
+              </div>
               <TimeSeriesChart
                 times={data.domains.times}
                 series={data.domains.series.map((s, i) => ({
@@ -375,10 +375,11 @@ export function MetricsView({
                   </tbody>
                 </Table>
               )}
-            </Surface>
+            </div>
           </div>
         </>
       )}
-    </div>
+      </div>
+    </Surface>
   );
 }

@@ -254,7 +254,8 @@ export function AppShell({
       >
         <div className={styles.brand}>
           <div className={styles.brandIdentity}>
-            <BrandLogo />
+            <BrandLogo className={styles.fullBrand} />
+            <BrandLogo variant="compact" className={styles.compactBrand} />
           </div>
           <IconButton
             size="sm"

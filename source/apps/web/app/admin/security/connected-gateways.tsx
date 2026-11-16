@@ -36,73 +36,76 @@ export function ConnectedGateways({ rows }: { rows: GatewayView[] }) {
           />
         </div>
       ) : null}
-      {rows.length === 0 ? (
-        <EmptyState title="연결된 게이트웨이가 없습니다." />
-      ) : (
-        <Table label="연결된 게이트웨이">
-          <thead>
+      <Table label="연결된 게이트웨이">
+        <thead>
+          <Tr>
+            <Th>이름</Th>
+            <Th>권한</Th>
+            <Th>연결된 때</Th>
+            <Th>마지막 사용</Th>
+            <Th>마지막 IP</Th>
+            <Th>상태</Th>
+            <Th />
+          </Tr>
+        </thead>
+        <tbody>
+          {rows.length === 0 ? (
             <Tr>
-              <Th>이름</Th>
-              <Th>권한</Th>
-              <Th>연결된 때</Th>
-              <Th>마지막 사용</Th>
-              <Th>마지막 IP</Th>
-              <Th>상태</Th>
-              <Th />
+              <Td colSpan={7}>
+                <EmptyState title="연결된 게이트웨이가 없습니다." />
+              </Td>
             </Tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <Tr
-                key={row.id}
-                className={row.revokedAt ? styles.revoked : undefined}
-              >
-                <Td cell="primary">{row.name}</Td>
-                <Td cell="meta" label="권한">
-                  {row.role}
-                </Td>
-                <Td cell="meta" label="연결된 때">
-                  {formatServerTime(new Date(row.createdAt))}
-                </Td>
-                <Td cell="meta" label="마지막 사용">
-                  {row.lastUsedAt
-                    ? formatServerTime(new Date(row.lastUsedAt))
-                    : "—"}
-                </Td>
-                <Td cell="meta" label="마지막 IP">
-                  {row.lastUsedIp ?? "—"}
-                </Td>
-                <Td cell="status" className={styles.statusCell}>
-                  <div className={styles.status}>
-                    <span>
-                      {row.revokedAt
-                        ? `해지됨 (${formatServerTime(new Date(row.revokedAt))})`
-                        : "연결됨"}
-                    </span>
-                    {row.legacyOrphaned === true ? (
-                      <StatusBadge tone={row.revokedAt ? "neutral" : "warning"}>
-                        이전 연결 · 발급자 확인 필요
-                      </StatusBadge>
-                    ) : null}
-                  </div>
-                </Td>
-                <Td cell="action">
-                  {row.revokedAt ? null : (
-                    <ApiForm
-                      action={{ id: "admin.security.revokeGateway", args: [] }}
-                    >
-                      <input type="hidden" name="id" value={row.id} />
-                      <Button size="sm" type="submit" variant="secondary">
-                        연결 끊기
-                      </Button>
-                    </ApiForm>
-                  )}
-                </Td>
-              </Tr>
-            ))}
-          </tbody>
-        </Table>
-      )}
+          ) : null}
+          {rows.map((row) => (
+            <Tr
+              key={row.id}
+              className={row.revokedAt ? styles.revoked : undefined}
+            >
+              <Td cell="primary">{row.name}</Td>
+              <Td cell="meta" label="권한">
+                {row.role}
+              </Td>
+              <Td cell="meta" label="연결된 때">
+                {formatServerTime(new Date(row.createdAt))}
+              </Td>
+              <Td cell="meta" label="마지막 사용">
+                {row.lastUsedAt
+                  ? formatServerTime(new Date(row.lastUsedAt))
+                  : "—"}
+              </Td>
+              <Td cell="meta" label="마지막 IP">
+                {row.lastUsedIp ?? "—"}
+              </Td>
+              <Td cell="status" className={styles.statusCell}>
+                <div className={styles.status}>
+                  <span>
+                    {row.revokedAt
+                      ? `해지됨 (${formatServerTime(new Date(row.revokedAt))})`
+                      : "연결됨"}
+                  </span>
+                  {row.legacyOrphaned === true ? (
+                    <StatusBadge tone={row.revokedAt ? "neutral" : "warning"}>
+                      이전 연결 · 발급자 확인 필요
+                    </StatusBadge>
+                  ) : null}
+                </div>
+              </Td>
+              <Td cell="action">
+                {row.revokedAt ? null : (
+                  <ApiForm
+                    action={{ id: "admin.security.revokeGateway", args: [] }}
+                  >
+                    <input type="hidden" name="id" value={row.id} />
+                    <Button size="sm" type="submit" variant="secondary">
+                      연결 끊기
+                    </Button>
+                  </ApiForm>
+                )}
+              </Td>
+            </Tr>
+          ))}
+        </tbody>
+      </Table>
     </Surface>
   );
 }

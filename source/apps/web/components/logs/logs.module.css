@@ -6,7 +6,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--line-strong);
+  border: var(--bw) solid var(--line-strong);
   border-radius: var(--r-3);
   background: var(--bg-canvas);
   overflow: hidden;
@@ -18,7 +18,7 @@
   justify-content: space-between;
   gap: var(--sp-3);
   padding: var(--sp-3) var(--sp-4);
-  border-bottom: 1px solid var(--line-strong);
+  border-bottom: var(--bw) solid var(--line-strong);
   background: var(--bg-canvas);
 }
 
@@ -40,7 +40,7 @@
   grid-template-columns: 76px 56px minmax(0, 1fr);
   gap: var(--sp-2);
   padding-block: var(--sp-1);
-  border-bottom: 1px solid var(--line);
+  border-bottom: var(--bw) solid var(--line);
   white-space: pre-wrap;
   word-break: break-word;
   color: var(--text-1);
@@ -66,17 +66,10 @@
    Fills the viewport (min-height:100%) so it reads as a deliberate state
    even when the table viewport strips its own padding (.viewportTable). */
 .empty {
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
+  display: grid;
+  align-content: start;
   min-height: 100%;
-  box-sizing: border-box;
-  margin: 0;
-  padding: var(--sp-6);
-  text-align: left;
-  color: var(--text-2);
-  font-family: var(--font);
-  font-size: var(--fs-md);
+  padding-inline: var(--sp-6);
 }
 
 .resumeButton {
@@ -97,7 +90,7 @@
   font-weight: 500;
   color: var(--warning-text);
   background: var(--warning-bg);
-  border-bottom: 1px solid var(--line-strong);
+  border-bottom: var(--bw) solid var(--line-strong);
 }
 
 /* --- toolbar right (view toggle + Clear) --- */
@@ -114,7 +107,7 @@
   align-items: center;
   gap: var(--sp-3) var(--sp-4);
   padding: var(--sp-3) var(--sp-4);
-  border-bottom: 1px solid var(--line-strong);
+  border-bottom: var(--bw) solid var(--line-strong);
   background: var(--bg-canvas);
 }
 
@@ -172,7 +165,7 @@
   outline-offset: calc(-1 * var(--bw-2));
 }
 .rawTime {
-  color: var(--text-3);
+  color: var(--text-2);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -182,9 +175,6 @@
 .rawMessage {
   min-width: 0;
   overflow-wrap: anywhere;
-}
-.viewport:not(.viewportTable) .empty {
-  color: var(--text-3);
 }
 
 .mono {
@@ -267,24 +257,6 @@
   padding: var(--sp-3) var(--sp-4);
   white-space: normal;
 }
-.detailGrid {
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
-  gap: var(--sp-1) var(--sp-4);
-  margin: 0;
-  font-size: var(--fs-xs);
-}
-.detailGrid dt {
-  color: var(--text-2);
-  font-family: var(--font);
-}
-.detailGrid dd {
-  margin: 0;
-  color: var(--text-1);
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
 @media (max-width: 768px) {
   .colUa,
   .uaCell,
@@ -342,9 +314,6 @@
   .colLevel,
   .colBytes {
     width: auto;
-  }
-  .detailGrid {
-    grid-template-columns: minmax(0, 1fr);
   }
   .methodSelect {
     width: 100%;

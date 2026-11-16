@@ -2,7 +2,7 @@
   display: block;
   font-size: var(--fs-xs);
   line-height: var(--lh-xs);
-  color: var(--text-3);
+  color: var(--text-2);
 }
 .form {
   display: grid;
@@ -57,11 +57,6 @@
   align-items: center;
   gap: var(--sp-2);
 }
-.titleSub {
-  color: var(--text-2);
-  font-size: var(--fs-lg);
-  font-weight: var(--fw-regular);
-}
 .stack {
   display: grid;
   gap: var(--sp-4);
@@ -75,34 +70,6 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--gap-actions);
-}
-.panel {
-  min-width: 0;
-  border: var(--bw) solid var(--line-strong);
-  border-radius: var(--r-3);
-  background: var(--bg-canvas);
-  overflow: hidden;
-}
-.panelHead {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-2) var(--sp-4);
-  min-height: var(--size-ctl-lg);
-  box-sizing: border-box;
-  padding: var(--sp-1) var(--pad-panel);
-  border-bottom: var(--bw) solid var(--line-strong);
-}
-.panelHead h2 {
-  margin: 0;
-  min-width: 0;
-  font-size: var(--fs-md);
-  line-height: var(--lh-md);
-  font-weight: var(--fw-semibold);
-}
-.panelBody {
-  padding: var(--pad-panel);
 }
 @media (max-width: 768px) {
   .dnsValueCell {

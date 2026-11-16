@@ -1,9 +1,7 @@
-import { FormStack, Banner } from "@repo/ui";
 import layout from "@/components/page-layout.module.css";
-import { Icon, linkClassName, PageHeader } from "@repo/ui";
+import { PageHeader } from "@repo/ui";
 import { readPageApi } from "@/lib/api-page";
 import type { TokenApiList } from "@/lib/token-api";
-import Link from "next/link";
 import { TokenForm } from "@/app/(app)/account/tokens/token-form";
 
 // Uses the authenticated Rust API view through the server-side page client.
@@ -42,16 +40,6 @@ export default async function NewServerTokenPage() {
             발급이 끝나면 토큰 값을 <strong>한 번만</strong> 보여줍니다.
           </>
         }
-
-        eyebrow={
-          <Link
-            href="/admin/tokens"
-            className={linkClassName({ variant: "back" })}
-          >
-            <Icon name="arrowLeft" size={14} />
-            서버 토큰 목록으로
-          </Link>
-        }
       />
 
       {/*
@@ -59,23 +47,12 @@ export default async function NewServerTokenPage() {
        * 실제 종류는 서버 액션이 다시 코드로 쓴다(`actions.ts`). 이 prop 이 바꾸는
        * 것은 이름 예시뿐이고, 그게 맞다.
        */}
-      <FormStack>
-        <Banner
-          tone="info"
-          title={
-            <>
-              다른 게이트웨이가 이 서버를 노드로 연결할 때 제시하는 토큰입니다.
-              이름에 어느 게이트웨이에 줄 것인지 적어 두세요.
-            </>
-          }
-        />
-        <TokenForm
-          kind="server"
-          scopes={scopes}
-          action={{ id: "admin.tokens.issue", args: [] }}
-          basePath="/admin/tokens"
-        />
-      </FormStack>
+      <TokenForm
+        kind="server"
+        scopes={scopes}
+        action={{ id: "admin.tokens.issue", args: [] }}
+        basePath="/admin/tokens"
+      />
     </section>
   );
 }

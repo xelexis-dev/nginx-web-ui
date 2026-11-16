@@ -1,28 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Icon, IconButton, Modal, StatusBadge } from "@repo/ui";
+import { Button, Icon, IconButton, StatusBadge } from "@repo/ui";
 import type { ConfigDiff } from "@/lib/config-diff";
-import { ConfigDiffView } from "./config-diff-view";
+import { ApplyDialog } from "./apply-dialog";
 import styles from "./pending-changes-badge.module.css";
-
-/**
- * 모달 첫 문장. 적용에서 제외된 행은 「설정 적용」을 다시 눌러도 제외되므로, 그런 행이 있으면
- * 「반영됩니다」만 말하지 않는다.
- */
-export function pendingIntro(
-  diff: ConfigDiff,
-  confirmLabel = "설정 적용",
-): string {
-  const items = [...diff.servers, ...diff.streams, ...diff.upstreams];
-  const skipped = items.filter((item) => item.status === "skipped").length;
-  if (skipped === 0)
-    return `"${confirmLabel}"을 누르면 아래 내용이 nginx에 반영됩니다.`;
-  if (skipped === items.length) {
-    return "아래 항목은 적용에서 제외돼 있습니다. 표시된 이유를 고친 뒤 다시 적용하세요.";
-  }
-  return `"${confirmLabel}"을 누르면 아래 내용이 nginx에 반영됩니다. 다만 「적용에서 제외됨」 항목은 표시된 이유를 고치기 전에는 다시 적용해도 제외됩니다.`;
-}
 
 /**
  * 적용 상태 배지. 미적용이 있으면 버튼이 되어 "무엇이 미적용인지"를 모달로 보여준다
@@ -33,38 +15,23 @@ export function PendingChangesBadge({
   count,
   hasBaseline,
   diff,
-  inline = false,
 }: {
   count: number;
   hasBaseline: boolean;
   diff: ConfigDiff;
-  inline?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
-  if (count === 0) {
-    if (!hasBaseline)
-      return (
-        <StatusBadge tone="warning" size="sm" dot={false} role="status">
-          적용 상태 확인 필요
-        </StatusBadge>
-      );
-    return (
+  if (count === 0)
+    return hasBaseline ? (
       <StatusBadge tone="success" size="sm" role="status">
         모두 적용됨
       </StatusBadge>
-    );
-  }
-
-  if (inline)
-    return (
+    ) : (
       <StatusBadge tone="warning" size="sm" dot={false} role="status">
-        {hasBaseline
-          ? "미적용 " + count + "건"
-          : "적용 상태 확인 필요 · " + count + "건"}
+        적용 상태 확인 필요
       </StatusBadge>
     );
-
   return (
     <>
       <Button
@@ -80,23 +47,17 @@ export function PendingChangesBadge({
             : `적용 상태 확인 필요 · ${count}건`}
         </StatusBadge>
       </Button>
-      <Modal
+      <ApplyDialog
         open={open}
         onClose={() => setOpen(false)}
-        title={`미적용 변경 ${count}건`}
-        footer={
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => setOpen(false)}
-          >
-            닫기
-          </Button>
-        }
-      >
-        <p className={styles.modalIntro}>{pendingIntro(diff)}</p>
-        <ConfigDiffView diff={diff} />
-      </Modal>
+        canApply={false}
+        target={{ kind: "local" }}
+        targetLabel="로컬 서버"
+        pendingCount={count}
+        pendingHasBaseline={hasBaseline}
+        pendingDiff={diff}
+        applyAction={async () => ({ ok: false })}
+      />
     </>
   );
 }

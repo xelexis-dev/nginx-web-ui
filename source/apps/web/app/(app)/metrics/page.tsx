@@ -1,4 +1,3 @@
-import { targetLabel } from "@repo/presentation/operations-target";
 import layout from "@/components/page-layout.module.css";
 import { PageHeader } from "@repo/ui";
 import { MetricsView } from "@/components/metrics/metrics-view";
@@ -23,7 +22,7 @@ export default async function MetricsPage({
 
   return (
     <section className={layout.page}>
-      <PageHeader eyebrow={targetLabel({ kind: "local" })}
+      <PageHeader
         title={<>접속 지표</>}
         info={<>nginx 연결·요청 추이와 도메인별 요청 수입니다. 1분마다 수집합니다.</>}
       />

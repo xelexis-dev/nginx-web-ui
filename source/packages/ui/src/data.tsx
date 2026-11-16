@@ -105,6 +105,7 @@ export interface FactsProps {
     value: ReactNode;
     mono?: boolean;
     wide?: boolean;
+    note?: ReactNode;
   }[];
   /** Pairs per row on wide screens (one on narrow screens). Default 1. */
   columns?: 1 | 2;
@@ -112,8 +113,14 @@ export interface FactsProps {
 
 /** Label/value pairs (a <dl>), e.g. a server's settings on its detail page. */
 export function Facts({ items, columns = 1, layout = "grid" }: FactsProps) {
+  const notes = items.some((item) => item.note != null);
   return (
-    <dl className={styles.facts} data-columns={columns} data-layout={layout}>
+    <dl
+      className={styles.facts}
+      data-columns={columns}
+      data-layout={layout}
+      data-notes={notes ? "" : undefined}
+    >
       {items.map((item, index) => (
         <div
           key={index}
@@ -122,6 +129,7 @@ export function Facts({ items, columns = 1, layout = "grid" }: FactsProps) {
         >
           <dt>{item.term}</dt>
           <dd className={item.mono ? styles.mono : undefined}>{item.value}</dd>
+          {notes ? <dd className={styles.factNote}>{item.note}</dd> : null}
         </div>
       ))}
     </dl>
@@ -130,6 +138,7 @@ export function Facts({ items, columns = 1, layout = "grid" }: FactsProps) {
 
 export interface StatusDotProps {
   tone?: Tone;
+  /** Legacy sizes remain accepted; status markers always render at 8px. */
   size?: 6 | 7 | 8;
   /** Opt in only for a connected live log; static by default. */
   pulse?: boolean;
@@ -138,7 +147,6 @@ export interface StatusDotProps {
 /** Decorative status marker. The caller must also provide a visible status label. */
 export function StatusDot({
   tone = "neutral",
-  size = 8,
   pulse = false,
   className,
 }: StatusDotProps) {
@@ -147,8 +155,52 @@ export function StatusDot({
       aria-hidden="true"
       className={[styles.statusDot, className].filter(Boolean).join(" ")}
       data-tone={tone}
-      data-size={size}
+      data-size="8"
       data-pulse={pulse ? "" : undefined}
     />
+  );
+}
+
+export interface SettingRowsProps {
+  children: ReactNode;
+}
+export interface SettingRowProps {
+  label: ReactNode;
+  status?: ReactNode;
+  detail?: ReactNode;
+  wideDetail?: boolean;
+  action?: ReactNode;
+  message?: ReactNode;
+}
+
+export function SettingRows({ children }: SettingRowsProps) {
+  return <ul className={styles.settingRows}>{children}</ul>;
+}
+
+export function SettingRow({
+  label,
+  status,
+  detail,
+  wideDetail = false,
+  action,
+  message,
+}: SettingRowProps) {
+  return (
+    <li className={styles.settingRow}>
+      <div className={styles.settingLabel}>{label}</div>
+      {!wideDetail ? (
+        <div className={styles.settingStatus}>{status}</div>
+      ) : null}
+      <div
+        className={styles.settingDetail}
+        data-wide={wideDetail ? "" : undefined}
+      >
+        {detail}
+      </div>
+      <div className={styles.settingAction}>{action}</div>
+      {message != null ? (
+        <div className={styles.settingMessage}>{message}</div>
+      ) : null}
+    </li>
   );
 }

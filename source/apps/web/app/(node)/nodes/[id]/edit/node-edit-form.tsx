@@ -156,7 +156,7 @@ export function NodeEditForm({
               </Field>
 
               <Checkbox
-                style={{ gridColumn: "1 / -1" }}
+                data-wide
                 id="node-allow-insecure-tls"
                 name="allowInsecureTls"
                 value="true"

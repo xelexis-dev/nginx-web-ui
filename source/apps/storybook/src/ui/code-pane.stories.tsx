@@ -1,4 +1,5 @@
 import { CodePane } from "@repo/ui";
+import { expect, userEvent, within } from "storybook/test";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 const sample = `server {
@@ -74,3 +75,35 @@ export const Long: Story = {
   },
 };
 export const WithoutCopy: Story = { args: { copyLabel: false } };
+
+export const Secret: Story = {
+  args: {
+    title: "한 번만 표시되는 토큰",
+    description: "안전한 곳에 보관하세요.",
+    variant: "secret",
+    code: "nwui_tok_example_" + "abcdef0123456789".repeat(8),
+  },
+};
+export const Spec: Story = Default;
+export const States: Story = {
+  ...Secret,
+  play: async ({ canvasElement }) => {
+    const previous = Object.getOwnPropertyDescriptor(navigator, "clipboard");
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: undefined,
+    });
+    try {
+      const canvas = within(canvasElement);
+      await userEvent.click(canvas.getByRole("button", { name: "복사" }));
+      await expect(canvas.getByRole("alert")).toHaveTextContent(
+        "복사할 수 없습니다 — 위 값을 직접 선택해 복사하세요.",
+      );
+    } finally {
+      if (previous) Object.defineProperty(navigator, "clipboard", previous);
+      else Reflect.deleteProperty(navigator, "clipboard");
+    }
+  },
+};
+export const SpecDark: Story = { ...Spec, globals: { theme: "dark" } };
+export const StatesDark: Story = { ...States, globals: { theme: "dark" } };

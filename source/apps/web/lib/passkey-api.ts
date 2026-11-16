@@ -1,3 +1,4 @@
+import { formatServerTime } from "@/lib/format-time";
 import type { components } from "@repo/contracts";
 import { formatDateTime } from "@/app/(app)/account/tokens/tokens";
 
@@ -6,6 +7,7 @@ export type PasskeyDetail = components["schemas"]["PasskeyDetail"];
 export type PasskeyRow = components["schemas"]["PasskeyRow"];
 export type PasskeyRowView = Omit<PasskeyRow, "lastUsedAt"> & {
   address: string;
+  createdOn: string;
   lastUsedAt: string;
 };
 export type PasskeyListView = Omit<PasskeyList, "passkeys"> & {
@@ -18,10 +20,13 @@ export function passkeyRowView(row: PasskeyRow): PasskeyRowView {
   return {
     ...row,
     address: new URL(row.origin).host,
+    createdOn: formatServerTime(new Date(row.createdAt), {
+      dateStyle: "medium",
+    }),
     createdAt: formatDateTime(new Date(row.createdAt), "—"),
     lastUsedAt: formatDateTime(
       row.lastUsedAt ? new Date(row.lastUsedAt) : null,
-      "아직 사용하지 않음",
+      "사용한 적 없음",
     ),
   };
 }

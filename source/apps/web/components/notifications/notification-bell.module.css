@@ -87,12 +87,6 @@
   color: var(--text-2);
 }
 
-.empty {
-  padding: var(--sp-6) var(--sp-3);
-  color: var(--text-2);
-  font-size: var(--fs-sm);
-}
-
 .dotPosition {
   margin-top: var(--sp-2);
 }

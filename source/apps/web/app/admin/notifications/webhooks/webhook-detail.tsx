@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { formatServerTime } from "@/lib/format-time";
 import layout from "@/components/page-layout.module.css";
 import {
+  CodePane,
   Surface,
   Facts,
   StatusBadge,
@@ -39,17 +40,12 @@ export function WebhookDetailView({
     <section className={layout.page}>
       <PageHeader
         title={<>{target.name}</>}
-        description={
-          <>
-            <StatusBadge
-              tone={target.enabled ? "success" : "neutral"}
-              size="sm"
-            >
-              {target.enabled ? "사용" : "사용 안 함"}
-            </StatusBadge>{" "}
-            {FORMAT_LABEL[target.format] ?? target.format}
-          </>
+        status={
+          <StatusBadge tone={target.enabled ? "success" : "neutral"} size="sm">
+            {target.enabled ? "사용" : "사용 안 함"}
+          </StatusBadge>
         }
+        description={<>{FORMAT_LABEL[target.format] ?? target.format}</>}
         eyebrow={
           <Link
             href="/admin/notifications/webhooks"
@@ -156,15 +152,13 @@ export function WebhookDetailView({
       </Surface>
 
       {target.format === "custom" && target.bodyTemplate ? (
-        <Surface title={<>본문</>} as="section">
-          <pre className={`${styles.textarea} ${styles.templateArea}`}>
-            {target.bodyTemplate}
-          </pre>
+        <Surface as="section">
+          <CodePane title="본문" code={target.bodyTemplate} />
         </Surface>
       ) : null}
 
       <Surface title={<>동작</>} as="section">
-        <p className={styles.hint} style={{ marginTop: "var(--sp-3)" }}>
+        <p className={styles.hint}>
           테스트 전송은 <strong>실제로 한 건</strong>을 보내며, &quot;마지막
           알림&quot;에는 기록하지 않습니다.
         </p>

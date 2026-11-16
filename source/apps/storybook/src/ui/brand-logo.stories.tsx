@@ -16,12 +16,14 @@ const meta = {
   argTypes: {
     size: { control: "inline-radio", options: ["sidebar", "signIn"] },
     decorative: { control: "boolean" },
+    variant: { control: "inline-radio", options: ["full", "mark", "compact"] },
   },
 } satisfies Meta<typeof BrandLogo>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Sidebar: Story = {};
-export const SignIn: Story = { args: { size: "signIn" } };
+export const SignIn: Story = { args: { size: "signIn", variant: "mark" } };
+export const Compact: Story = { args: { variant: "compact" } };
 
 export const OnRail: Story = {
   render: (args) => (

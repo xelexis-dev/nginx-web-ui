@@ -204,17 +204,23 @@ export function WebhookForm({
 
   return (
     <form className={resourceStyles.form}>
+      <FormErrors
+        errors={fieldErrors}
+        targets={{
+          url: "wh-url",
+          headers: "wh-headers",
+          bodyTemplate: "wh-template",
+          format: "wh-format",
+          events: "wh-events",
+        }}
+      />
       <FormStack>
-        <FormErrors
-          errors={fieldErrors}
-          targets={{
-            url: "wh-url",
-            headers: "wh-headers",
-            bodyTemplate: "wh-template",
-            format: "wh-format",
-            events: "wh-events",
-          }}
-        />
+        {mode === "create" ? (
+          <Banner
+            tone="info"
+            title={<>알림을 받을 HTTP 수신처를 추가합니다.</>}
+          />
+        ) : null}
         <Card
           id="admin-webhook"
           title={<>이 수신처로 보내기</>}

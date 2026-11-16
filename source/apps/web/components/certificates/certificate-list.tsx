@@ -130,80 +130,83 @@ export function CertificateList({
       />
 
       <Surface title="인증서" flush>
-        {data.items.length === 0 ? (
-          <EmptyState title="발급된 인증서가 없습니다" />
-        ) : (
-          <Table label="인증서">
-            <thead>
-              <tr>
-                <Th>도메인</Th>
-                <Th>상태</Th>
-                <Th>만료</Th>
-                <Th align="end">연결 서버</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.items.map((c) => {
-                const left = daysLeft(c.expiresAt);
-                return (
-                  <Tr key={c.id}>
-                    <Td cell="primary" icon={<Icon name="certificate" />}>
-                      {/* 별칭이 있으면 그것이 링크 이름이고 도메인은 아래 줄로 — 상세 제목과 같은 배치. */}
-                      <Link href={`${basePath}/${c.id}`}>
-                        {c.alias ?? c.domains.primary ?? "—"}
-                        {!c.alias && c.domains.extra > 0
-                          ? ` 외 ${c.domains.extra}`
-                          : ""}
-                      </Link>
-                      {c.alias ? (
-                        <span className={styles.rowSub}>
-                          {c.domains.primary ?? "—"}
-                          {c.domains.extra > 0 ? ` 외 ${c.domains.extra}` : ""}
-                        </span>
-                      ) : null}
-                    </Td>
-                    <Td cell="status">
-                      <span className={styles.badgeRow}>
-                        <StatusBadge tone={statusTone(c.status)}>
-                          {statusLabel(c.status)}
-                        </StatusBadge>
-                        {c.source === "manual" ? (
-                          <StatusBadge tone="neutral" dot={false}>
-                            수동
-                          </StatusBadge>
-                        ) : null}
-                        {c.staging ? (
-                          <StatusBadge tone="warning" dot={false}>
-                            STAGING
-                          </StatusBadge>
-                        ) : null}
+        <Table density="comfortable" narrow="stacked" label="인증서">
+          <thead>
+            <tr>
+              <Th>도메인</Th>
+              <Th>상태</Th>
+              <Th>만료</Th>
+              <Th align="end">연결 서버</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.items.length === 0 ? (
+              <Tr>
+                <Td colSpan={4}>
+                  <EmptyState title="발급된 인증서가 없습니다" />
+                </Td>
+              </Tr>
+            ) : null}
+            {data.items.map((c) => {
+              const left = daysLeft(c.expiresAt);
+              return (
+                <Tr key={c.id}>
+                  <Td cell="primary" icon={<Icon name="certificate" />}>
+                    {/* 별칭이 있으면 그것이 링크 이름이고 도메인은 아래 줄로 — 상세 제목과 같은 배치. */}
+                    <Link href={`${basePath}/${c.id}`}>
+                      {c.alias ?? c.domains.primary ?? "—"}
+                      {!c.alias && c.domains.extra > 0
+                        ? ` 외 ${c.domains.extra}`
+                        : ""}
+                    </Link>
+                    {c.alias ? (
+                      <span className={styles.rowSub}>
+                        {c.domains.primary ?? "—"}
+                        {c.domains.extra > 0 ? ` 외 ${c.domains.extra}` : ""}
                       </span>
-                    </Td>
-                    <Td
-                      label="만료"
-                      tone={
-                        left !== null && left >= 0 && left < 30
-                          ? "warning"
-                          : undefined
-                      }
-                    >
-                      {left === null ? (
-                        "—"
-                      ) : left < 0 ? (
-                        <StatusBadge tone="error">만료</StatusBadge>
-                      ) : (
-                        `D-${left}`
-                      )}
-                    </Td>
-                    <Td numeric label="연결 서버">
-                      {c.linkedCount}
-                    </Td>
-                  </Tr>
-                );
-              })}
-            </tbody>
-          </Table>
-        )}
+                    ) : null}
+                  </Td>
+                  <Td cell="status" label="상태">
+                    <span className={styles.badgeRow}>
+                      <StatusBadge tone={statusTone(c.status)}>
+                        {statusLabel(c.status)}
+                      </StatusBadge>
+                      {c.source === "manual" ? (
+                        <StatusBadge tone="neutral" dot={false}>
+                          수동
+                        </StatusBadge>
+                      ) : null}
+                      {c.staging ? (
+                        <StatusBadge tone="warning" dot={false}>
+                          STAGING
+                        </StatusBadge>
+                      ) : null}
+                    </span>
+                  </Td>
+                  <Td
+                    label="만료"
+                    tone={
+                      left !== null && left >= 0 && left < 30
+                        ? "warning"
+                        : undefined
+                    }
+                  >
+                    {left === null ? (
+                      "—"
+                    ) : left < 0 ? (
+                      <StatusBadge tone="error">만료</StatusBadge>
+                    ) : (
+                      `D-${left}`
+                    )}
+                  </Td>
+                  <Td numeric label="연결 서버">
+                    {c.linkedCount}
+                  </Td>
+                </Tr>
+              );
+            })}
+          </tbody>
+        </Table>
       </Surface>
     </section>
   );

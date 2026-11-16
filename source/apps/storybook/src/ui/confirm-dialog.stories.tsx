@@ -81,3 +81,8 @@ export const LongKorean: Story = {
   },
   tags: ["!autodocs"],
 };
+
+export const Spec: Story = Default;
+export const States: Story = Busy;
+export const SpecDark: Story = { ...Spec, globals: { theme: "dark" } };
+export const StatesDark: Story = { ...States, globals: { theme: "dark" } };

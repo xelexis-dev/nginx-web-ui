@@ -1,12 +1,13 @@
 /* Native dialog owns focus, Escape and background inertness. */
 .dialog {
   box-sizing: border-box;
-  width: min(480px, calc(100vw - 32px));
+  max-width: none;
+  width: min(var(--size-dialog), calc(100vw - 2 * var(--sp-4)));
   max-height: calc(100dvh - 128px);
   margin: var(--sp-16) auto auto;
   padding: 0;
   overflow: hidden;
-  border: 1px solid var(--line-strong);
+  border: var(--bw) solid var(--line-strong);
   border-radius: var(--r-3);
   background: var(--bg-raised);
   box-shadow: var(--shadow-2);
@@ -42,6 +43,7 @@
 }
 .title {
   margin: 0;
+  letter-spacing: var(--ls-snug);
   font-size: var(--fs-lg);
   font-weight: 600;
   line-height: var(--lh-lg);
@@ -75,7 +77,7 @@
   flex-wrap: wrap;
   gap: var(--sp-2);
   padding: var(--sp-4) var(--pad-dialog);
-  border-top: 1px solid var(--line-strong);
+  border-top: var(--bw) solid var(--line-strong);
   background: var(--bg-sunken);
   flex: none;
 }
@@ -84,7 +86,7 @@
   display: grid;
   gap: var(--sp-1);
   background: var(--bg-sunken);
-  border: 1px solid var(--line-strong);
+  border: var(--bw) solid var(--line-strong);
   border-radius: var(--r-2);
 }
 .target span {
@@ -100,7 +102,74 @@
   overflow-wrap: anywhere;
 }
 @media (max-width: 768px) {
+  .footer {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  }
+  .footer:has(> :only-child) {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .footer > * {
-    flex: 1 1 100%;
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+/* Bound toast clearance so the review keeps 120px of body plus its fixed head/foot. */
+.dialog[data-size="review"] {
+  width: min(var(--size-dialog-review), calc(100vw - 2 * var(--sp-8)));
+  max-height: calc(
+    100dvh - var(--sp-16) -
+      min(
+        max(var(--sp-8), var(--toast-reserve, 0px)),
+        max(
+          var(--sp-8),
+          calc(
+            100dvh - var(--sp-16) - var(--dialog-fixed-height, 180px) - 122px
+          )
+        )
+      )
+  );
+}
+.dialog[data-size="review"] .header {
+  padding: var(--sp-6) var(--sp-6) var(--sp-4);
+  border-bottom: var(--bw) solid var(--line-strong);
+}
+.dialog[data-size="review"] .body {
+  padding: 0 var(--sp-6) var(--sp-6);
+  overscroll-behavior: contain;
+}
+@media (min-width: 769px) and (max-width: 1023px) {
+  .dialog[data-size="review"] {
+    width: min(var(--size-dialog-review), calc(100vw - 2 * var(--sp-6)));
+  }
+}
+@media (max-width: 768px) {
+  .dialog[data-size="review"] {
+    width: calc(100vw - 2 * var(--sp-4));
+    margin-top: var(--sp-4);
+    max-height: calc(
+      100dvh - var(--sp-4) -
+        min(
+          max(var(--sp-4), var(--toast-reserve, 0px)),
+          max(
+            var(--sp-4),
+            calc(
+              100dvh - var(--sp-4) - var(--dialog-fixed-height, 180px) - 122px
+            )
+          )
+        )
+    );
+  }
+  .dialog[data-size="review"] .header {
+    padding: var(--sp-4) var(--sp-4) var(--sp-3);
+  }
+  .dialog[data-size="review"] .body {
+    padding: 0 var(--sp-4) var(--sp-4);
+  }
+  .dialog[data-size="review"] .footer {
+    padding: var(--sp-3) var(--sp-4);
   }
 }

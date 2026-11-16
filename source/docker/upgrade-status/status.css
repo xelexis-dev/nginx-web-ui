@@ -13,7 +13,7 @@ h1{font-size:var(--fs-2xl);font-weight:var(--fw-semibold);line-height:var(--lh-2
 .badge{flex:none;display:inline-flex;align-items:center;gap:var(--gap-row-icon);font-size:var(--fs-sm);font-weight:var(--fw-medium);line-height:var(--lh-sm)}
 .badge::before{content:"";width:var(--size-dot);height:var(--size-dot);flex:none;border-radius:var(--r-full);background:var(--info)}
 .badge[data-tone=info]{color:var(--info-text)}.badge[data-tone=warning]{color:var(--warning-text)}.badge[data-tone=error]{color:var(--danger-text)}.badge[data-tone=success]{color:var(--success-text)}
-.badge[data-tone=warning]::before{background:var(--warning);border-radius:var(--r-0);transform:rotate(45deg)}.badge[data-tone=error]::before{background:var(--danger);border-radius:var(--r-0)}.badge[data-tone=success]::before{background:var(--success)}
+.badge[data-tone=warning]::before{background:var(--warning);border-radius:var(--r-0);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}.badge[data-tone=error]::before{background:var(--danger);border-radius:var(--r-0)}.badge[data-tone=success]::before{background:var(--success)}
 .progress-block{display:grid;gap:var(--sp-2)}
 progress{appearance:none;-webkit-appearance:none;display:block;width:100%;height:var(--size-progress);border:0;background:var(--bg-active);color:var(--chart-line)}progress::-webkit-progress-bar{background:var(--bg-active)}progress::-webkit-progress-value{background:var(--chart-line)}progress::-moz-progress-bar{background:var(--chart-line)}
 .progress-meta{display:flex;justify-content:space-between;gap:var(--sp-4);color:var(--text-2);font-size:var(--fs-sm);line-height:var(--lh-sm);font-variant-numeric:tabular-nums}.progress-percent{color:var(--text-1);font-weight:var(--fw-medium)}

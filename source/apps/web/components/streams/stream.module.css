@@ -70,13 +70,6 @@
 
 /* Detail page (Operations): the summary beside the generated config at >=1024px, as on the
    reverse-proxy detail (.opsDetail there). The page blocks themselves use page-layout .page. */
-.headerMeta {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2) var(--sp-3);
-  overflow-wrap: anywhere;
-}
 
 .previewHint {
   display: block;

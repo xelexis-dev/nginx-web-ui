@@ -4,6 +4,7 @@ import {
   Icon,
   Facts,
   StatusBadge,
+  EmptyState,
   Surface,
   buttonClassName,
   Table,
@@ -88,9 +89,16 @@ export function WebhookListView({ targets }: { targets: WebhookRow[] }) {
           <tbody>
             {targets.length === 0 ? (
               <Tr>
-                <Td colSpan={5} className={styles.emptyCell}>
-                  등록된 webhook 이 없습니다. Discord 채널이나 사내 알림 서버를
-                  추가해 보세요.
+                <Td colSpan={5}>
+                  <EmptyState
+                    description={
+                      <>
+                        {" "}
+                        등록된 webhook 이 없습니다. Discord 채널이나 사내 알림
+                        서버를 추가해 보세요.{" "}
+                      </>
+                    }
+                  />
                 </Td>
               </Tr>
             ) : null}

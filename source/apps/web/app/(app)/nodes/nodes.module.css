@@ -20,14 +20,6 @@
   margin-inline-start: auto;
 }
 
-.emptyCell {
-  text-align: center;
-  color: var(--text-2);
-  font-size: var(--fs-md);
-  padding: var(--sp-6) var(--sp-4);
-  white-space: normal;
-}
-
 /* Stretched link: the entire row is clickable, not just the label cell.
    The overlay is transparent (captures clicks only) so cell text stays
    visible; `.table tbody tr { position: relative }` above is the anchor. */
@@ -83,7 +75,10 @@
 
 /* Table owns the border, scrolling and narrow reflow. */
 
-.nodeTitle { color: inherit; overflow-wrap: anywhere; }
+.nodeTitle {
+  color: inherit;
+  overflow-wrap: anywhere;
+}
 
 .formStack {
   display: grid;

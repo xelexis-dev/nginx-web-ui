@@ -1,6 +1,10 @@
 // WP-3H: production admin/account-token components, safe DTO fixtures, no network or stored secrets.
 import { expect, userEvent, within } from "storybook/test";
-import { AdminTwoFactor } from "@/app/admin/users/admin-two-factor";
+import {
+  AdminTwoFactor,
+  AdminUserResultNotice,
+} from "@/app/admin/users/admin-two-factor";
+import { adminPasskeyRemovedMessage } from "@/components/passkeys/admin-passkey-removed-message";
 import { AdminPasskeys } from "@/components/passkeys/admin-passkeys";
 import { passkeyListView } from "@/lib/passkey-api";
 import type { Meta, StoryObj } from "@storybook/react-vite";
@@ -132,6 +136,8 @@ const userScopes: TokenScope[] = [
   "nginx:reload",
 ];
 const scenes = {
+  "user-passkeys-removed": ["/admin/users/user-1", "사용자"],
+  "user-results": ["/admin/users/user-1", "사용자"],
   "user-2fa-on": ["/admin/users/user-1", "사용자"],
   "user-2fa-confirm": ["/admin/users/user-1", "사용자"],
   "user-2fa-wrong": ["/admin/users/user-1", "사용자"],
@@ -200,7 +206,16 @@ function AdminPage({ kind }: { kind: Kind }) {
   const header = (children: React.ReactNode) => (
     <section className={layout.page}>
       <PageHeader title={scenes[kind][1]} />
-      {explanations[kind] ? (
+      {explanations[kind] &&
+      ![
+        "user-new",
+        "oauth-new",
+        "mail-new",
+        "webhook-new",
+        "server-token-new",
+        "user-token-new",
+        "viewer-token-new",
+      ].includes(kind) ? (
         <FormStack>
           <Banner tone="info" title={explanations[kind]} />
           {children}
@@ -235,7 +250,11 @@ function AdminPage({ kind }: { kind: Kind }) {
         selfUserId="actor"
       />
     );
-  if (kind.startsWith("user-2fa-")) {
+  if (
+    kind.startsWith("user-2fa-") ||
+    kind === "user-passkeys-removed" ||
+    kind === "user-results"
+  ) {
     const isSelf = kind === "user-2fa-self";
     const canRemove = kind !== "user-2fa-oidc";
     const target = {
@@ -267,6 +286,24 @@ function AdminPage({ kind }: { kind: Kind }) {
       <UserDetailView
         user={target}
         isSelf={isSelf}
+        result={
+          kind === "user-2fa-success" ||
+          kind === "user-passkeys-removed" ||
+          kind === "user-results" ? (
+            <AdminUserResultNotice
+              message={[
+                kind !== "user-passkeys-removed"
+                  ? "2FA를 초기화했습니다. 인증 앱 등록, 백업 코드와 패스키를 삭제하고 사용자의 로그인을 종료했습니다."
+                  : null,
+                kind !== "user-2fa-success"
+                  ? adminPasskeyRemovedMessage(isSelf)
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(" ")}
+            />
+          ) : null
+        }
         detailActions={
           <UserDetailActions id={user.id} isSelf={isSelf} enabled />
         }
@@ -276,7 +313,6 @@ function AdminPage({ kind }: { kind: Kind }) {
             isSelf={isSelf}
             canReset={canRemove}
             passkeyCount={keys.passkeys.length}
-            reset={kind === "user-2fa-success"}
           />
         }
         passkeys={
@@ -578,9 +614,7 @@ export const UserTwoFactorSuccess: Story = {
 };
 const openReset: NonNullable<Story["play"]> = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
-  await userEvent.click(
-    canvas.getByRole("button", { name: "2FA 초기화" }),
-  );
+  await userEvent.click(canvas.getByRole("button", { name: "2FA 초기화" }));
   await expect(canvas.getByRole("dialog")).toBeVisible();
   await expect(canvas.getByLabelText("현재 비밀번호")).toBeVisible();
 };
@@ -626,3 +660,8 @@ const errorReset = (
 export const UserTwoFactorWrongPassword: Story = errorReset("user-2fa-wrong");
 export const UserTwoFactorConflict: Story = errorReset("user-2fa-conflict");
 export const UserTwoFactorRateLimited: Story = errorReset("user-2fa-rate");
+
+export const UserPasskeysRemoved: Story = {
+  args: { kind: "user-passkeys-removed" },
+};
+export const UserRedirectResults: Story = { args: { kind: "user-results" } };

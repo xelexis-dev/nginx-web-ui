@@ -1,6 +1,5 @@
 import layout from "@/components/page-layout.module.css";
-import Link from "next/link";
-import { PageHeader, linkClassName } from "@repo/ui";
+import { PageHeader } from "@repo/ui";
 import { readPageView } from "@/lib/api-page";
 import { ServerForm } from "@/components/reverse-proxy/server-form";
 import {
@@ -28,14 +27,6 @@ export default async function EditServerPage({
   return (
     <section className={layout.page}>
       <PageHeader
-        eyebrow={
-          <Link
-            href={"/reverse-proxy/" + view.server.id}
-            className={linkClassName({ variant: "back" })}
-          >
-            {view.server.serverName.split(/\s+/)[0]}
-          </Link>
-        }
         title="서버 수정"
       />
       <ServerForm

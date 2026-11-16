@@ -36,8 +36,8 @@ export function MetricsForm({
 
   return (
     <form className={resourceStyles.form} action={action}>
+      <FormErrors errors={state.fieldErrors} />
       <FormStack>
-        <FormErrors errors={state.fieldErrors} />
         <Card
           id="admin-metrics"
           title="접속 지표"

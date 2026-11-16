@@ -3,6 +3,7 @@ import {
   Icon,
   Facts,
   StatusBadge,
+  EmptyState,
   Surface,
   buttonClassName,
   Table,
@@ -71,7 +72,7 @@ export function UserList({
       />
 
       <Surface flush>
-        <Table label="사용자">
+        <Table label="사용자" density="comfortable" narrow="stacked">
           <thead>
             <Tr>
               <Th>사용자</Th>
@@ -84,8 +85,8 @@ export function UserList({
           <tbody>
             {items.length === 0 ? (
               <Tr>
-                <Td colSpan={5} className={styles.emptyCell}>
-                  등록된 사용자가 없습니다.
+                <Td colSpan={5}>
+                  <EmptyState description={<> 등록된 사용자가 없습니다. </>} />
                 </Td>
               </Tr>
             ) : null}
@@ -96,7 +97,7 @@ export function UserList({
                   <Td
                     cell="primary"
                     icon={
-                      <span className={styles.avatar}>
+                      <span className={styles.avatar} data-size="sm">
                         {(user.displayName ?? user.email ?? "?").slice(0, 1)}
                       </span>
                     }
@@ -121,7 +122,7 @@ export function UserList({
                   <Td cell="meta" label="역할">
                     <RoleBadge role={user.role} />
                   </Td>
-                  <Td cell="status">
+                  <Td cell="status" label="상태">
                     {!user.approved ? (
                       <StatusBadge tone={"warning"} size="sm">
                         승인 대기

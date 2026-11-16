@@ -127,6 +127,10 @@ export const FALLBACK_THEME_CSS = `:root {
   --size-nav-collapsed: 56px;
   --size-content: 1200px;
   --size-dialog: 480px;
+  --size-dialog-review: 760px;
+  --size-setting-status: 176px;
+  --size-fact-value: 240px;
+  --size-row-comfy: 44px;
   --size-auth: 360px;
   --size-toast: 360px;
   --size-pop-min: 240px;

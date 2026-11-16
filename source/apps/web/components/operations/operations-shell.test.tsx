@@ -32,18 +32,23 @@ vi.mock("@repo/ui", async (original) => {
       open ? <section role="dialog">{children}</section> : null,
   };
 });
-vi.mock("@/components/apply-bar", () => ({
-  ApplyReview: ({
+vi.mock("@/components/apply-dialog", () => ({
+  ApplyDialog: ({
     target,
     targetLabel,
+    open,
   }: {
+    open: boolean;
     target: { kind: string; id?: string };
     targetLabel: string;
-  }) => (
-    <span data-review-target={target.kind === "node" ? target.id : "local"}>
-      {targetLabel} 검토 내용
-    </span>
-  ),
+  }) =>
+    open ? (
+      <section role="dialog">
+        <span data-review-target={target.kind === "node" ? target.id : "local"}>
+          {targetLabel} 검토 내용
+        </span>
+      </section>
+    ) : null,
 }));
 vi.mock("@/components/profile-menu", () => ({
   ProfileMenu: () => <span>프로필</span>,
@@ -219,4 +224,12 @@ it("keeps the admin navigation out of a viewer's global rail", () => {
   const html = render({ role: "viewer" });
   const rail = html.slice(html.indexOf("<aside"), html.indexOf("</aside>"));
   expect(rail).not.toContain('href="/admin"');
+});
+
+it("uses a success all-applied indicator in the shell", () => {
+  const html = render({ data: { ...data, pendingCount: 0 } });
+  const status = html.slice(html.indexOf('aria-label="모두 적용됨"'));
+  expect(status.slice(0, status.indexOf("</span>") + 7)).toMatch(
+    /data-tone="success"/,
+  );
 });

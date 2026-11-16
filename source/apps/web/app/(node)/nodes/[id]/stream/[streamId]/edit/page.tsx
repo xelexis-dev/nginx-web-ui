@@ -35,7 +35,12 @@ export default async function EditNodeStreamPage({
     },
   });
 
-  if (!loaded.ok) return loaded.render;
+  if (!loaded.ok) return (
+    <section className={layout.page}>
+      <PageHeader title="Stream 수정" />
+      {loaded.render}
+    </section>
+  );
 
   return (
     <section className={layout.page}>

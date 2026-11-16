@@ -8,14 +8,17 @@ import styles from "./brand-logo.module.css";
  * The wordmark uses the already bundled Pretendard instead of tiny traced letter outlines.
  * useId isolates gradient references when Docs renders several logos.
  */
-export function BrandLogo({ size = "sidebar", decorative = false, className }: {
-  size?: "sidebar" | "signIn"; decorative?: boolean; className?: string;
+export function BrandLogo({ size = "sidebar", variant = "full", decorative = false, className }: {
+  size?: "sidebar" | "signIn"; variant?: "full" | "mark" | "compact"; decorative?: boolean; className?: string;
 }) {
   const gradient = useId();
   const scale = (size === "signIn" ? 112.5 : 80) / 1428;
+  // Tight artwork bounds keep a cropped mark centered without changing its contours.
+  const width = variant === "compact" ? 248 : variant === "mark" ? 908 : 2417;
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 2417 ${724 / 3}`}
-      width={2417 * scale} height={724 / 3 * scale}
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${width} ${724 / 3}`}
+      data-variant={variant}
+      width={width * scale} height={724 / 3 * scale}
       className={[styles.logo, className].filter(Boolean).join(" ")}
       role={decorative ? undefined : "img"} aria-label={decorative ? undefined : "nginx-web-ui"}
       aria-hidden={decorative || undefined} focusable="false">
@@ -27,10 +30,10 @@ export function BrandLogo({ size = "sidebar", decorative = false, className }: {
         fill={`url(#${gradient})`} fillRule="evenodd" />
       {/* Pretendard 600: measured ink height 201 and descender 44.3914 in source units.
           Keep the existing wordmark width/bottom while letting the font renderer draw curves. */}
-      <text className={styles.wordmark} x="1052" y="196.94196" fontSize="211.42681"
+      {variant === "full" ? <text className={styles.wordmark} x="1052" y="196.94196" fontSize="211.42681"
         textLength="1365" lengthAdjust="spacingAndGlyphs" fill="currentColor">
         nginx-web-ui
-      </text>
+      </text> : null}
     </svg>
   );
 }

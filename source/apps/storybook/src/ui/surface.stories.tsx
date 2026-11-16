@@ -1,4 +1,4 @@
-import { Button, EmptyState, Surface } from "@repo/ui";
+import { StatusBadge, Button, EmptyState, Surface } from "@repo/ui";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 
@@ -19,7 +19,10 @@ const meta = {
       },
     },
   },
-  args: { title: "설정 요약", children: <p style={{ margin: 0 }}>면 안의 내용.</p> },
+  args: {
+    title: "설정 요약",
+    children: <p style={{ margin: 0 }}>면 안의 내용.</p>,
+  },
   argTypes: { children: { control: false }, actions: { control: false } },
 } satisfies Meta<typeof Surface>;
 export default meta;
@@ -31,14 +34,31 @@ export const Default: Story = {};
 export const WithTextLink: Story = {
   args: {
     title: "트래픽",
-    description: <>서버별 트래픽은 <a href="#metrics">접속 지표</a>에서 봅니다.</>,
-    children: <p style={{ margin: 0 }}>저장된 설정 기준입니다. 자세한 수치는 <a href="#metrics">접속 지표</a>에 있습니다.</p>,
+    description: (
+      <>
+        서버별 트래픽은 <a href="#metrics">접속 지표</a>에서 봅니다.
+      </>
+    ),
+    children: (
+      <p style={{ margin: 0 }}>
+        저장된 설정 기준입니다. 자세한 수치는 <a href="#metrics">접속 지표</a>에
+        있습니다.
+      </p>
+    ),
   },
 };
 
 /** 머리에 설명과 동작. */
 export const WithActions: Story = {
-  args: { title: "미적용 변경 2건", description: "저장했지만 nginx에는 아직 반영되지 않았다", actions: <Button size="sm" onClick={fn().mockName("적용")}>적용</Button> },
+  args: {
+    title: "미적용 변경 2건",
+    description: "저장했지만 nginx에는 아직 반영되지 않았다",
+    actions: (
+      <Button size="sm" onClick={fn().mockName("적용")}>
+        적용
+      </Button>
+    ),
+  },
 };
 
 /** 가장자리까지 닿는 내용(표 등). 빈 상태를 함께 보인다. */
@@ -46,10 +66,42 @@ export const FlushWithEmptyState: Story = {
   args: {
     title: "서버 상태",
     flush: true,
-    children: <EmptyState title="조건에 맞는 서버가 없습니다" description="검색어나 상태 필터를 바꿔 보세요." action={<Button size="sm" variant="secondary" onClick={fn().mockName("필터 초기화")}>필터 초기화</Button>} />,
+    children: (
+      <EmptyState
+        title="조건에 맞는 서버가 없습니다"
+        description="검색어나 상태 필터를 바꿔 보세요."
+        action={
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={fn().mockName("필터 초기화")}
+          >
+            필터 초기화
+          </Button>
+        }
+      />
+    ),
   },
 };
 
 export const WithInfo: Story = {
-  args: { info: "이 영역과 설정을 설명합니다. 현재 상태와 이 페이지 동작의 결과는 화면에 그대로 둡니다." },
+  args: {
+    info: "이 영역과 설정을 설명합니다. 현재 상태와 이 페이지 동작의 결과는 화면에 그대로 둡니다.",
+  },
 };
+
+export const Tag: Story = {
+  args: {
+    title: "패스키",
+    tag: (
+      <StatusBadge tone="neutral" dot={false} size="sm">
+        3/10
+      </StatusBadge>
+    ),
+  },
+};
+
+export const Spec: Story = Default;
+export const States: Story = Tag;
+export const SpecDark: Story = { ...Spec, globals: { theme: "dark" } };
+export const StatesDark: Story = { ...States, globals: { theme: "dark" } };

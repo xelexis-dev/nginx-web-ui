@@ -1,6 +1,5 @@
-import panel from "@/app/(app)/certificates/certificates.module.css";
+import { CodePane, EmptyState, Surface } from "@repo/ui";
 import type { IssueLogLineVM } from "./certificate-vm";
-import styles from "./issue-log-panel.module.css";
 
 /**
  * ACME 발급/갱신 진행 로그(HTTP-01·DNS-01 공통). issuing/검증 중에는 상위
@@ -21,34 +20,18 @@ export function IssueLogPanel({
   entries: IssueLogLineVM[];
   live: boolean;
 }) {
-  return (
-    <section
-      className={panel.panel}
-      aria-label={`발급 진행 로그${live ? " (실시간)" : ""}`}
-    >
-      <header className={panel.panelHead}>
-        <h2>{`발급 진행 로그${live ? " (실시간)" : ""}`}</h2>
-      </header>
-      <div
-        className={styles.log}
-        tabIndex={0}
-        role="region"
-        aria-label="발급 진행 로그 내용"
-      >
-        {entries.length === 0 ? (
-          <span className={styles.empty}>아직 로그가 없습니다.</span>
-        ) : (
-          entries.map((e, i) => (
-            <div
-              key={i}
-              className={`${styles.line} ${e.level === "error" ? styles.error : ""}`.trim()}
-            >
-              <span className={styles.at}>{e.at}</span>
-              {e.msg}
-            </div>
-          ))
-        )}
-      </div>
-    </section>
+  const title = `발급 진행 로그${live ? " (실시간)" : ""}`;
+  return entries.length ? (
+    <CodePane
+      title={title}
+      code={entries
+        .map((entry) => `${entry.at} [${entry.level}] ${entry.msg}`)
+        .join("\n")}
+      copyLabel={false}
+    />
+  ) : (
+    <Surface title={title}>
+      <EmptyState description="아직 로그가 없습니다." />
+    </Surface>
   );
 }

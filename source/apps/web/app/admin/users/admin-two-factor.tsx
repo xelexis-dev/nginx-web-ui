@@ -17,26 +17,30 @@ import type { BasicFormState } from "@repo/contracts";
 import type { AdminUserView } from "@/lib/admin-api";
 import { useApiAction } from "@/lib/use-api-action";
 
+export function AdminUserResultNotice({ message }: { message: string }) {
+  const notice = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    notice.current?.focus();
+  }, []);
+  return (
+    <div ref={notice} tabIndex={-1}>
+      <Banner tone="success" title={message} />
+    </div>
+  );
+}
+
 export function AdminTwoFactor({
   user,
   isSelf,
   canReset,
   passkeyCount,
-  reset = false,
 }: {
   user: AdminUserView;
   isSelf: boolean;
   canReset: boolean;
   passkeyCount: number;
-  reset?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const notice = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (reset) {
-      notice.current?.focus();
-    }
-  }, [reset]);
   return (
     <Surface
       title="2단계 인증"
@@ -48,14 +52,6 @@ export function AdminTwoFactor({
         ) : undefined
       }
     >
-      {reset ? (
-        <div ref={notice} tabIndex={-1}>
-          <Banner
-            tone="success"
-            title="2FA를 초기화했습니다. 인증 앱 등록, 백업 코드와 패스키를 삭제하고 사용자의 로그인을 종료했습니다."
-          />
-        </div>
-      ) : null}
       <Facts
         items={[
           {
@@ -122,6 +118,7 @@ export function ResetDialog({
     <Modal
       open
       onClose={onClose}
+      dismissible={!pending}
       title={`${user.email ?? "이메일 없음"}의 2FA를 초기화하시겠습니까?`}
       icon="danger"
       description={
@@ -139,7 +136,7 @@ export function ResetDialog({
       }
       footer={
         <>
-          <Button variant="secondary" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose} disabled={pending}>
             취소
           </Button>
           <Button

@@ -1,11 +1,5 @@
 import layout from "@/components/page-layout.module.css";
-import {
-  linkClassName,
-  Facts,
-  Icon,
-  PageHeader,
-  Surface,
-} from "@repo/ui";
+import { linkClassName, Facts, Icon, PageHeader, Surface } from "@repo/ui";
 import Link from "next/link";
 import type { RuntimeDnsStatus } from "@repo/contracts";
 import { RuntimeDnsNotice } from "@/components/reverse-proxy/runtime-dns";
@@ -63,7 +57,11 @@ export function UpstreamDetail({
         description={`서버 ${data.servers.length}개`}
         actions={
           canWrite ? (
-            <UpstreamDetailActions id={data.id} action={deleteAction} editHref={`${basePath}/${data.id}/edit`} />
+            <UpstreamDetailActions
+              id={data.id}
+              action={deleteAction}
+              editHref={`${basePath}/${data.id}/edit`}
+            />
           ) : undefined
         }
       />
@@ -73,24 +71,22 @@ export function UpstreamDetail({
         active={data.resolveAtRuntime === true}
       />
 
-      <div className={layout.section}>
-        <Surface title="설정 요약">
-          <Facts
-            items={[
-              { term: "이름", value: data.name },
-              {
-                term: "이름 확인",
-                value: runtimeDnsModeLabel(data.resolveAtRuntime),
-              },
-              {
-                term: "서버",
-                value: data.servers.length > 0 ? data.servers.join(", ") : "—",
-                mono: data.servers.length > 0,
-              },
-            ]}
-          />
-        </Surface>
-      </div>
+      <Surface title="설정 요약">
+        <Facts
+          items={[
+            { term: "이름", value: data.name },
+            {
+              term: "이름 확인",
+              value: runtimeDnsModeLabel(data.resolveAtRuntime),
+            },
+            {
+              term: "서버",
+              value: data.servers.length > 0 ? data.servers.join(", ") : "—",
+              mono: data.servers.length > 0,
+            },
+          ]}
+        />
+      </Surface>
     </div>
   );
 }

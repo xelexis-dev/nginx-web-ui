@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { PageHeader, linkClassName } from "@repo/ui";
+import { PageHeader } from "@repo/ui";
 import type { AccountView } from "@repo/contracts";
 import { readPageApi } from "@/lib/api-page";
 import { ChangePasswordForm } from "../change-password-form";
@@ -11,14 +10,7 @@ export default async function PasswordPage() {
   if (!account.hasPassword) redirect("/account");
   return (
     <section className={layout.page}>
-      <PageHeader
-        title="비밀번호 변경"
-        eyebrow={
-          <Link href="/account" className={linkClassName({ variant: "back" })}>
-            계정으로
-          </Link>
-        }
-      />
+      <PageHeader title="비밀번호 변경" />
       <ChangePasswordForm />
     </section>
   );

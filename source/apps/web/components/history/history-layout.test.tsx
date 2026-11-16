@@ -58,6 +58,7 @@ it("keeps empty history unmarked", () => {
   );
   expect(html).toContain("적용 이력이 없습니다.");
   expect(html).not.toContain("data-current");
+  expect(html).toMatch(/<td[^>]*colSpan="6"[^>]*>.*적용 이력이 없습니다\./s);
 });
 it.each(["/audit", "/nodes/node-a/audit"])(
   "preserves page/action navigation at %s",
@@ -134,7 +135,7 @@ it("keeps audit raw records and missing-value fallbacks in key-value sections", 
       }}
     />,
   );
-  expect(html).toContain('data-columns="2"');
+  expect(html).toContain('data-columns="1"');
   expect(html).toContain('data-layout="grid"');
   expect(html).toContain("system");
   expect(html).toContain("secretPlaceholder");
@@ -189,7 +190,63 @@ it.each([false, true])("preserves raw snapshot records and rollback permission; 
  const upstream = { id: "upstream-a", name: "backend", servers: ["192.0.2.20:8080"], resolveAtRuntime: true, version: "7" };
  const html = renderToStaticMarkup(<HistoryDetail data={{ snapshot: { id: "snapshot-a", label: null, actorId: null, actorEmail: null, createdAt: rows[0]!.iso, data: { upstreams: [upstream], servers: [], streams: [] } }, iso: rows[0]!.iso, upstreams: [upstream], servers: [], streams: [], diff: { hasChanges: false, upstreams: [], servers: [], streams: [] }, isFirst: false, canRollback }} />);
  expect(html).toContain("192.0.2.20:8080");expect(html).toContain("resolveAtRuntime");expect(html).toContain("version");expect(html).toContain("이전 스냅샷과 동일합니다. (변경 없음)");
- expect(html).toContain('data-columns="2"');
+ expect(html).toContain('data-columns="1"');
  if (canRollback) { expect(html.indexOf("<form")).toBeLessThan(html.indexOf("</header>"));expect(mocks.actions).toHaveBeenCalledWith({id:"history.rollback",args:["snapshot-a"]}); }
  else { expect(html).not.toContain("<form");expect(mocks.actions).not.toHaveBeenCalled(); }
+});
+
+it.each([true, false])(
+  "renders empty history inside a spanning table row; details=%s",
+  (showDetails) => {
+    const html = renderToStaticMarkup(
+      <HistoryList
+        info="안내"
+        data={{ items: [], showDetails }}
+        renderRowAction={() => <button>보기</button>}
+      />,
+    );
+    expect(html).toMatch(
+      new RegExp(
+        `<td[^>]*colSpan="${showDetails ? 7 : 3}"[^>]*>.*적용 이력이 없습니다\\.`,
+        "s",
+      ),
+    );
+  },
+);
+it.each(["", "config.apply"])(
+  "distinguishes filtered audit empty state; filter=%s",
+  (actionFilter) => {
+    const html = renderToStaticMarkup(
+      <AuditList
+        basePath="/audit"
+        data={{
+          items: [],
+          total: 0,
+          page: 1,
+          totalPages: 1,
+          actions: [],
+          actionFilter,
+        }}
+      />,
+    );
+    expect(html).toMatch(/<td[^>]*colSpan="5"[^>]*>.*<p[^>]*>/s);
+    expect(html).toContain(
+      actionFilter
+        ? "해당 액션의 감사 로그가 없습니다."
+        : "감사 로그가 없습니다.",
+    );
+  },
+);
+
+it("renders the shared history diff table with explicit missing values", () => {
+  const html = renderToStaticMarkup(<HistoryDetail data={{
+    snapshot: { id: "snapshot-a", label: "운영", actorId: null, actorEmail: null, createdAt: rows[0]!.iso, data: { upstreams: [], servers: [], streams: [] } },
+    iso: rows[0]!.iso, upstreams: [], servers: [], streams: [], isFirst: false, canRollback: false,
+    diff: { hasChanges: true, upstreams: [], streams: [], servers: [{ key: "server-a", label: "api.example.test", status: "changed", changes: [{ field: "listen", before: null, after: 8080 }] }] },
+  }} />);
+  expect(html).toContain('data-variant="panel"');
+  for (const title of ["설정", "이전", "이후"]) expect(html).toContain(`<th scope="col">${title}</th>`);
+  expect(html).toContain(">없음<");
+  expect(html).toContain("8080");
+  expect(html).not.toContain("→");
 });

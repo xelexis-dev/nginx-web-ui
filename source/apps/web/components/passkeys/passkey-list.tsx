@@ -1,81 +1,49 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import {
-  Banner,
-  Button,
   EmptyState,
   Icon,
   StatusBadge,
-  Card,
-  CardFoot,
+  Surface,
   Table,
   Td,
   Th,
   Tr,
   buttonClassName,
-  linkClassName,
 } from "@repo/ui";
 import type { PasskeyListView, PasskeyRowView } from "@/lib/passkey-api";
-import cards from "@/components/account-cards.module.css";
+import { PasskeyAvailabilityNotice } from "./passkey-availability-notice";
 import styles from "./passkeys.module.css";
 
-function PasskeyUnavailableText() {
+export function PasskeyAddress({ row }: { row: PasskeyRowView }) {
   return (
-    <>
-      패스키를 사용하려면 HTTPS 도메인 주소 또는 설치한 컴퓨터의
-      http://localhost로 접속하세요.{" "}
-      <a
-        className={linkClassName()}
-        href="https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/README.ko.md#3-최초-관리자-생성"
-        target="_blank"
-        rel="noreferrer"
-      >
-        설치 안내 보기
-      </a>
-    </>
-  );
-}
-export function PasskeyUnavailable() {
-  return (
-    <p className={styles.hint}>
-      <PasskeyUnavailableText />
-    </p>
-  );
-}
-export function PasskeyAddress({
-  row,
-  available,
-}: {
-  row: PasskeyRowView;
-  available: boolean;
-}) {
-  return (
-    <>
+    <span className={styles.address}>
       {row.address}
-      {available && row.unavailableHere ? (
-        <StatusBadge
-          className={styles.badge}
-          tone="neutral"
-          dot={false}
-          size="sm"
-        >
+      {row.unavailableHere ? (
+        <StatusBadge tone="neutral" size="sm">
           이 주소에서 사용 불가
         </StatusBadge>
       ) : null}
-    </>
+    </span>
   );
 }
 export function PasskeyTable({
   rows,
-  available,
   action,
 }: {
   rows: PasskeyRowView[];
-  available: boolean;
   action?: (row: PasskeyRowView) => ReactNode;
 }) {
   return (
-    <Table label="패스키">
+    <Table label="패스키" density="comfortable" layout="fixed" narrow="stacked">
+      <colgroup>
+        <col className={styles.nameColumn} />
+        <col />
+        <col className={styles.storageColumn} />
+        <col className={styles.createdColumn} />
+        <col className={styles.usedColumn} />
+        {action ? <col className={styles.actionColumn} /> : null}
+      </colgroup>
       <thead>
         <Tr>
           <Th>이름</Th>
@@ -87,125 +55,117 @@ export function PasskeyTable({
         </Tr>
       </thead>
       <tbody>
-        {rows.map((row) => (
-          <Tr key={row.id}>
-            <Td cell="primary" icon={<Icon name="tokens" size={18} />}>
-              {action ? (
-                <strong>{row.name}</strong>
-              ) : (
-                <Link href={`/account/passkeys/${encodeURIComponent(row.id)}`}>
-                  {row.name}
-                </Link>
-              )}
-            </Td>
-            <Td wrap label="주소">
-              <PasskeyAddress row={row} available={available} />
-            </Td>
-            <Td label="보관 방식">
-              <StatusBadge tone="neutral" dot={false} size="sm">
+        {rows.length ? (
+          rows.map((row) => (
+            <Tr key={row.id}>
+              <Td cell="primary" wrap>
+                {action ? (
+                  row.name
+                ) : (
+                  <Link
+                    href={`/account/passkeys/${encodeURIComponent(row.id)}`}
+                  >
+                    {row.name}
+                  </Link>
+                )}
+              </Td>
+              <Td wrap label="주소">
+                <PasskeyAddress row={row} />
+              </Td>
+              <Td label="보관 방식">
                 {row.backupEligible ? "동기화 가능" : "이 기기 전용"}
-              </StatusBadge>
+              </Td>
+              <Td label="등록일">{row.createdOn}</Td>
+              <Td label="최근 사용">{row.lastUsedAt}</Td>
+              {action ? (
+                <Td cell="action" label="작업">
+                  {action(row)}
+                </Td>
+              ) : null}
+            </Tr>
+          ))
+        ) : (
+          <Tr>
+            <Td colSpan={action ? 6 : 5}>
+              <EmptyState description="등록한 패스키가 없습니다." />
             </Td>
-            <Td label="등록일">{row.createdAt}</Td>
-            <Td label="최근 사용">{row.lastUsedAt}</Td>
-            {action ? <Td cell="action">{action(row)}</Td> : null}
           </Tr>
-        ))}
+        )}
       </tbody>
     </Table>
   );
 }
 export function AccountPasskeys({
   data,
-  removed = false,
+  role = "viewer",
 }: {
   data: PasskeyListView;
-  removed?: boolean;
+  role?: string;
 }) {
   const count = data.passkeys.length;
-  const disabled =
-    !data.availability.available || !data.hasPassword || count >= 10;
-  const register = disabled ? (
-    <Button variant="secondary" disabled>
-      <Icon name="plus" />
-      패스키 등록
-    </Button>
-  ) : (
-    <Link
-      href="/account/passkeys/new"
-      className={buttonClassName({ variant: "secondary" })}
-    >
-      <Icon name="plus" />
-      패스키 등록
-    </Link>
-  );
+  const describe = data.hasPassword || count > 0;
   return (
-    <Card
+    <Surface
       id="account-passkeys"
-      footer={
-        <CardFoot>
-          <span>
-            {data.currentAddress ? `현재 주소: ${data.currentAddress} · ` : ""}
-            이름을 누르면 상세 정보를 볼 수 있습니다.
-          </span>
-          <span>최대 10개</span>
-        </CardFoot>
-      }
-      title={
-        <span className={styles.title}>
-          패스키
+      title="패스키"
+      tag={
+        describe ? (
           <StatusBadge tone="neutral" dot={false} size="sm">
-            {count} / 10
+            {count}/10
           </StatusBadge>
-        </span>
+        ) : undefined
       }
-      actions={count ? register : undefined}
+      description={
+        describe ? (
+          <>
+            패스키는 등록한 주소에서만 쓸 수 있습니다.
+            {data.availability.available ? (
+              <>
+                {" "}
+                지금 접속한 주소는 <strong>{data.currentAddress}</strong>입니다.
+              </>
+            ) : null}
+            {count === 10
+              ? " 10개를 모두 등록했습니다. 새로 등록하려면 사용하지 않는 패스키를 삭제하세요."
+              : null}
+          </>
+        ) : undefined
+      }
+      actions={
+        data.hasPassword && data.availability.available && count < 10 ? (
+          <Link
+            href="/account/passkeys/new"
+            className={buttonClassName({ variant: "secondary" })}
+          >
+            <Icon name="plus" />
+            패스키 등록
+          </Link>
+        ) : undefined
+      }
     >
-      <div className={cards.content}>
-        {removed ? (
-          <div>
-            <Banner tone="success" title="패스키를 삭제했습니다." />
-          </div>
-        ) : null}
+      <div className={styles.sectionBody}>
         {!data.availability.available ? (
-          <div>
-            <Banner
-              tone="info"
-              icon="info"
-              title={<PasskeyUnavailableText />}
-            />
-          </div>
-        ) : null}
-        {!data.hasPassword ? (
-          <div>
-            <p className={styles.hint}>
-              외부 로그인 전용 계정은 패스키를 등록할 수 없습니다.
-            </p>
-          </div>
-        ) : null}
-        {count >= 10 ? (
-          <div>
-            <Banner
-              tone="warning"
-              title="패스키는 최대 10개까지 등록할 수 있습니다."
-            >
-              새로 등록하려면 사용하지 않는 패스키를 삭제하세요.
-            </Banner>
-          </div>
+          <PasskeyAvailabilityNotice
+            reason={data.availability.reason}
+            role={role}
+          />
         ) : null}
         {count ? (
-          <PasskeyTable
-            rows={data.passkeys}
-            available={data.availability.available}
+          <PasskeyTable rows={data.passkeys} />
+        ) : !data.hasPassword ? (
+          <EmptyState
+            title="등록한 패스키가 없습니다"
+            description="외부 로그인만 쓰는 계정은 패스키를 등록할 수 없습니다."
           />
+        ) : !data.availability.available ? (
+          <p className={styles.bodyText}>등록한 패스키가 없습니다.</p>
         ) : (
           <EmptyState
-            title="등록된 패스키가 없습니다"
-            description="기기의 지문·얼굴 또는 PIN으로 로그인할 수 있습니다."
-            action={register}
+            title="등록한 패스키가 없습니다"
+            description="패스키를 등록하면 비밀번호를 입력하지 않고 기기의 지문·얼굴 인식이나 화면 잠금으로 로그인할 수 있습니다."
           />
         )}
       </div>
-    </Card>
+    </Surface>
   );
 }

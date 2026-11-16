@@ -1,4 +1,10 @@
-import { Icon, Button, PageHeader, buttonClassName } from "@repo/ui";
+import {
+  StatusBadge,
+  Icon,
+  Button,
+  PageHeader,
+  buttonClassName,
+} from "@repo/ui";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, within } from "storybook/test";
 
@@ -99,7 +105,11 @@ export const WithActionsOnly: Story = {
 /** 상세 페이지: 돌아가기 링크, 상태, 여러 동작. */
 export const Detail: Story = {
   args: {
-    eyebrow: <a href="#list"><Icon name="arrowLeft" size={14} /> 리버스 프록시</a>,
+    eyebrow: (
+      <a href="#list">
+        <Icon name="arrowLeft" size={14} /> 리버스 프록시
+      </a>
+    ),
     title: "api.example.test",
     description: "주의 · 5xx 2.8%",
     actions: (
@@ -126,5 +136,24 @@ export const Detail: Story = {
 };
 
 export const WithInfo: Story = {
-  args: { info: "이 영역과 설정을 설명합니다. 현재 상태와 이 페이지 동작의 결과는 화면에 그대로 둡니다." },
+  args: {
+    info: "이 영역과 설정을 설명합니다. 현재 상태와 이 페이지 동작의 결과는 화면에 그대로 둡니다.",
+  },
 };
+
+export const Status: Story = {
+  args: {
+    title: "운영 서버",
+    status: <StatusBadge tone="success">사용 중</StatusBadge>,
+    description: (
+      <>
+        서울 <span>관리자</span>
+      </>
+    ),
+  },
+};
+
+export const Spec: Story = List;
+export const States: Story = Status;
+export const SpecDark: Story = { ...Spec, globals: { theme: "dark" } };
+export const StatesDark: Story = { ...States, globals: { theme: "dark" } };

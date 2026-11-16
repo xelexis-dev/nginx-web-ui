@@ -1,6 +1,5 @@
 import layout from "@/components/page-layout.module.css";
-import Link from "next/link";
-import { PageHeader, linkClassName } from "@repo/ui";
+import { PageHeader } from "@repo/ui";
 import { UpstreamForm } from "@/components/upstreams/upstream-form";
 import { loadNodePage } from "@/lib/node-page";
 
@@ -67,14 +66,6 @@ export default async function EditNodeUpstreamPage({
   return (
     <section className={layout.page}>
       <PageHeader
-        eyebrow={
-          <Link
-            href={`${basePath}/${upstreamId}`}
-            className={linkClassName({ variant: "back" })}
-          >
-            {loaded.data.name}
-          </Link>
-        }
         title="Upstream 수정"
       />
 

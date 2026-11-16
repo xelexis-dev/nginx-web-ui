@@ -4,6 +4,7 @@ import type { BasicFormState } from "@repo/contracts";
 const mocks = vi.hoisted(() => ({
   state: { ok: false } as BasicFormState,
   open: false,
+  pending: false,
   submit: vi.fn(),
   push: vi.fn(),
   refresh: vi.fn(),
@@ -27,7 +28,7 @@ vi.mock("react", async (original) => ({
     ) => Promise<BasicFormState>,
   ) => {
     mocks.actions.push(action);
-    return [mocks.state, vi.fn(), false];
+    return [mocks.state, vi.fn(), mocks.pending];
   },
 }));
 vi.mock("next/navigation", () => ({
@@ -37,7 +38,11 @@ vi.mock("@/lib/api-transport", async (original) => ({
   ...(await original<typeof import("@/lib/api-transport")>()),
   submitApiForm: mocks.submit,
 }));
-import { AdminTwoFactor, ResetDialog } from "./admin-two-factor";
+import {
+  AdminTwoFactor,
+  AdminUserResultNotice,
+  ResetDialog,
+} from "./admin-two-factor";
 const user = {
   id: "u1",
   email: "owner@example.test",
@@ -53,6 +58,7 @@ beforeEach(() => {
   mocks.actions.length = 0;
   mocks.state = { ok: false };
   mocks.open = false;
+  mocks.pending = false;
 });
 it("offers reset only for another enrolled account and preserves all non-action states", () => {
   const props = { user, isSelf: false, canReset: true, passkeyCount: 2 };
@@ -77,11 +83,7 @@ it("offers reset only for another enrolled account and preserves all non-action 
   expect(oidc).not.toContain("2FA 초기화</button>");
   expect(
     renderToStaticMarkup(
-      <AdminTwoFactor
-        {...props}
-        reset
-        user={{ ...user, totpEnabled: false }}
-      />,
+      <AdminUserResultNotice message="2FA를 초기화했습니다. 인증 앱 등록, 백업 코드와 패스키를 삭제하고 사용자의 로그인을 종료했습니다." />,
     ),
   ).toContain(
     "2FA를 초기화했습니다. 인증 앱 등록, 백업 코드와 패스키를 삭제하고 사용자의 로그인을 종료했습니다.",
@@ -139,4 +141,13 @@ it("submits the administrator proof and target without replacing the session doc
   );
   expect(mocks.refresh).toHaveBeenCalledOnce();
   expect(mocks.assign).not.toHaveBeenCalled();
+});
+
+it("locks close, cancel and submit while resetting", () => {
+  mocks.pending = true;
+  const html = renderToStaticMarkup(
+    <ResetDialog user={user} passkeyCount={2} onClose={vi.fn()} />,
+  );
+  expect(html.match(/<button\b[^>]*disabled=""/g)).toHaveLength(3);
+  expect(html).toContain('aria-busy="true"');
 });

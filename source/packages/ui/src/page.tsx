@@ -8,6 +8,7 @@ export interface PageHeaderProps {
   /** Above the title: a back link or a crumb (pass your own <Link>). */
   eyebrow?: ReactNode;
   title: ReactNode;
+  status?: ReactNode;
   description?: ReactNode;
   info?: ReactNode;
   /** Buttons or button-styled links; they wrap under the title on narrow screens. */
@@ -17,6 +18,7 @@ export interface PageHeaderProps {
 export function PageHeader({
   eyebrow,
   title,
+  status,
   description,
   info,
   actions,
@@ -27,6 +29,7 @@ export function PageHeader({
         {eyebrow ? <div className={styles.eyebrow}>{eyebrow}</div> : null}
         <div className={styles.titleRow}>
           <h1 className={styles.title}>{title}</h1>
+          {status}
           {info ? <InfoTip label="페이지 설명">{info}</InfoTip> : null}
         </div>
         {description ? (
@@ -44,6 +47,7 @@ export interface SurfaceProps {
   id?: string;
   "aria-labelledby"?: string;
   title?: ReactNode;
+  tag?: ReactNode;
   description?: ReactNode;
   info?: ReactNode;
   actions?: ReactNode;
@@ -61,6 +65,7 @@ export function Surface({
   id,
   "aria-labelledby": labelledBy,
   title,
+  tag,
   description,
   info,
   actions,
@@ -85,6 +90,7 @@ export function Surface({
             {title ? (
               <div className={styles.titleRow}>
                 <Heading className={styles.surfaceTitle}>{title}</Heading>
+                {tag}
                 {info ? (
                   <InfoTip
                     label={typeof title === "string" ? `${title} 설명` : "설명"}
@@ -110,7 +116,7 @@ export function Surface({
 }
 
 export interface EmptyStateProps {
-  title: ReactNode;
+  title?: ReactNode;
   description?: ReactNode;
   action?: ReactNode;
 }
@@ -118,7 +124,7 @@ export interface EmptyStateProps {
 export function EmptyState({ title, description, action }: EmptyStateProps) {
   return (
     <div className={styles.empty}>
-      <p className={styles.emptyTitle}>{title}</p>
+      {title != null ? <p className={styles.emptyTitle}>{title}</p> : null}
       {description ? <p className={styles.emptyText}>{description}</p> : null}
       {action ? <div className={styles.emptyAction}>{action}</div> : null}
     </div>

@@ -30,6 +30,8 @@ it("renders one comfortable table with the original node destination and last-ob
   );
   expect(html.match(/<table\b/g)).toHaveLength(1);
   expect(html).toContain('data-density="comfortable"');
+  expect(html).toContain('data-narrow="stacked"');
+  expect(html).toContain('data-label="상태"');
   expect(html).toContain('href="/nodes/n1"');
   expect(html).toContain("아직 확인되지 않았습니다 — 새로고침하세요.");
   expect(html).toContain("응답한 적 없음");
@@ -40,7 +42,9 @@ it("retains the empty copy and admin connect/refresh actions", () => {
   const html = renderToStaticMarkup(
     <NodeList nodes={[]} canWrite unpairWarningText="토큰 해지 실패" />,
   );
-  expect(html).toContain("연결된 노드가 없습니다.");
+  expect(html).toMatch(
+    /<td[^>]*colSpan="4"[^>]*><div[^>]*><p[^>]*>연결된 노드가 없습니다\./,
+  );
   expect(html).toContain('href="/nodes/new"');
   expect(html).toContain("상태 새로고침");
   expect(html).toContain("토큰 해지 실패");

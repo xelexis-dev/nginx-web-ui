@@ -1,3 +1,5 @@
+import { PageHeader } from "@repo/ui";
+import layout from "@/components/page-layout.module.css";
 import { can } from "@/lib/permissions";
 import { readConfigDiff, type ConfigDiff } from "@/lib/config-diff";
 import { StreamList, type StreamRowVM } from "@/components/streams/stream-list";
@@ -65,7 +67,12 @@ export default async function NodeStreamsPage({ params }: { params: Promise<{ id
     },
   });
 
-  if (!loaded.ok) return loaded.render;
+  if (!loaded.ok) return (
+    <section className={layout.page}>
+      <PageHeader title="Stream" />
+      {loaded.render}
+    </section>
+  );
 
   // 「+ 새 Stream」을 보여줄지는 목록을 읽는 데 필요한 `config:read` 와
   // 별개로 판정한다. **`effectiveRole` 을 손으로 다시 만들지 않는다** —

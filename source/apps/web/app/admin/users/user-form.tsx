@@ -47,12 +47,16 @@ export function UserForm() {
         setMismatch(null);
       }}
     >
+      <FormErrors
+        errors={{
+          ...state.fieldErrors,
+          ...(mismatch ? { confirmPassword: mismatch } : {}),
+        }}
+      />
       <FormStack>
-        <FormErrors
-          errors={{
-            ...state.fieldErrors,
-            ...(mismatch ? { confirmPassword: mismatch } : {}),
-          }}
+        <Banner
+          tone="info"
+          title={<>이메일, 비밀번호, 역할을 지정해 새 계정을 생성합니다.</>}
         />
         <Card
           id="admin-user-create"
@@ -134,12 +138,7 @@ export function UserForm() {
             </Field>
 
             {state.error ? (
-              <Banner
-                tone="error"
-                role="alert"
-                title={state.error}
-                style={{ gridColumn: "1 / -1" }}
-              />
+              <Banner tone="error" role="alert" title={state.error} data-wide />
             ) : null}
           </div>
         </Card>

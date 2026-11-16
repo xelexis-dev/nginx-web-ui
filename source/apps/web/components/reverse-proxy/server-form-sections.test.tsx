@@ -267,6 +267,8 @@ it("keeps validation failures routed to fields without a competing general-error
   const html = render();
   expect(html).toContain("입력 오류 1개");
   expect(html).not.toContain("저장하지 못했습니다");
+  expect(html).not.toContain('aria-label="저장 오류"');
+  expect(html).not.toContain("입력값이 올바르지 않습니다.");
 });
 
 it("locks editable controls and custom menus during submission", () => {
@@ -364,4 +366,14 @@ it("keeps every location draft mounted while blocks may collapse independently",
   expect(
     posted(html, "locations").map((route: { path: string }) => route.path),
   ).toEqual(["/", "/assets/"]);
+});
+
+it("uses visible field labels in the rail and puts sheet errors before summary facts", () => {
+  mocks.state = { ok: false, fieldErrors: { listen: "예약된 포트입니다.", certificateId: "인증서를 확인하세요." } };
+  const html = render();
+  expect(html).toContain("listen (포트) — 예약된 포트입니다.");
+  expect(html).toContain("인증서 — 인증서를 확인하세요.");
+  expect(html).not.toContain("certificateId —");
+  const sheet = html.slice(html.indexOf("<dialog"));
+  expect(sheet.indexOf("입력 오류 2개")).toBeLessThan(sheet.indexOf("저장할 설정입니다."));
 });

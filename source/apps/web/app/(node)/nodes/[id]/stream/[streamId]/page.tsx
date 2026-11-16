@@ -1,3 +1,5 @@
+import { PageHeader } from "@repo/ui";
+import layout from "@/components/page-layout.module.css";
 import { configPreview, type ConfigPreview } from "@/lib/config-preview";
 import { can } from "@/lib/permissions";
 import { StreamDetail, type StreamDetailVM } from "@/components/streams/stream-detail";
@@ -51,7 +53,12 @@ export default async function NodeStreamDetailPage({
     },
   });
 
-  if (!loaded.ok) return loaded.render;
+  if (!loaded.ok) return (
+    <section className={layout.page}>
+      <PageHeader title="Stream" />
+      {loaded.render}
+    </section>
+  );
 
   // 수정/토글/삭제를 보여줄지는 읽기 권한과 별개다. `resolveNode` 가 계산한
   // `effectiveRole`(= min(사용자, 토큰), 스펙 §8)을 그대로 쓴다 — 목록 화면과

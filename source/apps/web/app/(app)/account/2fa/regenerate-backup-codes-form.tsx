@@ -44,10 +44,14 @@ export function RegenerateBackupCodesForm({
   const fieldError = state.fieldErrors?.[field];
   return (
     <form action={action} className={styles.form} aria-busy={pending}>
+      <FormErrors
+        errors={state.fieldErrors}
+        targets={{ [field]: "regenerate-proof" }}
+      />
       <FormStack>
-        <FormErrors
-          errors={state.fieldErrors}
-          targets={{ [field]: "regenerate-proof" }}
+        <Banner
+          tone="info"
+          title="인증 앱 설정은 유지하고 백업 코드만 새로 발급합니다."
         />
         <Card
           id="two-factor-regenerate"
@@ -94,7 +98,7 @@ export function RegenerateBackupCodesForm({
               )}
             </Field>
             <Checkbox
-              style={{ gridColumn: "1 / -1" }}
+              data-wide
               required
               disabled={pending}
               label="기존 백업 코드가 모두 무효화되는 것을 확인했습니다."

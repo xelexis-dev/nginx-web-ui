@@ -117,34 +117,33 @@ export function UpstreamList({
         ]}
       />
       <Surface flush>
-        {items.length === 0 ? (
-          <EmptyState title="등록된 upstream이 없습니다" />
-        ) : (
-          <Table label="Upstreams">
-            <thead>
-              <tr>
-                <Th>이름</Th>
-                <Th>서버</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((u) => (
-                <Tr key={u.id}>
-                  <Td cell="primary" icon={<Icon name="server" size={16} />}>
-                    <Link
-                      href={`${basePath}/${u.id}`}
-                    >
-                      {u.name}
-                    </Link>
-                  </Td>
-                  <Td mono wrap label="서버">
-                    {u.servers.join(", ")}
-                  </Td>
-                </Tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
+        <Table density="comfortable" narrow="stacked" label="Upstreams">
+          <thead>
+            <tr>
+              <Th>이름</Th>
+              <Th>서버</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.length === 0 ? (
+              <Tr>
+                <Td colSpan={2}>
+                  <EmptyState title="등록된 upstream이 없습니다" />
+                </Td>
+              </Tr>
+            ) : null}
+            {items.map((u) => (
+              <Tr key={u.id}>
+                <Td cell="primary" icon={<Icon name="server" size={16} />}>
+                  <Link href={`${basePath}/${u.id}`}>{u.name}</Link>
+                </Td>
+                <Td mono wrap label="서버">
+                  {u.servers.join(", ")}
+                </Td>
+              </Tr>
+            ))}
+          </tbody>
+        </Table>
       </Surface>
     </div>
   );

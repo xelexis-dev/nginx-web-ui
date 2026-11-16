@@ -212,7 +212,7 @@ export function RoutesView({
                         aria-controls={`route-block-${index}-body`}
                         onClick={() => onToggle(index)}
                       >
-                        <Icon name={open.has(index) ? "minus" : "plus"} />
+                        <span className={open.has(index) ? formStyles.pfExpandedChevron : undefined}><Icon name="chevronDown" /></span>
                       </IconButton>
                       <IconButton
                         size="sm"

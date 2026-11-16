@@ -9,7 +9,7 @@ import styles from "./table.module.css";
 
 /**
  * A data table in one DOM for every width (DESIGN.md "data-table", Operations). Wide: cells pad
- * 6 × 12 with rows at least 36px (they grow with their content), a hairline header, numbers
+ * 8 × 12 with rows at least 36px (they grow with their content), a hairline header, numbers
  * right-aligned. At 768px and below the same rows reflow into summary blocks by each cell's role, so
  * per-row links and forms exist once:
  *   status · primary · action   on the first line,
@@ -25,13 +25,27 @@ export interface TableProps {
   label: string;
   /** Comfortable rows for small lists; content may still grow beyond the 44px minimum. */
   density?: "dense" | "comfortable";
+  layout?: "auto" | "fixed";
+  narrow?: "summary" | "stacked";
   children: ReactNode;
 }
 
-export function Table({ label, children, density = "dense" }: TableProps) {
+export function Table({
+  label,
+  children,
+  density = "dense",
+  layout = "auto",
+  narrow = "summary",
+}: TableProps) {
   return (
     <div className={styles.wrap} role="region" aria-label={label} tabIndex={0}>
-      <table className={styles.table} aria-label={label} data-density={density}>
+      <table
+        className={styles.table}
+        aria-label={label}
+        data-density={density}
+        data-layout={layout}
+        data-narrow={narrow}
+      >
         {children}
       </table>
     </div>

@@ -89,14 +89,14 @@
   z-index: var(--z-pop);
   min-width: 140px;
   padding: var(--sp-2) var(--sp-3);
-  border: 1px solid var(--line-strong);
+  border: var(--bw) solid var(--line-strong);
   border-radius: var(--r-2);
   background: var(--bg-raised);
   box-shadow: var(--shadow-1);
   font-size: var(--fs-xs);
   color: var(--text-1);
   pointer-events: none;
-  transform: translate(-50%, calc(-100% - 12px));
+  transform: translate(-50%, calc(-100% - var(--sp-3)));
   white-space: nowrap;
 }
 

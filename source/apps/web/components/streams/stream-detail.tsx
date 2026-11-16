@@ -48,9 +48,11 @@ export function StreamDetail({
   toggleAction,
   deleteAction,
 }: StreamDetailProps) {
-  const { config: renderedConfig, error: previewError, unresolvedPaths } = configPreview(
-    data.preview,
-  );
+  const {
+    config: renderedConfig,
+    error: previewError,
+    unresolvedPaths,
+  } = configPreview(data.preview);
 
   return (
     <div className={layout.page}>
@@ -62,14 +64,12 @@ export function StreamDetail({
           </Link>
         }
         title={`listen ${data.listen}`}
-        description={
-          <span className={styles.headerMeta}>
-            <StatusBadge tone={data.enabled ? "success" : "neutral"}>
-              {data.enabled ? "활성" : "비활성"}
-            </StatusBadge>
-            <span>{data.protocol.toUpperCase()}</span>
-          </span>
+        status={
+          <StatusBadge tone={data.enabled ? "success" : "neutral"}>
+            {data.enabled ? "활성" : "비활성"}
+          </StatusBadge>
         }
+        description={data.protocol.toUpperCase()}
         actions={
           canWrite ? (
             <StreamDetailActions
@@ -83,27 +83,35 @@ export function StreamDetail({
         }
       />
 
-      <RuntimeDnsNotice status={runtimeDns} active={data.resolveAtRuntime === true} />
+      <RuntimeDnsNotice
+        status={runtimeDns}
+        active={data.resolveAtRuntime === true}
+      />
 
-      <div className={layout.detail}>
-        <div className={layout.section}>
-          <Surface title="설정 요약">
-            <Facts
-              items={[
-                { term: "listen", value: String(data.listen) },
-                { term: "protocol", value: data.protocol },
-                { term: "proxy_pass", value: data.proxyPass, mono: true },
-                { term: "이름 확인", value: runtimeDnsModeLabel(data.resolveAtRuntime) },
-                { term: "상태", value: data.enabled ? "활성" : "비활성" },
-              ]}
-            />
-          </Surface>
-        </div>
+      <div className={layout.page}>
+        <Surface title="설정 요약">
+          <Facts
+            items={[
+              { term: "listen", value: String(data.listen) },
+              { term: "protocol", value: data.protocol },
+              { term: "proxy_pass", value: data.proxyPass, mono: true },
+              {
+                term: "이름 확인",
+                value: runtimeDnsModeLabel(data.resolveAtRuntime),
+              },
+              { term: "상태", value: data.enabled ? "활성" : "비활성" },
+            ]}
+          />
+        </Surface>
         <CodePane
           title="생성되는 nginx 설정"
-          info={<>이 항목의 현재 값으로 렌더된 설정입니다 —{" "}
-            <strong>설정 적용</strong> 시 nginx <code>stream {"{}"}</code>{" "}
-            블록에 기록됩니다.</>}
+          info={
+            <>
+              이 항목의 현재 값으로 렌더된 설정입니다 —{" "}
+              <strong>설정 적용</strong> 시 nginx <code>stream {"{}"}</code>{" "}
+              블록에 기록됩니다.
+            </>
+          }
           description={
             <>
               {!data.enabled
@@ -111,7 +119,8 @@ export function StreamDetail({
                 : ""}
               {unresolvedPaths?.length ? (
                 <div role="status" className={styles.previewHint}>
-                  이름 확인 없이 만든 미리보기입니다 — 실제 적용에서는 결과가 달라질 수 있습니다
+                  이름 확인 없이 만든 미리보기입니다 — 실제 적용에서는 결과가
+                  달라질 수 있습니다
                 </div>
               ) : null}
             </>
@@ -122,7 +131,6 @@ export function StreamDetail({
               ? `미리보기를 만들 수 없습니다: ${previewError}`
               : undefined
           }
-          sticky
         />
       </div>
     </div>

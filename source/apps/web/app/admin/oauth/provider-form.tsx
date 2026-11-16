@@ -12,7 +12,7 @@ import {
   Select,
   Field,
   Banner,
-  Facts,
+  CodePane,
   formFieldsClassName,
 } from "@repo/ui";
 import { useApiAction } from "@/lib/use-api-action";
@@ -71,15 +71,27 @@ export function ProviderForm({
 
   return (
     <form action={action} className={resourceStyles.form}>
+      <FormErrors
+        errors={state.fieldErrors}
+        targets={{
+          clientSecret: "provider-client-secret",
+          clientId: "provider-client-id",
+          sortOrder: "provider-sort",
+        }}
+      />
       <FormStack>
-        <FormErrors
-          errors={state.fieldErrors}
-          targets={{
-            clientSecret: "provider-client-secret",
-            clientId: "provider-client-id",
-            sortOrder: "provider-sort",
-          }}
-        />
+        {mode === "create" ? (
+          <Banner
+            tone="info"
+            title={
+              <>
+                공급자 쪽에서 애플리케이션을 먼저 만들고, 거기서 받은 클라이언트
+                ID 와 비밀키를 넣으세요. 저장하면 등록해야 할 콜백 주소를 알려
+                드립니다.
+              </>
+            }
+          />
+        ) : null}
         <Card
           id="admin-provider"
           title={isEdit ? "공급자 수정" : "공급자 추가"}
@@ -238,35 +250,17 @@ export function ProviderForm({
 
               {callbackUrl ? (
                 <div data-wide>
-                  <Facts
-                    items={[
-                      {
-                        term: "공급자 쪽에 등록할 콜백 주소",
-                        value: (
-                          <>
-                            <code className={styles.callback}>
-                              {callbackUrl}
-                            </code>
-                            <p className={styles.hint}>
-                              이 주소를 공급자의 「승인된 리디렉션 URI」에
-                              그대로 넣으세요.
-                            </p>
-                          </>
-                        ),
-                      },
-                    ]}
+                  <CodePane
+                    title="공급자 쪽에 등록할 콜백 주소"
+                    code={callbackUrl}
+                    description="이 주소를 공급자의 「승인된 리디렉션 URI」에 그대로 넣으세요."
                   />
                 </div>
               ) : null}
             </div>
 
             {state.error ? (
-              <Banner
-                tone="error"
-                role="alert"
-                title={state.error}
-                style={{ gridColumn: "1 / -1" }}
-              />
+              <Banner tone="error" role="alert" title={state.error} data-wide />
             ) : null}
           </div>
         </Card>

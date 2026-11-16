@@ -1,20 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-
-/**
- * `/account` 의 「액세스 토큰」 절 — **그 절이 하는 사실 주장**만 본다.
- *
- * 앞선 문구는 「API 와 CLI 가 내 계정으로 접속할 때 쓰는 토큰」이었는데, 이
- * 버전에는 사용자 토큰을 **받는 곳이 하나도 없다**: `access_tokens` 를 인증에 쓰는
- * 자리는 `app/api/v1/pair/route.ts` 하나이고 거기는
- * `checkToken(row, { kind: "server", … })` 로 서버 토큰만 받는다(스펙 §3·§9-2).
- * 그 문구대로 믿은 사용자는 토큰을 발급받아 보관하고 어디에도 쓰지 못하며,
- * 거절 메시지조차 받지 못한다 — 받아 주는 엔드포인트 자체가 없으므로.
- *
- * **이웃 컴포넌트는 그리지 않는다.** 이 검사가 보는 것은 문단 하나이고, 진짜를
- * 그리면 `@repo/ui` 와 서버 액션 그래프를 통째로 끌고 온다. 페이지 자신은
- * **진짜**를 부른다 — 문구가 페이지에 있기 때문이다.
- */
+vi.mock("@/lib/api-client", () => ({
+  readSession: async () => ({ user: { role: "admin" } }),
+}));
 
 const read = vi.fn();
 vi.mock("@/lib/api-page", () => ({ readPageApi: read }));
@@ -23,29 +11,6 @@ vi.mock("./change-password-form", () => ({ ChangePasswordForm: () => null }));
 vi.mock("./linked-logins", () => ({ LinkedLogins: () => null }));
 
 const { default: AccountPage } = await import("./page");
-
-/**
- * `<h2>{heading}</h2>` **바로 뒤**의 안내 문단 하나.
- *
- * **문단 단위로 잘라내는 것이 요점이다.** 화면 전체를 `toContain` 으로 훑으면,
- * 이 기능에는 글자까지 같은 문장이 다른 화면(`/account/tokens` 의 안내)에도 있어
- * 「이 문단이 통째로 없어졌다」를 못 본다. 잘라낸 문단을 **통째로** 비교하면 한
- * 문장이 빠지거나 뒤바뀌어도 그 자리에서 죽는다.
- */
-
-/**
- * `<h2>{heading}</h2>` 옆 정보 아이콘의 설명(`role="tooltip"`) 하나. 절의 설명문은
- * 2026-11-02 부터 보이는 문단이 아니라 제목 옆 정보 아이콘에 있다(DESIGN.md 「페이지 설명」).
- */
-function sectionTip(html: string, heading: string): string {
-  const after = html.split(`${heading}</h2>`)[1] ?? "";
-  return (
-    /<div[^>]*role="tooltip"[^>]*>([\s\S]*?)<\/div>/.exec(after)?.[1] ?? ""
-  )
-    .replace(/<[^>]*>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
 
 async function render(): Promise<string> {
   return renderToStaticMarkup(
@@ -73,36 +38,48 @@ beforeEach(() => {
   );
 });
 
-describe("/account 의 액세스 토큰 절", () => {
-  it("요청한 액세스 토큰 설명을 표시한다", async () => {
+describe("account composition", () => {
+  it("renders hairline sections and the API access row", async () => {
     const html = await render();
-
-    expect(sectionTip(html, "액세스 토큰")).toBe(
-      "외부 서비스에서 이용 가능한 엑세스 토큰을 관리합니다",
+    expect(html).toContain("비밀번호와 2단계 인증");
+    expect(html).toContain(
+      "API나 자동화 도구가 이 계정의 권한으로 접근할 때 씁니다. 목록 확인, 발급, 폐기는 토큰 페이지에서 합니다.",
     );
+    expect(html).toContain('href="/account/tokens"');
+    expect(html).toContain('aria-label="2단계 인증 설정"');
+    expect(html).toContain(">admin</span>");
   });
-
-  /**
-   * **음성 대조군.** 위 검사가 실패했을 때 「문구가 틀렸다」와 「잘라내기가 아무것도
-   * 못 찾았다」를 구별한다 — 후자면 절을 통째로 지워도 빈 문자열끼리 맞아떨어지는
-   * 검사를 짤 수 있고, 그런 검사는 아무것도 붙들지 않는다.
-   */
-  it("문단 잘라내기가 실제로 그 절의 문단을 집는다", async () => {
-    const html = await render();
-
-    // 상태는 보이는 문단에, 설명은 정보 아이콘에 있다 — 둘 다 그 절의 것을 집는다.
-    expect(
-      html.split("2단계 인증 (2FA)</h2>")[1]?.split("</section>")[0],
-    ).toContain("상태");
-    expect(sectionTip(html, "2단계 인증 (2FA)")).toContain("6자리 코드");
-  });
-
-  it("토큰 관리 화면으로 가는 길이 그 절에 있다", async () => {
-    const html = await render();
-
-    expect([...html.matchAll(/href="([^"]*)"/g)].map((m) => m[1])).toContain(
-      "/account/tokens",
+  it.each([
+    [
+      { removed: "1", linked: "1" },
+      "패스키를 삭제했습니다. 이 계정의 다른 세션은 모두 로그아웃했습니다.",
+    ],
+    [
+      { linked: "1", unlinked: "1" },
+      "외부 로그인을 연결했습니다. 이제 로그인 화면의 그 버튼으로도 로그인할 수 있습니다.",
+    ],
+    [
+      { unlinked: "1", error: "last-method" },
+      "외부 로그인 연결을 해제했습니다.",
+    ],
+    [
+      { error: "last-method" },
+      "마지막 남은 로그인 방법은 해제할 수 없습니다. 먼저 다른 방법을 추가하세요.",
+    ],
+    [
+      { error: "link-failed" },
+      "외부 로그인을 연결하지 못했습니다. 다시 시도하세요.",
+    ],
+    [
+      { error: "already-linked" },
+      "이 외부 계정은 이미 다른 계정에 연결되어 있습니다.",
+    ],
+  ])("renders one redirect result with priority %o", async (query, text) => {
+    const html = renderToStaticMarkup(
+      await AccountPage({ searchParams: Promise.resolve(query) }),
     );
+    expect(html).toContain(text);
+    expect(html.split(text)).toHaveLength(2);
   });
 });
 

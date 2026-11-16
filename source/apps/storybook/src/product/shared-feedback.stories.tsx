@@ -67,17 +67,24 @@ export const Pending: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "미적용 변경 1건" }));
+    await userEvent.click(
+      canvas.getByRole("button", { name: "미적용 변경 1건" }),
+    );
     const body = within(canvasElement.ownerDocument.body);
     await expect(
-      body.getByRole("dialog", { name: "미적용 변경 1건" }),
+      body.getByRole("dialog", { name: "미적용 변경" }),
     ).toBeVisible();
     await userEvent.click(
-      within(body.getByRole("dialog", { name: "미적용 변경 1건" })).getByText("닫기", { selector: "button" }),
+      within(body.getByRole("dialog", { name: "미적용 변경" })).getByText(
+        "닫기",
+        { selector: "button" },
+      ),
     );
-    await waitFor(() => expect(
-      canvas.getByRole("button", { name: "미적용 변경 1건" }),
-    ).toHaveFocus());
+    await waitFor(() =>
+      expect(
+        canvas.getByRole("button", { name: "미적용 변경 1건" }),
+      ).toHaveFocus(),
+    );
   },
 };
 export const Roles: Story = {

@@ -1,5 +1,13 @@
 import layout from "@/components/page-layout.module.css";
-import { Icon, Surface, Facts, CodePane, linkClassName, PageHeader } from "@repo/ui";
+import {
+  Icon,
+  Surface,
+  Facts,
+  CodePane,
+  EmptyState,
+  linkClassName,
+  PageHeader,
+} from "@repo/ui";
 import type { HistoryDetailView } from "@/lib/overview-views";
 import Link from "next/link";
 import { ConfigDiffView } from "@/components/config-diff-view";
@@ -31,17 +39,25 @@ export function HistoryDetail({ data }: { data: HistoryDetailView }) {
   } = data;
   // 롤백 확인 대화상자(client ConfirmDialog) 라벨용 문자열 — 라벨이 없을 때만 쓰이며,
   // 컴포넌트를 넘길 수 없어 서버에서 KST(폴백 시간대)로 포맷한 문자열을 쓴다.
-  const kstLabel = new Intl.DateTimeFormat("ko-KR", {
-    dateStyle: "medium",
-    timeStyle: "medium",
-    timeZone: "Asia/Seoul",
-  }).format(new Date(iso)) + " KST";
+  const kstLabel =
+    new Intl.DateTimeFormat("ko-KR", {
+      dateStyle: "medium",
+      timeStyle: "medium",
+      timeZone: "Asia/Seoul",
+    }).format(new Date(iso)) + " KST";
 
   return (
     <section className={`${layout.page} ${styles.detailPage}`}>
       <PageHeader
         title={<>{row.label ?? <HistoryTime iso={iso} />}</>}
-        actions={canRollback ? <RollbackButton snapshotId={row.id} confirmLabel={row.label ?? kstLabel} /> : null}
+        actions={
+          canRollback ? (
+            <RollbackButton
+              snapshotId={row.id}
+              confirmLabel={row.label ?? kstLabel}
+            />
+          ) : null
+        }
         eyebrow={
           <>
             {" "}
@@ -58,7 +74,6 @@ export function HistoryDetail({ data }: { data: HistoryDetailView }) {
 
       <Surface as="div">
         <Facts
-          columns={2}
           items={[
             {
               term: <>시간</>,
@@ -79,13 +94,9 @@ export function HistoryDetail({ data }: { data: HistoryDetailView }) {
 
       <Surface title="변경 사항 (이전 스냅샷 대비)">
         {isFirst ? (
-          <p className={styles.diffEmpty}>
-            최초 스냅샷입니다. 비교할 이전 스냅샷이 없습니다.
-          </p>
+          <EmptyState description="최초 스냅샷입니다. 비교할 이전 스냅샷이 없습니다." />
         ) : !diff.hasChanges ? (
-          <p className={styles.diffEmpty}>
-            이전 스냅샷과 동일합니다. (변경 없음)
-          </p>
+          <EmptyState description="이전 스냅샷과 동일합니다. (변경 없음)" />
         ) : (
           <ConfigDiffView diff={diff} variant="panel" />
         )}

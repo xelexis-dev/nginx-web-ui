@@ -19,7 +19,6 @@ function OverviewTemplate({ degraded = false }: { degraded?: boolean }) {
   return (
     <TemplatePreview className={styles.page}>
       <PageHeader
-        eyebrow="로컬 서버"
         title="개요"
         description="현재 서버의 설정과 nginx 상태를 확인합니다."
       />

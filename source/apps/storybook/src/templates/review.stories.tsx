@@ -1,12 +1,9 @@
 import { useState } from "react";
 import { ToastProvider } from "@/components/notifications/toast-provider";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Banner, Button, Modal, PageHeader, Surface } from "@repo/ui";
-import {
-  ApplyReview,
-  ApplyResult,
-  type OperationsTarget,
-} from "@/components/apply-bar";
+import { Banner, Button, PageHeader, Surface } from "@repo/ui";
+import { ApplyResult, type OperationsTarget } from "@/components/apply-bar";
+import { ApplyDialog } from "@/components/apply-dialog";
 import { ConfigDiffView } from "@/components/config-diff-view";
 import type { ConfigDiff } from "@/lib/config-diff";
 import { ProductFrame, productViewports } from "../product/frame";
@@ -82,7 +79,7 @@ function ReviewTemplate({
         title="리버스 프록시"
         description="저장된 설정과 적용할 변경 사항을 확인합니다."
       />
-      {canApply && available && !open ? (
+      {available && !open ? (
         <div>
           <Button onClick={() => setOpen(true)}>검토 미리보기</Button>
         </div>
@@ -92,22 +89,21 @@ function ReviewTemplate({
           연결 상태를 확인하세요.
         </Banner>
       ) : null}
-      {canApply && available ? (
-        <Modal open={open} onClose={() => setOpen(false)} title="설정 적용">
-          <ApplyReview
-            target={target}
-            targetLabel={label}
-            onCancel={() => setOpen(false)}
-            canApply
-            pendingCount={3}
-            pendingHasBaseline
-            pendingDiff={pendingDiff}
-            applyAction={async () => ({
-              ok: false,
-              error: "미리보기에서는 설정을 적용하지 않습니다.",
-            })}
-          />
-        </Modal>
+      {available ? (
+        <ApplyDialog
+          open={open}
+          onClose={() => setOpen(false)}
+          target={target}
+          targetLabel={label}
+          canApply={canApply}
+          pendingCount={3}
+          pendingHasBaseline
+          pendingDiff={pendingDiff}
+          applyAction={async () => ({
+            ok: false,
+            error: "미리보기에서는 설정을 적용하지 않습니다.",
+          })}
+        />
       ) : null}
     </div>
   );
@@ -119,7 +115,11 @@ const meta = {
   tags: ["!autodocs"],
   parameters: { layout: "fullscreen", viewport: { options: productViewports } },
   decorators: [
-    (Story) => <ToastProvider><Story /></ToastProvider>,
+    (Story) => (
+      <ToastProvider>
+        <Story />
+      </ToastProvider>
+    ),
     (Story, context) => (
       <ProductFrame
         path={

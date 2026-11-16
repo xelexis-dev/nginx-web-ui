@@ -77,6 +77,7 @@ export function buttonClassName({
 } = {}): string {
   return [
     styles.button,
+    "nwui-btn",
     styles[variant],
     variant === "primary" ? "nwui-btn-primary" : null,
     size !== "md" ? styles[size] : null,

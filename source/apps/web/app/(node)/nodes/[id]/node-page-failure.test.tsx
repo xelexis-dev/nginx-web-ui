@@ -1,4 +1,5 @@
 import { createElement, isValidElement, type ReactNode } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -125,5 +126,6 @@ describe("노드 화면 — §9 실패 카드는 반드시 화면까지 간다",
     expect(wentThroughHelper).toBe(true);
 
     expect(containsCard(rendered)).toBe(true);
+    expect(renderToStaticMarkup(rendered).match(/<h1\b/g) ?? []).toHaveLength(1);
   });
 });

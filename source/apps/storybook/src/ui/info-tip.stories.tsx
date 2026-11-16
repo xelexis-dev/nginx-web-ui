@@ -1,7 +1,8 @@
 import {
+  FormStack,
+  Card,
   CodePane,
   Field,
-  FormSection,
   InfoTip,
   Surface,
   TextInput,
@@ -16,7 +17,15 @@ const meta = {
     children:
       "페이지와 설정의 배경 설명입니다. 동작의 결과나 입력 조건은 화면에 그대로 둡니다.",
   },
-  parameters: { layout: "padded", docs: { description: { component: "400ms 뒤 나타나는 inverse 툴팁입니다. 포커스·클릭·Esc 동작은 유지하며, 터치에서도 24px 트리거를 사용합니다." } } },
+  parameters: {
+    layout: "padded",
+    docs: {
+      description: {
+        component:
+          "400ms 뒤 나타나는 inverse 툴팁입니다. 포커스·클릭·Esc 동작은 유지하며, 터치에서도 24px 트리거를 사용합니다.",
+      },
+    },
+  },
 } satisfies Meta<typeof InfoTip>;
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -45,16 +54,18 @@ export const Slots: Story = {
       >
         <p>본문</p>
       </Surface>
-      <FormSection id="options" title="옵션" info="옵션의 배경 설명입니다.">
-        <Field
-          label="기간"
-          htmlFor="days"
-          info="기간을 정하는 배경입니다."
-          hint="1일 이상"
-        >
-          <TextInput type="number" />
-        </Field>
-      </FormSection>
+      <FormStack>
+        <Card id="options" title="옵션" info="옵션의 배경 설명입니다.">
+          <Field
+            label="기간"
+            htmlFor="days"
+            info="기간을 정하는 배경입니다."
+            hint="1일 이상"
+          >
+            <TextInput type="number" />
+          </Field>
+        </Card>
+      </FormStack>
       <CodePane
         title="렌더된 설정"
         info="설정의 배경 설명입니다."

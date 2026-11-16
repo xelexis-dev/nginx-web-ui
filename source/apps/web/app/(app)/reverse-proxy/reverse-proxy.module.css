@@ -120,9 +120,7 @@
 }
 
 .templatePreview {
-  border: 1px solid var(--line-strong);
-  border-radius: var(--r-2);
-  background: var(--bg-canvas);
+  border-top: var(--bw) solid var(--line);
 }
 
 .templatePreviewSummary {
@@ -228,13 +226,6 @@
 
 /* ---- Server detail (Operations) ---- */
 
-.opsHeaderMeta {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2) var(--sp-3);
-  overflow-wrap: anywhere;
-}
 
 /* Switch, delete and 수정 on one line, vertically centred; a failure card drops below. */
 
@@ -292,4 +283,15 @@
 .opsDetailActions:has(> [role]) {
   width: 480px;
   max-width: 100%;
+}
+
+/* Diagnostic text wraps in its assigned column without influencing table column sizing. */
+.opsReason {
+  display: block;
+  contain: inline-size;
+  overflow-wrap: anywhere;
+}
+
+.opsServerCell > span > span:last-child {
+  flex: 1;
 }

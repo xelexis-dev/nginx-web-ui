@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import {
   TextInput,
@@ -7,6 +8,8 @@ import {
   Field,
   Banner,
   Card,
+  CodePane,
+  buttonClassName,
   FormStack,
   FormBar,
   formFieldsClassName,
@@ -31,10 +34,14 @@ export function TwoFactorVerify() {
 
   return (
     <form action={formAction} className={styles.form}>
+      <FormErrors
+        errors={error ? { code: error } : undefined}
+        targets={{ code: "verify-code" }}
+      />
       <FormStack>
-        <FormErrors
-          errors={error ? { code: error } : undefined}
-          targets={{ code: "verify-code" }}
+        <Banner
+          tone="info"
+          title="계속하려면 이 로그인 세션의 인증을 완료하세요."
         />
         <Card
           id="two-factor-verify"
@@ -95,60 +102,67 @@ export function TwoFactorEnroll({
   }
 
   return (
-    <FormStack>
-      <Card id="two-factor-qr" title="1. QR 스캔">
-        <div className={styles.stepBody}>
-          <div className={styles.qrBox}>
-            {/* next/image 를 쓰지 않는다: data: URI 라 최적화할 원본이 없다(원격 요청도 없다). */}
-            <img
-              src={qrDataUrl}
-              alt="2FA QR 코드"
-              width={220}
-              height={220}
-              className={styles.qr}
+    <form action={formAction} className={styles.form}>
+      <FormErrors
+        errors={state.error ? { code: state.error } : undefined}
+        targets={{ code: "totp-code" }}
+      />
+      <FormStack>
+        <Banner
+          tone="info"
+          title="인증 앱(Google Authenticator, 1Password 등)으로 QR을 스캔한 뒤, 앱에 표시된 6자리 코드를 입력해 활성화합니다."
+        />
+        <Card id="two-factor-qr" title="1. QR 스캔">
+          <div className={styles.stepBody}>
+            <div className={styles.qrBox}>
+              {/* next/image 를 쓰지 않는다: data: URI 라 최적화할 원본이 없다(원격 요청도 없다). */}
+              <img
+                src={qrDataUrl}
+                alt="2FA QR 코드"
+                width={220}
+                height={220}
+                className={styles.qr}
+              />
+            </div>
+            <p className={styles.secretLabel}>또는 이 키를 수동 입력:</p>
+            <CodePane
+              title="설정 키"
+              variant="secret"
+              code={secret}
+              headingLevel={3}
             />
           </div>
-          <p className={styles.secretLabel}>또는 이 키를 수동 입력:</p>
-          <p className={styles.secret}>{secret}</p>
-        </div>
-      </Card>
+        </Card>
 
-      <form action={formAction} className={styles.form}>
-        <FormStack>
-          <FormErrors
-            errors={state.error ? { code: state.error } : undefined}
-            targets={{ code: "totp-code" }}
-          />
-          <Card
-            id="two-factor-confirm"
-            title="2. 코드 확인"
-            errorCount={state.error ? 1 : 0}
-          >
-            <div className={formFieldsClassName({ columns: 1 })}>
-              <input type="hidden" name="secret" value={secret} />
-              <Field
-                label="인증 앱의 6자리 코드"
-                htmlFor="totp-code"
-                error={state.error}
-              >
-                <TextInput
-                  name="code"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  placeholder="000000"
-                  required
-                />
-              </Field>
-            </div>
-          </Card>
-          <FormBar>
-            <Button type="submit" disabled={pending}>
-              {pending ? "확인 중..." : "2FA 활성화"}
-            </Button>
-          </FormBar>
-        </FormStack>
-      </form>
-    </FormStack>
+        <Card
+          id="two-factor-confirm"
+          title="2. 코드 확인"
+          errorCount={state.error ? 1 : 0}
+        >
+          <div className={formFieldsClassName({ columns: 1 })}>
+            <input type="hidden" name="secret" value={secret} />
+            <Field
+              label="인증 앱의 6자리 코드"
+              htmlFor="totp-code"
+              error={state.error}
+            >
+              <TextInput
+                name="code"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder="000000"
+                required
+              />
+            </Field>
+          </div>
+        </Card>
+        <FormBar>
+          <Button type="submit" disabled={pending}>
+            {pending ? "확인 중..." : "2FA 활성화"}
+          </Button>
+        </FormBar>
+      </FormStack>
+    </form>
   );
 }
 
@@ -161,8 +175,12 @@ export function TwoFactorDisable() {
 
   return (
     <form action={formAction} className={styles.form}>
+      <FormErrors errors={state.fieldErrors} />
       <FormStack>
-        <FormErrors errors={state.fieldErrors} />
+        <Banner
+          tone="info"
+          title="해제하면 기존 인증 앱과 백업 코드로 인증할 수 없고, 등록한 패스키도 모두 삭제됩니다. 현재 비밀번호를 확인합니다."
+        />
         <Card
           id="two-factor-disable"
           title="2FA 해제"
@@ -189,6 +207,12 @@ export function TwoFactorDisable() {
           </div>
         </Card>
         <FormBar>
+          <Link
+            href="/account/2fa"
+            className={buttonClassName({ variant: "secondary" })}
+          >
+            취소
+          </Link>
           <Button
             type="submit"
             variant="danger"

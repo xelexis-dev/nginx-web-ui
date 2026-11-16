@@ -5,6 +5,7 @@ import { FormErrors } from "@/components/form-errors";
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import {
+  CodePane,
   TextInput,
   buttonClassName,
   Button,
@@ -31,44 +32,6 @@ function preserveTokenForm(form: HTMLFormElement | null) {
   return () => {
     form.onreset = null;
   };
-}
-
-/**
- * 복사 버튼의 상태.
- *
- * ⚠ **`navigator.clipboard` 는 secure context(https·localhost) 에서만 존재한다.**
- * 이 제품은 흔히 `http://<host>:8080` 에 놓이고, 거기서는 그 객체가 `undefined` 다 —
- * 옵셔널 체이닝으로 조용히 넘기면 「눌렀는데 아무 일도 없다」가 되는데, 그 값은
- * **다시 볼 수 없는 값**이다. 그래서 실패를 상태로 만들어 **화면에 말한다**.
- */
-export const COPY_IDLE = "idle";
-type CopyStatus = typeof COPY_IDLE | "copied" | "failed";
-
-/**
- * 평문을 클립보드에 넣고 **무슨 일이 일어났는지** 낸다.
- *
- * 컴포넌트 밖에 있는 이유는 이것이 유일하게 검사 가능한 자리이기 때문이다 —
- * 클릭 핸들러 안에 두면 서버 렌더만 하는 이 저장소의 검사 하네스로는 절대
- * 실행되지 않고, 실제로 1차 수정에서 「옵셔널 체이닝으로 되돌리기」 변이가
- * **살아남았다**.
- *
- * `navigator.clipboard?.…` 로 넘기지 않는 것이 요점이다. secure context 밖에서는
- * 그 객체가 없어서 체인이 통째로 끊기는데, 그러면 예외도 없고 화면도 안 바뀐다 —
- * 사용자에게는 「눌렀는데 아무 일도 없다」이고 그 값은 **다시 볼 수 없는 값**이다.
- */
-export async function copyTokenToClipboard(
-  token: string,
-): Promise<"copied" | "failed"> {
-  try {
-    const clipboard = globalThis.navigator?.clipboard;
-    if (!clipboard) return "failed";
-    await clipboard.writeText(token);
-    return "copied";
-  } catch {
-    // 권한 거부도 여기로 온다 — 놓치면 unhandled rejection 이 될 뿐 사용자는
-    // 여전히 아무것도 못 본다.
-    return "failed";
-  }
 }
 
 /**
@@ -147,7 +110,6 @@ export function TokenForm({
     kind === "server" && defaultPreset === "never" ? "90d" : defaultPreset,
   );
   const [expiresOn, setExpiresOn] = useState("");
-  const [copyStatus, setCopyStatus] = useState<CopyStatus>(COPY_IDLE);
 
   // 발급된 평문이 있으면 폼 대신 결과만 그린다.
   if (state.token) {
@@ -162,36 +124,11 @@ export function TokenForm({
             role="alert"
             title="이 값은 다시 볼 수 없습니다. 지금 복사해 안전한 곳에 보관하세요."
           />
-          {/*
-           * ⚠ 평문이 화면에 존재하는 **유일한 자리**다. 목록·상세에는 가림 표시만
-           * 있고, URL·쿠키·로그 어디에도 실리지 않는다. `value` 속성이 아니라
-           * 본문 텍스트로 두는 것도 의도다 — 한 번만 나타난다.
-           */}
-          <p className={styles.secretValue}>{state.token}</p>
+          <CodePane title="토큰" variant="secret" code={state.token} />
           <p className={styles.secretMeta}>
             이름: {state.name} · 창을 닫거나 새로고침하면 이 값은 사라집니다.
           </p>
           <div className={styles.secretActions}>
-            <Button
-              type="button"
-              variant="secondary"
-              /*
-               * ⚠ **이 한 줄은 검사가 아니라 손으로 확인한 것이 지킨다.** 하네스가
-               * 서버 렌더 전용이라 클릭을 보낼 수 없어, 이 배선을
-               * `onClick={() => setCopyStatus("copied")}` 로 바꿔도 검사는 **전부
-               * 통과한다**(실측). 양쪽 끝은 각각 붙들려 있다 — `copyTokenToClipboard`
-               * 의 세 결과와, 상태별로 그려지는 문구. 이어 주는 이 줄만 조용하다.
-               *
-               * 확인은 **secure context 가 아닌 출처**(비-localhost 평문 HTTP)에서
-               * 손으로 했다: 버튼을 누르면 아래 실패 문구가 뜬다. 이 줄이 끊기면
-               * 거기서 「복사됨」이 뜬다.
-               */
-              onClick={() =>
-                void copyTokenToClipboard(state.token ?? "").then(setCopyStatus)
-              }
-            >
-              {copyStatus === "copied" ? "복사됨" : "복사"}
-            </Button>
             <Link
               href={basePath}
               className={buttonClassName({ variant: "primary" })}
@@ -207,15 +144,6 @@ export function TokenForm({
               </Link>
             ) : null}
           </div>
-          {copyStatus === "failed" ? (
-            <Banner
-              tone="error"
-              role="alert"
-              title="복사할 수 없습니다 — 위 값을 직접 선택해 복사하세요."
-            >
-              보안 연결(https)이 아닌 주소에서는 브라우저가 클립보드를 막습니다.
-            </Banner>
-          ) : null}
         </div>
       </Surface>
     );
@@ -233,10 +161,18 @@ export function TokenForm({
       ref={preserveTokenForm}
       className={resourceStyles.form}
     >
+      <FormErrors
+        errors={state.fieldErrors}
+        targets={{ expiresAt: "token-expiry", scopes: "token-scopes" }}
+      />
       <FormStack>
-        <FormErrors
-          errors={state.fieldErrors}
-          targets={{ expiresAt: "token-expiry", scopes: "token-scopes" }}
+        <Banner
+          tone="info"
+          title={
+            kind === "user"
+              ? "고른 권한만 이 토큰으로 할 수 있습니다."
+              : "다른 게이트웨이가 이 서버를 노드로 연결할 때 제시하는 토큰입니다. 이름에 어느 게이트웨이에 줄 것인지 적어 두세요."
+          }
         />
         <Card
           id="access-token"

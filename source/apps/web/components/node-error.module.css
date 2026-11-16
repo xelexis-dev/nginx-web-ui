@@ -1,11 +1,8 @@
 /* Shared node failure state: hairline content, with existing message and recovery link. */
-.card {
+.content {
   display: grid;
   gap: var(--sp-4);
-  width: 100%;
-  box-sizing: border-box;
-  padding-top: var(--sp-6);
-  border-top: 1px solid var(--line-strong);
+  min-width: 0;
 }
 .cardError .icon {
   color: var(--danger);
@@ -21,8 +18,8 @@
   align-items: center;
   gap: var(--sp-2);
   margin: 0;
-  font-size: var(--fs-md);
-  line-height: var(--lh-md);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-lg);
   font-weight: 600;
   color: var(--text-1);
 }

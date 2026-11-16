@@ -1,7 +1,6 @@
 import { StoryPathContext } from "./adapters/next-navigation";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import Link from "next/link";
-import { PageHeader, buttonClassName, linkClassName } from "@repo/ui";
+import { PageHeader } from "@repo/ui";
 import { OperationsSectionNav } from "@/components/operations/operations-shell";
 import { PROXY_TABS } from "@/app/(app)/nav-links";
 import { UpstreamList } from "@/components/upstreams/upstream-list";
@@ -82,22 +81,9 @@ function UpstreamRoute({ mode, node, offline }: PreviewProps) {
   return (
     <section className={layout.page}>
       <PageHeader
-        eyebrow={
-          <Link href={cancel} className={linkClassName({ variant: "back" })}>
-            {mode === "new" ? "Upstreams" : upstream.name}
-          </Link>
-        }
         title={title}
         info={
           mode === "new" ? "새 upstream 그룹을 등록합니다." : undefined
-        }
-        actions={
-          <Link
-            href={cancel}
-            className={buttonClassName({ variant: "secondary" })}
-          >
-            취소
-          </Link>
         }
       />
       <UpstreamForm

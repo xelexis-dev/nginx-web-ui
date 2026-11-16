@@ -57,3 +57,12 @@ it("keeps native checkbox/file attributes and raw textarea wrapping", () => {
   expect(renderToStaticMarkup(<FileInput accept=".pem" disabled aria-label="파일" />)).toContain('type="file"');
   expect(renderToStaticMarkup(<TextArea mono name="config" defaultValue="server {}" />)).toContain('wrap="off"');
 });
+
+it("marks button-styled links as controls without caller attributes", () => {
+  for (const variant of ["primary", "secondary", "ghost", "danger", "dangerQuiet"] as const) {
+    expect(buttonClassName({ variant, size: "sm" }).split(" ")).toContain("nwui-btn");
+  }
+  const html = renderToStaticMarkup(<a href="/history" className={buttonClassName({ variant: "secondary", size: "sm" })}>보기</a>);
+  expect(html).toContain('href="/history"');
+  expect(html).not.toContain("data-size");
+});

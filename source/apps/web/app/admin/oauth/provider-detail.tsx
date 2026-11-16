@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import layout from "@/components/page-layout.module.css";
 import {
   Facts,
+  CodePane,
   Surface,
   StatusBadge,
   PageHeader,
@@ -29,6 +30,11 @@ export function ProviderDetailView({
       <PageHeader
         title={<>{provider.name}</>}
         description={<>{provider.id}</>}
+        status={
+          <StatusBadge tone={provider.enabled ? "success" : "neutral"}>
+            {provider.enabled ? "사용" : "사용 안 함"}
+          </StatusBadge>
+        }
         eyebrow={
           <Link
             href="/admin/oauth"
@@ -74,13 +80,16 @@ export function ProviderDetailView({
         />
       </Surface>
 
-      <Surface title={<>공급자 쪽에 등록할 콜백 주소</>} as="section">
-        <code className={styles.callback}>{provider.callbackUrl}</code>
-        <p className={styles.hint}>
-          {provider.callbackUrl.startsWith("http")
-            ? "이 주소를 공급자의 「승인된 리디렉션 URI」에 그대로 넣으세요."
-            : "이 앱의 공개 주소가 설정되지 않아 경로만 보여 줍니다. 「사이트 설정 › 일반」에서 공개 주소를 채우면 전체 주소로 나옵니다."}
-        </p>
+      <Surface as="section">
+        <CodePane
+          title="공급자 쪽에 등록할 콜백 주소"
+          code={provider.callbackUrl}
+          description={
+            provider.callbackUrl.startsWith("http")
+              ? "이 주소를 공급자의 「승인된 리디렉션 URI」에 그대로 넣으세요."
+              : "이 앱의 공개 주소가 설정되지 않아 경로만 보여 줍니다. 「사이트 설정 › 일반」에서 공개 주소를 채우면 전체 주소로 나옵니다."
+          }
+        />
       </Surface>
 
       <Surface title={<>삭제</>} as="section">

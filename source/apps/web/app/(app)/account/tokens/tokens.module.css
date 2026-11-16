@@ -11,14 +11,6 @@
 
 /* ── 목록 ─────────────────────────────────────────────────────────────── */
 
-.emptyCell {
-  text-align: left;
-  color: var(--text-2);
-  font-size: var(--fs-md);
-  padding: var(--sp-6) var(--sp-4);
-  white-space: normal;
-}
-
 /* 행 전체가 클릭 대상이 된다(투명 오버레이 — 셀 글자는 그대로 보인다).
    `.table tbody tr { position: relative }` 가 그 기준점이다. */
 
@@ -26,6 +18,11 @@
   font-family: var(--font);
   font-size: var(--fs-xs);
   color: var(--text-1);
+}
+
+.scopeTags > li {
+  display: flex;
+  align-items: center;
 }
 
 .scopeTags {
@@ -88,20 +85,6 @@
   margin-top: var(--sp-1);
   flex-wrap: wrap;
   max-width: 100%;
-}
-
-.secretValue {
-  margin: 0;
-  padding: var(--sp-4) var(--sp-4);
-  background: var(--bg-sunken);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--r-2);
-  font-family: var(--font);
-  font-size: var(--fs-md);
-  line-height: var(--lh-sm);
-  color: var(--text-1);
-  word-break: break-all;
-  user-select: all;
 }
 
 .secretMeta {

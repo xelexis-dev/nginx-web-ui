@@ -5,8 +5,7 @@ import layout from "@/components/page-layout.module.css";
 import { expect, userEvent, within } from "storybook/test";
 import { newLocationInput } from "@/components/reverse-proxy/server-form-vm";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import Link from "next/link";
-import { PageHeader, linkClassName } from "@repo/ui";
+import { PageHeader } from "@repo/ui";
 import {
   ToastProvider,
   ToastViewport,
@@ -53,16 +52,6 @@ const meta = {
   render: (args) => (
     <section className={layout.page}>
       <PageHeader
-        eyebrow={
-          <Link
-            href={args.cancelHref}
-            className={linkClassName({ variant: "back" })}
-          >
-            {args.defaultValues
-              ? args.defaultValues.serverName
-              : "리버스 프록시"}
-          </Link>
-        }
         title={args.defaultValues ? "서버 수정" : "새 서버"}
         info={
           args.defaultValues ? undefined : "새 리버스 프록시 서버를 등록합니다."

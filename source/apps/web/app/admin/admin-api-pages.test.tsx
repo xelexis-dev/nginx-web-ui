@@ -30,6 +30,7 @@ function propsOf(
     ...(name === component ? [node.props as Record<string, unknown>] : []),
     ...propsOf(node.props.children, component),
     ...propsOf(node.props.actions, component),
+    ...propsOf((node.props as { result?: ReactNode }).result, component),
   ];
 }
 const user = {
@@ -71,7 +72,9 @@ it.each([false, true])("passes actor identity to admin passkeys (isSelf=%s)", as
   mocks.session.mockResolvedValue({ user: { id: isSelf ? "u1" : "admin1", role: "admin" } });
   mocks.read.mockResolvedValueOnce(user).mockResolvedValueOnce({ passkeys: [], availability: { available: true, reason: null }, currentOrigin: "https://admin.example.test", hasPassword: false, canRemove: true });
   const page = await UserDetail({ params: Promise.resolve({ id: "u1" }), searchParams: Promise.resolve({ passkeysRemoved: "1" }) });
-  expect(propsOf(page, "AdminPasskeys")[0]).toMatchObject({ isSelf, removed: true, userId: "u1" });
+  expect(propsOf(page, "AdminPasskeys")[0]).toMatchObject({ isSelf, userId: "u1" });
+  expect(propsOf(page, "AdminPasskeys")[0]).not.toHaveProperty("removed");
+  expect(propsOf(page, "AdminUserResultNotice")[0]?.message).toContain(isSelf ? "이 기기의 로그인은 유지됩니다." : "패스키를 삭제하고 사용자의 로그인을 종료했습니다.");
 });
 it("keeps approval and rejection separate browser API commands", async () => {
   mocks.read.mockResolvedValue([
@@ -125,5 +128,16 @@ it("renders policy and connected gateways from one authorized API response", asy
 it("passes the target factor state, actor proof capability and reset result to the user detail", async () => {
   mocks.read.mockResolvedValueOnce({ ...user, totpEnabled: true }).mockResolvedValueOnce({ passkeys: [], availability: { available: true, reason: null }, currentOrigin: "https://admin.example.test", hasPassword: false, canRemove: false });
   const page = await UserDetail({ params: Promise.resolve({ id: "u1" }), searchParams: Promise.resolve({ twoFactorReset: "1" }) });
-  expect(propsOf(page, "AdminTwoFactor")[0]).toMatchObject({ user: { totpEnabled: true }, isSelf: false, canReset: false, passkeyCount: 0, reset: true });
+  expect(propsOf(page, "AdminTwoFactor")[0]).toMatchObject({ user: { totpEnabled: true }, isSelf: false, canReset: false, passkeyCount: 0 });
+  expect(propsOf(page, "AdminUserResultNotice")).toHaveLength(1);
+});
+
+it("combines both redirect outcomes in one page result and keeps sections quiet", async () => {
+  mocks.read.mockResolvedValueOnce(user).mockResolvedValueOnce({ passkeys: [], availability: { available: true, reason: null }, currentOrigin: "https://admin.example.test", hasPassword: true, canRemove: true });
+  const page = await UserDetail({ params: Promise.resolve({ id: "u1" }), searchParams: Promise.resolve({ twoFactorReset: "1", passkeysRemoved: "1" }) });
+  const results = propsOf(page, "AdminUserResultNotice");
+  expect(results).toHaveLength(1);
+  expect(results[0]?.message).toContain("2FA를 초기화했습니다.");
+  expect(results[0]?.message).toContain("패스키를 삭제하고 사용자의 로그인을 종료했습니다.");
+  expect(propsOf(page, "AdminPasskeys")[0]).not.toHaveProperty("removed");
 });

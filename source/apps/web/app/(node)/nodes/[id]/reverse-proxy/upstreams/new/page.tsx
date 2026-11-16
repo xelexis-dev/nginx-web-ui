@@ -1,6 +1,5 @@
 import layout from "@/components/page-layout.module.css";
-import Link from "next/link";
-import { PageHeader, linkClassName } from "@repo/ui";
+import { PageHeader } from "@repo/ui";
 import { UpstreamForm } from "@/components/upstreams/upstream-form";
 import { authorizeNodePage } from "@/lib/node-page";
 
@@ -37,11 +36,6 @@ export default async function NewNodeUpstreamPage({
   return (
     <section className={layout.page}>
       <PageHeader
-        eyebrow={
-          <Link href={basePath} className={linkClassName({ variant: "back" })}>
-            {"Upstreams"}
-          </Link>
-        }
         title="새 Upstream"
         info="새 upstream 그룹을 등록합니다."
       />

@@ -87,27 +87,6 @@ export function ServerTable({
   const count = (f: StatusFilter) =>
     servers.filter((s) => matchesStatus(s, f)).length;
 
-  if (servers.length === 0) {
-    return (
-      <Surface flush>
-        <EmptyState
-          title="등록된 서버가 없습니다"
-          description="도메인과 대상 주소를 정하면 nginx 설정이 만들어집니다."
-          action={
-            write ? (
-              <Link
-                href={`${basePath}/new`}
-                className={buttonClassName({ variant: "secondary", size: "sm" })}
-              >
-                새 서버
-              </Link>
-            ) : undefined
-          }
-        />
-      </Surface>
-    );
-  }
-
   return (
     <Surface
       flush
@@ -141,152 +120,175 @@ export function ServerTable({
         </div>
       }
     >
-      {filtered.length === 0 ? (
-        <EmptyState
-          title="조건에 맞는 서버가 없습니다"
-          action={
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => {
-                setQuery("");
-                setStatus("all");
-              }}
-            >
-              필터 초기화
-            </Button>
-          }
-        />
-      ) : (
-        <Table label="리버스 프록시 서버">
-          <thead>
-            <tr>
-              <Th>상태</Th>
-              <Th>서버</Th>
-              <Th align="end">포트</Th>
-              <Th>대상</Th>
-              <Th>TLS</Th>
-              {write ? (
-                <>
-                  <Th>활성</Th>
-                  <Th>
-                    <span className={styles.srOnly}>작업</span>
-                  </Th>
-                </>
-              ) : null}
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((s) => {
-              const { primary, extra } = names(s.serverName);
-              return (
-                <Tr key={s.id} pending={s.pending}>
-                  <Td cell="status">
-                    <StatusBadge tone={s.health.tone}>
-                      {s.health.label}
-                    </StatusBadge>
-                  </Td>
-                  <Td
-                    cell="primary"
-                    wrap
-                    icon={<Icon name="server" size={16} />}
-                    secondary={s.health.reason || undefined}
-                  >
-                    <span className={styles.opsName}>
-                      <Link
-                        href={`${basePath}/${s.id}`}
-                      >
-                        {primary}
-                      </Link>
-                      {extra ? (
-                        <span className={styles.opsMuted}> +{extra}</span>
-                      ) : null}
-                      {s.pending ? (
-                        <StatusBadge
-                          tone="info"
-                          variant="outline"
-                          size="sm"
-                          dot={false}
-                        >
-                          미적용
-                        </StatusBadge>
-                      ) : null}
-                    </span>
-                  </Td>
-                  <Td numeric label="포트">
-                    {s.listen}
-                  </Td>
-                  {s.targets.length === 1 && s.targets[0]!.path === null ? (
-                    <Td mono truncate label="대상" title={s.targetLabel}>
-                      {s.targetLabel}
-                    </Td>
-                  ) : (
-                    // location 마다 한 줄: 경로와 그 location 의 실제 대상. 잘라 내지 않고 줄바꿈한다.
-                    <Td
-                      mono
-                      wrap
-                      label="대상"
-                      title={s.targetLabel}
-                      className={styles.opsTargetsCell}
-                    >
-                      <ul className={styles.opsTargets}>
-                        {s.targets.map((t, index) => (
-                          <li key={index} className={styles.opsTarget}>
-                            <span className={styles.opsTargetPath}>
-                              {t.path}
-                            </span>
-                            {t.missingUpstream ? (
-                              <StatusBadge
-                                tone="warning"
-                                variant="outline"
-                                size="sm"
-                                dot={false}
-                              >
-                                Upstream 없음
-                              </StatusBadge>
-                            ) : (
-                              <span>{t.label}</span>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    </Td>
-                  )}
-                  <Td label="TLS" tone={s.tls.tone === "neutral" ? undefined : s.tls.tone}>
-                    {s.tls.label}
-                  </Td>
-                  {write ? (
-                    <>
-                      <Td cell="action">
-                        <ServerToggle
-                          id={s.id}
-                          serverName={primary}
-                          enabled={s.enabled}
-                          action={write.toggleAction}
-                        />
-                      </Td>
-                      <Td cell="action">
+      <Table density="comfortable" narrow="stacked" label="리버스 프록시 서버">
+        <thead>
+          <tr>
+            <Th>상태</Th>
+            <Th>서버</Th>
+            <Th align="end">포트</Th>
+            <Th>대상</Th>
+            <Th>TLS</Th>
+            {write ? (
+              <>
+                <Th>활성</Th>
+                <Th>
+                  <span className={styles.srOnly}>작업</span>
+                </Th>
+              </>
+            ) : null}
+          </tr>
+        </thead>
+        <tbody>
+          {filtered.length === 0 ? (
+            <Tr>
+              <Td colSpan={write ? 7 : 5}>
+                {servers.length === 0 ? (
+                  <EmptyState
+                    title="등록된 서버가 없습니다"
+                    description="도메인과 대상 주소를 정하면 nginx 설정이 만들어집니다."
+                    action={
+                      write ? (
                         <Link
-                          href={`${basePath}/${s.id}/edit`}
+                          href={`${basePath}/new`}
                           className={buttonClassName({
-                            variant: "ghost",
+                            variant: "secondary",
                             size: "sm",
-                            className: styles.opsRowAction,
                           })}
-                          title="수정"
-                          aria-label={`${primary} 수정`}
                         >
-                          <Icon name="pencil" size={16} />
+                          새 서버
                         </Link>
-                      </Td>
-                    </>
-                  ) : null}
-                </Tr>
-              );
-            })}
-          </tbody>
-        </Table>
-      )}
+                      ) : undefined
+                    }
+                  />
+                ) : (
+                  <EmptyState
+                    title="조건에 맞는 서버가 없습니다"
+                    action={
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => {
+                          setQuery("");
+                          setStatus("all");
+                        }}
+                      >
+                        필터 초기화
+                      </Button>
+                    }
+                  />
+                )}
+              </Td>
+            </Tr>
+          ) : null}
+          {filtered.map((s) => {
+            const { primary, extra } = names(s.serverName);
+            return (
+              <Tr key={s.id} pending={s.pending}>
+                <Td cell="status" label="상태">
+                  <StatusBadge tone={s.health.tone}>
+                    {s.health.label}
+                  </StatusBadge>
+                </Td>
+                <Td
+                  cell="primary"
+                  className={styles.opsServerCell}
+                  wrap
+                  icon={<Icon name="server" size={16} />}
+                  secondary={s.health.reason ? (
+                    <span className={styles.opsReason}>{s.health.reason}</span>
+                  ) : undefined}
+                >
+                  <span className={styles.opsName}>
+                    <Link href={`${basePath}/${s.id}`}>{primary}</Link>
+                    {extra ? (
+                      <span className={styles.opsMuted}> +{extra}</span>
+                    ) : null}
+                    {s.pending ? (
+                      <StatusBadge
+                        tone="info"
+                        variant="outline"
+                        size="sm"
+                        dot={false}
+                      >
+                        미적용
+                      </StatusBadge>
+                    ) : null}
+                  </span>
+                </Td>
+                <Td numeric label="포트">
+                  {s.listen}
+                </Td>
+                {s.targets.length === 1 && s.targets[0]!.path === null ? (
+                  <Td mono truncate label="대상" title={s.targetLabel}>
+                    {s.targetLabel}
+                  </Td>
+                ) : (
+                  // location 마다 한 줄: 경로와 그 location 의 실제 대상. 잘라 내지 않고 줄바꿈한다.
+                  <Td
+                    mono
+                    wrap
+                    label="대상"
+                    title={s.targetLabel}
+                    className={styles.opsTargetsCell}
+                  >
+                    <ul className={styles.opsTargets}>
+                      {s.targets.map((t, index) => (
+                        <li key={index} className={styles.opsTarget}>
+                          <span className={styles.opsTargetPath}>{t.path}</span>
+                          {t.missingUpstream ? (
+                            <StatusBadge
+                              tone="warning"
+                              variant="outline"
+                              size="sm"
+                              dot={false}
+                            >
+                              Upstream 없음
+                            </StatusBadge>
+                          ) : (
+                            <span>{t.label}</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </Td>
+                )}
+                <Td
+                  label="TLS"
+                  tone={s.tls.tone === "neutral" ? undefined : s.tls.tone}
+                >
+                  {s.tls.label}
+                </Td>
+                {write ? (
+                  <>
+                    <Td cell="action" label="활성">
+                      <ServerToggle
+                        id={s.id}
+                        serverName={primary}
+                        enabled={s.enabled}
+                        action={write.toggleAction}
+                      />
+                    </Td>
+                    <Td cell="action" label="작업">
+                      <Link
+                        href={`${basePath}/${s.id}/edit`}
+                        className={buttonClassName({
+                          variant: "ghost",
+                          size: "sm",
+                          className: styles.opsRowAction,
+                        })}
+                        title="수정"
+                        aria-label={`${primary} 수정`}
+                      >
+                        <Icon name="pencil" size={16} />
+                      </Link>
+                    </Td>
+                  </>
+                ) : null}
+              </Tr>
+            );
+          })}
+        </tbody>
+      </Table>
     </Surface>
   );
 }

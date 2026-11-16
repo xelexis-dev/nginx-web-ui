@@ -1,4 +1,4 @@
-import { Icon, StatusBadge, type Tone, buttonClassName, Banner } from "@repo/ui";
+import { Icon, StatusBadge, type Tone, buttonClassName, Surface, Banner } from "@repo/ui";
 import Link from "next/link";
 import { describeMismatch } from "@repo/presentation/version";
 import { APP_SEMVER } from "@/lib/version";
@@ -190,7 +190,7 @@ export function NodeErrorCard(props: NodeErrorCardProps) {
       ? "warning" : "error";
   const toneClass = tone === "neutral" ? styles.cardNeutral : tone === "warning" ? styles.cardWarning : styles.cardError;
   return (
-    <div className={`${styles.card} ${toneClass}`} role={tone === "error" ? "alert" : "status"}>
+    <Surface className={toneClass}><div className={styles.content} role={tone === "error" ? "alert" : "status"}>
       <p className={styles.title}><span className={styles.icon}><Icon name={failure.kind === "version_mismatch" || failure.kind === "too_old" ? "alert" : "circleAlert"} size={16} /></span>{message.title}</p>
       {message.body !== undefined ? <p className={styles.body}>{message.body}</p> : null}
       <div className={styles.actions}>
@@ -198,7 +198,7 @@ export function NodeErrorCard(props: NodeErrorCardProps) {
           {message.linkLabel}
         </Link>
       </div>
-    </div>
+    </div></Surface>
   );
 }
 

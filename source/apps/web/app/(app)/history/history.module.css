@@ -12,24 +12,8 @@
 
 .jsonSection {
   display: grid;
-  align-items: start;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
-  gap: var(--gap-cols);
-}
-
-/* config-diff 섹션의 페이지 크롬(카드·제목·빈 상태). 항목/필드 렌더는
-   components/config-diff-view.module.css가 담당한다(미적용 모달과 공유). */
-
-.diffEmpty {
-  margin: 0;
-  font-size: var(--fs-md);
-  color: var(--text-2);
-}
-
-@media (max-width: 768px) {
-  .jsonSection {
-    grid-template-columns: minmax(0, 1fr);
-  }
+  min-width: 0;
+  gap: var(--gap-section);
 }
 
 .detailPage > header > :last-child {

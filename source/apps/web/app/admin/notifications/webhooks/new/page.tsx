@@ -1,4 +1,3 @@
-import { FormStack, Banner } from "@repo/ui";
 import layout from "@/components/page-layout.module.css";
 import { PageHeader } from "@repo/ui";
 import { DEFAULT_EVENT_TYPES } from "@repo/presentation/webhook";
@@ -16,22 +15,16 @@ export default async function NewWebhookPage() {
     <section className={layout.page}>
       <PageHeader title={<>새 webhook</>} />
 
-      <FormStack>
-        <Banner
-          tone="info"
-          title={<>알림을 받을 HTTP 수신처를 추가합니다.</>}
-        />
-        <WebhookForm
-          mode="create"
-          defaults={{
-            name: "",
-            enabled: true,
-            format: "generic",
-            events: [...DEFAULT_EVENT_TYPES],
-            bodyTemplate: "",
-          }}
-        />
-      </FormStack>
+      <WebhookForm
+        mode="create"
+        defaults={{
+          name: "",
+          enabled: true,
+          format: "generic",
+          events: [...DEFAULT_EVENT_TYPES],
+          bodyTemplate: "",
+        }}
+      />
     </section>
   );
 }

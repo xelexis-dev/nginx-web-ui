@@ -1,6 +1,6 @@
 import layout from "@/components/page-layout.module.css";
 import Link from "next/link";
-import { PageHeader, linkClassName } from "@repo/ui";
+import { PageHeader } from "@repo/ui";
 import { readPageView } from "@/lib/api-page";
 import type { ServerOptionsView } from "@/components/reverse-proxy/control-view";
 import { ServerForm } from "@/components/reverse-proxy/server-form";
@@ -40,14 +40,6 @@ export default async function NewServerPage({
   return (
     <section className={layout.page}>
       <PageHeader
-        eyebrow={
-          <Link
-            href="/reverse-proxy"
-            className={linkClassName({ variant: "back" })}
-          >
-            리버스 프록시
-          </Link>
-        }
         title="새 서버"
         info={!template ? "새 리버스 프록시 서버를 등록합니다." : undefined}
         description={

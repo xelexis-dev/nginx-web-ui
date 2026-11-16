@@ -1,4 +1,3 @@
-import { targetLabel } from "@repo/presentation/operations-target";
 import { useEffect, useState } from "react";
 import { PageHeader } from "@repo/ui";
 import type { Meta, StoryObj } from "@storybook/react-vite";
@@ -61,7 +60,7 @@ function LogsPreview({ nodeName, offline = false, longTable = false }: { nodeNam
   return (
     <section className={layout.page}>
       <PageHeader
-        eyebrow={nodeName ?? targetLabel({ kind: "local" })}
+
         title="로그"
         info="access.log / error.log를 실시간으로 확인합니다."
       />

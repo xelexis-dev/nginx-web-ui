@@ -109,6 +109,8 @@ export function ToastViewport() {
   if (!ctx) throw new Error("ToastViewport must be used within ToastProvider");
   const { items, dismiss } = ctx;
   const viewportRef = useRef<HTMLDivElement>(null);
+  const [expanded, setExpanded] = useState(false);
+  const [short, setShort] = useState(false);
   const [modal, setModal] = useState<HTMLDialogElement | null>(null);
   useEffect(() => {
     // Native modal dialogs make their outside subtree inert, regardless of z-index.
@@ -132,7 +134,19 @@ export function ToastViewport() {
     const viewport = viewportRef.current;
     if (!viewport) return;
     const position = () => {
+      setShort(window.innerHeight <= 600);
       viewport.style.removeProperty("bottom");
+      if (modal?.hasAttribute("data-toast-reserve")) {
+        const a = viewport.getBoundingClientRect(),
+          b = modal.getBoundingClientRect();
+        if (items.length && a.left < b.right && a.right > b.left)
+          modal.style.setProperty(
+            "--toast-reserve",
+            `${window.innerHeight - a.top + 16}px`,
+          );
+        else modal.style.removeProperty("--toast-reserve");
+        return;
+      }
       const focused = document.activeElement;
       // Keep dialog actions usable even when a disabled submit leaves focus on body.
       const avoid = [
@@ -164,21 +178,65 @@ export function ToastViewport() {
       }
     };
     position();
+    const observer = new ResizeObserver(position);
+    observer.observe(viewport);
     document.addEventListener("focusin", position);
     document.addEventListener("scroll", position, true);
     window.addEventListener("resize", position);
     return () => {
+      observer.disconnect();
+      modal?.style.removeProperty("--toast-reserve");
       document.removeEventListener("focusin", position);
       document.removeEventListener("scroll", position, true);
       window.removeEventListener("resize", position);
     };
-  }, [items, modal]);
+  }, [items, modal, expanded, short]);
+
+  const visible = short && !expanded ? [] : expanded ? items : items.slice(-2);
+  const hidden = items.length - visible.length;
 
   // Each toast owns its implicit live region; a live viewport would announce it twice.
   const viewport = (
     <div className={styles.anchor} ref={viewportRef}>
-      <div className={styles.viewport}>
-        {items.map((t) => (
+      <div
+        className={styles.viewport}
+        data-expanded={expanded}
+        data-short={short}
+      >
+        {hidden ? (
+          <div className={styles.collapsed}>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => setExpanded(true)}
+            >
+              알림 {hidden}개 더
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              aria-label="접힌 알림 모두 닫기"
+              onClick={() => {
+                for (const t of items.slice(0, hidden)) dismiss(t.id);
+              }}
+            >
+              <Icon name="close" size={16} />
+            </Button>
+          </div>
+        ) : null}
+        {expanded && items.length ? (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => setExpanded(false)}
+          >
+            알림 접기
+          </Button>
+        ) : null}
+        {visible.map((t) => (
           <div
             key={t.id}
             className={
@@ -203,17 +261,21 @@ export function ToastViewport() {
               <Icon
                 name={
                   t.severity === "success"
-                    ? "check"
-                    : t.severity === "info"
-                      ? "bell"
-                      : "alert"
+                    ? "circleCheck"
+                    : t.severity === "error"
+                      ? "circleAlert"
+                      : t.severity === "info"
+                        ? "info"
+                        : "alert"
                 }
                 size={16}
               />
             </span>
             <div className={styles.content}>
               <p className={styles.title}>{t.title}</p>
-              {t.output || t.body ? <ToastContent body={t.body} output={t.output} /> : null}
+              {t.output || t.body ? (
+                <ToastContent body={t.body} output={t.output} />
+              ) : null}
               {t.link && t.linkLabel ? (
                 <Link
                   href={t.link}
@@ -250,9 +312,11 @@ function ToastContent({ body, output }: Pick<ToastInput, "body" | "output">) {
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
-    const measure = () => setOverflowing(
-      element.scrollHeight > element.clientHeight || element.scrollWidth > element.clientWidth,
-    );
+    const measure = () =>
+      setOverflowing(
+        element.scrollHeight > element.clientHeight ||
+          element.scrollWidth > element.clientWidth,
+      );
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(element);
@@ -261,9 +325,11 @@ function ToastContent({ body, output }: Pick<ToastInput, "body" | "output">) {
   const Tag = output ? "pre" : "p";
   return (
     <Tag
-      ref={(element: HTMLElement | null) => { ref.current = element; }}
+      ref={(element: HTMLElement | null) => {
+        ref.current = element;
+      }}
       className={output ? styles.output : styles.body}
-      title={output ? undefined : body ?? undefined}
+      title={output ? undefined : (body ?? undefined)}
       tabIndex={overflowing ? 0 : undefined}
     >
       {output || body}

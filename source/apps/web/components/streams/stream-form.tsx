@@ -107,7 +107,7 @@ export function StreamForm({
       : "TCP stream은 대상 서버의 관리 화면·웹 앱·데이터베이스·기존 프록시 포트를 쓸 수 없습니다. 정확한 충돌은 저장할 때 대상 서버가 확인합니다.";
 
   return (
-    <form action={formAction} className={layout.section}>
+    <form action={formAction} className={layout.page}>
       {renderedFamily && <input type="hidden" name="nodeVersionFamily" value={renderedFamily} />}
       {/* 노드 액션이 낸 「닿지 못함」·「버전 불일치」 등은 한 줄 빨간 글씨가
             아니라 §9 카드다. 로컬 액션은 `nodeError` 를 채우는 일이 없어 아래

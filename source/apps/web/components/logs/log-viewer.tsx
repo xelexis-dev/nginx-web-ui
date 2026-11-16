@@ -11,6 +11,8 @@ import {
 } from "react";
 import {
   Icon,
+  EmptyState,
+  Facts,
   Table,
   Td,
   Th,
@@ -633,11 +635,11 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
         onScroll={handleScroll}
       >
         {shown.length === 0 ? (
-          <p className={styles.empty}>
-            {lines.length === 0
+          <div className={styles.empty}>
+            <EmptyState description={lines.length === 0
               ? "대기 중... 새 로그 라인이 들어오면 여기에 표시됩니다."
-              : "필터에 맞는 로그가 없습니다."}
-          </p>
+              : "필터에 맞는 로그가 없습니다."} />
+          </div>
         ) : view === "raw" ? (
           shown.map((line) => (
             <div
@@ -752,24 +754,44 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
                         className={styles.detailRow}
                       >
                         <Td colSpan={8}>
-                          <dl className={styles.detailGrid}>
-                            <dt>전체 경로</dt>
-                            <dd className={styles.mono}>
-                              {r.method} {r.path} {r.proto}
-                            </dd>
-                            <dt>도메인</dt>
-                            <dd className={styles.mono}>{r.host || "—"}</dd>
-                            <dt>일시</dt>
-                            <dd className={styles.mono}>
-                              {formatAt(r)} ({timeZone})
-                            </dd>
-                            <dt>Referer</dt>
-                            <dd className={styles.mono}>{r.referer || "—"}</dd>
-                            <dt>User-Agent</dt>
-                            <dd className={styles.mono}>{r.ua || "—"}</dd>
-                            <dt>원문</dt>
-                            <dd className={styles.mono}>{line.text}</dd>
-                          </dl>
+                          <Facts
+                              items={[
+                                {
+                                  term: "전체 경로",
+                                  value: (
+                                    <>
+                                      {r.method} {r.path} {r.proto}
+                                    </>
+                                  ),
+                                  mono: true,
+                                },
+                                {
+                                  term: "도메인",
+                                  value: r.host || "—",
+                                  mono: true,
+                                },
+                                {
+                                  term: "일시",
+                                  value: (
+                                    <>
+                                      {formatAt(r)} ({timeZone})
+                                    </>
+                                  ),
+                                  mono: true,
+                                },
+                                {
+                                  term: "Referer",
+                                  value: r.referer || "—",
+                                  mono: true,
+                                },
+                                {
+                                  term: "User-Agent",
+                                  value: r.ua || "—",
+                                  mono: true,
+                                },
+                                { term: "원문", value: line.text, mono: true },
+                              ]}
+                            />
                         </Td>
                       </Tr>
                     ) : null}
@@ -840,18 +862,21 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
                         className={styles.detailRow}
                       >
                         <Td colSpan={3}>
-                          <dl className={styles.detailGrid}>
-                            <dt>일시</dt>
-                            <dd>
-                              {formatAt(r)} ({timeZone})
-                            </dd>
-                            <dt>레벨</dt>
-                            <dd>{r.level}</dd>
-                            <dt>전체 메시지</dt>
-                            <dd>{r.message}</dd>
-                            <dt>원문</dt>
-                            <dd>{line.text}</dd>
-                          </dl>
+                          <Facts
+                            items={[
+                              {
+                                term: "일시",
+                                value: (
+                                  <>
+                                    {formatAt(r)} ({timeZone})
+                                  </>
+                                ),
+                              },
+                              { term: "레벨", value: r.level },
+                              { term: "전체 메시지", value: r.message },
+                              { term: "원문", value: line.text },
+                            ]}
+                          />
                         </Td>
                       </Tr>
                     ) : null}

@@ -1,5 +1,6 @@
 import {
   Banner,
+  CodePane,
   EmptyState,
   Facts,
   PageHeader,
@@ -284,15 +285,15 @@ describe("인증서 상세 — 값이 화면까지 가는가", () => {
   });
 
   it("패널이 그 줄을 그대로 그린다", () => {
-    const text = textOf(
-      IssueLogPanel({
+    const panel = IssueLogPanel({
         entries: [
           { at: "2026-08-29 00:00:01", level: "info", msg: "TXT 레코드 발급" },
         ],
         live: true,
-      }),
-    );
-
+      });
+    expect(panel.type).toBe(CodePane);
+    const text = `${panel.props.title} ${panel.props.code}`;
+    expect(text).toContain("[info]");
     expect(text).toContain("2026-08-29 00:00:01");
     expect(text).toContain("TXT 레코드 발급");
     expect(text).toContain("(실시간)");
@@ -347,17 +348,15 @@ describe("인증서 상세 — 값이 화면까지 가는가", () => {
     );
   });
 
-  /** 별칭은 사람이 붙인 이름이라 **제목**이 되고, 대표 도메인은 그 옆에 남는다. */
+  /** 별칭은 사람이 붙인 이름이라 **제목**이 되고, 대표 도메인은 메타 줄에 남는다. */
   it("별칭이 있으면 제목과 「별칭」 행에 그린다", () => {
     const tree = render({ alias: "운영 API" });
 
     expect(dlPairs(tree)["별칭"]).toBe("운영 API");
     const heading = collect(tree, (el) => el.type === "h1").map(textOf);
-    expect(
-      heading.some(
-        (h) => h.includes("운영 API") && h.includes("a.example.com"),
-      ),
-    ).toBe(true);
+    expect(heading).toEqual(["운영 API"]);
+    const header = collect(tree, (el) => el.type === "header")[0]!;
+    expect(textOf(header)).toContain("a.example.com");
   });
 
   it("별칭이 없으면 「별칭」 행이 없고 제목은 대표 도메인이다", () => {

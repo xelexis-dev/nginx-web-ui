@@ -1,7 +1,6 @@
-/* FormSection, Card and Field. Tokens only. */
+/* Card and Field. Tokens only. */
 
-.card,
-.formCard {
+.card {
   min-width: 0;
   margin: 0;
   border: 1px solid var(--line-strong);
@@ -71,12 +70,8 @@
 .cardBody {
   padding: var(--pad-card);
 }
-.formCard {
-  padding: var(--pad-card);
-}
 .cardBody,
 .columns2,
-.sectionBody[data-columns="2"],
 .groupBody[data-columns="2"] {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -93,40 +88,31 @@
 .cardBody > .field,
 .cardBody > .group,
 .columns2 > *,
-.sectionBody[data-columns="2"] > *,
 .groupBody[data-columns="2"] > * {
   grid-column: span 6;
   min-width: 0;
 }
-:is(.cardBody, .columns2, .sectionBody, .groupBody) > [data-span="3"] {
+:is(.cardBody, .columns2, .groupBody) > [data-span="3"] {
   grid-column: span 3;
 }
-:is(.cardBody, .columns2, .sectionBody, .groupBody) > [data-span="4"] {
+:is(.cardBody, .columns2, .groupBody) > [data-span="4"] {
   grid-column: span 4;
 }
-:is(.cardBody, .columns2, .sectionBody, .groupBody) > [data-span="6"] {
+:is(.cardBody, .columns2, .groupBody) > [data-span="6"] {
   grid-column: span 6;
 }
-:is(.cardBody, .columns2, .sectionBody, .groupBody) > [data-span="8"] {
+:is(.cardBody, .columns2, .groupBody) > [data-span="8"] {
   grid-column: span 8;
 }
-:is(.cardBody, .columns2, .sectionBody, .groupBody)
-  > :is([data-wide], [data-span="12"]) {
+:is(.cardBody, .columns2, .groupBody) > :is([data-wide], [data-span="12"]) {
   grid-column: 1 / -1;
 }
-.sectionBody {
-  min-width: 0;
-}
 .columns1,
-.formCard,
 .groupBody[data-columns="1"] {
   display: grid;
   align-content: start;
   gap: var(--gap-field);
   min-width: 0;
-}
-.formCard.columns2 {
-  grid-template-columns: repeat(12, minmax(0, 1fr));
 }
 .field,
 .group {
@@ -332,15 +318,12 @@
   }
   .cardBody,
   .columns2,
-  .formCard.columns2,
-  .sectionBody[data-columns="2"],
   .groupBody[data-columns="2"] {
     grid-template-columns: minmax(0, 1fr);
   }
-  :is(.cardBody, .columns2, .sectionBody, .groupBody) > *,
-  .sectionBody[data-columns="2"] > *,
+  :is(.cardBody, .columns2, .groupBody) > *,
   .groupBody[data-columns="2"] > *,
-  :is(.cardBody, .columns2, .sectionBody, .groupBody)
+  :is(.cardBody, .columns2, .groupBody)
     > :is(.field, .group, [data-span], [data-wide]) {
     grid-column: 1 / -1;
   }
@@ -364,11 +347,11 @@
 }
 
 @media (min-width: 769px) and (max-width: 1023px) {
-  :is(.cardBody, .columns2, .sectionBody, .groupBody)
+  :is(.cardBody, .columns2, .groupBody)
     > :is([data-span="3"], [data-span="4"]) {
     grid-column: span 6;
   }
-  :is(.cardBody, .columns2, .sectionBody, .groupBody) > [data-span="8"] {
+  :is(.cardBody, .columns2, .groupBody) > [data-span="8"] {
     grid-column: 1 / -1;
   }
 }

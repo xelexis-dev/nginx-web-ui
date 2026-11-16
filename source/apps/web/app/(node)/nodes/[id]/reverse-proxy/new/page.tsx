@@ -1,6 +1,5 @@
 import layout from "@/components/page-layout.module.css";
-import Link from "next/link";
-import { PageHeader, linkClassName } from "@repo/ui";
+import { PageHeader } from "@repo/ui";
 import { ServerForm } from "@/components/reverse-proxy/server-form";
 import {
   toCertificateOptions,
@@ -99,11 +98,6 @@ export default async function NewNodeServerPage({
   return (
     <section className={layout.page}>
       <PageHeader
-        eyebrow={
-          <Link href={basePath} className={linkClassName({ variant: "back" })}>
-            {"리버스 프록시"}
-          </Link>
-        }
         title="새 서버"
         info="새 리버스 프록시 서버를 등록합니다."
       />

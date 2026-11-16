@@ -56,7 +56,7 @@ function SettingsForm({ kind }: { kind: keyof typeof pages }) {
         />
       ) : null}
       {kind === "general" ? (
-        <><BaseUrlForm defaultValue="https://nginx.example.test" /><section className={layout.section}><h2 className={layout.sectionTitle}>접속 지표</h2><MetricsForm defaultRetentionDays="30" defaultExcludedHosts="" /></section></>
+        <><BaseUrlForm defaultValue="https://nginx.example.test" /><MetricsForm defaultRetentionDays="30" defaultExcludedHosts="" /></>
       ) : null}
       {kind === "oauth" ? <ProviderForm mode="create" /> : null}
       {kind === "oauthEdit" ? (

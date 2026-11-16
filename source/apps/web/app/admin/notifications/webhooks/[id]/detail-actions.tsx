@@ -78,7 +78,6 @@ export function WebhookDetailActions({
           tone={"error"}
           title={<>테스트 전송 실패 — {testState.error}</>}
           role="alert"
-          style={{ marginTop: "var(--sp-3)" }}
         ></Banner>
       ) : null}
       {testState.ok && testState.message ? (
@@ -86,7 +85,6 @@ export function WebhookDetailActions({
           tone={"success"}
           title={<>{testState.message}</>}
           role="status"
-          style={{ marginTop: "var(--sp-3)" }}
         ></Banner>
       ) : null}
       {deleteState.error ? (

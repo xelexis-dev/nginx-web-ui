@@ -47,7 +47,12 @@ export default async function NewNodeCertificatePage({
     retryHref: `${basePath}/new`,
     listHref: basePath,
   });
-  if (!auth.ok) return auth.render;
+  if (!auth.ok) return (
+    <section className={layout.page}>
+      <PageHeader title="새 인증서" />
+      {auth.render}
+    </section>
+  );
 
   // 위 `authorizeNodePage` 가 이미 로그인·등급을 확인했다(아니면 redirect 한다).
   // 여기서 다시 읽는 것은 **세션이 아니라 DB 행의 이메일** 때문이다 — 로컬

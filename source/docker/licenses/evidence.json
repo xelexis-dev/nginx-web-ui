@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "inputs": {
-    "apps/api/Cargo.lock": "51a72cc0ef975d13b7783959487717f744afc4aeed654b4d7e4ac45f0afcf543",
+    "apps/api/Cargo.lock": "606401bb36ddc2714ec2a8be4a23ca52c5f06e228df2563343bccea67f280c40",
     "docker/licenses/spdx-lock.json": "bb7bc66d0b482f11e0d66ea76f3967ffc47995c48803536d70c2f2e23bfb28ed",
     "docker/pins/inventory/api-builder-amd64.tsv": "8665bd26ce32eda3cd9090c114b36571409f54a50c1d42d21a397bdc86a69892",
     "docker/pins/inventory/api-builder-arm64.tsv": "eb6903409a7bec9666b1b939c7989383245a42bfbdc8c5ef74660fa6d8eadcbc",
@@ -10467,93 +10467,93 @@
       ]
     },
     {
-      "id": "cargo:quinn-proto=0.11.18",
+      "id": "cargo:quinn-proto=0.11.19",
       "name": "quinn-proto",
-      "version": "0.11.18",
+      "version": "0.11.19",
       "ecosystem": "cargo",
       "arch": "all",
       "coverage": "source/build/runtime-superset",
-      "lockedChecksum": "a9746dbde176634f4f2f1faf2404e30a31b2bc1e9cafb5329c95d8177a18c9fc",
+      "lockedChecksum": "0e750cca55fe4f0439a15d0bb529da9651e79993e8e72c61a899a36d462befbe",
       "spdx": "MIT OR Apache-2.0",
-      "archiveSha256": "a9746dbde176634f4f2f1faf2404e30a31b2bc1e9cafb5329c95d8177a18c9fc",
+      "archiveSha256": "0e750cca55fe4f0439a15d0bb529da9651e79993e8e72c61a899a36d462befbe",
       "upstreamArchives": [],
       "encodings": [
         {
-          "archiveSha256": "a9746dbde176634f4f2f1faf2404e30a31b2bc1e9cafb5329c95d8177a18c9fc",
-          "source": "quinn-proto-0.11.18/Cargo.toml",
+          "archiveSha256": "0e750cca55fe4f0439a15d0bb529da9651e79993e8e72c61a899a36d462befbe",
+          "source": "quinn-proto-0.11.19/Cargo.toml",
           "encoding": "utf-8",
-          "sha256": "739f19627faef023b9c24932441d4e23b82b5786c8c57e37a1419d93189ef5c5",
+          "sha256": "95aaf88c74814dd46a53d07ca82c0ec90bcb7275c57a739336d287a7478feb58",
           "replacementCharacters": 0
         },
         {
-          "archiveSha256": "a9746dbde176634f4f2f1faf2404e30a31b2bc1e9cafb5329c95d8177a18c9fc",
-          "source": "quinn-proto-0.11.18/LICENSE-APACHE",
+          "archiveSha256": "0e750cca55fe4f0439a15d0bb529da9651e79993e8e72c61a899a36d462befbe",
+          "source": "quinn-proto-0.11.19/LICENSE-APACHE",
           "encoding": "utf-8",
           "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
           "replacementCharacters": 0
         },
         {
-          "archiveSha256": "a9746dbde176634f4f2f1faf2404e30a31b2bc1e9cafb5329c95d8177a18c9fc",
-          "source": "quinn-proto-0.11.18/LICENSE-MIT",
+          "archiveSha256": "0e750cca55fe4f0439a15d0bb529da9651e79993e8e72c61a899a36d462befbe",
+          "source": "quinn-proto-0.11.19/LICENSE-MIT",
           "encoding": "utf-8",
           "sha256": "4b2d0aca6789fa39e03d6738e869ea0988cceba210ca34ebb59c15c463e93a04",
           "replacementCharacters": 0
         }
       ],
-      "textSha256": "a6b9e0a64e636975e19814d95c1a8352c6198f8f1fe48c34e314f76fe8798ffa",
+      "textSha256": "90c6d69ebf3b821977b9db03531a3cca5b153ef2ae0cff7101a2518a0ab1b974",
       "parts": [
         {
-          "source": "quinn-proto-0.11.18/LICENSE-APACHE",
+          "source": "quinn-proto-0.11.19/LICENSE-APACHE",
           "sha256": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a"
         },
         {
-          "source": "quinn-proto-0.11.18/LICENSE-MIT",
+          "source": "quinn-proto-0.11.19/LICENSE-MIT",
           "sha256": "4b2d0aca6789fa39e03d6738e869ea0988cceba210ca34ebb59c15c463e93a04"
         }
       ]
     },
     {
-      "id": "cargo:quinn-udp=0.5.15",
+      "id": "cargo:quinn-udp=0.5.16",
       "name": "quinn-udp",
-      "version": "0.5.15",
+      "version": "0.5.16",
       "ecosystem": "cargo",
       "arch": "all",
       "coverage": "source/build/runtime-superset",
-      "lockedChecksum": "35a133f956daabe89a61a685c2649f13d82d5aa4bd5d12d1277e1072a21c0694",
+      "lockedChecksum": "af66907df18639dcf4db56ca65490cabc4b27a97dbadd96f2926cca73298f016",
       "spdx": "MIT OR Apache-2.0",
-      "archiveSha256": "35a133f956daabe89a61a685c2649f13d82d5aa4bd5d12d1277e1072a21c0694",
+      "archiveSha256": "af66907df18639dcf4db56ca65490cabc4b27a97dbadd96f2926cca73298f016",
       "upstreamArchives": [],
       "encodings": [
         {
-          "archiveSha256": "35a133f956daabe89a61a685c2649f13d82d5aa4bd5d12d1277e1072a21c0694",
-          "source": "quinn-udp-0.5.15/Cargo.toml",
+          "archiveSha256": "af66907df18639dcf4db56ca65490cabc4b27a97dbadd96f2926cca73298f016",
+          "source": "quinn-udp-0.5.16/Cargo.toml",
           "encoding": "utf-8",
-          "sha256": "eec4b520d44d810c97b906f1a2dcb6118c0ca46b620803dcce78bd13f39ac2b6",
+          "sha256": "9d69f5f0c3781f22d1e4287ea1427875bea2a119ff0de668d982dd8ead87b967",
           "replacementCharacters": 0
         },
         {
-          "archiveSha256": "35a133f956daabe89a61a685c2649f13d82d5aa4bd5d12d1277e1072a21c0694",
-          "source": "quinn-udp-0.5.15/LICENSE-APACHE",
+          "archiveSha256": "af66907df18639dcf4db56ca65490cabc4b27a97dbadd96f2926cca73298f016",
+          "source": "quinn-udp-0.5.16/LICENSE-APACHE",
           "encoding": "utf-8",
           "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
           "replacementCharacters": 0
         },
         {
-          "archiveSha256": "35a133f956daabe89a61a685c2649f13d82d5aa4bd5d12d1277e1072a21c0694",
-          "source": "quinn-udp-0.5.15/LICENSE-MIT",
+          "archiveSha256": "af66907df18639dcf4db56ca65490cabc4b27a97dbadd96f2926cca73298f016",
+          "source": "quinn-udp-0.5.16/LICENSE-MIT",
           "encoding": "utf-8",
           "sha256": "4b2d0aca6789fa39e03d6738e869ea0988cceba210ca34ebb59c15c463e93a04",
           "replacementCharacters": 0
         }
       ],
-      "textSha256": "e08397b978f433b93971da348f03d45fd378ad61f1ebc6c9774b3e9a54c02450",
+      "textSha256": "69cf542aa5070c2f25d98f605b720710beb6b9ebe2fb1a4739d497c9b072458d",
       "parts": [
         {
-          "source": "quinn-udp-0.5.15/LICENSE-APACHE",
+          "source": "quinn-udp-0.5.16/LICENSE-APACHE",
           "sha256": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a"
         },
         {
-          "source": "quinn-udp-0.5.15/LICENSE-MIT",
+          "source": "quinn-udp-0.5.16/LICENSE-MIT",
           "sha256": "4b2d0aca6789fa39e03d6738e869ea0988cceba210ca34ebb59c15c463e93a04"
         }
       ]
@@ -12795,69 +12795,69 @@
       ]
     },
     {
-      "id": "cargo:rustix=1.1.5",
+      "id": "cargo:rustix=1.1.6",
       "name": "rustix",
-      "version": "1.1.5",
+      "version": "1.1.6",
       "ecosystem": "cargo",
       "arch": "all",
       "coverage": "source/build/runtime-superset",
-      "lockedChecksum": "891efababe418670775f199f0d233d84843c227a0949a883ce15b37c78d6629d",
+      "lockedChecksum": "e5e76742e5294153d4dde1207dbec5bdd81eef6fabdc0d2118babadabfd858aa",
       "spdx": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT",
-      "archiveSha256": "891efababe418670775f199f0d233d84843c227a0949a883ce15b37c78d6629d",
+      "archiveSha256": "e5e76742e5294153d4dde1207dbec5bdd81eef6fabdc0d2118babadabfd858aa",
       "upstreamArchives": [],
       "encodings": [
         {
-          "archiveSha256": "891efababe418670775f199f0d233d84843c227a0949a883ce15b37c78d6629d",
-          "source": "rustix-1.1.5/COPYRIGHT",
+          "archiveSha256": "e5e76742e5294153d4dde1207dbec5bdd81eef6fabdc0d2118babadabfd858aa",
+          "source": "rustix-1.1.6/COPYRIGHT",
           "encoding": "utf-8",
           "sha256": "377c2e7c53250cc5905c0b0532d35973392af16ffb9596a41d99d202cf3617c9",
           "replacementCharacters": 0
         },
         {
-          "archiveSha256": "891efababe418670775f199f0d233d84843c227a0949a883ce15b37c78d6629d",
-          "source": "rustix-1.1.5/Cargo.toml",
+          "archiveSha256": "e5e76742e5294153d4dde1207dbec5bdd81eef6fabdc0d2118babadabfd858aa",
+          "source": "rustix-1.1.6/Cargo.toml",
           "encoding": "utf-8",
-          "sha256": "f57824af546c008210d8d6d63bc0fe866a3887d06100469448de3432ffa108ec",
+          "sha256": "43d4bcaf19bf857aaa17ada056e7561a50abdcb3201a1722770948ce050c77cb",
           "replacementCharacters": 0
         },
         {
-          "archiveSha256": "891efababe418670775f199f0d233d84843c227a0949a883ce15b37c78d6629d",
-          "source": "rustix-1.1.5/LICENSE-APACHE",
+          "archiveSha256": "e5e76742e5294153d4dde1207dbec5bdd81eef6fabdc0d2118babadabfd858aa",
+          "source": "rustix-1.1.6/LICENSE-APACHE",
           "encoding": "utf-8",
           "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
           "replacementCharacters": 0
         },
         {
-          "archiveSha256": "891efababe418670775f199f0d233d84843c227a0949a883ce15b37c78d6629d",
-          "source": "rustix-1.1.5/LICENSE-Apache-2.0_WITH_LLVM-exception",
+          "archiveSha256": "e5e76742e5294153d4dde1207dbec5bdd81eef6fabdc0d2118babadabfd858aa",
+          "source": "rustix-1.1.6/LICENSE-Apache-2.0_WITH_LLVM-exception",
           "encoding": "utf-8",
           "sha256": "268872b9816f90fd8e85db5a28d33f8150ebb8dd016653fb39ef1f94f2686bc5",
           "replacementCharacters": 0
         },
         {
-          "archiveSha256": "891efababe418670775f199f0d233d84843c227a0949a883ce15b37c78d6629d",
-          "source": "rustix-1.1.5/LICENSE-MIT",
+          "archiveSha256": "e5e76742e5294153d4dde1207dbec5bdd81eef6fabdc0d2118babadabfd858aa",
+          "source": "rustix-1.1.6/LICENSE-MIT",
           "encoding": "utf-8",
           "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
           "replacementCharacters": 0
         }
       ],
-      "textSha256": "86b9580a2e0e185e2a112d805b3c633d864dcc618ba95b410cca01dcaab3b17a",
+      "textSha256": "9ed74201cbc2da2998363dbf509195ce25e07c13d19cc9c765ed4882425f598e",
       "parts": [
         {
-          "source": "rustix-1.1.5/COPYRIGHT",
+          "source": "rustix-1.1.6/COPYRIGHT",
           "sha256": "377c2e7c53250cc5905c0b0532d35973392af16ffb9596a41d99d202cf3617c9"
         },
         {
-          "source": "rustix-1.1.5/LICENSE-APACHE",
+          "source": "rustix-1.1.6/LICENSE-APACHE",
           "sha256": "143368af9701a24ebaf89fe5310ad8116ca71e8e99f17415c0dd893f6a256ae4"
         },
         {
-          "source": "rustix-1.1.5/LICENSE-Apache-2.0_WITH_LLVM-exception",
+          "source": "rustix-1.1.6/LICENSE-Apache-2.0_WITH_LLVM-exception",
           "sha256": "ae6e99144a735503e5b54b92e09cf8dec2e7f2e25706ec5c98af2f7d2242dc75"
         },
         {
-          "source": "rustix-1.1.5/LICENSE-MIT",
+          "source": "rustix-1.1.6/LICENSE-MIT",
           "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3"
         }
       ]

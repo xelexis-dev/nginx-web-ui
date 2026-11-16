@@ -1,171 +1,248 @@
-/* config-diff 표시(항목 마커 + 필드 before→after). /history/[id]와 미적용 모달이
-   같은 시각 언어를 쓰도록 공유한다. 토큰만 사용. */
 .diffGroups {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  --cols: minmax(0, 2fr) minmax(0, 1.5fr) minmax(0, 1.5fr);
+  display: flex;
+  flex-direction: column;
   gap: var(--sp-4);
-  margin: 0;
-  box-sizing: border-box;
-  width: 100%;
-  padding: var(--sp-4);
-  border-radius: var(--r-3);
-  font-family: var(--font);
-  font-variant-numeric: tabular-nums;
-  line-height: var(--lh-sm);
   min-width: 0;
-  align-items: start;
 }
-
-.diffGroupTitle {
-  margin: 0 0 var(--sp-2);
-  font-size: var(--fs-xs);
-  font-weight: 600;
-
-  color: var(--text-2);
-}
-
-.diffNone {
-  margin: 0;
-  font-size: var(--fs-xs);
-  color: var(--text-2);
-}
-
-.diffList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.groupTitle {
   display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
-}
-
-.diffItem {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-1);
-}
-
-.diffHead {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: var(--sp-2);
+  margin: 0;
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--line-strong);
+  background: var(--bg-raised);
   font-size: var(--fs-md);
-  /* flex 자식의 기본 min-width:auto 는 줄바꿈할 곳 없는 긴 이름을 그대로 밀어낸다.
-     390px 실측: 이 선언이 없으면 scrollWidth 659px. */
-  min-width: 0;
-}
-
-.diffMarker {
-  flex-shrink: 0;
-  width: 16px;
+  line-height: var(--lh-md);
   font-weight: 600;
-  font-family: var(--font);
 }
-
-.markerAdded {
-  color: var(--success-text);
-}
-
-.markerRemoved {
-  color: var(--danger-text);
-}
-
-.markerChanged {
-  color: var(--warning-text);
-}
-
-.markerSkipped {
-  color: var(--danger-text);
-}
-
-/* 「적용에서 제외됨」 — 대기 중인 변경과 눈으로 구분되어야 한다. */
-
-.skippedReason {
-  margin: 0;
-  padding-left: var(--sp-6);
+.groupTitle > span {
+  color: var(--text-3);
   font-size: var(--fs-xs);
-  color: var(--text-2);
-  overflow-wrap: anywhere;
+  line-height: var(--lh-xs);
+  font-weight: 400;
 }
-
-.diffLabel {
-  color: var(--text-1);
-  font-weight: 500;
-  min-width: 0;
-  overflow-wrap: anywhere;
+.diffGroups[data-variant="inline"] .groupTitle {
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
-
-.fieldList {
-  list-style: none;
-  margin: 0;
-  padding: 0 0 0 var(--sp-6);
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-1);
-}
-
-.fieldChange {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--sp-2);
-  font-size: var(--fs-xs);
-  font-family: var(--font);
-}
-
-.fieldName {
-  min-width: 0;
-  flex: 0 1 120px;
-  overflow-wrap: anywhere;
-  color: var(--text-2);
-}
-
-.fieldBefore {
-  padding: var(--sp-0-5) var(--sp-1);
-  background: var(--danger-bg);
-  border-radius: var(--r-1);
-  color: var(--danger-text);
-  word-break: break-word;
-}
-
-.fieldArrow {
-  color: var(--text-2);
-}
-
-.fieldAfter {
-  padding: var(--sp-0-5) var(--sp-1);
-  background: var(--success-bg);
-  border-radius: var(--r-1);
-  color: var(--success-text);
-  word-break: break-word;
-}
-
-.inline {
-  border: 1px solid var(--line-strong);
+.diffGroups[data-variant="panel"] .groupTitle {
   background: var(--bg-canvas);
 }
-.panel {
-  gap: var(--sp-4);
-  padding: var(--sp-4);
-  color: var(--text-1);
-  background: var(--bg-sunken);
+.diffList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.diffItem {
+  display: grid;
+  grid-template-columns: var(--sp-5) minmax(0, 1fr);
+  gap: var(--sp-2);
+  padding: var(--sp-2) 0;
   font-size: var(--fs-sm);
   line-height: var(--lh-sm);
 }
-.panel .diffLabel {
+.diffItem + .diffItem {
+  border-top: 1px solid var(--line);
+}
+.marker {
+  text-align: center;
   color: var(--text-1);
 }
-.panel
-  :is(.diffGroupTitle, .diffNone, .fieldName, .fieldArrow, .skippedReason) {
-  color: var(--text-3);
-}
-.panel :is(.markerAdded, .fieldAfter) {
+.marker[data-kind="added"] {
   color: var(--success-text);
 }
-.panel :is(.markerRemoved, .fieldBefore, .markerSkipped) {
+.marker[data-kind="removed"] {
   color: var(--danger-text);
 }
-.panel .markerChanged {
+.marker[data-kind="skipped"] {
+  color: var(--warning);
+}
+.itemContent {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.main {
+  display: grid;
+  grid-template-columns: var(--cols);
+  gap: 0 var(--sp-3);
+}
+.name {
+  font-weight: 500;
   color: var(--text-1);
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+.summary {
+  grid-column: 2 / 4;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-0-5);
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+.excluded {
+  color: var(--warning-text);
+  font-weight: 500;
+}
+.reason {
+  color: var(--text-1);
+}
+.consequence {
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+}
+.consequence a {
+  color: var(--accent-text);
+}
+.fields {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+}
+.fields tr {
+  display: grid;
+  grid-template-columns: var(--cols);
+  gap: 0 var(--sp-3);
+}
+.fields th,
+.fields td {
+  min-width: 0;
+  text-align: left;
+  padding: var(--sp-1) 0;
+  overflow-wrap: anywhere;
+  vertical-align: top;
+  font-weight: 400;
+}
+.fields thead {
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  font-weight: 500;
+  border-bottom: 1px solid var(--line);
+}
+.fields td {
+  color: var(--text-2);
+}
+.fields td:last-child {
+  color: var(--text-1);
+  font-weight: 500;
+}
+.missing,
+.separator {
+  color: var(--text-3);
+  font-weight: 400;
+}
+.expander {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+}
+.full {
+  margin: 0;
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.full dl > div {
+  display: grid;
+  grid-template-columns: var(--cols);
+  gap: 0 var(--sp-3);
+}
+.full dt {
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+}
+.full dd {
+  margin: 0;
+  grid-column: 2 / 4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+@media (max-width: 768px) {
+  .main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+  }
+  .fields thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .fields tbody {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+  }
+  .fields tr {
+    display: flex;
+    flex-direction: column;
+  }
+  .fields td {
+    display: grid;
+    grid-template-columns: var(--sp-6) minmax(0, 1fr);
+    gap: var(--sp-2);
+  }
+  .fields td::before {
+    content: attr(data-l);
+    color: var(--text-3);
+    font-size: var(--fs-xs);
+    font-weight: 400;
+  }
+  .full dl > div {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+  }
+}
+
+.rotated {
+  transform: rotate(180deg);
+}
+
+.full h4 {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: 500;
+}
+.full dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.full section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
 }

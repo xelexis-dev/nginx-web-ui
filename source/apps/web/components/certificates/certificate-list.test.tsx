@@ -189,7 +189,9 @@ describe("인증서 목록 — 값이 화면까지 가는가", () => {
   it("한 건도 없으면 빈 표 문구를 그린다", () => {
     const empty = collect(render(null, []), (el) => el.type === EmptyState);
     expect(empty.map((el) => (el.props as { title?: string }).title)).toEqual(["발급된 인증서가 없습니다"]);
-    expect(rowTexts(render(null, []))).toEqual([]);
+    const cells = collect(render(null, []), (el) => is(el, "td"));
+    expect(cells).toHaveLength(1);
+    expect((cells[0]!.props as { colSpan?: number }).colSpan).toBe(4);
   });
 
   /** 별칭은 행에서 **도메인과 함께** 보인다 — 서버 폼의 Select 라벨과 같은 두 값이다. */

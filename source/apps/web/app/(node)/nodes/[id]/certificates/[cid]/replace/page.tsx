@@ -83,7 +83,12 @@ export default async function ReplaceNodeCertificatePage({
     },
   });
 
-  if (!loaded.ok) return loaded.render;
+  if (!loaded.ok) return (
+    <section className={layout.page}>
+      <PageHeader title="인증서 교체" />
+      {loaded.render}
+    </section>
+  );
 
   // **ACME 인증서에는 교체라는 게 없다** — 갱신·재발급이 그 자리다. 로컬 교체
   // 화면의 `cert.source !== "manual"` → `notFound()` 와 같은 판정이다. 노드가

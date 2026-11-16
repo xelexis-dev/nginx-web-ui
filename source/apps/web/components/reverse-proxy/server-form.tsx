@@ -337,7 +337,22 @@ export function ServerForm({
                               : "server-directives-advanced";
       return {
         label:
-          index >= 0 ? `경로 ${index + 1} · ${locations[index]!.path}` : key,
+          index >= 0
+            ? `경로 ${index + 1} · ${locations[index]!.path}`
+            : ({
+                serverName: "server_name",
+                listen: "listen (포트)",
+                certificateId: "인증서",
+                tlsPort: "HTTPS 포트",
+                redirectHttp: "HTTP→HTTPS 리다이렉트",
+                tlsOptions: "TLS 세부 설정",
+                ipAccess: "IP 접근 제어",
+                realIp: "엣지 / 프록시 뒤 배치 (실 IP 복원)",
+                cache: "프록시 캐시",
+                gzip: "gzip",
+                serverDirectives: "고급 — 추가 디렉티브 직접 입력",
+                locations: "위치",
+              }[key.split(".")[0]!] ?? "서버"),
         value: message,
         onJump: () =>
           jump(
@@ -566,9 +581,9 @@ export function ServerForm({
           value={JSON.stringify(tlsOptions)}
         />
       ) : null}
-      {state.nodeError || state.error || runtimeDns?.available !== true ? (
+      {hasGeneralError || runtimeDns?.available !== true ? (
         <div className={formStyles.pfWide}>
-          {state.nodeError || state.error ? (
+          {hasGeneralError ? (
             <div
               ref={saveErrorRef}
               className={formStyles.pfSaveMessage}
@@ -592,10 +607,7 @@ export function ServerForm({
         inert={pending}
       >
         <FormStack>
-          <Banner
-            tone="info"
-            title={UNAPPLIED_CONFIG_INFO}
-          />
+          <Banner tone="info" title={UNAPPLIED_CONFIG_INFO} />
           <IdentityStrip
             nodeName={nodeName}
             serverName={serverName}

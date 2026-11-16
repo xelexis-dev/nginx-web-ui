@@ -153,12 +153,12 @@ form.pfForm {
   display: inline-flex;
   color: var(--text-3);
 }
-.pfDisclosureMark > svg:last-child,
-.pfDisclosure[open] .pfDisclosureMark > svg:first-child {
-  display: none;
+.pfExpandedChevron {
+  display: inline-flex;
 }
-.pfDisclosure[open] .pfDisclosureMark > svg:last-child {
-  display: block;
+.pfExpandedChevron,
+.pfDisclosure[open] .pfDisclosureMark {
+  transform: rotate(180deg);
 }
 .pfDisclosureBody {
   display: grid;
@@ -204,6 +204,7 @@ form.pfForm {
 }
 .pfSummaryBody {
   display: grid;
+  grid-auto-rows: max-content;
   gap: var(--sp-3);
   min-height: 0;
   padding: 0 var(--pad-panel) var(--pad-panel);
@@ -430,4 +431,11 @@ form.pfForm {
   .pfSummaryList {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+.pfUseLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
 }

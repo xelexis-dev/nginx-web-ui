@@ -123,6 +123,11 @@ export function TokenDetail({ view, basePath, revoke }: TokenDetailProps) {
     <section className={layout.page}>
       <PageHeader
         title={view.name}
+        status={
+          <StatusBadge tone={BADGE_TONE[view.status]}>
+            {STATUS_LABELS[view.status]}
+          </StatusBadge>
+        }
         actions={actions}
         eyebrow={
           <Link href={basePath} className={linkClassName({ variant: "back" })}>
@@ -164,13 +169,8 @@ export function TokenDetail({ view, basePath, revoke }: TokenDetailProps) {
           ) : undefined
         }
       />
-      <Banner
-        tone={BADGE_TONE[view.status]}
-        title={STATUS_LABELS[view.status]}
-      />
       <Surface as="div">
         <Facts
-          columns={2}
           items={[
             { term: <>이름</>, value: <>{view.name}</> },
             { term: <>토큰</>, value: <>{view.masked}</> },

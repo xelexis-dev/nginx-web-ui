@@ -37,14 +37,6 @@
   white-space: nowrap;
 }
 
-.emptyCell {
-  text-align: start;
-  color: var(--text-2);
-  font-size: var(--fs-md);
-  padding: var(--sp-6) var(--sp-4);
-  white-space: normal;
-}
-
 @media (min-width: 769px) {
   .detailCell {
     width: 1%;

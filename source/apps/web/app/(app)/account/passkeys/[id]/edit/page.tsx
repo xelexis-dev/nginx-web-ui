@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Icon, PageHeader, linkClassName } from "@repo/ui";
+import { PageHeader } from "@repo/ui";
 import { readPageApi } from "@/lib/api-page";
 import { passkeyRowView, type PasskeyDetail } from "@/lib/passkey-api";
 import { RenamePasskeyForm } from "@/components/passkeys/passkey-forms";
@@ -16,15 +15,7 @@ export default async function EditPasskeyPage({
   );
   return (
     <section className={layout.page}>
-      <PageHeader
-        title="패스키 이름 변경"
-        eyebrow={
-          <Link href="/account" className={linkClassName({ variant: "back" })}>
-            <Icon name="arrowLeft" />
-            계정으로
-          </Link>
-        }
-      />
+      <PageHeader title="패스키 이름 변경" />
       <RenamePasskeyForm row={passkeyRowView(data.passkey)} />
     </section>
   );

@@ -11,7 +11,6 @@ import {
   Checkbox,
   Field,
   FieldGroup,
-  FormSection,
   SegmentedControl,
   TextInput,
 } from "@repo/ui";
@@ -260,17 +259,17 @@ describe("form layout options", () => {
     expect(button.type).toBe("button");
   });
 
-  it("keeps the section anchor, heading and column layout", () => {
+  it("keeps the Card anchor, heading and field content", () => {
     const html = renderToStaticMarkup(
-      <FormSection id="origin" title="원본" headingLevel={3} columns={2}>
+      <Card id="origin" title="원본" headingLevel={3}>
         <TextInput name="origin" />
-      </FormSection>,
+      </Card>,
     );
     expect(html).toContain('aria-labelledby="origin-heading"');
     expect(html).toMatch(
       /<h3[^>]*id="origin-heading"[^>]*tabindex="-1">원본<\/h3>/,
     );
-    expect(html).toContain('data-columns="2"');
+    expect(html).toContain('name="origin"');
   });
 });
 
@@ -336,11 +335,11 @@ describe("category card and repeated block", () => {
       <form>
         <fieldset disabled inert>
           <FormStack>
-            <FormSection id="server" title="서버">
+            <Card id="server" title="서버">
               <Field label="이름" htmlFor="disabled-name" required span={8}>
                 <TextInput name="name" />
               </Field>
-            </FormSection>
+            </Card>
             <FormBar note="변경 1건">
               <button type="submit">저장</button>
             </FormBar>

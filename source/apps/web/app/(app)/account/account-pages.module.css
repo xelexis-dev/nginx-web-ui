@@ -3,3 +3,14 @@
   gap: var(--gap-card);
   min-width: 0;
 }
+
+.accountMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+}
+.accountMeta strong {
+  color: var(--text-1);
+  font-weight: var(--fw-medium);
+}

@@ -64,7 +64,7 @@ export interface CertificateDetailProps {
    * DNS-01 TXT 안내 패널이 들어갈 자리. **그릴지 말지는 호출부가 정한다**
    * (`data.dnsOrder?.phase === "awaiting-txt"`) — 패널이 클라이언트 컴포넌트라
    * 어느 서버 액션에 붙는지를 라우트 그룹마다 스스로 정해야 하기 때문이다.
-   * 자리(발급 로그 다음, 연결 서버 앞)는 여기가 정한다.
+   * 자리(인증서 정보 다음, 연결 서버 앞)는 여기가 정한다.
    */
   dnsPanel: ReactNode;
   /**
@@ -93,22 +93,9 @@ export function CertificateDetail({
     <section className={layout.page}>
       {live ? <IssuancePoller /> : null}
       <PageHeader
-        title={
-          <>
-            {/* 별칭이 있으면 그것이 이름이고 대표 도메인은 옆에 작게 남는다 — 서버 폼 Select 라벨과 같은 두 값. */}
-            {data.alias ? (
-              <>
-                {data.alias}{" "}
-                <span className={styles.titleSub}>
-                  {data.domains.primary ?? ""}
-                </span>
-              </>
-            ) : (
-              (data.domains.primary ?? "인증서")
-            )}
-          </>
-        }
-        description={
+        title={data.alias ?? data.domains.primary ?? "인증서"}
+        description={data.alias ? data.domains.primary : undefined}
+        status={
           <StatusBadge
             tone={statusTone(data.status)}
           >{`${statusLabel(data.status)}${data.staging ? " · STAGING" : ""}${phase === "verifying" ? " · TXT 확인·검증 중" : ""}${live ? " (자동 새로고침 중...)" : ""}`}</StatusBadge>
@@ -132,101 +119,101 @@ export function CertificateDetail({
         </Banner>
       ) : null}
 
-      <div className={layout.detail}>
-        <div className={layout.section}>
-          <Surface title="인증서 정보">
-            <Facts
-              columns={2}
-              items={[
-                ...(data.alias ? [{ term: "별칭", value: data.alias }] : []),
-                { term: "도메인", value: data.domains.all, mono: true },
-                {
-                  term: "종류",
-                  value:
-                    data.source === "manual"
-                      ? "수동 등록"
-                      : `Let's Encrypt (ACME · ${
-                          data.challengeType === "dns-01"
-                            ? data.dnsProvider === "cloudflare"
-                              ? "DNS-01 자동 · Cloudflare"
-                              : "DNS-01 수동 TXT"
-                            : "HTTP-01"
-                        })`,
-                },
+      <div className={layout.page}>
+        <Surface title="인증서 정보">
+          <Facts
+            columns={2}
+            items={[
+              ...(data.alias ? [{ term: "별칭", value: data.alias }] : []),
+              { term: "도메인", value: data.domains.all, mono: true },
+              {
+                term: "종류",
+                value:
+                  data.source === "manual"
+                    ? "수동 등록"
+                    : `Let's Encrypt (ACME · ${
+                        data.challengeType === "dns-01"
+                          ? data.dnsProvider === "cloudflare"
+                            ? "DNS-01 자동 · Cloudflare"
+                            : "DNS-01 수동 TXT"
+                          : "HTTP-01"
+                      })`,
+              },
 
-                {
-                  term: "발급일",
-                  value: fmtInstant(data.issuedAt),
-                  mono: true,
-                },
-                {
-                  term: "만료일",
-                  value: fmtInstant(data.expiresAt),
-                  mono: true,
-                },
-                ...(data.source === "acme"
-                  ? [
-                      {
-                        term: "마지막 시도",
-                        value: fmtInstant(data.lastAttemptAt),
-                        mono: true,
-                      },
-                      {
-                        term: "실패 횟수",
-                        value: String(data.failureCount),
-                        mono: true,
-                      },
-                    ]
-                  : []),
-              ]}
-            />
-          </Surface>
-
-          {data.source === "acme" && data.lastError ? (
-            <Banner
-              tone="error"
-              title="마지막 발급/갱신 실패"
-              output={data.lastError}
-            />
-          ) : null}
-
-          {data.source === "acme" && (data.issueLog.length > 0 || live) ? (
-            <IssueLogPanel entries={data.issueLog} live={live} />
-          ) : null}
-
-          {dnsPanel}
-        </div>
-        <Surface title={`연결된 서버 (${data.linkedServers.length})`} flush>
-          {data.linkedServers.length === 0 ? (
-            <EmptyState
-              title="연결된 서버가 없습니다"
-              description="서버 편집 페이지의 TLS 섹션에서 연결하세요."
-            />
-          ) : (
-            <Table label="연결된 서버">
-              <thead>
-                <tr>
-                  <Th>server_name</Th>
-                  <Th align="end">listen</Th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.linkedServers.map((s) => (
-                  <Tr key={s.id}>
-                    <Td cell="primary">
-                      <Link href={`${serverBasePath}/${s.id}`}>
-                        {s.serverName}
-                      </Link>
-                    </Td>
-                    <Td numeric label="listen">
-                      {s.listen}
-                    </Td>
-                  </Tr>
-                ))}
-              </tbody>
-            </Table>
-          )}
+              {
+                term: "발급일",
+                value: fmtInstant(data.issuedAt),
+                mono: true,
+              },
+              {
+                term: "만료일",
+                value: fmtInstant(data.expiresAt),
+                mono: true,
+              },
+              ...(data.source === "acme"
+                ? [
+                    {
+                      term: "마지막 시도",
+                      value: fmtInstant(data.lastAttemptAt),
+                      mono: true,
+                    },
+                    {
+                      term: "실패 횟수",
+                      value: String(data.failureCount),
+                      mono: true,
+                    },
+                  ]
+                : []),
+            ]}
+          />
         </Surface>
+
+        {data.source === "acme" && data.lastError ? (
+          <Banner
+            tone="error"
+            title="마지막 발급/갱신 실패"
+            output={data.lastError}
+          />
+        ) : null}
+
+        {dnsPanel}
+        <Surface title={`연결된 서버 (${data.linkedServers.length})`} flush>
+          <Table label="연결된 서버">
+            <thead>
+              <tr>
+                <Th>server_name</Th>
+                <Th align="end">listen</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.linkedServers.length === 0 ? (
+                <Tr>
+                  <Td colSpan={2}>
+                    <EmptyState
+                      title="연결된 서버가 없습니다"
+                      description="서버 편집 페이지의 TLS 섹션에서 연결하세요."
+                    />
+                  </Td>
+                </Tr>
+              ) : null}
+              {data.linkedServers.map((s) => (
+                <Tr key={s.id}>
+                  <Td cell="primary">
+                    <Link href={`${serverBasePath}/${s.id}`}>
+                      {s.serverName}
+                    </Link>
+                  </Td>
+                  <Td numeric label="listen">
+                    {s.listen}
+                  </Td>
+                </Tr>
+              ))}
+            </tbody>
+          </Table>
+        </Surface>
+        {data.source === "acme" && (data.issueLog.length > 0 || live) ? (
+          <IssueLogPanel entries={data.issueLog} live={live} />
+        ) : null}
       </div>
     </section>
   );

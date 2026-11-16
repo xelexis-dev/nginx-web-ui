@@ -11,7 +11,9 @@
 
 /* Detail layout shares the production breakpoint. */
 .split {
-  composes: detail from "../../../web/components/page-layout.module.css";
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--gap-section);
 }
 
 /* Stacked cards inside one block (a split column, a settings group). */
@@ -136,7 +138,7 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-@media (max-width: 1180px) {
+@media (max-width: 1279px) {
   .kpis {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -145,4 +147,8 @@
 /* Compact template cards cannot fit two 200px label columns. */
 :is(.cards, .overviewMain) [data-layout="grid"] {
   grid-template-columns: minmax(0, 1fr);
+}
+
+.authForm label {
+  color: var(--text-1);
 }

@@ -72,7 +72,7 @@ const preview: Preview = {
             "Banner",
             "CodePane",
             "FilterChips · SearchField · Switch",
-            "FormSection · Field",
+            "Card · Field",
             "TextInput",
             "FileInput",
             "SegmentedControl",

@@ -10,7 +10,6 @@ import {
 } from "@repo/presentation/operations-target";
 import {
   AppShell,
-  Modal,
   SectionNav,
   type AppShellNavGroup,
   type SectionNavProps,
@@ -25,8 +24,7 @@ import { nodeNavCategories } from "@/app/(node)/nodes/[id]/node-nav";
 import { APP_SEMVER, FULL_SHA, SHA_LABEL } from "@/lib/version";
 import type { OperationsShellData } from "@/lib/operations-shell-data";
 import { PendingBanner } from "@/components/pending-changes-badge";
-import { ConfigDiffView } from "@/components/config-diff-view";
-import { ApplyReview } from "@/components/apply-bar";
+import { ApplyDialog } from "@/components/apply-dialog";
 import { ProfileMenu } from "@/components/profile-menu";
 import { HeaderActions } from "./header-actions";
 import { NotificationBell } from "@/components/notifications/notification-bell";
@@ -222,26 +220,18 @@ export function OperationsShell({
         {notifications ? <ToastViewport /> : null}
       </AppShell>
       {data?.available ? (
-        <Modal
+        <ApplyDialog
+          key={targetKey}
           open={reviewFor === reviewKey}
           onClose={() => setReviewFor(null)}
-          title={canApply ? "설정 적용" : "미적용 변경"}
-        >
-          {canApply ? (
-            <ApplyReview
-              target={target}
-              targetLabel={label}
-              onCancel={() => setReviewFor(null)}
-              canApply
-              pendingCount={data.pendingCount}
-              pendingHasBaseline={data.pendingHasBaseline}
-              pendingDiff={data.pendingDiff}
-              applyAction={data.applyAction}
-            />
-          ) : (
-            <ConfigDiffView diff={data.pendingDiff} />
-          )}
-        </Modal>
+          target={target}
+          targetLabel={label}
+          canApply={canApply}
+          pendingCount={data.pendingCount}
+          pendingHasBaseline={data.pendingHasBaseline}
+          pendingDiff={data.pendingDiff}
+          applyAction={data.applyAction}
+        />
       ) : null}
     </>
   );

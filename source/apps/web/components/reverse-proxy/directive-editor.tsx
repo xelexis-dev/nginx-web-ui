@@ -84,8 +84,7 @@ export function FormDisclosure({
         <span>{title}</span>
         <span className={formStyles.pfClosedValue}>{summary}</span>
         <span className={formStyles.pfDisclosureMark} aria-hidden="true">
-          <Icon name="plus" size={14} />
-          <Icon name="minus" size={14} />
+          <Icon name="chevronDown" size={14} />
         </span>
       </summary>
       <div className={formStyles.pfDisclosureBody}>{children}</div>
@@ -339,7 +338,7 @@ export function DirectiveEditor({
                 />
                 <Button
                   type="button"
-                  variant="danger"
+                  variant="dangerQuiet"
                   aria-label="rewrite 삭제"
                   onClick={() =>
                     patch({
@@ -360,7 +359,8 @@ export function DirectiveEditor({
                 })
               }
             >
-              + rewrite 추가
+              <Icon name="plus" />
+              rewrite 추가
             </Button>
           </div>
         </FormDisclosure>
@@ -476,7 +476,7 @@ function KeyValueSection({
             />
             <Button
               type="button"
-              variant="danger"
+              variant="dangerQuiet"
               onClick={() => onChange(rows.filter((_, j) => j !== i))}
               aria-label="헤더 삭제"
             >

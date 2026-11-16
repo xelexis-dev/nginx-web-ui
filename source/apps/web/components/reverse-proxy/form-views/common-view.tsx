@@ -70,11 +70,14 @@ export function CommonView({
         errorCount={fieldErrors?.cache ? 1 : 0}
         off={!c.enabled && !fieldErrors?.cache}
         actions={
-          <Switch
-            label="서버 기본 캐시"
-            checked={c.enabled}
-            onCheckedChange={(enabled) => patchCache({ enabled })}
-          />
+          <label className={formStyles.pfUseLabel}>
+            사용
+            <Switch
+              label="서버 기본 캐시"
+              checked={c.enabled}
+              onCheckedChange={(enabled) => patchCache({ enabled })}
+            />
+          </label>
         }
       >
         <div className={formStyles.pfCategory}>
@@ -189,11 +192,14 @@ export function CommonView({
               ]}
             />
           ) : (
-            <Switch
-              label="서버 기본 gzip"
-              checked={g.enabled}
-              onCheckedChange={(enabled) => patchGzip({ enabled })}
-            />
+            <label className={formStyles.pfUseLabel}>
+              사용
+              <Switch
+                label="서버 기본 gzip"
+                checked={g.enabled}
+                onCheckedChange={(enabled) => patchGzip({ enabled })}
+              />
+            </label>
           )
         }
       >

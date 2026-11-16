@@ -1,9 +1,8 @@
 import layout from "@/components/page-layout.module.css";
-import { Icon, linkClassName, PageHeader } from "@repo/ui";
+import { PageHeader } from "@repo/ui";
 import type { CertificateEditView } from "@repo/contracts";
 import { redirect } from "next/navigation";
 import { readPageView } from "@/lib/api-page";
-import Link from "next/link";
 import { CertificateEditForm } from "@/components/certificates/certificate-edit-form";
 
 export const runtime = "nodejs";
@@ -27,18 +26,6 @@ export default async function EditCertificatePage({
     <section className={layout.page}>
       <PageHeader
         title={<>인증서 수정</>}
-        eyebrow={
-          <>
-            {" "}
-            <Link
-              href={`/certificates/${id}`}
-              className={linkClassName({ variant: "back" })}
-            >
-              <Icon name="arrowLeft" size={14} />
-              상세로
-            </Link>{" "}
-          </>
-        }
         info="발급 설정을 바꿉니다."
       />
       <CertificateEditForm

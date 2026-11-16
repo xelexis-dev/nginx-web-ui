@@ -141,15 +141,15 @@ export function SmtpForm({ defaults, hasStoredPassword }: SmtpFormProps) {
 
   return (
     <form className={resourceStyles.form}>
+      <FormErrors
+        errors={fieldErrors}
+        targets={{
+          password: "smtp-password",
+          fromEmail: "smtp-from-email",
+          testTo: "smtp-test-to",
+        }}
+      />
       <FormStack>
-        <FormErrors
-          errors={fieldErrors}
-          targets={{
-            password: "smtp-password",
-            fromEmail: "smtp-from-email",
-            testTo: "smtp-test-to",
-          }}
-        />
         <Card
           id="admin-smtp"
           title={<>메일 발송</>}

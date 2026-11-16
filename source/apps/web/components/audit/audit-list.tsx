@@ -1,6 +1,7 @@
 import { formatServerTime } from "@/lib/format-time";
 import layout from "@/components/page-layout.module.css";
 import {
+  EmptyState,
   Icon,
   buttonClassName,
   Button,
@@ -114,10 +115,14 @@ export function AuditList({
           <tbody>
             {items.length === 0 ? (
               <Tr>
-                <Td colSpan={5} className={styles.emptyCell}>
-                  {actionFilter
-                    ? "해당 액션의 감사 로그가 없습니다."
-                    : "감사 로그가 없습니다."}
+                <Td colSpan={5}>
+                  <EmptyState
+                    description={
+                      actionFilter
+                        ? "해당 액션의 감사 로그가 없습니다."
+                        : "감사 로그가 없습니다."
+                    }
+                  />
                 </Td>
               </Tr>
             ) : null}

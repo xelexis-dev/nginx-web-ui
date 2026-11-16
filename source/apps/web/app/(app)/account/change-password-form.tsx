@@ -29,8 +29,8 @@ export function ChangePasswordForm() {
   );
   return (
     <form action={formAction} className={styles.form}>
+      <FormErrors errors={state.fieldErrors} />
       <FormStack>
-        <FormErrors errors={state.fieldErrors} />
         <Card
           id="account-password"
           title="비밀번호 변경"

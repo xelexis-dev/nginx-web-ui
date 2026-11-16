@@ -1,0 +1,137 @@
+.meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  color: var(--text-2);
+}
+.targetCaption {
+  color: var(--text-3);
+}
+.node {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  color: var(--accent-text);
+  font-weight: 500;
+}
+.targetName {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.divider {
+  height: var(--sp-3);
+  border-left: 1px solid var(--line-strong);
+}
+.counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.counts [data-kind="added"] > span {
+  color: var(--success-text);
+}
+.counts [data-kind="removed"] > span {
+  color: var(--danger-text);
+}
+.counts [data-kind="skipped"] > span {
+  color: var(--warning);
+}
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding-top: var(--sp-4);
+}
+.body > form {
+  display: none;
+}
+.lead {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+}
+.submit {
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
+}
+.submitLabel {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.submitLabel[data-pending="true"] {
+  visibility: hidden;
+}
+.busy {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+}
+.spinner {
+  width: var(--sp-3);
+  height: var(--sp-3);
+  border: var(--bw-2) solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+.progress {
+  position: absolute;
+  inset: 0 0 auto;
+  height: var(--bw-2);
+  overflow: hidden;
+  background: var(--bg-active);
+}
+.progress::after {
+  content: "";
+  display: block;
+  height: 100%;
+  width: 40%;
+  background: var(--accent);
+  animation: progress 1.5s ease-in-out infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes progress {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(350%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner,
+  .progress::after {
+    animation: none;
+  }
+}
+@media (max-width: 768px) {
+  .divider {
+    display: none;
+  }
+  .counts {
+    flex-basis: 100%;
+  }
+}
+
+:global([data-size="review"]) > :has(> .progress) {
+  position: relative;
+}

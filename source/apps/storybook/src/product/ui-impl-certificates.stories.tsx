@@ -1,8 +1,7 @@
 // The twenty P3-3 route compositions use the real shared page bodies. API loaders are
 // represented by isolated fixtures; no action sends a request from Storybook.
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { PageHeader, buttonClassName } from "@repo/ui";
-import Link from "next/link";
+import { PageHeader } from "@repo/ui";
 import type { OperationsTarget } from "@repo/presentation/operations-target";
 import { StreamList } from "@/components/streams/stream-list";
 import { StreamDetail } from "@/components/streams/stream-detail";
@@ -50,7 +49,7 @@ function RoutePage({ route, node, offline, viewer, linkedCount }: { route: Route
       retryAction={node ? { id: "node.retryNodeCertificate", args: ["preview-node"] } : { id: "certificates.retryCertificate", args: [] }} renewAction={node ? { id: "node.renewNodeCertificate", args: ["preview-node"] } : { id: "certificates.renewCertificate", args: [] }} renewDnsAction={node ? { id: "node.renewDnsNodeCertificate", args: ["preview-node"] } : { id: "certificates.renewDnsCertificate", args: [] }} deleteAction={node ? { id: "node.deleteNodeCertificate", args: ["preview-node"] } : { id: "certificates.deleteCertificate", args: [] }} />} />;
   const cancelHref = route.startsWith("stream") ? streamBase + (route === "streamEdit" ? "/database" : "") : certBase + (route === "certificateEdit" ? "/cert-api" : "");
   return <section className={layout.page}>
-    <PageHeader title={routes[route][1]} actions={route.startsWith("certificate") ? undefined : <Link href={cancelHref} className={buttonClassName({ variant: "secondary" })}>취소</Link>} />
+    <PageHeader title={routes[route][1]} />
     {route === "streamNew" || route === "streamEdit" ? <StreamForm target={target} action={node ? { id: route === "streamEdit" ? "node.updateNodeStream" : "node.createNodeStream", args: ["preview-node"] } : { id: route === "streamEdit" ? "stream.updateStream" : "stream.createStream", args: [] }} cancelHref={cancelHref} defaultValues={route === "streamEdit" ? { ...stream, version: "2026-10-31T12:00:00Z" } : undefined} reservedListenPorts={node ? undefined : [80, 3000, 3001]} /> : null}
     {route === "certificateNew" ? <CertificateForm target={target} action={node ? { id: "node.createNodeCertificate", args: ["preview-node"] } : { id: "certificates.createCertificate", args: [] }} defaultEmail="operator@example.test" cancelHref={cancelHref} /> : null}
     {route === "certificateEdit" ? <CertificateEditForm target={target} action={node ? { id: "node.updateNodeCertificate", args: ["preview-node"] } : { id: "certificates.updateCertificate", args: [] }} id="cert-api" cancelHref={cancelHref} isIssued hasStoredToken defaults={{ alias: certificate.alias ?? "", domains: ["api.example.test"], email: "operator@example.test", staging: false, challengeType: "dns-01", dnsProvider: "cloudflare" }} /> : null}

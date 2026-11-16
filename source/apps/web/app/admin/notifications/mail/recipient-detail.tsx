@@ -27,17 +27,15 @@ export function RecipientDetailView({
     <section className={layout.page}>
       <PageHeader
         title={<>{recipient.label || recipient.address}</>}
-        description={
-          <>
-            <StatusBadge
-              tone={recipient.enabled ? "success" : "neutral"}
-              size="sm"
-            >
-              {recipient.enabled ? "사용" : "사용 안 함"}
-            </StatusBadge>{" "}
-            {recipient.label ? recipient.address : "메일 수신처"}
-          </>
+        status={
+          <StatusBadge
+            tone={recipient.enabled ? "success" : "neutral"}
+            size="sm"
+          >
+            {recipient.enabled ? "사용" : "사용 안 함"}
+          </StatusBadge>
         }
+        description={<>{recipient.label ? recipient.address : "메일 수신처"}</>}
         eyebrow={
           <Link
             href="/admin/notifications/mail"
@@ -116,7 +114,7 @@ export function RecipientDetailView({
       </Surface>
 
       <Surface title={<>동작</>} as="section">
-        <p className={styles.hint} style={{ marginTop: "var(--sp-3)" }}>
+        <p className={styles.hint}>
           테스트 발송은 <strong>실제로 한 통</strong>을 보내며, &quot;마지막
           알림&quot;에는 기록하지 않습니다.
         </p>

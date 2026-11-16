@@ -10,8 +10,6 @@ import {
   Checkbox,
   Field,
   FieldGroup,
-  FormSection,
-  formCardClassName,
   formFieldsClassName,
   SegmentedControl,
   Select,
@@ -30,14 +28,8 @@ function ServerFormLayout({ withErrors }: { withErrors: boolean }) {
   const [redirect, setRedirect] = useState("on");
   return (
     <div className={styles.layout}>
-      <div className={styles.sections}>
-        <FormSection
-          id={id("basics")}
-
-          title="기본"
-          description="도메인과 수신 포트"
-          columns={2}
-        >
+      <FormStack>
+        <Card id={id("basics")} title="기본" description="도메인과 수신 포트">
           <Field
             label="도메인 (server_name)"
             htmlFor={id("name")}
@@ -58,13 +50,11 @@ function ServerFormLayout({ withErrors }: { withErrors: boolean }) {
           >
             <TextArea defaultValue="" />
           </Field>
-        </FormSection>
-        <FormSection
+        </Card>
+        <Card
           id={id("target")}
-
           title="대상"
           description="요청을 보낼 upstream 또는 주소"
-          columns={2}
         >
           <Field
             label="upstream"
@@ -80,14 +70,8 @@ function ServerFormLayout({ withErrors }: { withErrors: boolean }) {
               placeholder="upstream 선택"
             />
           </Field>
-        </FormSection>
-        <FormSection
-          id={id("tls")}
-
-          title="TLS"
-          description="인증서와 HTTPS 동작"
-          columns={2}
-        >
+        </Card>
+        <Card id={id("tls")} title="TLS" description="인증서와 HTTPS 동작">
           <Field label="HTTPS 포트" htmlFor={id("tls-port")}>
             {(control) => <TextInput {...control} defaultValue="443" />}
           </Field>
@@ -106,22 +90,11 @@ function ServerFormLayout({ withErrors }: { withErrors: boolean }) {
               ]}
             />
           </FieldGroup>
-          <div
-            data-wide
-            style={{ display: "flex", flexWrap: "wrap", gap: "var(--sp-2)" }}
-          >
-            <Button type="button">저장</Button>
-            <Button type="button" variant="secondary">
-              취소
-            </Button>
-          </div>
-        </FormSection>
-        <FormSection
+        </Card>
+        <Card
           id={id("scopes")}
-
           title="권한"
           description="여러 체크박스를 한 이름으로 묶는 FieldGroup"
-          columns={2}
         >
           <FieldGroup
             id={id("scope")}
@@ -153,14 +126,20 @@ function ServerFormLayout({ withErrors }: { withErrors: boolean }) {
               disabled
             />
           </FieldGroup>
-        </FormSection>
-      </div>
+        </Card>
+        <FormBar>
+          <Button type="button" variant="secondary">
+            취소
+          </Button>
+          <Button type="button">저장</Button>
+        </FormBar>
+      </FormStack>
     </div>
   );
 }
 
 const meta = {
-  title: "UI/FormSection · Field",
+  title: "UI/Card · Field",
   component: Field,
   decorators: [
     (Story) => (
@@ -171,11 +150,10 @@ const meta = {
   ],
   parameters: {
     docs: {
-      subtitle: "긴 수정 폼: 한 페이지에 모든 섹션과 옆의 섹션 목차",
+      subtitle: "범주 카드와 공통 필드 격자",
       description: {
         component: [
           "- `FormStack`은 카테고리 Card를 한 열로 놓는다. Card 머리에는 보조 동작, 본문에는 12열 필드 격자를 둔다.",
-          "- `FormSection`: 제목(포커스 가능, 목차로 이동할 때 키보드도 온다)과 설명이 있는 섹션. 머리줄 아래로 스크롤해 가려지지 않는다. `columns={2}`면 필드가 두 열로 흐른다(간격 20, 768px 이하 한 열). `Field wide`나 `data-wide`가 붙은 자식(긴 입력, 동작 줄, 폼 오류)은 두 열을 다 쓴다. 기본은 한 열이고 본문을 배치하지 않는다(기존 폼은 그대로).",
           "- 입력은 `TextInput`·`TextArea`(브라우저 기본 입력에 앱의 칸 모양), 고르기는 `Select`, 파일은 `FileInput`, 몇 개 중 하나는 `SegmentedControl`.",
           "- `Field`: 이름표와 도움말·오류를 컨트롤에 연결한다. 요소를 넘기면 렌더할 때 `id`와 `aria-describedby`/`aria-invalid`/`aria-required`를 붙이고(원래 있던 설명 id는 합친다), 함수를 넘기면 그 속성을 받아 직접 펼친다. `Select`도 이 속성을 트리거에 전달한다. 도움말이 여러 문단이면 `<p>`를 여러 개 넘긴다(하나의 설명으로 묶인다).",
           "- `FieldGroup`: 여러 컨트롤을 한 이름으로 묶는다(`fieldset` + `legend`). `SegmentedControl` 한 줄, 체크박스 여러 개, 반복 행처럼 이름표 하나에 컨트롤이 하나가 아닐 때 쓴다. 도움말·오류는 묶음 전체를 설명한다(`fieldset`의 `aria-describedby`). 모양은 Field와 같다. `columns`로 선택적인 필드 격자를 지정한다.",
@@ -192,63 +170,32 @@ export const EditForm: Story = {
   render: () => <ServerFormLayout withErrors={false} />,
 };
 
-/** 저장을 눌렀는데 입력 오류가 있을 때: 목차에 개수, 필드에 문구와 aria-invalid. */
+/** 입력 오류가 있을 때: 필드에 문구와 aria-invalid. */
 export const WithErrors: Story = {
   render: () => <ServerFormLayout withErrors />,
 };
-
-/** Native forms share the card and field grid without adding a nested form element. */
-export const PageForm: Story = {
-  name: "페이지 폼 · 카드와 필드 격자",
-  render: () => <PageFormExample />,
-};
-
-function PageFormExample() {
-  const id = useId();
-  return (
-    <form
-      className={formCardClassName({ columns: 2 })}
-      onSubmit={(event) => event.preventDefault()}
-    >
-      <Field label="이름" htmlFor={`${id}-name`}>
-        <TextInput name="name" />
-      </Field>
-      <Field label="대상" htmlFor={`${id}-target`}>
-        <TextInput name="target" />
-      </Field>
-      <div data-wide className={formFieldsClassName({ columns: 1 })}>
-        <Field label="설명" htmlFor={`${id}-description`}>
-          <TextArea name="description" />
-        </Field>
-        <Checkbox name="enabled" label="사용" defaultChecked />
-      </div>
-      <div data-wide>
-        <Button type="submit">저장</Button>
-      </div>
-    </form>
-  );
-}
 
 function InlineExample() {
   const id = useId();
   const [enabled, setEnabled] = useState(true);
   return (
-    <form
-      className={formCardClassName()}
-      onSubmit={(event) => event.preventDefault()}
-    >
-      <Field
-        layout="inline"
-        label="인증서 자동 갱신"
-        htmlFor={id}
-        hint="만료가 가까워지면 인증서를 확인하고 갱신합니다."
-      >
-        <Switch
-          checked={enabled}
-          onCheckedChange={setEnabled}
-          label="인증서 자동 갱신"
-        />
-      </Field>
+    <form onSubmit={(event) => event.preventDefault()}>
+      <FormStack>
+        <Card id={`${id}-inline`} title="자동 갱신">
+          <Field
+            layout="inline"
+            label="인증서 자동 갱신"
+            htmlFor={id}
+            hint="만료가 가까워지면 인증서를 확인하고 갱신합니다."
+          >
+            <Switch
+              checked={enabled}
+              onCheckedChange={setEnabled}
+              label="인증서 자동 갱신"
+            />
+          </Field>
+        </Card>
+      </FormStack>
     </form>
   );
 }
@@ -257,22 +204,26 @@ export const Inline: Story = { render: () => <InlineExample /> };
 function DisabledExample() {
   const id = useId();
   return (
-    <form className={formCardClassName({ columns: 2 })}>
-      <Field
-        label="도메인"
-        htmlFor={`${id}-name`}
-        required
-        hint="현재 권한으로는 바꿀 수 없습니다."
-      >
-        <TextInput disabled defaultValue="app.example.test" />
-      </Field>
-      <Field
-        label="설명"
-        htmlFor={`${id}-note`}
-        hint="연결을 복구한 뒤 편집할 수 있습니다."
-      >
-        <TextArea disabled defaultValue="운영 서버의 설명" />
-      </Field>
+    <form>
+      <FormStack>
+        <Card id={`${id}-disabled`} title="설정">
+          <Field
+            label="도메인"
+            htmlFor={`${id}-name`}
+            required
+            hint="현재 권한으로는 바꿀 수 없습니다."
+          >
+            <TextInput disabled defaultValue="app.example.test" />
+          </Field>
+          <Field
+            label="설명"
+            htmlFor={`${id}-note`}
+            hint="연결을 복구한 뒤 편집할 수 있습니다."
+          >
+            <TextArea disabled defaultValue="운영 서버의 설명" />
+          </Field>
+        </Card>
+      </FormStack>
     </form>
   );
 }
@@ -280,35 +231,35 @@ export const Disabled: Story = { render: () => <DisabledExample /> };
 function LongExample() {
   const id = useId();
   return (
-    <FormSection
-      id={`${id}-form`}
-
-      title="여러 운영자가 함께 관리하는 리버스 프록시의 원본 연결 설정"
-      description="긴 설명과 이름도 작은 화면에서 잘리지 않도록 확인합니다."
-      columns={2}
-    >
-      <Field
-        label="서울 데이터센터 운영 서비스가 요청을 전달할 원본 도메인 이름"
-        htmlFor={`${id}-name`}
-        required
-        hint="공백으로 여러 도메인을 구분할 수 있으며 실제로 관리하는 서비스의 주소를 입력합니다."
+    <FormStack>
+      <Card
+        id={`${id}-form`}
+        title="여러 운영자가 함께 관리하는 리버스 프록시의 원본 연결 설정"
+        description="긴 설명과 이름도 작은 화면에서 잘리지 않도록 확인합니다."
       >
-        <TextInput defaultValue="production.example.test" />
-      </Field>
-      <FieldGroup
-        id={`${id}-group`}
-        legend="장애 시 요청을 전달할 대체 원본 연결 대상"
-        hint="여러 항목의 이름과 설명을 한 묶음으로 읽습니다."
-        columns={2}
-        required
-      >
-        <Checkbox
-          label="서울 데이터센터의 기본 원본 연결을 사용합니다"
-          defaultChecked
-        />
-        <Checkbox label="부산 데이터센터의 대체 원본 연결을 사용합니다" />
-      </FieldGroup>
-    </FormSection>
+        <Field
+          label="서울 데이터센터 운영 서비스가 요청을 전달할 원본 도메인 이름"
+          htmlFor={`${id}-name`}
+          required
+          hint="공백으로 여러 도메인을 구분할 수 있으며 실제로 관리하는 서비스의 주소를 입력합니다."
+        >
+          <TextInput defaultValue="production.example.test" />
+        </Field>
+        <FieldGroup
+          id={`${id}-group`}
+          legend="장애 시 요청을 전달할 대체 원본 연결 대상"
+          hint="여러 항목의 이름과 설명을 한 묶음으로 읽습니다."
+          columns={2}
+          required
+        >
+          <Checkbox
+            label="서울 데이터센터의 기본 원본 연결을 사용합니다"
+            defaultChecked
+          />
+          <Checkbox label="부산 데이터센터의 대체 원본 연결을 사용합니다" />
+        </FieldGroup>
+      </Card>
+    </FormStack>
   );
 }
 export const LongKorean: Story = { render: () => <LongExample /> };
@@ -317,7 +268,6 @@ export const WithErrorsDark: Story = {
   ...WithErrors,
   globals: { theme: "dark" },
 };
-export const PageFormDark: Story = { ...PageForm, globals: { theme: "dark" } };
 export const InlineDark: Story = { ...Inline, globals: { theme: "dark" } };
 export const DisabledDark: Story = { ...Disabled, globals: { theme: "dark" } };
 export const LongKoreanDark: Story = {
@@ -382,9 +332,20 @@ function CardStatesExample() {
                       aria-controls={`${uid}-expanded-body`}
                       onClick={() => setOpen(!open)}
                     >
-                      <Icon name="chevronDown" size={14} />
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          transform: open ? "rotate(180deg)" : undefined,
+                        }}
+                      >
+                        <Icon name="chevronDown" size={14} />
+                      </span>
                     </IconButton>
-                    <IconButton size="sm" label="위치 삭제">
+                    <IconButton
+                      size="sm"
+                      variant="dangerQuiet"
+                      label="위치 삭제"
+                    >
                       <Icon name="trash2" size={14} />
                     </IconButton>
                   </>
@@ -411,7 +372,14 @@ function CardStatesExample() {
                     onClick={() => setSecondOpen(!secondOpen)}
                     aria-controls={`${uid}-collapsed-body`}
                   >
-                    <Icon name="chevronDown" size={14} />
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        transform: secondOpen ? "rotate(180deg)" : undefined,
+                      }}
+                    >
+                      <Icon name="chevronDown" size={14} />
+                    </span>
                   </IconButton>
                 }
               >
@@ -440,11 +408,14 @@ function CardStatesExample() {
             description="끄면 본문은 숨기고 머리는 유지합니다."
             off={!enabled}
             actions={
-              <Switch
-                label="프록시 캐시 사용"
-                checked={enabled}
-                onCheckedChange={setEnabled}
-              />
+              <>
+                <span>사용</span>
+                <Switch
+                  label="프록시 캐시 사용"
+                  checked={enabled}
+                  onCheckedChange={setEnabled}
+                />
+              </>
             }
           >
             <Field label="캐시 영역" htmlFor={`${uid}-cache`}>
@@ -494,14 +465,24 @@ export const CardAndBlockStatesDark: Story = {
 
 /** Field groups keep their category spacing; fields inside each grid use the field gutter. */
 export const FieldGroups: Story = {
-  render: () => <Card id="spacing-groups" title="서버 연결">
-    <div className={formFieldsClassName()} data-proof-group="first">
-      <Field label="도메인" htmlFor="group-domain"><TextInput defaultValue="app.example.test" /></Field>
-      <Field label="포트" htmlFor="group-port"><TextInput defaultValue="443" /></Field>
-    </div>
-    <div className={formFieldsClassName()} data-proof-group="second">
-      <Field label="원본 주소" htmlFor="group-origin"><TextInput defaultValue="http://app.internal:8080" /></Field>
-      <Field label="연결 제한 시간" htmlFor="group-timeout"><TextInput defaultValue="60s" /></Field>
-    </div>
-  </Card>,
+  render: () => (
+    <Card id="spacing-groups" title="서버 연결">
+      <div className={formFieldsClassName()} data-proof-group="first">
+        <Field label="도메인" htmlFor="group-domain">
+          <TextInput defaultValue="app.example.test" />
+        </Field>
+        <Field label="포트" htmlFor="group-port">
+          <TextInput defaultValue="443" />
+        </Field>
+      </div>
+      <div className={formFieldsClassName()} data-proof-group="second">
+        <Field label="원본 주소" htmlFor="group-origin">
+          <TextInput defaultValue="http://app.internal:8080" />
+        </Field>
+        <Field label="연결 제한 시간" htmlFor="group-timeout">
+          <TextInput defaultValue="60s" />
+        </Field>
+      </div>
+    </Card>
+  ),
 };

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { PageHeader, Surface, Banner, FormStack } from "@repo/ui";
+import { PageHeader } from "@repo/ui";
 import { ProductFrame, productViewports } from "./frame";
 import layout from "@/components/page-layout.module.css";
 import { AccountOverview } from "@/app/(app)/account/account-overview";
@@ -12,11 +12,11 @@ import {
 import { TwoFactorManagement } from "@/app/(app)/account/2fa/two-factor-management";
 import { RegenerateBackupCodesForm } from "@/app/(app)/account/2fa/regenerate-backup-codes-form";
 import { BackupCodesCard } from "@/app/(app)/account/2fa/backup-codes-card";
-import {
-  RegisterPasskeyForm,
-  RenamePasskeyForm,
-  RemovePasskeyForm,
-} from "@/components/passkeys/passkey-forms";
+import { RenamePasskeyForm } from "@/components/passkeys/passkey-forms";
+import { RemovePasskeyDialog } from "@/components/passkeys/remove-passkey-dialog";
+import { PasskeyDetailView } from "@/app/(app)/account/passkeys/passkey-detail";
+import { NewPasskeyView } from "@/app/(app)/account/passkeys/new-passkey";
+import { AdminPasskeys } from "@/components/passkeys/admin-passkeys";
 import { AccountPasskeys } from "@/components/passkeys/passkey-list";
 import type { PasskeyListView } from "@/lib/passkey-api";
 const row = {
@@ -24,7 +24,8 @@ const row = {
   rpId: "account.example.test",
   origin: "https://account.example.test",
   name: "개인 노트북",
-  address: "https://account.example.test",
+  address: "account.example.test",
+  createdOn: "2026. 11. 1.",
   createdAt: "2026. 11. 1. 오전 9:00 UTC",
   lastUsedAt: "사용 기록 없음",
   backupEligible: true,
@@ -34,7 +35,7 @@ const row = {
 const data: PasskeyListView = {
   passkeys: [row],
   availability: { available: true, reason: null },
-  currentAddress: "https://account.example.test",
+  currentAddress: "account.example.test",
   hasPassword: true,
   canRemove: true,
   currentOrigin: "https://account.example.test",
@@ -52,6 +53,12 @@ const scenes = {
   regenerate: ["/account/2fa/backup-codes/new", "백업 코드 재발급"],
   "regenerate-oauth": ["/account/2fa/backup-codes/new", "백업 코드 재발급"],
   disable: ["/account/2fa/disable", "2FA 해제"],
+  "passkey-detail": ["/account/passkeys/fixture-key", "개인 노트북"],
+  "passkey-new-off": ["/account/passkeys/new", "패스키 등록"],
+  "passkey-new-limit": ["/account/passkeys/new", "패스키 등록"],
+  "passkey-new-passwordless": ["/account/passkeys/new", "패스키 등록"],
+  "passkey-long": ["/account", "계정"],
+  "passkey-admin-long": ["/admin/users/fixture", "사용자"],
   "passkey-new": ["/account/passkeys/new", "패스키 등록"],
   "passkey-rename": ["/account/passkeys/fixture-key/edit", "패스키 이름 변경"],
   "passkey-remove": ["/account/passkeys/fixture-key", "개인 노트북"],
@@ -61,16 +68,59 @@ const scenes = {
   "backup-codes": ["/account/2fa", "2단계 인증 (2FA) 설정"],
 } as const;
 type Kind = keyof typeof scenes;
-const explanations: Partial<Record<Kind, string>> = {
-  enroll:
-    "인증 앱(Google Authenticator, 1Password 등)으로 QR을 스캔한 뒤, 앱에 표시된 6자리 코드를 입력해 활성화합니다.",
-  verify: "계속하려면 이 로그인 세션의 인증을 완료하세요.",
-  regenerate: "인증 앱 설정은 유지하고 백업 코드만 새로 발급합니다.",
-  "regenerate-oauth": "인증 앱 설정은 유지하고 백업 코드만 새로 발급합니다.",
-  disable:
-    "해제하면 기존 인증 앱과 백업 코드로 인증할 수 없고, 등록한 패스키도 모두 삭제됩니다. 현재 비밀번호를 확인합니다.",
-};
 function AccountPage({ kind }: { kind: Kind }) {
+  if (kind === "passkey-detail")
+    return (
+      <PasskeyDetailView
+        data={{
+          passkey: {
+            ...row,
+            createdAt: "2026-11-01T09:00:00Z",
+            lastUsedAt: null,
+          },
+          availability: data.availability,
+          currentOrigin: data.currentOrigin,
+          hasPassword: true,
+          canRemove: true,
+        }}
+      />
+    );
+  if (kind === "passkey-new" || kind.startsWith("passkey-new-"))
+    return (
+      <NewPasskeyView
+        role="admin"
+        data={{
+          ...data,
+          hasPassword: kind !== "passkey-new-passwordless",
+          availability: {
+            available: kind !== "passkey-new-off",
+            reason: kind === "passkey-new-off" ? "insecure_origin" : null,
+          },
+          passkeys:
+            kind === "passkey-new-limit"
+              ? Array.from({ length: 10 }, (_, i) => ({
+                  ...row,
+                  id: String(i),
+                }))
+              : [],
+        }}
+      />
+    );
+  if (kind === "passkey-long" || kind === "passkey-admin-long") {
+    const long = {
+      ...data,
+      passkeys: [
+        { ...row, name: "가".repeat(64) },
+        { ...row, id: "long", name: "unbroken".repeat(8) },
+      ],
+    };
+    return kind === "passkey-long" ? (
+      <AccountPasskeys data={long} role="admin" />
+    ) : (
+      <AdminPasskeys data={long} userId="fixture" email="member@example.test" />
+    );
+  }
+
   if (kind === "account" || kind === "oauth")
     return (
       <AccountOverview
@@ -87,6 +137,7 @@ function AccountPage({ kind }: { kind: Kind }) {
             { providerId: "extra", name: "보조 로그인", linkedAt: null },
           ],
         }}
+        role={kind === "oauth" ? "editor" : "admin"}
         passkeys={{ ...data, hasPassword: kind !== "oauth" }}
       />
     );
@@ -103,18 +154,15 @@ function AccountPage({ kind }: { kind: Kind }) {
       <TwoFactorDisable />
     ) : kind.startsWith("regenerate") ? (
       <RegenerateBackupCodesForm hasPassword={kind === "regenerate"} />
-    ) : kind === "passkey-new" ? (
-      <RegisterPasskeyForm data={data} />
     ) : kind === "passkey-rename" ? (
       <RenamePasskeyForm row={row} />
     ) : kind === "passkey-remove" ? (
-      <Surface title="패스키 삭제">
-        <RemovePasskeyForm
-          action={{ id: "account.passkeys.remove", args: [] }}
-          id={row.id}
-          canRemove
-        />
-      </Surface>
+      <RemovePasskeyDialog
+        action={{ id: "account.passkeys.remove", args: [] }}
+        id={row.id}
+        name={row.name}
+        onClose={() => {}}
+      />
     ) : kind === "backup-codes" ? (
       <BackupCodesCard
         codes={["abcd1234", "efgh5678", "ijkl9012", "mnop3456"]}
@@ -144,14 +192,7 @@ function AccountPage({ kind }: { kind: Kind }) {
   return (
     <section className={layout.page}>
       <PageHeader title={scenes[kind][1]} />
-      {explanations[kind] ? (
-        <FormStack>
-          <Banner tone="info" title={explanations[kind]} />
-          {content}
-        </FormStack>
-      ) : (
-        content
-      )}
+      {content}
     </section>
   );
 }
@@ -197,3 +238,16 @@ export const PasskeyUnavailableState: Story = {
 export const PasskeyLimit: Story = { args: { kind: "passkey-limit" } };
 export const PasskeyOAuth: Story = { args: { kind: "passkey-oauth" } };
 export const BackupCodes: Story = { args: { kind: "backup-codes" } };
+
+export const PasskeyDetail: Story = { args: { kind: "passkey-detail" } };
+export const PasskeyNewUnavailable: Story = {
+  args: { kind: "passkey-new-off" },
+};
+export const PasskeyNewLimit: Story = { args: { kind: "passkey-new-limit" } };
+export const PasskeyNewPasswordless: Story = {
+  args: { kind: "passkey-new-passwordless" },
+};
+export const PasskeyLongNames: Story = { args: { kind: "passkey-long" } };
+export const PasskeyAdminLongNames: Story = {
+  args: { kind: "passkey-admin-long" },
+};

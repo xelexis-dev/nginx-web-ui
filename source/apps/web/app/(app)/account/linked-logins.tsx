@@ -1,110 +1,99 @@
+"use client";
+import { useActionState } from "react";
+import type { BasicFormState } from "@repo/contracts";
 import { formatServerTime } from "@/lib/format-time";
-import { Button, Banner, Card } from "@repo/ui";
-import { ApiForm } from "@/components/api-form";
+import { useApiAction } from "@/lib/use-api-action";
+import {
+  Button,
+  Banner,
+  SettingRow,
+  SettingRows,
+  StatusBadge,
+  Surface,
+} from "@repo/ui";
 import styles from "./linked-logins.module.css";
 
-export interface LinkedLoginRow {
+export interface LinkedLogin {
   providerId: string;
   name: string;
   linkedAt: Date | null;
 }
-
-/**
- * 계정 화면의 「연결된 로그인」. 관리자가 등록한 공급자마다 한 줄이고,
- * 연동 여부에 따라 「연동하기」/「연동 해제」가 붙는다.
- *
- * 해제 버튼은 마지막 남은 로그인 방법일 때 아예 렌더하지 않는다 — 눌러도
- * 서버가 막지만(link-actions), 누를 수 있게 두면 왜 안 되는지 알 수 없다.
- */
+export function LinkedLoginRow({
+  row,
+  isLastMethod,
+}: {
+  row: LinkedLogin;
+  isLastMethod: boolean;
+}) {
+  const linked = row.linkedAt !== null;
+  const [state, action, pending] = useActionState(
+    useApiAction<BasicFormState>({
+      id: linked ? "account.unlink" : "account.startLink",
+      args: [],
+    }),
+    { ok: false },
+  );
+  return (
+    <SettingRow
+      label={row.name}
+      status={
+        <StatusBadge tone={linked ? "success" : "neutral"}>
+          {linked ? "연결됨" : "연결 안 됨"}
+        </StatusBadge>
+      }
+      detail={
+        linked
+          ? `${formatServerTime(row.linkedAt!, { dateStyle: "medium" })} 연결${isLastMethod ? " · 마지막 남은 로그인 방법이라 해제할 수 없습니다." : ""}`
+          : undefined
+      }
+      action={
+        !isLastMethod ? (
+          <form action={action}>
+            <input type="hidden" name="providerId" value={row.providerId} />
+            <Button
+              type="submit"
+              variant="secondary"
+              size="sm"
+              disabled={pending}
+            >
+              {linked ? "연결 해제" : "연결하기"}
+            </Button>
+          </form>
+        ) : undefined
+      }
+      message={
+        state.error ? <Banner tone="error" title={state.error} /> : undefined
+      }
+    />
+  );
+}
 export function LinkedLogins({
   rows,
   hasPassword,
-  notice,
 }: {
-  rows: LinkedLoginRow[];
+  rows: LinkedLogin[];
   hasPassword: boolean;
-  notice?: { kind: "linked" | "unlinked" | "last-method" };
 }) {
-  if (rows.length === 0) return null;
-
-  const linkedCount = rows.filter((r) => r.linkedAt !== null).length;
-
+  const count = rows.filter((row) => row.linkedAt !== null).length;
   return (
-    <Card
+    <Surface
       id="account-logins"
       title="연결된 로그인"
-      info="다른 서비스의 계정으로도 로그인할 수 있게 연결합니다."
+      description="연결한 외부 계정으로도 이 계정에 로그인할 수 있습니다."
     >
-      <p className={styles.note}>
-        연결해도 지금 쓰던
-        {hasPassword
-          ? " 비밀번호 로그인은 그대로 남습니다."
-          : " 로그인 방법은 그대로 남습니다."}
-      </p>
-
-      {notice ? (
-        <Banner
-          tone={notice.kind === "last-method" ? "error" : "success"}
-          title={
-            <>
-              {notice.kind === "linked"
-                ? "연결했습니다. 이제 로그인 화면에서 그 버튼으로도 들어올 수 있습니다."
-                : notice.kind === "unlinked"
-                  ? "연결을 해제했습니다."
-                  : "마지막 남은 로그인 방법은 해제할 수 없습니다. 먼저 다른 방법을 추가하세요."}
-            </>
-          }
-        />
-      ) : null}
-
-      <ul className={styles.list}>
-        {rows.map((row) => {
-          const linked = row.linkedAt !== null;
-          // 비밀번호가 없고 연결이 하나뿐이면, 그 하나가 유일한 문이다.
-          const isLastMethod = linked && !hasPassword && linkedCount <= 1;
-
-          return (
-            <li key={row.providerId} className={styles.row}>
-              <div className={styles.rowText}>
-                <span className={styles.rowName}>{row.name}</span>
-                <span className={styles.rowState}>
-                  {linked
-                    ? `연결됨 · ${formatServerTime(row.linkedAt!, { dateStyle: "medium" })}`
-                    : "연결하지 않음"}
-                </span>
-              </div>
-
-              {linked ? (
-                isLastMethod ? (
-                  <span className={styles.rowLocked}>유일한 로그인 방법</span>
-                ) : (
-                  <ApiForm action={{ id: "account.unlink", args: [] }}>
-                    <input
-                      type="hidden"
-                      name="providerId"
-                      value={row.providerId}
-                    />
-                    <Button type="submit" variant="secondary">
-                      연결 해제
-                    </Button>
-                  </ApiForm>
-                )
-              ) : (
-                <ApiForm action={{ id: "account.startLink", args: [] }}>
-                  <input
-                    type="hidden"
-                    name="providerId"
-                    value={row.providerId}
-                  />
-                  <Button type="submit" variant="secondary">
-                    연결하기
-                  </Button>
-                </ApiForm>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    </Card>
+      {rows.length ? (
+        <SettingRows>
+          {rows.map((row) => (
+            <LinkedLoginRow
+              key={row.providerId}
+              row={row}
+              isLastMethod={row.linkedAt !== null && !hasPassword && count <= 1}
+            />
+          ))}
+        </SettingRows>
+      ) : (
+        <p className={styles.note}>관리자가 설정한 외부 로그인이 없습니다.</p>
+      )}
+    </Surface>
   );
 }

@@ -28,14 +28,6 @@
   flex-wrap: wrap;
 }
 
-.emptyCell {
-  text-align: left;
-  color: var(--text-2);
-  font-size: var(--fs-md);
-  padding: var(--sp-6) var(--sp-4);
-  white-space: normal;
-}
-
 .youTag {
   margin-left: var(--sp-2);
   font-size: var(--fs-sm);
@@ -49,8 +41,6 @@
 .formActions {
   grid-column: 1 / -1;
 }
-
-
 
 .formActions {
   display: flex;
@@ -66,9 +56,9 @@
 .avatar {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  width: var(--size-ctl-sm);
+  height: var(--size-ctl-sm);
+  border-radius: var(--r-full);
   background: var(--bg-selected);
   color: var(--accent);
   font-size: var(--fs-sm);

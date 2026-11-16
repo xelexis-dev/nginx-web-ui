@@ -7,7 +7,6 @@ import {
   CodePane,
   PageHeader,
   buttonClassName,
-  linkClassName,
 } from "@repo/ui";
 import { configPreview, type ConfigPreview } from "@/lib/config-preview";
 import styles from "@/app/(app)/reverse-proxy/reverse-proxy.module.css";
@@ -30,14 +29,6 @@ export function ServerTemplates({
   return (
     <section className={layout.page}>
       <PageHeader
-        eyebrow={
-          <Link
-            href="/reverse-proxy"
-            className={linkClassName({ variant: "back" })}
-          >
-            리버스 프록시
-          </Link>
-        }
         title="서버 템플릿"
         info="자주 쓰는 구성을 템플릿으로 골라 리버스 프록시 서버를 간편하게 생성합니다. 선택 후 폼에서 자유롭게 수정할 수 있습니다."
         actions={

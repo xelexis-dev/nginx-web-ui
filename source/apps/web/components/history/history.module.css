@@ -8,20 +8,12 @@
    release can't add it). Tokens only (var(--*)) — no hardcoded hex, per
    DESIGN.md. */
 
-.emptyCell {
-  text-align: start;
-  color: var(--text-2);
-  font-size: var(--fs-md);
-  padding: var(--sp-6) var(--sp-4);
-  white-space: normal;
-}
-
 /* 행마다 덧붙는 조작 UI(노드 전용) — 같은 높이의 버튼을 나란히 두고 결과는 그 아래에 표시한다. */
 .rowActions {
   display: grid;
   grid-template-columns: repeat(2, max-content);
   justify-content: end;
-  align-items: start;
+  align-items: center;
   gap: var(--sp-2);
 }
 

@@ -1,4 +1,3 @@
-import { FormStack, Banner } from "@repo/ui";
 import layout from "@/components/page-layout.module.css";
 import { PageHeader } from "@repo/ui";
 import type { SmtpView } from "@repo/contracts";
@@ -20,23 +19,17 @@ export default async function NewMailRecipientPage() {
     <section className={layout.page}>
       <PageHeader title={<>새 수신처</>} />
 
-      <FormStack>
-        <Banner
-          tone="info"
-          title={<>인증서 알림을 받을 주소를 등록합니다.</>}
-        />
-        <MailRecipientForm
-          mode="create"
-          smtpReady={mailer.ok}
-          smtpProblem={mailer.ok ? null : mailer.message}
-          defaults={{
-            label: "",
-            address: "",
-            enabled: true,
-            events: [...DEFAULT_EVENT_TYPES],
-          }}
-        />
-      </FormStack>
+      <MailRecipientForm
+        mode="create"
+        smtpReady={mailer.ok}
+        smtpProblem={mailer.ok ? null : mailer.message}
+        defaults={{
+          label: "",
+          address: "",
+          enabled: true,
+          events: [...DEFAULT_EVENT_TYPES],
+        }}
+      />
     </section>
   );
 }

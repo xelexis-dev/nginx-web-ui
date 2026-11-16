@@ -31,7 +31,7 @@ it.each(["inline", "panel"] as const)(
       <ConfigDiffView diff={diff} variant={variant} />,
     );
     expect(html).toContain('data-variant="' + variant + '"');
-    for (const marker of ["+", "−", "~", "!"]) expect(html).toContain(marker);
+    for (const marker of ["+", "−", "~", "◆"]) expect(html).toContain(marker);
     expect(html).toContain("&lt;old&gt;");
     expect(html).toContain("&lt;new&gt;");
     expect(html).not.toContain("<old>");
@@ -43,4 +43,49 @@ it("defaults to the inline review presentation", () => {
   expect(renderToStaticMarkup(<ConfigDiffView diff={diff} />)).toContain(
     'data-variant="inline"',
   );
+});
+it("renders setting/before/after columns, missing sides and edit routes only for writers", () => {
+  const changed: ConfigDiff = {
+    ...diff,
+    servers: [
+      {
+        key: "s",
+        label: "name:80",
+        status: "changed",
+        reason: "kept previous",
+        changes: [
+          {
+            field: "config",
+            before: { redirectHttp: false },
+            after: { redirectHttp: true, tlsPort: 443 },
+          },
+        ],
+      },
+    ],
+  };
+  const html = renderToStaticMarkup(
+    <ConfigDiffView
+      diff={changed}
+      canEdit
+      target={{ kind: "node", id: "n", name: "Node" }}
+    />,
+  );
+  for (const label of [
+    "설정",
+    "이전",
+    "이후",
+    "없음",
+    "마지막으로 적용된 설정이 계속 사용됩니다.",
+    "전체 설정 보기",
+  ])
+    expect(html).toContain(label);
+  expect(html).toContain('href="/nodes/n/reverse-proxy/s/edit"');
+  expect(html).toContain('aria-expanded="false"');
+  expect(renderToStaticMarkup(<ConfigDiffView diff={changed} />)).not.toContain(
+    "설정 수정",
+  );
+  expect(
+    renderToStaticMarkup(<ConfigDiffView diff={changed} canEdit disabled />),
+  ).not.toContain('href="/reverse-proxy');
+  expect(html).not.toMatch(/>\s*→\s*</);
 });

@@ -2,6 +2,7 @@ import layout from "@/components/page-layout.module.css";
 import {
   StatusBadge,
   Banner,
+  EmptyState,
   Surface,
   Table,
   Th,
@@ -108,8 +109,8 @@ export function SecretsHealthView({
           <tbody>
             {rows.length === 0 ? (
               <Tr>
-                <Td colSpan={4} className={styles.emptyCell}>
-                  저장된 비밀값이 없습니다.
+                <Td colSpan={4}>
+                  <EmptyState description={<> 저장된 비밀값이 없습니다. </>} />
                 </Td>
               </Tr>
             ) : null}

@@ -1,4 +1,3 @@
-import { targetLabel } from "@repo/presentation/operations-target";
 import { useEffect, useState } from "react";
 import { PageHeader } from "@repo/ui";
 import type { Meta, StoryObj } from "@storybook/react-vite";
@@ -43,7 +42,7 @@ function MetricsPreview({ empty = false, domains = 2, sampleAgeMs = 30_000, long
     return () => { if (window.fetch === fixtureFetch) window.fetch = original; };
   }, [empty, domains, longHosts]);
   return <section className={layout.page}>
-    <PageHeader eyebrow={nodeName ?? targetLabel({ kind: "local" })} title="접속 지표" info="nginx 연결·요청 추이와 도메인별 요청 수입니다. 1분마다 수집합니다." />
+    <PageHeader title="접속 지표" info="nginx 연결·요청 추이와 도메인별 요청 수입니다. 1분마다 수집합니다." />
     {offline ? <NodeErrorCard nodeId="preview" failure={{ kind: "unreachable", message: "노드에 연결할 수 없습니다." }} retryHref="/nodes/preview/metrics" listHref="/nodes/preview/metrics" /> : ready ? <MetricsView initialRange="1h" dataPath={fixturePath} now={() => END + sampleAgeMs} /> : null}
   </section>;
 }
@@ -56,7 +55,12 @@ const meta = {
 } satisfies Meta<typeof MetricsPreview>;
 export default meta;
 type Story = StoryObj<typeof meta>;
-export const Default: Story = { play: async ({ canvasElement }) => { await expect(within(canvasElement).findByRole("table", { name: "도메인별 요청 수" })).resolves.toBeVisible(); } };
+export const Default: Story = { play: async ({ canvasElement }) => { const canvas = within(canvasElement);
+  await expect(canvas.findByRole("table", { name: "도메인별 요청 수" })).resolves.toBeVisible();
+  await expect(canvas.getByRole("heading", { name: "연결과 요청", level: 2 })).toBeVisible();
+  for (const name of ["활성 연결", "초당 요청 / 연결", "드롭된 연결", "도메인별 요청 수"]) {
+    await expect(canvas.getByRole("heading", { name, level: 3 })).toBeVisible();
+  } } };
 export const Empty: Story = { name: "수집 전", args: { empty: true } };
 export const Narrow: Story = { name: "접속 지표 · 390", globals: { viewport: { value: "p390", isRotated: false } } };
 /** 마지막 표본이 10분 전: 점 색만이 아니라 문구로 「수집 지연」을 알린다. */

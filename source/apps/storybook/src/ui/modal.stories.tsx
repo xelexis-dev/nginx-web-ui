@@ -45,6 +45,7 @@ const meta = {
   },
   args: {
     open: false,
+    dismissible: true,
     description: "변경 사항을 확인한 뒤 진행하세요.",
     title: "설정 적용",
     onClose: fn(),
@@ -95,10 +96,17 @@ const meta = {
           footer={
             withFooter ? (
               <>
-                <Button type="button" variant="secondary" onClick={close}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={!args.dismissible}
+                  onClick={close}
+                >
                   취소
                 </Button>
-                <Button onClick={close}>적용</Button>
+                <Button disabled={!args.dismissible} onClick={close}>
+                  적용
+                </Button>
               </>
             ) : undefined
           }
@@ -202,3 +210,16 @@ export const Danger: Story = {
   args: { open: true, icon: "danger" },
   tags: ["!autodocs"],
 };
+
+export const Review: Story = {
+  args: { size: "review", open: true, longContent: true },
+  tags: ["!autodocs"],
+};
+export const Locked: Story = {
+  args: { size: "review", open: true, dismissible: false },
+  tags: ["!autodocs"],
+};
+export const Spec: Story = WithFooter;
+export const States: Story = Locked;
+export const SpecDark: Story = { ...Spec, globals: { theme: "dark" } };
+export const StatesDark: Story = { ...States, globals: { theme: "dark" } };

@@ -1,5 +1,13 @@
 import layout from "@/components/page-layout.module.css";
-import { Icon, Surface, Facts, CodePane, linkClassName, PageHeader } from "@repo/ui";
+import {
+  Icon,
+  Surface,
+  Facts,
+  CodePane,
+  EmptyState,
+  linkClassName,
+  PageHeader,
+} from "@repo/ui";
 import Link from "next/link";
 
 /**
@@ -75,7 +83,6 @@ export function AuditDetail({
 
       <Surface as="div">
         <Facts
-          columns={2}
           items={[
             { term: <>시간</>, value: <>{time}</> },
             {
@@ -89,9 +96,21 @@ export function AuditDetail({
         />
       </Surface>
 
-      <div className={layout.split}>
-        <CodePane title="before" code={beforeJson ?? "—"} copyLabel={false} />
-        <CodePane title="after" code={afterJson ?? "—"} copyLabel={false} />
+      <div className={layout.page}>
+        {beforeJson === null ? (
+          <Surface title="before">
+            <EmptyState description="—" />
+          </Surface>
+        ) : (
+          <CodePane title="before" code={beforeJson} copyLabel={false} />
+        )}
+        {afterJson === null ? (
+          <Surface title="after">
+            <EmptyState description="—" />
+          </Surface>
+        ) : (
+          <CodePane title="after" code={afterJson} copyLabel={false} />
+        )}
       </div>
     </section>
   );

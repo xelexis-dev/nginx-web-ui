@@ -1,8 +1,7 @@
 // Real local/node form components. Actions use Storybook's existing API stand-in;
 // no request, credential, certificate issuance or nginx change is made.
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import Link from "next/link";
-import { PageHeader, buttonClassName } from "@repo/ui";
+import { PageHeader } from "@repo/ui";
 import { UpstreamForm } from "@/components/upstreams/upstream-form";
 import { StreamForm } from "@/components/streams/stream-form";
 import { CertificateEditForm } from "@/components/certificates/certificate-edit-form";
@@ -18,7 +17,7 @@ const pages = {
 } as const;
 function ResourceForm({ kind }: { kind: keyof typeof pages }) {
   return <section className={layout.page}>
-    <PageHeader title={pages[kind].title} actions={<Link href={kind === "upstream" ? "/reverse-proxy/upstreams" : kind === "stream" ? "/stream" : kind === "certificateEdit" ? "/certificates/preview" : "/certificates"} className={buttonClassName({ variant: "secondary" })}>취소</Link>} />
+    <PageHeader title={pages[kind].title} />
     {kind === "upstream" ? <UpstreamForm runtimeDns={{ available: true, reason: null }} action={{ id: "upstreams.createUpstream", args: [] }} cancelHref="/reverse-proxy/upstreams" /> : null}
     {kind === "stream" ? <StreamForm runtimeDns={{ available: true, reason: null }} action={{ id: "stream.createStream", args: [] }} cancelHref="/stream" reservedListenPorts={[80, 3000, 3001]} /> : null}
     {kind === "certificateEdit" ? <CertificateEditForm action={{ id: "certificates.updateCertificate", args: [] }}

@@ -137,7 +137,7 @@ export const SizesAndVariants: Story = {
     ),
 };
 
-const dotSizes: NonNullable<StatusDotProps["size"]>[] = [7, 8, 6];
+const dotSizes: NonNullable<StatusDotProps["size"]>[] = [8];
 
 /**
  * `StatusDot`: 틴트 면 없이 점만 쓰는 상태 표시(상단 상태 줄, 접속 지표의 상태, 알림 목록). 도형은 장식(`aria-hidden`)이라
@@ -222,3 +222,26 @@ export const LongKorean: Story = {
       "저장된 설정을 서버에 적용하고 응답을 확인하고 있습니다. 잠시 기다려 주세요.",
   },
 };
+
+export const Spec: Story = { args: { tone: "success", children: "사용 중" } };
+export const States: Story = {
+  render: () => (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--sp-4)" }}>
+      {(["success", "warning", "error", "info", "neutral"] as const).map(
+        (tone) => (
+          <div key={tone}>
+            <StatusBadge tone={tone}>{tone}</StatusBadge>
+            <StatusBadge tone={tone} size="sm">
+              행 상태
+            </StatusBadge>
+            <StatusBadge tone={tone} dot={false}>
+              태그
+            </StatusBadge>
+          </div>
+        ),
+      )}
+    </div>
+  ),
+};
+export const SpecDark: Story = { ...Spec, globals: { theme: "dark" } };
+export const StatesDark: Story = { ...States, globals: { theme: "dark" } };

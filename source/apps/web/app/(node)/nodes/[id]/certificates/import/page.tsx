@@ -46,7 +46,12 @@ export default async function ImportNodeCertificatePage({
     retryHref: `${basePath}/import`,
     listHref: basePath,
   });
-  if (!auth.ok) return auth.render;
+  if (!auth.ok) return (
+    <section className={layout.page}>
+      <PageHeader title="인증서 가져오기" />
+      {auth.render}
+    </section>
+  );
 
   return (
     <section className={layout.page}>

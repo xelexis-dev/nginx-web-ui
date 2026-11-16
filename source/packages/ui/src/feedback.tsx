@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useState, type ReactNode, type CSSProperties } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type CSSProperties,
+} from "react";
 import { Button, IconButton } from "./button";
 import { Icon, type IconName } from "./icon";
 import type { Tone } from "./tone";
@@ -37,10 +43,12 @@ export function Banner({
   onDismiss,
   dismissLabel = "알림 닫기",
   icon = tone === "success"
-    ? "check"
-    : tone === "info" || tone === "neutral"
-      ? "bell"
-      : "alert",
+    ? "circleCheck"
+    : tone === "error"
+      ? "circleAlert"
+      : tone === "info" || tone === "neutral"
+        ? "info"
+        : "alert",
 }: BannerProps) {
   return (
     <div
@@ -48,6 +56,7 @@ export function Banner({
       style={style}
       className={styles.banner}
       data-tone={tone}
+      data-inline={!children && !output ? "" : undefined}
       role={role}
     >
       {icon !== false ? (
@@ -95,6 +104,7 @@ export interface CodePaneProps {
   copyLabel?: string | false;
   /** Beside other content at ≥1024px: stays in view while the page scrolls. */
   sticky?: boolean;
+  variant?: "code" | "secret";
   headingLevel?: 2 | 3;
 }
 
@@ -106,19 +116,39 @@ export function CodePane({
   error,
   copyLabel = "복사",
   sticky = false,
+  variant = "code",
   headingLevel = 2,
 }: CodePaneProps) {
+  const codeRef = useRef<HTMLPreElement | null>(null);
+  const [overflowing, setOverflowing] = useState(false);
+  useEffect(() => {
+    const element = codeRef.current;
+    if (!element) return;
+    const measure = () =>
+      setOverflowing(
+        element.scrollWidth > element.clientWidth ||
+          element.scrollHeight > element.clientHeight,
+      );
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [code, error, variant]);
   const Heading = headingLevel === 3 ? "h3" : "h2";
   const [copied, setCopied] = useState<"idle" | "done" | "failed">("idle");
   useEffect(() => {
-    if (copied === "idle") return;
+    if (copied === "idle" || (variant === "secret" && copied === "failed")) return;
     const t = window.setTimeout(() => setCopied("idle"), 2000);
     return () => window.clearTimeout(t);
-  }, [copied]);
+  }, [copied, variant]);
   const lines = code?.split("\n");
   const canCopy = copyLabel !== false && code !== undefined && !error;
   return (
-    <section className={styles.pane} data-sticky={sticky ? "" : undefined}>
+    <section
+      className={styles.pane}
+      data-sticky={sticky ? "" : undefined}
+      data-variant={variant}
+    >
       <div className={styles.paneHeader}>
         <div className={styles.paneHeading}>
           <div className={styles.paneTitleRow}>
@@ -140,6 +170,7 @@ export function CodePane({
             variant="secondary"
             size="sm"
             onClick={() => {
+              if (variant === "secret") setCopied("idle");
               const done = navigator.clipboard?.writeText(code!);
               if (!done) setCopied("failed");
               else
@@ -163,12 +194,18 @@ export function CodePane({
           {error}
         </p>
       ) : (
-        <pre className={styles.code} tabIndex={0}>
+        <pre
+          ref={codeRef}
+          className={styles.code}
+          tabIndex={overflowing ? 0 : undefined}
+        >
           {lines?.map((line, index) => (
             <span className={styles.codeLine} key={index}>
-              <span className={styles.lineNumber} aria-hidden="true">
-                {index + 1}
-              </span>
+              {variant !== "secret" ? (
+                <span className={styles.lineNumber} aria-hidden="true">
+                  {index + 1}
+                </span>
+              ) : null}
               <span>
                 {line}
                 {index < lines.length - 1 ? "\n" : null}
@@ -177,6 +214,11 @@ export function CodePane({
           ))}
         </pre>
       )}
+      {variant === "secret" && copied === "failed" ? (
+        <p className={styles.paneError} role="alert">
+          복사할 수 없습니다 — 위 값을 직접 선택해 복사하세요.
+        </p>
+      ) : null}
     </section>
   );
 }

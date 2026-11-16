@@ -1,6 +1,7 @@
 import layout from "@/components/page-layout.module.css";
 import {
   Banner,
+  EmptyState,
   Surface,
   Table,
   Th,
@@ -79,74 +80,83 @@ export function HistoryList({
     <section className={layout.page}>
       <PageHeader title={<>{title}</>} info={<>{info}</>} />
 
-      {notice ? <Banner tone="neutral" title={notice} /> : null}
-
-      <Surface flush>
-        {items.length === 0 ? (
-          <p className={styles.emptyCell}>적용 이력이 없습니다.</p>
-        ) : (
-          <Table label="설정 적용 이력">
-            <thead>
+      <Surface flush toolbar={notice ? <Banner tone="neutral" title={notice} /> : undefined}>
+        <Table label="설정 적용 이력">
+          <thead>
+            <Tr>
+              <Th>라벨</Th>
+              <Th>시간</Th>
+              {showDetails ? (
+                <>
+                  <Th>사용자</Th>
+                  <Th align="end">Upstreams</Th>
+                  <Th align="end">Servers</Th>
+                  <Th align="end">Streams</Th>
+                </>
+              ) : null}
+              {renderRowAction ? <Th aria-label="조작" /> : null}
+            </Tr>
+          </thead>
+          <tbody>
+            {items.length === 0 ? (
               <Tr>
-                <Th>라벨</Th>
-                <Th>시간</Th>
+                <Td
+                  colSpan={
+                    2 + (showDetails ? 4 : 0) + (renderRowAction ? 1 : 0)
+                  }
+                >
+                  <EmptyState description="적용 이력이 없습니다." />
+                </Td>
+              </Tr>
+            ) : null}
+            {items.map((row, index) => (
+              <Tr key={row.id} current={index === 0}>
+                <Td cell="primary" wrap>
+                  <div className={styles.label}>
+                    {basePath ? (
+                      <Link href={`${basePath}/${row.id}`}>
+                        {row.label ?? "—"}
+                      </Link>
+                    ) : (
+                      <span>{row.label ?? "—"}</span>
+                    )}
+                    {index === 0 ? (
+                      <StatusBadge
+                        tone="info"
+                        dot={false}
+                        className={styles.current}
+                      >
+                        현재
+                      </StatusBadge>
+                    ) : null}
+                  </div>
+                </Td>
+                <Td cell="meta" label="시간">
+                  <HistoryTime iso={row.iso} />
+                </Td>
                 {showDetails ? (
                   <>
-                    <Th>사용자</Th>
-                    <Th align="end">Upstreams</Th>
-                    <Th align="end">Servers</Th>
-                    <Th align="end">Streams</Th>
+                    <Td cell="meta" label="사용자" wrap>
+                      {row.actorEmail ?? "system"}
+                    </Td>
+                    <Td cell="meta" label="Upstreams" numeric>
+                      {row.upstreamCount}
+                    </Td>
+                    <Td cell="meta" label="Servers" numeric>
+                      {row.serverCount}
+                    </Td>
+                    <Td cell="meta" label="Streams" numeric>
+                      {row.streamCount}
+                    </Td>
                   </>
                 ) : null}
-                {renderRowAction ? <Th aria-label="조작" /> : null}
+                {renderRowAction ? (
+                  <Td cell="action">{renderRowAction(row)}</Td>
+                ) : null}
               </Tr>
-            </thead>
-            <tbody>
-              {items.map((row, index) => (
-                <Tr key={row.id} current={index === 0}>
-                  <Td cell="primary" wrap>
-                    <div className={styles.label}>
-                      {basePath ? (
-                        <Link href={`${basePath}/${row.id}`}>
-                          {row.label ?? "—"}
-                        </Link>
-                      ) : (
-                        <span>{row.label ?? "—"}</span>
-                      )}
-                      {index === 0 ? (
-                        <StatusBadge tone="info" dot={false} className={styles.current}>
-                          현재
-                        </StatusBadge>
-                      ) : null}
-                    </div>
-                  </Td>
-                  <Td cell="meta" label="시간">
-                    <HistoryTime iso={row.iso} />
-                  </Td>
-                  {showDetails ? (
-                    <>
-                      <Td cell="meta" label="사용자" wrap>
-                        {row.actorEmail ?? "system"}
-                      </Td>
-                      <Td cell="meta" label="Upstreams" numeric>
-                        {row.upstreamCount}
-                      </Td>
-                      <Td cell="meta" label="Servers" numeric>
-                        {row.serverCount}
-                      </Td>
-                      <Td cell="meta" label="Streams" numeric>
-                        {row.streamCount}
-                      </Td>
-                    </>
-                  ) : null}
-                  {renderRowAction ? (
-                    <Td cell="action">{renderRowAction(row)}</Td>
-                  ) : null}
-                </Tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
+            ))}
+          </tbody>
+        </Table>
       </Surface>
     </section>
   );

@@ -122,3 +122,24 @@ export const Templates: Story = {
     />
   ),
 };
+
+const LONG_REASON_DATA = {
+  ...SERVER_LIST,
+  items: SERVER_LIST.items.map((row, index) => index === 0 ? {
+    ...row,
+    health: {
+      ...row.health,
+      reason: 'nginx: [emerg] cannot load certificate "/var/lib/nginx-web-ui/certificates/example/fullchain.pem": BIO_new_file() failed (SSL: error:80000002:system library::No such file or directory:calling fopen) — ' + "긴 인증서 검사 오류 ".repeat(20),
+    },
+  } : row),
+};
+
+export const LongReason: Story = {
+  name: "긴 제외 사유",
+  args: { data: LONG_REASON_DATA },
+};
+export const LongReasonDark: Story = {
+  ...LongReason,
+  name: "긴 제외 사유 · Dark",
+  globals: { theme: "dark" },
+};

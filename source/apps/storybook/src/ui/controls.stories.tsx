@@ -183,3 +183,8 @@ export const LongKorean: Story = {
     />
   ),
 };
+
+export const Spec: Story = Toolbar;
+export const States: Story = SwitchStates;
+export const SpecDark: Story = { ...Spec, globals: { theme: "dark" } };
+export const StatesDark: Story = { ...States, globals: { theme: "dark" } };

@@ -1,8 +1,8 @@
-import { targetLabel } from "@repo/presentation/operations-target";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   Facts,
+  Banner,
   KpiRow,
   linkClassName,
   EmptyState,
@@ -37,19 +37,25 @@ export function OperationsOverview({ vm }: { vm: OverviewVM }) {
   return (
     <div className={layout.page}>
       <PageHeader
-        eyebrow={targetLabel({ kind: "local" })}
         title="개요"
-        info={gauge ? "nginx 수치는 이 화면을 연 시각의 stub_status 스냅샷입니다." : undefined}
-        description={!gauge ? "nginx 수치를 아직 수집하지 못했습니다." : undefined}
+        info={
+          gauge
+            ? "nginx 수치는 이 화면을 연 시각의 stub_status 스냅샷입니다."
+            : undefined
+        }
+        description={
+          !gauge ? "nginx 수치를 아직 수집하지 못했습니다." : undefined
+        }
       />
 
-      <section className={styles.telemetry} aria-label="nginx 실시간">
-        <div className={styles.sectionHeading}>
-          <h2>nginx 현황</h2>
+      <Surface
+        title="nginx 현황"
+        actions={
           <Link href="/metrics" className={linkClassName({ variant: "back" })}>
             접속 지표 <Icon name="chevronRight" size={14} />
           </Link>
-        </div>
+        }
+      >
         <KpiRow
           label="nginx 실시간"
           columns={4}
@@ -86,52 +92,69 @@ export function OperationsOverview({ vm }: { vm: OverviewVM }) {
             },
           ]}
         />
-      </section>
+      </Surface>
 
       <div className={styles.overviewGrid}>
-        <div className={layout.section}>
+        <div className={styles.sectionStack}>
           <ServerHealth servers={vm.servers} />
           <EventsPanel events={vm.events} />
         </div>
-        <div className={layout.section}>
+        <div className={styles.sectionStack}>
           <AttentionPanel servers={vm.servers} />
           <PendingPanel servers={vm.servers} />
           <Surface title="구성">
-            <dl className={styles.configuration}>
-              <div>
-                <dt>
-                  <Link href="/reverse-proxy" className={linkClassName({ variant: "back" })}>
-                    리버스 프록시
-                  </Link>
-                </dt>
-                <dd>
-                  {counts.serverActive} / {counts.serverTotal}
-                  <small>활성 / 전체</small>
-                </dd>
-              </div>
-              <div>
-                <dt>
-                  <Link href="/stream" className={linkClassName({ variant: "back" })}>
-                    Stream
-                  </Link>
-                </dt>
-                <dd>
-                  {counts.streamActive} / {counts.streamTotal}
-                  <small>활성 / 전체</small>
-                </dd>
-              </div>
-              <div>
-                <dt>
-                  <Link href="/certificates" className={linkClassName({ variant: "back" })}>
-                    인증서
-                  </Link>
-                </dt>
-                <dd>
-                  {vm.certificates.ok ? vm.certificates.data.total : "—"}
-                  <small>등록된 인증서</small>
-                </dd>
-              </div>
-            </dl>
+            <Facts
+              items={[
+                {
+                  term: (
+                    <Link
+                      href="/reverse-proxy"
+                      className={linkClassName({ variant: "back" })}
+                    >
+                      리버스 프록시
+                    </Link>
+                  ),
+                  value: (
+                    <>
+                      {counts.serverActive} / {counts.serverTotal}{" "}
+                      <span className={styles.small}>활성 / 전체</span>
+                    </>
+                  ),
+                },
+                {
+                  term: (
+                    <Link
+                      href="/stream"
+                      className={linkClassName({ variant: "back" })}
+                    >
+                      Stream
+                    </Link>
+                  ),
+                  value: (
+                    <>
+                      {counts.streamActive} / {counts.streamTotal}{" "}
+                      <span className={styles.small}>활성 / 전체</span>
+                    </>
+                  ),
+                },
+                {
+                  term: (
+                    <Link
+                      href="/certificates"
+                      className={linkClassName({ variant: "back" })}
+                    >
+                      인증서
+                    </Link>
+                  ),
+                  value: (
+                    <>
+                      {vm.certificates.ok ? vm.certificates.data.total : "—"}{" "}
+                      <span className={styles.small}>등록된 인증서</span>
+                    </>
+                  ),
+                },
+              ]}
+            />
             {vm.certificates.ok &&
             (vm.certificates.data.expiring || vm.certificates.data.failed) ? (
               <p className={styles.kpiNote}>
@@ -141,11 +164,17 @@ export function OperationsOverview({ vm }: { vm: OverviewVM }) {
               </p>
             ) : null}
             <div className={styles.configurationFooter}>
-              <Link href="/audit" className={linkClassName({ variant: "back" })}>
+              <Link
+                href="/audit"
+                className={linkClassName({ variant: "back" })}
+              >
                 감사(24시간) {counts.audit24h.toLocaleString("ko-KR")}
               </Link>
               <span>
-                <Link href="/history" className={linkClassName({ variant: "back" })}>
+                <Link
+                  href="/history"
+                  className={linkClassName({ variant: "back" })}
+                >
                   마지막 적용
                 </Link>{" "}
                 {lastApplyValue(vm.lastApply)}
@@ -177,16 +206,8 @@ function PanelFailure({
   inset?: boolean;
 }) {
   if (value.reason === "forbidden") return null;
-  return (
-    <p
-      className={
-        inset ? `${styles.panelError} ${styles.inset}` : styles.panelError
-      }
-      role="status"
-    >
-      읽지 못했습니다: {value.message}
-    </p>
-  );
+  const message = <Banner tone="warning" title={<>읽지 못했습니다: {value.message}</>} />;
+  return inset ? <div className={styles.inset}>{message}</div> : message;
 }
 
 function ServerHealth({ servers }: { servers: OverviewVM["servers"] }) {
@@ -198,7 +219,10 @@ function ServerHealth({ servers }: { servers: OverviewVM["servers"] }) {
       flush
       actions={
         servers.ok ? (
-          <Link href="/reverse-proxy" className={linkClassName({ variant: "back" })}>
+          <Link
+            href="/reverse-proxy"
+            className={linkClassName({ variant: "back" })}
+          >
             전체 {servers.data.total}개
             <Icon name="chevronRight" size={14} />
           </Link>
@@ -212,9 +236,9 @@ function ServerHealth({ servers }: { servers: OverviewVM["servers"] }) {
       ) : (
         <>
           {servers.data.certificatesUnknown ? (
-            <p className={`${styles.panelError} ${styles.inset}`} role="status">
-              인증서 상태를 읽지 못해 TLS 를 확인할 수 없습니다.
-            </p>
+            <div className={styles.inset}>
+              <Banner tone="warning" title="인증서 상태를 읽지 못해 TLS 를 확인할 수 없습니다." />
+            </div>
           ) : null}
           <Table label="서버 상태">
             <thead>
@@ -233,7 +257,12 @@ function ServerHealth({ servers }: { servers: OverviewVM["servers"] }) {
                       {s.health.label}
                     </StatusBadge>
                   </Td>
-                  <Td cell="primary" wrap icon={<Icon name="servers" />} secondary={s.health.reason}>
+                  <Td
+                    cell="primary"
+                    wrap
+                    icon={<Icon name="servers" />}
+                    secondary={s.health.reason}
+                  >
                     <span className={styles.name}>
                       <Link href={`/reverse-proxy/${s.id}`}>
                         {s.serverName.split(/\s+/)[0]}

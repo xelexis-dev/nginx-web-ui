@@ -3,7 +3,16 @@ import { formatServerTime } from "@/lib/format-time";
 import layout from "@/components/page-layout.module.css";
 import type { PendingUserView } from "@/lib/admin-api";
 
-import { Surface, Button, Table, Th, Td, Tr, PageHeader } from "@repo/ui";
+import {
+  EmptyState,
+  Surface,
+  Button,
+  Table,
+  Th,
+  Td,
+  Tr,
+  PageHeader,
+} from "@repo/ui";
 import styles from "../oauth/oauth.module.css";
 
 function formatDate(value: Date): string {
@@ -53,8 +62,10 @@ export function PendingListView({
           <tbody>
             {pending.length === 0 ? (
               <Tr>
-                <Td colSpan={5} className={styles.emptyCell}>
-                  승인을 기다리는 사람이 없습니다.
+                <Td colSpan={5}>
+                  <EmptyState
+                    description={<> 승인을 기다리는 사람이 없습니다. </>}
+                  />
                 </Td>
               </Tr>
             ) : null}

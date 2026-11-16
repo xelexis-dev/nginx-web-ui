@@ -10,7 +10,7 @@ are available from https://snapshot.debian.org/ at the source versions listed be
 
 ## Input SHA-256
 
-- apps/api/Cargo.lock: 51a72cc0ef975d13b7783959487717f744afc4aeed654b4d7e4ac45f0afcf543
+- apps/api/Cargo.lock: 606401bb36ddc2714ec2a8be4a23ca52c5f06e228df2563343bccea67f280c40
 - docker/licenses/spdx-lock.json: bb7bc66d0b482f11e0d66ea76f3967ffc47995c48803536d70c2f2e23bfb28ed
 - docker/pins/inventory/api-builder-amd64.tsv: 8665bd26ce32eda3cd9090c114b36571409f54a50c1d42d21a397bdc86a69892
 - docker/pins/inventory/api-builder-arm64.tsv: eb6903409a7bec9666b1b939c7989383245a42bfbdc8c5ef74660fa6d8eadcbc
@@ -12777,7 +12777,7 @@ Applies to:
 - cargo:ring=0.17.14 — ring-0.17.14/src/polyfill/once_cell/LICENSE-APACHE
 - cargo:rustc_version=0.4.1 — rustc_version-0.4.1/LICENSE-APACHE
 - cargo:rusticata-macros=4.1.0 — rusticata-macros-4.1.0/LICENSE-APACHE
-- cargo:rustix=1.1.5 — rustix-1.1.5/LICENSE-APACHE
+- cargo:rustix=1.1.6 — rustix-1.1.6/LICENSE-APACHE
 - cargo:rustls-native-certs=0.8.4 — rustls-native-certs-0.8.4/LICENSE-APACHE
 - cargo:rustls=0.23.46 — rustls-0.23.46/LICENSE-APACHE
 - cargo:scopeguard=1.2.0 — scopeguard-1.2.0/LICENSE-APACHE
@@ -20842,7 +20842,7 @@ Applies to:
 - cargo:ref-cast-impl=1.0.27 — ref-cast-impl-1.0.27/LICENSE-MIT
 - cargo:ref-cast=1.0.27 — ref-cast-1.0.27/LICENSE-MIT
 - cargo:rustc-hash=2.1.3 — rustc-hash-2.1.3/LICENSE-MIT
-- cargo:rustix=1.1.5 — rustix-1.1.5/LICENSE-MIT
+- cargo:rustix=1.1.6 — rustix-1.1.6/LICENSE-MIT
 - cargo:rustversion=1.0.23 — rustversion-1.0.23/LICENSE-MIT
 - cargo:semver=1.0.28 — semver-1.0.28/LICENSE-MIT
 - cargo:serde=1.0.229 — serde-1.0.229/LICENSE-MIT
@@ -31859,7 +31859,7 @@ at your option.
 <!-- /nwui-text:377c2e7c53250cc5905c0b0532d35973392af16ffb9596a41d99d202cf3617c9 -->
 
 Applies to:
-- cargo:rustix=1.1.5 — rustix-1.1.5/COPYRIGHT
+- cargo:rustix=1.1.6 — rustix-1.1.6/COPYRIGHT
 - component:RUST_IMAGE=rust:1.98.1-slim-trixie@sha256:4cd829461bd5c4d511c32e269da9cb8929223b666519d8004e35fc8d1d771ab7 — usr/local/rustup/toolchains/1.98.1-aarch64-unknown-linux-gnu/share/doc/rust/COPYRIGHT-library.html
 - component:RUST_IMAGE=rust:1.98.1-slim-trixie@sha256:4cd829461bd5c4d511c32e269da9cb8929223b666519d8004e35fc8d1d771ab7 — usr/local/rustup/toolchains/1.98.1-aarch64-unknown-linux-gnu/share/doc/rust/COPYRIGHT.html
 
@@ -40637,8 +40637,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 <!-- /nwui-text:4b2d0aca6789fa39e03d6738e869ea0988cceba210ca34ebb59c15c463e93a04 -->
 
 Applies to:
-- cargo:quinn-proto=0.11.18 — quinn-proto-0.11.18/LICENSE-MIT
-- cargo:quinn-udp=0.5.15 — quinn-udp-0.5.15/LICENSE-MIT
+- cargo:quinn-proto=0.11.19 — quinn-proto-0.11.19/LICENSE-MIT
+- cargo:quinn-udp=0.5.16 — quinn-udp-0.5.16/LICENSE-MIT
 - cargo:quinn=0.11.12 — quinn-0.11.12/LICENSE-MIT
 - component:RUST_IMAGE=rust:1.98.1-slim-trixie@sha256:4cd829461bd5c4d511c32e269da9cb8929223b666519d8004e35fc8d1d771ab7 — usr/local/rustup/toolchains/1.98.1-aarch64-unknown-linux-gnu/share/doc/rust/COPYRIGHT.html
 
@@ -42334,8 +42334,8 @@ Applies to:
 - cargo:multiversion=0.9.0 — multiversion-0.9.0/LICENSE-APACHE
 - cargo:multiversion_no_op=1.0.0 — multiversion_no_op-1.0.0/LICENSE-APACHE
 - cargo:ndk-context=0.1.1 — ndk-10f2ba388fca20f7349996ebae26ccda7a6fda5c/LICENSE-APACHE
-- cargo:quinn-proto=0.11.18 — quinn-proto-0.11.18/LICENSE-APACHE
-- cargo:quinn-udp=0.5.15 — quinn-udp-0.5.15/LICENSE-APACHE
+- cargo:quinn-proto=0.11.19 — quinn-proto-0.11.19/LICENSE-APACHE
+- cargo:quinn-udp=0.5.16 — quinn-udp-0.5.16/LICENSE-APACHE
 - cargo:quinn=0.11.12 — quinn-0.11.12/LICENSE-APACHE
 - cargo:r-efi=5.3.0 — usr/share/common-licenses/Apache-2.0
 - cargo:r-efi=6.0.0 — usr/share/common-licenses/Apache-2.0
@@ -85363,7 +85363,7 @@ Software.
 
 Applies to:
 - cargo:linux-raw-sys=0.12.1 — linux-raw-sys-0.12.1/LICENSE-Apache-2.0_WITH_LLVM-exception
-- cargo:rustix=1.1.5 — rustix-1.1.5/LICENSE-Apache-2.0_WITH_LLVM-exception
+- cargo:rustix=1.1.6 — rustix-1.1.6/LICENSE-Apache-2.0_WITH_LLVM-exception
 - cargo:wasi=0.11.1+wasi-snapshot-preview1 — wasi-0.11.1+wasi-snapshot-preview1/LICENSE-Apache-2.0_WITH_LLVM-exception
 - cargo:wasi=0.14.7+wasi-0.2.4 — wasi-0.14.7+wasi-0.2.4/LICENSE-Apache-2.0_WITH_LLVM-exception
 - cargo:wasip2=1.0.4+wasi-0.2.12 — wasip2-1.0.4+wasi-0.2.12/LICENSE-Apache-2.0_WITH_LLVM-exception
@@ -128570,17 +128570,17 @@ Evidence: archive; source archive SHA-256: 985e7ec9bb745e6ce6535b544d84d6cd6f7ad
 - Text b30df9a48463d1c99c6a66cdee623b1b0832c3811d58a80b338268d71cea190e
 - Text 23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3
 
-### cargo:quinn-proto=0.11.18
+### cargo:quinn-proto=0.11.19
 
 Coverage: source/build/runtime-superset; architecture: all; licence: MIT OR Apache-2.0.
-Evidence: archive; source archive SHA-256: a9746dbde176634f4f2f1faf2404e30a31b2bc1e9cafb5329c95d8177a18c9fc.
+Evidence: archive; source archive SHA-256: 0e750cca55fe4f0439a15d0bb529da9651e79993e8e72c61a899a36d462befbe.
 - Text 50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a
 - Text 4b2d0aca6789fa39e03d6738e869ea0988cceba210ca34ebb59c15c463e93a04
 
-### cargo:quinn-udp=0.5.15
+### cargo:quinn-udp=0.5.16
 
 Coverage: source/build/runtime-superset; architecture: all; licence: MIT OR Apache-2.0.
-Evidence: archive; source archive SHA-256: 35a133f956daabe89a61a685c2649f13d82d5aa4bd5d12d1277e1072a21c0694.
+Evidence: archive; source archive SHA-256: af66907df18639dcf4db56ca65490cabc4b27a97dbadd96f2926cca73298f016.
 - Text 50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a
 - Text 4b2d0aca6789fa39e03d6738e869ea0988cceba210ca34ebb59c15c463e93a04
 
@@ -128744,10 +128744,10 @@ Evidence: archive; source archive SHA-256: faf0c4a6ece9950b9abdb62b1cfcf2a68b3b6
 - Text 143368af9701a24ebaf89fe5310ad8116ca71e8e99f17415c0dd893f6a256ae4
 - Text a5c61b93b6ee1d104af9920cf020ff3c7efe818e31fe562c72261847a728f513
 
-### cargo:rustix=1.1.5
+### cargo:rustix=1.1.6
 
 Coverage: source/build/runtime-superset; architecture: all; licence: Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT.
-Evidence: archive; source archive SHA-256: 891efababe418670775f199f0d233d84843c227a0949a883ce15b37c78d6629d.
+Evidence: archive; source archive SHA-256: e5e76742e5294153d4dde1207dbec5bdd81eef6fabdc0d2118babadabfd858aa.
 - Text 377c2e7c53250cc5905c0b0532d35973392af16ffb9596a41d99d202cf3617c9
 - Text 143368af9701a24ebaf89fe5310ad8116ca71e8e99f17415c0dd893f6a256ae4
 - Text ae6e99144a735503e5b54b92e09cf8dec2e7f2e25706ec5c98af2f7d2242dc75

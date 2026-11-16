@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Card, Button, buttonClassName, Banner } from "@repo/ui";
+import { Surface, CodePane, Button, buttonClassName, Banner } from "@repo/ui";
 import { ApiForm } from "@/components/api-form";
 import styles from "./two-factor.module.css";
 
@@ -121,16 +121,10 @@ export function BackupCodesCard({
   const [saved, setSaved] = useState<"idle" | "started" | "failed">("idle");
   const copy = COPY[context];
   return (
-    <Card id="two-factor-backup-codes" title={copy.title}>
+    <Surface id="two-factor-backup-codes" title={copy.title}>
       <div className={styles.backupCard}>
         <p className={styles.warn}>{copy.warning}</p>
-        <div className={styles.backupGrid}>
-          {codes.map((code) => (
-            <code key={code} className={styles.backupCode}>
-              {code}
-            </code>
-          ))}
-        </div>
+        <CodePane title="백업 코드" variant="secret" code={codes.join("\n")} />
 
         {/* Outside every form and type=button: saving never finishes the setup or sends anything. */}
         <div className={styles.saveRow}>
@@ -171,6 +165,6 @@ export function BackupCodesCard({
           </Link>
         )}
       </div>
-    </Card>
+    </Surface>
   );
 }

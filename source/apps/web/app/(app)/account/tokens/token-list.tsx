@@ -1,4 +1,5 @@
 import {
+  EmptyState,
   StatusBadge,
   type Tone,
   Surface,
@@ -10,7 +11,6 @@ import {
   PageHeader,
   Icon,
   buttonClassName,
-  linkClassName,
 } from "@repo/ui";
 import Link from "next/link";
 import layout from "@/components/page-layout.module.css";
@@ -49,7 +49,7 @@ export function TokenList({
 }: TokenListProps) {
   return (
     <Surface flush>
-      <Table label="액세스 토큰" density="comfortable">
+      <Table density="comfortable" narrow="stacked" label="액세스 토큰">
         <thead>
           <Tr>
             <Th>이름</Th>
@@ -63,8 +63,8 @@ export function TokenList({
         <tbody>
           {rows.length === 0 ? (
             <Tr>
-              <Td colSpan={6} className={styles.emptyCell}>
-                {emptyMessage}
+              <Td colSpan={6}>
+                <EmptyState description={emptyMessage} />
               </Td>
             </Tr>
           ) : null}
@@ -104,7 +104,7 @@ export function TokenList({
               <Td cell="meta" label="만료">
                 {row.expiresAt}
               </Td>
-              <Td cell="status">
+              <Td cell="status" label="상태">
                 <StatusBadge tone={BADGE_TONE[row.status]} size="sm">
                   {STATUS_LABELS[row.status]}
                 </StatusBadge>
@@ -124,12 +124,6 @@ export function AccountTokensView({ rows }: { rows: TokenRowView[] }) {
     <section className={layout.page}>
       <PageHeader
         title={<>액세스 토큰</>}
-        eyebrow={
-          <Link href="/account" className={linkClassName({ variant: "back" })}>
-            <Icon name="arrowLeft" size={14} />
-            계정으로
-          </Link>
-        }
         info={<>외부 서비스에서 이용 가능한 엑세스 토큰을 관리합니다</>}
         actions={
           <>

@@ -140,8 +140,14 @@ export function MailRecipientForm({
 
   return (
     <form className={resourceStyles.form}>
+      <FormErrors errors={fieldErrors} targets={{ events: "mr-events" }} />
       <FormStack>
-        <FormErrors errors={fieldErrors} targets={{ events: "mr-events" }} />
+        {mode === "create" ? (
+          <Banner
+            tone="info"
+            title={<>인증서 알림을 받을 주소를 등록합니다.</>}
+          />
+        ) : null}
         <Card
           id="admin-recipient"
           title={<>이 주소로 보내기</>}
@@ -177,7 +183,7 @@ export function MailRecipientForm({
                 }
                 role="status"
               >
-                <p className={styles.hint} style={{ marginTop: "var(--sp-2)" }}>
+                <p className={styles.hint}>
                   사이트 설정 → SMTP 설정을 마치면 그대로 동작합니다.
                 </p>
               </Banner>

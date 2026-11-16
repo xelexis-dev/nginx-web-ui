@@ -1,4 +1,5 @@
-import { EmptyState, Icon, StatusBadge, Switch, buttonClassName } from "@repo/ui";
+import { Button, EmptyState, Icon, StatusBadge, Switch, buttonClassName } from "@repo/ui";
+import tableStyles from "../../../../packages/ui/src/table.module.css";
 import { Table, Td, Th, Tr } from "../../../../packages/ui/src/table";
 import { expect, userEvent, within } from "storybook/test";
 import type { Meta, StoryObj } from "@storybook/react-vite";
@@ -51,7 +52,7 @@ function ServerTable() {
               {r.err}
             </Td>
             <Td cell="action">
-              <Switch label={`${r.name} 활성`} checked={enabled[r.id]!} onCheckedChange={(next) => setEnabled((prev) => ({ ...prev, [r.id]: next }))} />
+              <Switch label={`${r.name} 활성`} size="sm" checked={enabled[r.id]!} onCheckedChange={(next) => setEnabled((prev) => ({ ...prev, [r.id]: next }))} />
             </Td>
             <Td cell="hide-narrow">
               <a href={`#${r.id}-edit`} className={buttonClassName({ variant: "ghost", size: "sm" })}>
@@ -76,7 +77,7 @@ const meta = {
         component: [
           "`Table`·`Th`·`Td`·`Tr`은 표 하나의 DOM이다. 행의 링크와 폼이 한 번만 존재한다.",
           "",
-          "- 넓은 화면: 셀 여백 6 × 12(`--sp-1-5` × `--cell-x`), 행은 최소 36px(`--size-row`)이고 내용이 길면 늘어난다. 아래 구분선이 있는 머리, 숫자는 오른쪽 정렬(`numeric`), 원문은 `mono`, 한 줄로 줄일 값은 `truncate`(전체 값은 `title`), 줄을 바꿀 긴 값(주소·토큰)은 `wrap`.",
+          "- 넓은 화면: 셀 여백 8 × 12(`--cell-y` × `--cell-x`), 행은 최소 36px(`--size-row`)이고 내용이 길면 늘어난다. 아래 구분선이 있는 머리, 숫자는 오른쪽 정렬(`numeric`), 원문은 `mono`, 한 줄로 줄일 값은 `truncate`(전체 값은 `title`), 줄을 바꿀 긴 값(주소·토큰)은 `wrap`.",
           "- 768px 이하: 각 행이 요약 블록이 된다. 첫 줄은 `cell=\"status\"` · `cell=\"primary\"` · `cell=\"action\"`, 다음 줄은 나머지(`meta`, 기본값)가 점으로 이어진다. `hide-narrow`는 숨긴다. 머리는 화면 읽기 프로그램에만 남는다.",
           "- 좁은 화면에서는 열 머리가 보이지 않으므로, 날짜·개수처럼 혼자서는 뜻을 모르는 값은 `label`을 준다. 점 대신 그 이름이 값 앞에 붙는다(화면 읽기 프로그램은 열 머리를 그대로 읽는다).",
           "- 행이 없으면 모든 열을 잇는 칸 하나(`colSpan`)에 `EmptyState`를 둔다.",
@@ -286,3 +287,83 @@ export const Comfortable: Story = {
     <Tr><Td cell="primary" secondary="서울 데이터센터"><a href="#busan">부산 운영 노드</a></Td><Td label="주소">busan.example.test</Td></Tr>
   </tbody></Table>,
 };
+
+export const Stacked: Story = {
+  render: () => (
+    <Table
+      label="정렬선 목록"
+      density="comfortable"
+      layout="fixed"
+      narrow="stacked"
+    >
+      <colgroup>
+        <col style={{ width: "calc(var(--size-kv) + var(--sp-4))" }} />
+        <col />
+        <col style={{ width: 72 }} />
+      </colgroup>
+      <thead>
+        <tr>
+          <Th>이름</Th>
+          <Th>주소</Th>
+          <Th>작업</Th>
+        </tr>
+      </thead>
+      <tbody>
+        <Tr>
+          <Td cell="primary" wrap>
+            {"긴한국어이름".repeat(12)}
+          </Td>
+          <Td label="주소" wrap>
+            https://very-long-address.example.test/account
+          </Td>
+          <Td cell="action" label="작업">
+            <button>수정</button>
+          </Td>
+        </Tr>
+      </tbody>
+    </Table>
+  ),
+};
+export const Spec: Story = Servers;
+export const States: Story = Stacked;
+export const SpecDark: Story = { ...Spec, globals: { theme: "dark" } };
+export const StatesDark: Story = { ...States, globals: { theme: "dark" } };
+
+export const CellContentGeometry: Story = {
+  render: () => <>{(["dense", "comfortable"] as const).map((density) => <Table key={density} label={`${density} cellContent`} density={density} layout="fixed" narrow="stacked">
+    <thead><tr><Th>이름</Th><Th>설명</Th><Th align="end">수치</Th></tr></thead>
+    <tbody>
+      <Tr data-case="icon"><Td cell="primary" icon={<Icon name="server" />}>아이콘과 한 줄</Td><Td label="설명">기본 값</Td><Td numeric label="수치" icon={<Icon name="info" />}>128</Td></Tr>
+      <Tr data-case="text"><Td cell="primary"><span className={tableStyles.cellContent}>텍스트 한 줄</span></Td><Td label="설명">기본 값</Td><Td numeric label="수치"><span className={tableStyles.cellContent}>256</span></Td></Tr>
+      <Tr data-case="button"><Td cell="primary">버튼</Td><Td label="설명">기본 값</Td><Td cell="action"><Button size="sm" variant="secondary">수정</Button></Td></Tr>
+      <Tr data-case="switch"><Td cell="primary">스위치</Td><Td label="설명">기본 값</Td><Td cell="action"><Switch size="sm" checked label="사용" /></Td></Tr>
+      <Tr data-case="link"><Td cell="primary">링크 버튼</Td><Td label="설명">기본 값</Td><Td cell="action"><a href="#edit" className={buttonClassName({size: "sm", variant: "secondary"})}>수정</a></Td></Tr>
+      <Tr data-case="multiline"><Td cell="primary" icon={<Icon name="server" />} secondary="두 번째 줄">여러 줄 이름</Td><Td label="설명" wrap>{"여러 줄로 표시하는 긴 한국어 값 ".repeat(10)}</Td><Td numeric label="수치">512</Td></Tr>
+    </tbody>
+  </Table>)}</>,
+};
+export const CellContentGeometryDark: Story = { ...CellContentGeometry, globals: { theme: "dark" } };
+
+export const StackedPrimaryFirst: Story = {
+  args: { narrow: "stacked" },
+  render: ({ narrow }) => <Table label="상태가 이름보다 먼저인 열" narrow={narrow} density="comfortable">
+    <thead><tr><Th>상태</Th><Th>이름</Th><Th>포트</Th><Th>작업</Th></tr></thead>
+    <tbody><Tr>
+      <Td cell="status" label="상태"><StatusBadge size="sm" tone="success">사용 중</StatusBadge></Td>
+      <Td cell="primary" wrap icon={<Icon name="server" />}>api.example.test</Td>
+      <Td label="포트">443</Td>
+      <Td cell="action" label="작업"><a href="#edit" className={buttonClassName({ size: "sm", variant: "secondary" })}>수정</a></Td>
+    </Tr></tbody>
+  </Table>,
+  play: async ({ canvasElement }) => {
+    const table = canvasElement.querySelector("table")!;
+    const cells = [...table.querySelectorAll<HTMLTableCellElement>("tbody td")];
+    await expect(cells.map((cell) => cell.dataset.cell)).toEqual(["status", "primary", "meta", "action"]);
+    if (table.dataset.narrow === "stacked" && canvasElement.ownerDocument.defaultView!.innerWidth <= 768) {
+      const visual = [...cells].sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+      await expect(visual.map((cell) => cell.dataset.cell)).toEqual(["primary", "status", "meta", "action"]);
+    }
+  },
+};
+export const StackedPrimaryFirstDark: Story = { ...StackedPrimaryFirst, globals: { theme: "dark" } };
+export const SummaryStatusFirst: Story = { ...StackedPrimaryFirst, args: { narrow: "summary" } };

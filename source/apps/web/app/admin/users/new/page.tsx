@@ -1,4 +1,3 @@
-import { FormStack, Banner } from "@repo/ui";
 import layout from "@/components/page-layout.module.css";
 import { PageHeader } from "@repo/ui";
 import { readAdminSession } from "@/lib/admin-api";
@@ -15,13 +14,7 @@ export default async function NewUserPage() {
     <section className={layout.page}>
       <PageHeader title={<>새 사용자</>} />
 
-      <FormStack>
-        <Banner
-          tone="info"
-          title={<>이메일, 비밀번호, 역할을 지정해 새 계정을 생성합니다.</>}
-        />
-        <UserForm />
-      </FormStack>
+      <UserForm />
     </section>
   );
 }

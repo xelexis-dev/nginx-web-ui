@@ -1,4 +1,3 @@
-import { targetLabel } from "@repo/presentation/operations-target";
 import layout from "@/components/page-layout.module.css";
 import { PageHeader } from "@repo/ui";
 import { readPageView } from "@/lib/api-page";
@@ -14,7 +13,7 @@ export default async function LogsPage() {
 
   return (
     <section className={layout.page}>
-      <PageHeader eyebrow={targetLabel({ kind: "local" })} title={<>로그</>} info={<>access.log / error.log를 실시간으로 확인합니다.</>} />
+      <PageHeader title={<>로그</>} info={<>access.log / error.log를 실시간으로 확인합니다.</>} />
 
       <div>
         <LogViewer streamPath="/api/ui/v1/logs/stream" />

@@ -1,6 +1,5 @@
 import layout from "@/components/page-layout.module.css";
-import { Icon, linkClassName, PageHeader } from "@repo/ui";
-import Link from "next/link";
+import { PageHeader } from "@repo/ui";
 import { redirect } from "next/navigation";
 import {
   CertificateEditForm,
@@ -145,7 +144,12 @@ export default async function EditNodeCertificatePage({
     },
   });
 
-  if (!loaded.ok) return loaded.render;
+  if (!loaded.ok) return (
+    <section className={layout.page}>
+      <PageHeader title="인증서 수정" />
+      {loaded.render}
+    </section>
+  );
 
   // **수동 등록 인증서에는 발급 설정이라는 게 없다.** 그 대신 있는 것이 교체
   // 화면이고, 로컬 수정 화면과 **같이** 그리로 보낸다
@@ -164,18 +168,6 @@ export default async function EditNodeCertificatePage({
     <section className={layout.page}>
       <PageHeader
         title={<>인증서 수정</>}
-        eyebrow={
-          <>
-            {" "}
-            <Link
-              href={`${basePath}/${cid}`}
-              className={linkClassName({ variant: "back" })}
-            >
-              <Icon name="arrowLeft" size={14} />
-              상세로
-            </Link>{" "}
-          </>
-        }
         info="발급 설정을 바꿉니다."
       />
       <CertificateEditForm

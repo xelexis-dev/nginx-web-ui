@@ -1,9 +1,9 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import {
+  Card,
   CodePane,
   Field,
-  FormSection,
   InfoTip,
   PageHeader,
   Surface,
@@ -62,9 +62,9 @@ it("keeps tips beside headings and labels, and preserves visible descriptions", 
       <Surface title="카드" info="배경">
         본문
       </Surface>
-      <FormSection id="section" title="구역" info="배경">
+      <Card id="section" title="구역" info="배경">
         본문
-      </FormSection>
+      </Card>
       <CodePane title={<span>설정</span>} info="배경" code="safe" />
     </>,
   );

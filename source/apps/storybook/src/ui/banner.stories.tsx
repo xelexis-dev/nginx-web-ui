@@ -127,3 +127,8 @@ export const SingleLineInfo: Story = {
     children: undefined,
   },
 };
+
+export const Spec: Story = SingleLineInfo;
+export const States: Story = ApplyFailed;
+export const SpecDark: Story = { ...Spec, globals: { theme: "dark" } };
+export const StatesDark: Story = { ...States, globals: { theme: "dark" } };

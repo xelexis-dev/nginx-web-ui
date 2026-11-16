@@ -137,11 +137,6 @@ export function SummaryRail({
   );
   const status = (
     <>
-      {converted ? (
-        <p className={formStyles.pfConversionNote}>
-          저장 시 경로별 형식으로 전환됩니다. nginx 설정은 같습니다.
-        </p>
-      ) : null}
       {errors.length ? (
         <div className={formStyles.pfSummaryErrors} role="alert">
           <strong>입력 오류 {errors.length}개</strong>
@@ -151,6 +146,11 @@ export function SummaryRail({
             </button>
           ))}
         </div>
+      ) : null}
+      {converted ? (
+        <p className={formStyles.pfConversionNote}>
+          저장 시 경로별 형식으로 전환됩니다. nginx 설정은 같습니다.
+        </p>
       ) : null}
     </>
   );
@@ -237,9 +237,9 @@ export function SummaryRail({
           </Button>
         </header>
         <div className={formStyles.pfSummaryBody}>
+          {status}
           {saveError}
           {body}
-          {status}
         </div>
         <footer>
           {saveTarget}

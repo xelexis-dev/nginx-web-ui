@@ -13,3 +13,7 @@
   font-weight: 600;
   font-kerning: normal;
 }
+
+.logo[data-variant="compact"] {
+  overflow: hidden;
+}

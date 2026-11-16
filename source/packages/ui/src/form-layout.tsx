@@ -13,60 +13,14 @@ import styles from "./form-layout.module.css";
  * which names several controls together (a fieldset and its legend).
  */
 
-export interface FormCardOptions {
-  /**
-   * 2: the fields flow in two columns (gap 20; one column at 768px and below); a child with
-   * `data-wide` (a `Field wide`, a textarea row, the action row, a form error) spans both. Default 1: one
-   * column, 20 between rows (a stacked form whose field block uses `formFieldsClassName`).
-   */
-  columns?: 1 | 2;
-  className?: string;
-}
-
-/**
- * The card a page form sits in (surface, hairline border, large radius, surface padding), as a class
- * for the `<form>` itself — like `buttonClassName`, so the form keeps its own element, action and
- * handlers and no wrapper is added.
- */
-export function formCardClassName({
-  columns = 1,
-  className,
-}: FormCardOptions = {}): string {
-  return [
-    styles.formCard,
-    columns === 2 ? styles.columns2 : undefined,
-    className,
-  ]
-    .filter(Boolean)
-    .join(" ");
-}
-
-/**
- * A form's field block without a card: inside a stacked form card, or a form inside a titled `Surface`.
- * columns 2 (default): the same grid as `formCardClassName({ columns: 2 })`. 1: one column, 20 between rows.
- */
+/** A Card's optional field grid: two columns by default, one at ≤768. */
 export function formFieldsClassName({
   columns = 2,
   className,
-}: FormCardOptions = {}): string {
+}: { columns?: 1 | 2; className?: string } = {}): string {
   return [columns === 2 ? styles.columns2 : styles.columns1, className]
     .filter(Boolean)
     .join(" ");
-}
-
-export interface FormSectionProps {
-  info?: ReactNode;
-  id: string;
-  title: ReactNode;
-  description?: ReactNode;
-  headingLevel?: 2 | 3;
-  /**
-   * 2: the fields flow in two columns (gap 20; one column at 768px and below). A
-   * `Field wide`, or any direct child with `data-wide`, spans both (a textarea, the action row, a
-   * form error). Default 1: the body lays nothing out, as before.
-   */
-  columns?: 1 | 2;
-  children: ReactNode;
 }
 
 export interface CardProps {
@@ -146,23 +100,6 @@ export function Card({
 
 export function CardFoot({ children }: { children: ReactNode }) {
   return <div className={styles.cardFoot}>{children}</div>;
-}
-
-export function FormSection({
-  columns = 1,
-  children,
-  ...props
-}: FormSectionProps) {
-  return (
-    <Card {...props}>
-      <div
-        className={styles.sectionBody}
-        data-columns={columns === 2 ? "2" : undefined}
-      >
-        {children}
-      </div>
-    </Card>
-  );
 }
 
 export function FormStack({ children }: { children: ReactNode }) {
@@ -257,7 +194,7 @@ export interface FieldProps {
   optional?: boolean;
   /** Extra ids the control is described by (e.g. a server-side error rendered elsewhere). */
   describedBy?: string;
-  /** In a two-column `FormSection`, span both columns (a textarea, a long value). */
+  /** In a Card field grid, span both columns (a textarea, a long value). */
   wide?: boolean;
   span?: 3 | 4 | 6 | 8 | 12;
   /** Label and hint on the left, one control on the right. */
@@ -374,7 +311,7 @@ export interface FieldGroupProps {
   error?: ReactNode;
   /** Marks the legend with the required state (controls carry the required attribute). The controls carry their own `required`. */
   required?: boolean;
-  /** In a two-column `FormSection`, span both columns. */
+  /** In a Card field grid, span both columns. */
   wide?: boolean;
   /** Optional field grid. Omitted keeps the existing children layout. */
   columns?: 1 | 2;

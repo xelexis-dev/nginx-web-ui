@@ -2,7 +2,16 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { useApiAction } from "@/lib/use-api-action";
-import { Banner, Button, StatusBadge, Table, Td, Th, Tr } from "@repo/ui";
+import {
+  Banner,
+  Button,
+  Surface,
+  StatusBadge,
+  Table,
+  Td,
+  Th,
+  Tr,
+} from "@repo/ui";
 // 로컬·노드가 같은 패널을 쓰므로 §9 카드가 이 안에 있어야 한다 —
 // `components/upstreams/upstream-form.tsx` 헤더와 같은 판단.
 import { NodeErrorCard } from "@/components/node-error";
@@ -106,23 +115,15 @@ export function DnsChallengePanel({
   );
 
   return (
-    <section
-      className={styles.panel}
-      aria-label={
+    <Surface
+      title={
         mode === "renew"
           ? "갱신 진행 중 — DNS TXT 레코드 추가 필요"
           : "DNS TXT 레코드 추가 필요"
       }
+      tag={<StatusBadge tone="warning">조치 필요</StatusBadge>}
     >
-      <header className={styles.panelHead}>
-        <h2>
-          {mode === "renew"
-            ? "갱신 진행 중 — DNS TXT 레코드 추가 필요"
-            : "DNS TXT 레코드 추가 필요"}
-        </h2>
-        <StatusBadge tone="warning">조치 필요</StatusBadge>
-      </header>
-      <div className={`${styles.stack} ${styles.panelBody}`}>
+      <div className={styles.stack}>
         <p className={styles.dnsPanelBody}>
           아래 레코드를 DNS 공급자에 추가한 뒤{" "}
           <strong>전파 확인 후 계속</strong>을 누르세요. 전파에는 보통 수십
@@ -199,6 +200,6 @@ export function DnsChallengePanel({
           </p>
         )}
       </div>
-    </section>
+    </Surface>
   );
 }

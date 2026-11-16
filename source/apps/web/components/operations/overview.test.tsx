@@ -53,7 +53,7 @@ it("discloses attention items outside the supplied row slice", () => {
   const html = renderToStaticMarkup(<OperationsOverview vm={{...vm, servers:{ok:true, data:{...vm.servers.data, attention:3}}}} />);
   expect(html).toContain("외 3건");
   expect(html).toContain("전체 보기");
-  expect(html).toContain("로컬 서버");
+  expect(html).toContain("개요");
 });
 
 it("shows only the node count and list link, without node identities", () => {
@@ -91,4 +91,12 @@ it("moves available gauge context into a tip but keeps missing data visible", ()
   const ready = renderToStaticMarkup(<OperationsOverview vm={{ ...vm, gauge: {active: 1, requests: 1, waiting: 0, reading: 0, writing: 1, accepts: 1, handled: 1} }} />);
   expect(ready).toContain("nginx 수치는 이 화면을 연 시각의 stub_status 스냅샷입니다.");
   expect(withoutTips(ready)).not.toContain("stub_status 스냅샷");
+});
+
+it("uses a shared telemetry surface and configuration facts", () => {
+  const html = renderToStaticMarkup(<OperationsOverview vm={vm} />);
+  expect(html).toMatch(/<h2[^>]*>nginx 현황<\/h2>/);
+  expect(html).toContain('data-layout="grid"');
+  expect(html).toContain('data-columns="1"');
+  expect(html).not.toContain("로컬 서버");
 });

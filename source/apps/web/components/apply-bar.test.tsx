@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { isValidElement, type ReactNode } from "react";
-import { ApplyResult, ApplyReview } from "./apply-bar";
+import { ApplyResult } from "./apply-bar";
 import { NodeErrorCard, type NodeErrorCardProps } from "./node-error";
 
 /**
@@ -131,108 +131,4 @@ describe("ApplyResult — 노드 실패는 §9 로, 로컬 결과는 배너로",
   it("아직 적용을 누르지 않았으면 아무것도 그리지 않는다", () => {
     expect(ApplyResult({ result: null })).toBeNull();
   });
-});
-
-vi.mock("@/lib/use-api-action", () => ({
-  useApiAction: (action: unknown) => action,
-}));
-vi.mock("./notifications/toast-provider", () => ({ useToast: () => ({ toast: () => {} }) }));
-const reviewProps = {
-  canApply: true,
-  pendingCount: 2,
-  pendingHasBaseline: true,
-  pendingDiff: { hasChanges: true, servers: [], streams: [], upstreams: [] },
-  applyAction: async () => ({ ok: true }),
-  onCancel: () => {},
-};
-describe("ApplyReview", () => {
-  it.each([
-    { target: { kind: "local" as const }, targetLabel: "로컬 서버" },
-    {
-      target: {
-        kind: "node" as const,
-        id: "node-17",
-        name: "아주 긴 운영 서버 이름",
-      },
-      targetLabel: "아주 긴 운영 서버 이름",
-    },
-  ])("names the target and preserves the pending status", (context) => {
-    const html = renderToStaticMarkup(
-      <ApplyReview {...reviewProps} {...context} />,
-    );
-    expect(html).toContain("적용 대상");
-    expect(html).toContain(context.targetLabel + "에 적용");
-    expect(textOf(<ApplyReview {...reviewProps} {...context} />)).toContain(
-      '"' + context.targetLabel + '에 적용"을 누르면',
-    );
-    expect(html.match(/role="status"/g)).toHaveLength(1);
-    expect(html).not.toContain('aria-haspopup="dialog"');
-    expect(html).toContain('data-target-kind="' + context.target.kind + '"');
-    if (context.target.kind === "node")
-      expect(html).toContain('data-target-id="node-17"');
-    expect(html).toContain("nginx -t 검사");
-  });
-  it("does not expose apply controls to a viewer", () => {
-    expect(
-      renderToStaticMarkup(
-        <ApplyReview
-          {...reviewProps}
-          canApply={false}
-          target={{ kind: "local" }}
-          targetLabel="로컬 서버"
-        />,
-      ),
-    ).toBe("");
-  });
-  it("resets the action result by identity even when node labels match", () => {
-    const a = ApplyReview({
-      ...reviewProps,
-      target: { kind: "node", id: "a", name: "운영" },
-      targetLabel: "운영",
-    });
-    const b = ApplyReview({
-      ...reviewProps,
-      target: { kind: "node", id: "b", name: "운영" },
-      targetLabel: "운영",
-    });
-    expect(a.key).not.toBe(b.key);
-  });
-});
-
-it.each([
-  {
-    items: [
-      {
-        key: "s",
-        label: "skipped",
-        status: "skipped" as const,
-        changes: [],
-        reason: "예약된 포트",
-      },
-    ],
-    text: "아래 항목은 적용에서 제외돼 있습니다. 표시된 이유를 고친 뒤 다시 적용하세요.",
-  },
-  {
-    items: [
-      {
-        key: "s",
-        label: "skipped",
-        status: "skipped" as const,
-        changes: [],
-        reason: "예약된 포트",
-      },
-      { key: "a", label: "added", status: "added" as const, changes: [] },
-    ],
-    text: "표시된 이유를 고치기 전에는 다시 적용해도 제외됩니다.",
-  },
-])("keeps the skipped-item caveat inside the review", ({ items, text }) => {
-  const html = renderToStaticMarkup(
-    <ApplyReview
-      {...reviewProps}
-      target={{ kind: "local" }}
-      targetLabel="로컬 서버"
-      pendingDiff={{ ...reviewProps.pendingDiff, servers: items }}
-    />,
-  );
-  expect(html).toContain(text);
 });

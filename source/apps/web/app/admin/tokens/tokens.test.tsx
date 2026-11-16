@@ -479,9 +479,10 @@ describe("발급 화면", () => {
     expect(textOfHtml(html)).toContain(
       "다른 게이트웨이가 이 서버를 노드로 연결할 때 제시하는 토큰입니다. 이름에 어느 게이트웨이에 줄 것인지 적어 두세요.",
     );
+    expect(textOfHtml(html).split("다른 게이트웨이가 이 서버를 노드로 연결할 때 제시하는 토큰입니다.")).toHaveLength(2);
     // ② **평문은 한 번만 보인다.** 목록 리드와 같은 주장이고, 같은 이유로 붙든다.
     expect(textOfHtml(html)).toContain("발급이 끝나면 토큰 값을 한 번만 보여줍니다.");
-    expect(textOfHtml(html)).toContain("서버 토큰 목록으로");
+    expect(textOfHtml(html)).not.toContain("서버 토큰 목록으로");
   });
 
   /**
@@ -513,11 +514,11 @@ describe("발급 직후", () => {
    * 하나로도 통과하고(Task 5 인계 7), 「완료」가 통째로 사라져도 초록이다.
    * 세 값은 각각 뒤로가기·완료·상세 보기다.
    */
-  it("링크는 셋뿐이고 어느 것도 평문을 싣지 않는다", async () => {
+  it("링크는 둘뿐이고 어느 것도 평문을 싣지 않는다", async () => {
     actionStateOverride = ISSUED;
     const all = hrefs(await renderPage(NewServerTokenPage));
 
-    expect(all).toEqual(["/admin/tokens", "/admin/tokens", "/admin/tokens/tok-new"]);
+    expect(all).toEqual(["/admin/tokens", "/admin/tokens/tok-new"]);
     expect(all.some((h) => h.includes(PLAINTEXT))).toBe(false);
   });
 

@@ -30,6 +30,7 @@ export function ConfirmDialog({
   return (
     <Modal
       open={open}
+      dismissible={!pending}
       onClose={onClose}
       title={title}
       icon="danger"
@@ -39,6 +40,7 @@ export function ConfirmDialog({
           <Button
             type="button"
             variant="secondary"
+            disabled={pending}
             onClick={(event) => event.currentTarget.closest("dialog")?.close()}
           >
             취소

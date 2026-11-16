@@ -2,7 +2,7 @@
 
 import { useActionState, useId } from "react";
 import Link from "next/link";
-import type { ActionRef, BasicFormState } from "@repo/contracts";
+import type { BasicFormState } from "@repo/contracts";
 import {
   Card,
   FormStack,
@@ -18,7 +18,6 @@ import {
 import { useApiAction } from "@/lib/use-api-action";
 import { usePasskeyCeremony } from "@/lib/passkey-client";
 import type { PasskeyListView, PasskeyRowView } from "@/lib/passkey-api";
-import { PasskeyUnavailable } from "./passkey-list";
 import { FormErrors } from "@/components/form-errors";
 import styles from "./passkeys.module.css";
 
@@ -38,24 +37,13 @@ export function RegisterPasskeyForm({ data }: { data: PasskeyListView }) {
         if (!disabled) void ceremony.submit(new FormData(event.currentTarget));
       }}
     >
+      <FormErrors errors={ceremony.result.fieldErrors} />
       <FormStack>
-        <Banner
-          tone="info"
-          title={
-            <>
-              등록을 누른 뒤 기기의 안내에 따라 지문·얼굴 또는 PIN으로
-              확인하세요. 등록하면 다른 기기의 로그인은 종료됩니다.
-            </>
-          }
-        />
-        <FormErrors errors={ceremony.result.fieldErrors} />
         <Card
           id={`${id}-register-card`}
-          title="새 패스키"
-          errorCount={
-            Object.values(ceremony.result.fieldErrors ?? {}).filter(Boolean)
-              .length
-          }
+          title="패스키"
+          description="어느 기기의 패스키인지 알아볼 수 있는 이름을 붙입니다."
+          errorCount={ceremony.result.fieldErrors?.name ? 1 : 0}
         >
           <div className={formFieldsClassName({ columns: 2 })}>
             <Field
@@ -63,16 +51,32 @@ export function RegisterPasskeyForm({ data }: { data: PasskeyListView }) {
               htmlFor={`${id}-name`}
               required
               error={ceremony.result.fieldErrors?.name}
-              hint="나중에 알아보기 쉬운 이름을 입력하세요. 최대 64자."
+              hint="나중에 바꿀 수 있습니다. 최대 64자."
             >
               <TextInput
                 name="name"
-                placeholder="예: 개인 노트북"
+                placeholder="예: 업무용 노트북"
                 maxLength={64}
                 required
                 disabled={waiting || disabled}
               />
             </Field>
+            <Field
+              label="등록 주소"
+              htmlFor={`${id}-address`}
+              hint="이 패스키는 이 주소로 접속했을 때만 로그인에 쓸 수 있습니다."
+            >
+              <TextInput value={data.currentAddress ?? "—"} readOnly />
+            </Field>
+          </div>
+        </Card>
+        <Card
+          id={`${id}-confirmation-card`}
+          errorCount={ceremony.result.fieldErrors?.currentPassword ? 1 : 0}
+          title="본인 확인"
+          description="패스키를 등록하려면 현재 비밀번호를 확인합니다."
+        >
+          <div className={formFieldsClassName({ columns: 2 })}>
             <Field
               label="현재 비밀번호"
               htmlFor={`${id}-password`}
@@ -89,27 +93,7 @@ export function RegisterPasskeyForm({ data }: { data: PasskeyListView }) {
                 disabled={waiting || disabled}
               />
             </Field>
-            <div data-wide className={styles.readout}>
-              <span className={styles.hint}>주소</span>
-              <strong>{data.currentAddress ?? "—"}</strong>
-            </div>
-
-            {!data.availability.available ? (
-              <div data-wide>
-                <PasskeyUnavailable />
-              </div>
-            ) : !data.hasPassword ? (
-              <p data-wide className={styles.hint}>
-                외부 로그인 전용 계정은 패스키를 등록할 수 없습니다.
-              </p>
-            ) : data.passkeys.length >= 10 ? (
-              <div data-wide>
-                <Banner
-                  tone="warning"
-                  title="패스키는 최대 10개까지 등록할 수 있습니다."
-                />
-              </div>
-            ) : !ceremony.supported ? (
+            {!ceremony.supported ? (
               <p data-wide className={styles.hint}>
                 이 브라우저에서는 패스키를 등록할 수 없습니다. 지원하는
                 브라우저로 다시 접속하세요.
@@ -155,7 +139,11 @@ export function RegisterPasskeyForm({ data }: { data: PasskeyListView }) {
           </div>
         </Card>
         <FormBar
-          note={<>등록 가능: {Math.max(0, 10 - data.passkeys.length)}개</>}
+          note={
+            <>
+              등록 주소: <strong>{data.currentAddress}</strong>
+            </>
+          }
         >
           {waiting ? (
             <Button type="button" variant="secondary" onClick={ceremony.cancel}>
@@ -170,8 +158,8 @@ export function RegisterPasskeyForm({ data }: { data: PasskeyListView }) {
             </Link>
           )}
           <Button type="submit" disabled={waiting || disabled}>
-            <Icon name={waiting ? "pending" : "tokens"} />
-            {waiting ? "기기 확인 중" : "패스키 등록"}
+            <Icon name={waiting ? "pending" : "fingerprint"} />
+            {waiting ? "기기 확인 중" : "패스키 만들기"}
           </Button>
         </FormBar>
       </FormStack>
@@ -188,8 +176,8 @@ export function RenamePasskeyForm({ row }: { row: PasskeyRowView }) {
   return (
     <form action={action}>
       <input type="hidden" name="id" value={row.id} />
+      <FormErrors errors={state.fieldErrors} />
       <FormStack>
-        <FormErrors errors={state.fieldErrors} />
         <Card
           id={`${id}-rename-card`}
           title="표시 이름"
@@ -229,103 +217,6 @@ export function RenamePasskeyForm({ row }: { row: PasskeyRowView }) {
           </Button>
         </FormBar>
       </FormStack>
-    </form>
-  );
-}
-
-export function RemovePasskeyForm({
-  action: ref,
-  id,
-  userId,
-  email,
-  all,
-  canRemove,
-  isSelf = false,
-  onCancel,
-}: {
-  action: ActionRef;
-  id?: string;
-  userId?: string;
-  email?: string;
-  all?: boolean;
-  canRemove: boolean;
-  isSelf?: boolean;
-  onCancel?: () => void;
-}) {
-  const uid = useId();
-  const [state, action, pending] = useActionState(
-    useApiAction<BasicFormState>(ref),
-    { ok: false },
-  );
-  return (
-    <form action={action}>
-      <FormErrors errors={state.fieldErrors} />
-      {id ? <input type="hidden" name="id" value={id} /> : null}
-      {userId ? <input type="hidden" name="userId" value={userId} /> : null}
-      {all ? <input type="hidden" name="all" value="1" /> : null}
-      <div className={formFieldsClassName({ columns: 2 })}>
-        <div>
-          <p>
-            {userId
-              ? `대상 계정: ${email}`
-              : "이 패스키로 더 이상 로그인할 수 없습니다."}
-          </p>
-          <p className={styles.hint}>
-            {userId && !isSelf
-              ? "사용자의 모든 기기에서 로그인이 종료됩니다. 삭제한 패스키는 다시 등록해야 합니다."
-              : "다른 기기의 로그인도 종료됩니다. 이 기기의 로그인은 유지됩니다."}
-          </p>
-        </div>
-        <Field
-          label={userId ? "내 관리자 비밀번호" : "현재 비밀번호"}
-          htmlFor={`${uid}-password`}
-          required
-          error={state.fieldErrors?.currentPassword}
-        >
-          <TextInput
-            name="currentPassword"
-            type="password"
-            autoComplete="current-password"
-            placeholder={userId ? "관리자 비밀번호 입력" : "현재 비밀번호 입력"}
-            required
-            disabled={!canRemove || pending}
-          />
-        </Field>
-      </div>
-      {!canRemove ? (
-        <p className={styles.hint}>
-          {userId
-            ? "외부 로그인 전용 관리자 계정은 패스키를 삭제할 수 없습니다. 비밀번호를 사용하는 관리자에게 요청하세요."
-            : "이 계정에서는 현재 비밀번호로 본인 확인을 할 수 없어 패스키를 삭제할 수 없습니다."}
-        </p>
-      ) : null}
-      {state.error ? (
-        <Banner tone="error" role="alert" title={state.error} />
-      ) : null}
-      <div className={styles.actions}>
-        {!userId ? (
-          <span className={styles.hint}>
-            다른 패스키나 비밀번호로 다시 로그인할 수 있습니다.
-          </span>
-        ) : null}
-        {onCancel ? (
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={onCancel}
-            disabled={pending}
-          >
-            취소
-          </Button>
-        ) : null}
-        <Button
-          type="submit"
-          variant={userId ? "danger" : "dangerQuiet"}
-          disabled={!canRemove || pending}
-        >
-          {all ? "패스키 전체 삭제" : "패스키 삭제"}
-        </Button>
-      </div>
     </form>
   );
 }

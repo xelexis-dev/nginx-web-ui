@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Icon, StatusDot, IconButton } from "@repo/ui";
+import { EmptyState, Icon, StatusDot, IconButton } from "@repo/ui";
 import type { NotificationSeverity } from "@/lib/notification-presentation";
 import styles from "./notification-bell.module.css";
 
@@ -78,7 +78,7 @@ export function NotificationBellView({
       {open ? (
         <div className={styles.menu} role="menu">
           {items.length === 0 ? (
-            <p className={styles.empty}>알림이 없습니다.</p>
+            <EmptyState description="알림이 없습니다." />
           ) : (
             items.map((n) => {
               const inner = (

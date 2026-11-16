@@ -43,6 +43,9 @@
 .brandIdentity {
   min-width: 0;
 }
+.compactBrand {
+  display: none;
+}
 .brandIdentity svg {
   color: var(--text-1);
 }
@@ -196,12 +199,14 @@
 :global(html[data-nav-collapsed="true"]) .navItem {
   justify-content: center;
 }
-:global(html[data-nav-collapsed="true"]) .brandIdentity {
-  width: var(--size-icon);
-  overflow: hidden;
+:global(html[data-nav-collapsed="true"]) .brand {
+  justify-content: center;
 }
-:global(html[data-nav-collapsed="true"]) .brandIdentity svg {
-  max-width: none;
+:global(html[data-nav-collapsed="true"]) .fullBrand {
+  display: none;
+}
+:global(html[data-nav-collapsed="true"]) .compactBrand {
+  display: block;
 }
 :global(html[data-nav-collapsed="true"]) .sidebarFoot {
   justify-content: center;
@@ -223,12 +228,14 @@
   .sidebarFoot {
     justify-content: center;
   }
-  .brandIdentity {
-    width: var(--size-icon);
-    overflow: hidden;
+  .brand {
+    justify-content: center;
   }
-  .brandIdentity svg {
-    max-width: none;
+  .fullBrand {
+    display: none;
+  }
+  .compactBrand {
+    display: block;
   }
   .collapseToggle {
     display: none;
@@ -281,9 +288,14 @@
   :global(html[data-nav-collapsed="true"]) .navItem {
     justify-content: flex-start;
   }
-  :global(html[data-nav-collapsed="true"]) .brandIdentity {
-    width: auto;
-    overflow: visible;
+  :global(html[data-nav-collapsed="true"]) .brand {
+    justify-content: space-between;
+  }
+  :global(html[data-nav-collapsed="true"]) .fullBrand {
+    display: block;
+  }
+  :global(html[data-nav-collapsed="true"]) .compactBrand {
+    display: none;
   }
 }
 :global(body:not(:has(main .nwui-btn-primary:not(dialog *))))

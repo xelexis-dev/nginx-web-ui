@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
-import { Button, Modal } from "@repo/ui";
+import { Button } from "@repo/ui";
 import type { Role } from "@repo/contracts";
 import type { OperationsTarget } from "@repo/presentation/operations-target";
 import type { ConfigDiff } from "@/lib/config-diff";
@@ -16,7 +16,8 @@ import {
   ToastViewport,
   useToast,
 } from "@/components/notifications/toast-provider";
-import { ApplyReview, applyResultToast } from "@/components/apply-bar";
+import { applyResultToast } from "@/components/apply-bar";
+import { ApplyDialog } from "@/components/apply-dialog";
 import { ConfigDiffView } from "@/components/config-diff-view";
 import { OperationsShell } from "@/components/operations/operations-shell";
 import { StoryPathContext } from "./adapters/next-navigation";
@@ -114,22 +115,21 @@ function Review({
   const [open, setOpen] = useState(true);
   return (
     <ToastProvider>
-      <Modal open={open} onClose={() => setOpen(false)} title="설정 적용">
-        <ApplyReview
-          target={
-            node
-              ? { kind: "node", id: "node-1", name: "local" }
-              : { kind: "local" }
-          }
-          targetLabel={node ? "local" : "로컬 서버"}
-          canApply={!viewer}
-          pendingCount={3}
-          pendingHasBaseline
-          pendingDiff={diff}
-          applyAction={async () => ({ ok: false, output: diagnostics })}
-          onCancel={() => setOpen(false)}
-        />
-      </Modal>
+      <ApplyDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        target={
+          node
+            ? { kind: "node", id: "node-1", name: "local" }
+            : { kind: "local" }
+        }
+        targetLabel={node ? "local" : "로컬 서버"}
+        canApply={!viewer}
+        pendingCount={3}
+        pendingHasBaseline
+        pendingDiff={diff}
+        applyAction={async () => ({ ok: false, output: diagnostics })}
+      />
       <ToastViewport />
     </ToastProvider>
   );
@@ -216,7 +216,13 @@ function ToastButtons() {
       </Button>
       <Button
         variant="secondary"
-        onClick={() => toast({ severity: "error", title: "진단 결과", output: "nginx: configuration is valid" })}
+        onClick={() =>
+          toast({
+            severity: "error",
+            title: "진단 결과",
+            output: "nginx: configuration is valid",
+          })
+        }
       >
         짧은 진단 알림
       </Button>
@@ -512,6 +518,8 @@ export const ToastShortBody: Story = {
 export const ToastShortOutput: Story = {
   render: () => <Toasts />,
   play: async ({ canvasElement }) => {
-    await userEvent.click(within(canvasElement).getByRole("button", { name: "짧은 진단 알림" }));
+    await userEvent.click(
+      within(canvasElement).getByRole("button", { name: "짧은 진단 알림" }),
+    );
   },
 };

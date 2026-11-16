@@ -23,12 +23,12 @@ export function AuthFrame({
     <main className={styles.screen}>
       <div className={styles.frame}>
         <header className={styles.panelUtility}>
-          <BrandLogo size="signIn" />
           <ThemeToggle />
         </header>
         <section className={styles.panel} aria-labelledby="auth-title">
           <div className={styles.authContent}>
             <header className={styles.heading}>
+              <BrandLogo size="signIn" variant="mark" />
               <h1 id="auth-title">{title}</h1>
               <p>{subtitle}</p>
             </header>
@@ -36,7 +36,9 @@ export function AuthFrame({
           </div>
         </section>
         <footer className={styles.panelFooter}>
-          <span>nginx-web-ui <span>v{APP_SEMVER}</span></span>
+          <span>
+            nginx-web-ui <span>v{APP_SEMVER}</span>
+          </span>
           <p>{note}</p>
         </footer>
       </div>

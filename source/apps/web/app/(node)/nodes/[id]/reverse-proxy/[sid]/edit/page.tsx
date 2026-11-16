@@ -1,6 +1,5 @@
 import layout from "@/components/page-layout.module.css";
-import Link from "next/link";
-import { Banner, PageHeader, linkClassName } from "@repo/ui";
+import { Banner, PageHeader } from "@repo/ui";
 import { ServerForm } from "@/components/reverse-proxy/server-form";
 import {
   toCertificateOptions,
@@ -122,14 +121,6 @@ export default async function EditNodeServerPage({
   return (
     <section className={layout.page}>
       <PageHeader
-        eyebrow={
-          <Link
-            href={`${basePath}/${sid}`}
-            className={linkClassName({ variant: "back" })}
-          >
-            {loaded.data.values.serverName.split(/\s+/)[0] || "서버"}
-          </Link>
-        }
         title="서버 수정"
       />
 

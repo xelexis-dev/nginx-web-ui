@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { IconButton } from "./button";
 import { Icon } from "./icon";
 import styles from "./modal.module.css";
@@ -13,6 +13,8 @@ import styles from "./modal.module.css";
  */
 export interface ModalProps {
   open: boolean;
+  size?: "default" | "review";
+  dismissible?: boolean;
   onClose: () => void;
   title: string;
   /** Optional semantic warning for risky or destructive actions; informational dialogs omit it. */
@@ -24,6 +26,8 @@ export interface ModalProps {
 
 export function Modal({
   open,
+  size = "default",
+  dismissible = true,
   onClose,
   title,
   icon,
@@ -33,6 +37,30 @@ export function Modal({
 }: ModalProps) {
   const ref = useRef<HTMLDialogElement | null>(null);
   const titleId = useId();
+  const bodyRef = useRef<HTMLDivElement | null>(null);
+  const [overflowing, setOverflowing] = useState(false);
+  useEffect(() => {
+    const body = bodyRef.current;
+    if (!open || !body) return;
+    const measure = () => {
+      setOverflowing(body.scrollHeight > body.clientHeight);
+      const fixedHeight =
+        (body.previousElementSibling?.getBoundingClientRect().height ?? 0) +
+        (body.nextElementSibling?.getBoundingClientRect().height ?? 0);
+      ref.current?.style.setProperty(
+        "--dialog-fixed-height",
+        `${fixedHeight}px`,
+      );
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(body);
+    if (body.previousElementSibling)
+      observer.observe(body.previousElementSibling);
+    if (body.nextElementSibling) observer.observe(body.nextElementSibling);
+    for (const child of body.children) observer.observe(child);
+    return () => observer.disconnect();
+  }, [open, children]);
 
   useEffect(() => {
     const el = ref.current;
@@ -45,6 +73,12 @@ export function Modal({
     <dialog
       ref={ref}
       className={styles.dialog}
+      data-size={size}
+      data-toast-reserve={size === "review" ? "" : undefined}
+      onCancel={(event) => {
+        if (event.target === event.currentTarget && !dismissible)
+          event.preventDefault();
+      }}
       aria-labelledby={titleId}
       aria-describedby={description ? titleId + "-description" : undefined}
       onClose={(event) => {
@@ -54,7 +88,7 @@ export function Modal({
       }}
       // 패널 밖(스크림) 클릭은 target이 dialog 자신이 된다 — 내용 클릭과 구분된다.
       onClick={(e) => {
-        if (e.target !== ref.current) return;
+        if (!dismissible || e.target !== ref.current) return;
         const bounds = e.currentTarget.getBoundingClientRect();
         if (
           e.clientX < bounds.left ||
@@ -83,6 +117,7 @@ export function Modal({
         </div>
         <IconButton
           label="닫기"
+          disabled={!dismissible}
           variant="ghost"
           className={styles.close}
           onClick={() => ref.current?.close()}
@@ -90,7 +125,13 @@ export function Modal({
           <Icon name="close" />
         </IconButton>
       </div>
-      <div className={styles.body}>{children}</div>
+      <div
+        ref={bodyRef}
+        className={styles.body}
+        tabIndex={overflowing ? 0 : undefined}
+      >
+        {children}
+      </div>
       {footer ? <div className={styles.footer}>{footer}</div> : null}
     </dialog>
   );

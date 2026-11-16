@@ -1,25 +1,17 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
-import type { ActionRef } from "@repo/contracts";
-import { useApiAction } from "@/lib/use-api-action";
-import { Banner, Button } from "@repo/ui";
 import type { ConfigDiff } from "@/lib/config-diff";
+import type { OperationsTarget } from "@repo/presentation/operations-target";
+import type { ActionRef } from "@repo/contracts";
+import { Banner } from "@repo/ui";
 import {
   NodeErrorCard,
   nodeErrorPresentation,
   type NodeErrorCardProps,
 } from "@/components/node-error";
-import {
-  PendingChangesBadge,
-  pendingIntro,
-} from "@/components/pending-changes-badge";
-import styles from "./apply-bar.module.css";
-import { useToast, type ToastInput } from "./notifications/toast-provider";
-import { ConfigDiffView } from "./config-diff-view";
-
-import type { OperationsTarget } from "@repo/presentation/operations-target";
+import type { ToastInput } from "./notifications/toast-provider";
 export type { OperationsTarget } from "@repo/presentation/operations-target";
+
 interface ReviewContext {
   target: OperationsTarget;
   targetLabel: string;
@@ -63,6 +55,8 @@ export interface ApplyBarProps {
   review: ReviewContext;
 }
 
+export type ApplyReviewProps = Omit<ApplyBarProps, "review"> & ReviewContext;
+
 /** Banner form of a result. The product shows results as a toast (`applyResultToast`); Storybook templates still render this. */
 export function ApplyResult({ result }: { result: ApplyBarResult | null }) {
   if (!result) return null;
@@ -91,121 +85,32 @@ export function ApplyResult({ result }: { result: ApplyBarResult | null }) {
 }
 
 // shortcut: matches the headings of Rust control/model.rs `skipped_summary`; use a structured field when the apply response next changes.
-const PARTIAL_APPLY = /(새 변경을 적용하지 못한 설정|적용에서 제외한 설정) \d+개/;
+const PARTIAL_APPLY =
+  /(새 변경을 적용하지 못한 설정|적용에서 제외한 설정) \d+개/;
 
 export function applyResultToast(result: ApplyBarResult): ToastInput {
   const node = result.nodeError
-    ? nodeErrorPresentation(result.nodeError) ?? { title: result.nodeError.failure.message }
+    ? (nodeErrorPresentation(result.nodeError) ?? {
+        title: result.nodeError.failure.message,
+      })
     : null;
   // Apply leaves out what nginx -t rejects and reports ok: the rest is live, this part is not.
-  const content = node && result.nodeError?.failure.kind === "domain_failure"
-    ? { ...node, output: node.body, body: undefined }
-    : node;
+  const content =
+    node && result.nodeError?.failure.kind === "domain_failure"
+      ? { ...node, output: node.body, body: undefined }
+      : node;
   const partial = result.ok && PARTIAL_APPLY.test(result.output ?? "");
   return {
     key: "apply-result",
     severity: partial ? "warning" : result.ok ? "success" : "error",
     persistent: partial || !result.ok,
     ...(content ?? {
-      title: partial ? "일부 설정을 적용하지 못했습니다"
-        : result.ok ? "nginx -t 통과, reload 완료"
-        : result.error ?? "적용 실패 — nginx -t 실패 (변경 사항은 롤백됨)",
+      title: partial
+        ? "일부 설정을 적용하지 못했습니다"
+        : result.ok
+          ? "nginx -t 통과, reload 완료"
+          : (result.error ?? "적용 실패 — nginx -t 실패 (변경 사항은 롤백됨)"),
       output: result.output,
     }),
   };
-}
-
-function ReviewResultToast({ result, onSuccess }: {
-  result: ApplyBarResult | null; onSuccess: () => void;
-}) {
-  const { toast } = useToast();
-  const shown = useRef<ApplyBarResult | null>(null);
-  useEffect(() => {
-    if (!result || result === shown.current) return;
-    shown.current = result;
-    toast(applyResultToast(result));
-    if (result.ok) onSuccess();
-  }, [result, toast, onSuccess]);
-  return null;
-}
-
-export function ApplyBar({
-  canApply,
-  pendingCount,
-  pendingHasBaseline,
-  pendingDiff,
-  applyAction,
-  review,
-}: ApplyBarProps) {
-  const [result, formAction, pending] = useActionState<
-    ApplyBarResult | null,
-    FormData
-  >(useApiAction<ApplyBarResult | null>(applyAction), null);
-
-  if (!canApply) {
-    return null;
-  }
-
-  return (
-    <div
-      className={styles.applyBar}
-      data-target-kind={review.target.kind}
-      data-target-id={
-        review.target.kind === "node" ? review.target.id : undefined
-      }
-    >
-      <p className={styles.description}>
-        저장된 변경 사항을 검사한 뒤 nginx에 반영합니다.
-      </p>
-      <div className={styles.target}>
-        <span>적용 대상</span>
-        <strong>{review.targetLabel}</strong>
-      </div>
-      <p className={styles.description}>
-        {pendingIntro(pendingDiff, review.targetLabel + "에 적용")}
-      </p>
-      <ConfigDiffView diff={pendingDiff} variant="inline" />
-      <ol className={styles.steps} aria-label="설정 적용 순서">
-        <li>설정 렌더</li>
-        <li>nginx -t 검사</li>
-        <li>통과하면 reload</li>
-      </ol>
-      <div className={styles.applyRow} data-toast-avoid="">
-        <PendingChangesBadge
-          count={pendingCount}
-          hasBaseline={pendingHasBaseline}
-          diff={pendingDiff}
-          inline
-        />
-        <form action={formAction} className={styles.actions}>
-          <Button type="button" variant="secondary" onClick={review.onCancel}>
-            취소
-          </Button>
-          <Button type="submit" disabled={pending}>
-            {pending ? "적용 중..." : review.targetLabel + "에 적용"}
-          </Button>
-        </form>
-      </div>
-
-      <ReviewResultToast result={result} onSuccess={review.onCancel} />
-    </div>
-  );
-}
-
-export type ApplyReviewProps = Omit<ApplyBarProps, "review"> & ReviewContext;
-
-/** The shell owns the dialog; target identity never comes from its display label. */
-export function ApplyReview({
-  target,
-  targetLabel,
-  onCancel,
-  ...props
-}: ApplyReviewProps) {
-  return (
-    <ApplyBar
-      key={target.kind === "node" ? "node:" + target.id : "local"}
-      {...props}
-      review={{ target, targetLabel, onCancel }}
-    />
-  );
 }

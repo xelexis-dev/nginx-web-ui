@@ -3,20 +3,18 @@ import { useState } from "react";
 import { Banner, Button, EmptyState, StatusBadge, Surface } from "@repo/ui";
 import type { PasskeyListView } from "@/lib/passkey-api";
 import { PasskeyTable } from "./passkey-list";
-import { RemovePasskeyForm } from "./passkey-forms";
+import { RemovePasskeyDialog } from "./remove-passkey-dialog";
 import styles from "./passkeys.module.css";
 
 export function AdminPasskeys({
   data,
   userId,
   email,
-  removed = false,
   isSelf = false,
 }: {
   data: PasskeyListView;
   userId: string;
   email: string;
-  removed?: boolean;
   isSelf?: boolean;
 }) {
   const [removing, setRemoving] = useState<string | "all" | null>(null);
@@ -24,13 +22,11 @@ export function AdminPasskeys({
   return (
     <Surface
       flush
-      title={
-        <span className={styles.title}>
-          사용자의 패스키
-          <StatusBadge tone="neutral" size="sm" dot={false}>
-            {data.passkeys.length}개
-          </StatusBadge>
-        </span>
+      title="사용자의 패스키"
+      tag={
+        <StatusBadge tone="neutral" size="sm" dot={false}>
+          {data.passkeys.length}개
+        </StatusBadge>
       }
       actions={
         <Button
@@ -43,16 +39,6 @@ export function AdminPasskeys({
         </Button>
       }
     >
-      {removed ? (
-        <div className={styles.notice}>
-          <Banner
-            tone="success"
-            title={isSelf
-              ? "패스키를 삭제했습니다. 다른 기기의 로그인은 종료되고 이 기기의 로그인은 유지됩니다."
-              : "패스키를 삭제하고 사용자의 로그인을 종료했습니다."}
-          />
-        </div>
-      ) : null}
       {!data.canRemove ? (
         <div className={styles.notice}>
           <Banner
@@ -66,7 +52,6 @@ export function AdminPasskeys({
       {data.passkeys.length ? (
         <PasskeyTable
           rows={data.passkeys}
-          available={data.availability.available}
           action={(row) => (
             <Button
               variant="secondary"
@@ -82,24 +67,18 @@ export function AdminPasskeys({
         <EmptyState title="등록된 패스키가 없습니다" />
       )}
       {removing ? (
-        <div className={styles.remove}>
-          <h3>
-            {removing === "all"
-              ? `패스키 ${data.passkeys.length}개를 모두 삭제하시겠습니까?`
-              : `${selected?.name ?? ""} 패스키를 삭제하시겠습니까?`}
-          </h3>
-          <RemovePasskeyForm
-            key={removing}
-            action={{ id: "admin.users.passkeys.remove", args: [] }}
-            id={removing === "all" ? undefined : removing}
-            all={removing === "all"}
-            userId={userId}
-            isSelf={isSelf}
-            email={email}
-            canRemove={data.canRemove}
-            onCancel={() => setRemoving(null)}
-          />
-        </div>
+        <RemovePasskeyDialog
+          key={removing}
+          action={{ id: "admin.users.passkeys.remove", args: [] }}
+          id={removing === "all" ? undefined : removing}
+          name={selected?.name}
+          count={data.passkeys.length}
+          all={removing === "all"}
+          userId={userId}
+          isSelf={isSelf}
+          email={email}
+          onClose={() => setRemoving(null)}
+        />
       ) : null}
     </Surface>
   );

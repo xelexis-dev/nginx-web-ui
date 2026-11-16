@@ -1,3 +1,4 @@
+import { Surface } from "@repo/ui";
 import { Facts } from "../../../../packages/ui/src/data";
 import { expect, within } from "storybook/test";
 import type { Meta, StoryObj } from "@storybook/react-vite";
@@ -83,3 +84,54 @@ export const LongStrip: Story = {
   name: "긴 요약 띠",
   args: { ...LongAndMissing.args, layout: "strip" },
 };
+
+export const Notes: Story = {
+  args: {
+    items: [
+      {
+        term: "백업 지원",
+        value: "동기화 가능",
+        note: "등록 시 확인한 상태입니다.",
+      },
+      {
+        term: "기기",
+        value: "운영팀에서 공유하는 긴 이름의 기기",
+        note: "현재 상태는 비밀번호 관리자에서 확인하세요.",
+      },
+    ],
+  },
+};
+export const Spec: Story = OneColumn;
+export const States: Story = Notes;
+export const SpecDark: Story = { ...Spec, globals: { theme: "dark" } };
+export const StatesDark: Story = { ...States, globals: { theme: "dark" } };
+
+export const StripGap: Story = {
+  render: () => (
+    <div style={{ display: "grid", gap: "var(--gap-section)" }}>
+      <Facts
+        layout="strip"
+        items={[
+          { term: "서버", value: "3개" },
+          { term: "활성", value: "2개" },
+        ]}
+      />
+      <Surface title="다음 구역">본문</Surface>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const strip = canvasElement.querySelector("dl")!;
+    const next = canvasElement.querySelector("section")!;
+    const textBottom = Math.max(
+      ...[...strip.querySelectorAll("dt, dd")].map(
+        (node) => node.getBoundingClientRect().bottom,
+      ),
+    );
+    const expected =
+      canvasElement.ownerDocument.defaultView!.innerWidth <= 768 ? 32 : 40;
+    await expect(
+      Math.abs(next.getBoundingClientRect().top - textBottom - expected),
+    ).toBeLessThanOrEqual(0.5);
+  },
+};
+export const StripGapDark: Story = { ...StripGap, globals: { theme: "dark" } };

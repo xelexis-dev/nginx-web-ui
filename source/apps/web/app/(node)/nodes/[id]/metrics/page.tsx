@@ -30,7 +30,7 @@ export default async function NodeMetricsPage({
 
   return (
     <section className={layout.page}>
-      <PageHeader eyebrow={access.node.name}
+      <PageHeader
         title={<>접속 지표</>}
         info={<>nginx 연결·요청 추이와 도메인별 요청 수입니다. 1분마다 수집합니다.</>}
       />

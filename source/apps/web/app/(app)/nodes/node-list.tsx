@@ -107,50 +107,46 @@ export function NodeList({
       ) : null}
 
       <Surface flush>
-        {nodeRows.length === 0 ? (
-          <EmptyState title="연결된 노드가 없습니다." />
-        ) : (
-          <Table label="노드" density="comfortable">
-            <thead>
-              <tr>
-                <Th>이름</Th>
-                <Th>주소</Th>
-                <Th>상태</Th>
-                <Th>마지막 확인</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {nodeRows.map((node) => (
-                <Tr key={node.id}>
-                  <Td
-                    cell="primary"
-                    wrap
-                    icon={<Icon name="server" size={16} />}
-                  >
-                    <Link
-                      className={styles.nodeTitle}
-                      href={`/nodes/${node.id}`}
-                    >
-                      {node.name}
-                    </Link>
-                  </Td>
-                  <Td mono wrap label="주소">
-                    {node.baseUrl}
-                  </Td>
-                  <Td cell="status">
-                    <NodeStatusBadge
-                      status={node.lastStatus}
-                      version={node.lastVersion}
-                    />
-                  </Td>
-                  <Td wrap label="마지막 확인">
-                    {lastSeenLabel(node)}
-                  </Td>
-                </Tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
+        <Table label="노드" density="comfortable" narrow="stacked">
+          <thead>
+            <tr>
+              <Th>이름</Th>
+              <Th>주소</Th>
+              <Th>상태</Th>
+              <Th>마지막 확인</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {nodeRows.length === 0 ? (
+              <Tr>
+                <Td colSpan={4}>
+                  <EmptyState title="연결된 노드가 없습니다." />
+                </Td>
+              </Tr>
+            ) : null}
+            {nodeRows.map((node) => (
+              <Tr key={node.id}>
+                <Td cell="primary" wrap icon={<Icon name="server" size={16} />}>
+                  <Link className={styles.nodeTitle} href={`/nodes/${node.id}`}>
+                    {node.name}
+                  </Link>
+                </Td>
+                <Td mono wrap label="주소">
+                  {node.baseUrl}
+                </Td>
+                <Td cell="status" label="상태">
+                  <NodeStatusBadge
+                    status={node.lastStatus}
+                    version={node.lastVersion}
+                  />
+                </Td>
+                <Td wrap label="마지막 확인">
+                  {lastSeenLabel(node)}
+                </Td>
+              </Tr>
+            ))}
+          </tbody>
+        </Table>
       </Surface>
     </section>
   );

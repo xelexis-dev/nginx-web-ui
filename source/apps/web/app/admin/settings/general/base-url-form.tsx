@@ -35,8 +35,8 @@ export function BaseUrlForm({ defaultValue }: { defaultValue: string }) {
 
   return (
     <form className={resourceStyles.form} action={action}>
+      <FormErrors errors={state.fieldErrors} />
       <FormStack>
-        <FormErrors errors={state.fieldErrors} />
         <Card
           id="admin-base-url"
           title={<>일반</>}

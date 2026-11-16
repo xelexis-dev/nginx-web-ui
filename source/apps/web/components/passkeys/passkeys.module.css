@@ -1,12 +1,17 @@
-.title {
+.address {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .notice {
-  padding: 0 var(--pad-panel) var(--sp-4);
+  padding-block-end: var(--sp-4);
 }
-.notice p {
+.notice p,
+.hint,
+.bodyText {
   margin: 0;
 }
 .hint {
@@ -14,61 +19,115 @@
   font-size: var(--fs-xs);
   line-height: var(--lh-sm);
 }
-.hint {
-  margin: 0;
-}
-.badge {
-  display: table;
-  margin-top: var(--sp-1);
-  white-space: normal;
-}
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--gap-actions);
-  padding-top: var(--sp-6);
-  margin-top: var(--sp-6);
-  border-top: 1px solid var(--line-strong);
-}
-.actions > .hint {
-  margin-right: auto;
-}
-.readout {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--sp-3);
-  padding: var(--sp-4);
-  background: var(--bg-hover);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--r-3);
+.bodyText {
+  color: var(--text-2);
   font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
 }
-.stack {
+.sectionBody {
   display: grid;
-  gap: var(--gap-section);
+  gap: var(--sp-4);
   min-width: 0;
 }
-.remove {
-  margin: 0 var(--pad-panel) var(--pad-panel);
-  padding-top: var(--sp-4);
-  border-top: 1px solid var(--line-strong);
+.nameColumn {
+  width: calc(var(--size-kv) + var(--sp-4));
 }
-.remove h3 {
-  margin: 0 0 var(--sp-4);
-  color: var(--danger-text);
-  font-size: var(--fs-lg);
+.storageColumn,
+.usedColumn {
+  width: calc(var(--sp-8) * 4 + var(--sp-5));
+}
+.createdColumn {
+  width: calc(var(--sp-8) * 4 + var(--sp-1));
+}
+.actionColumn {
+  width: calc(var(--sp-8) * 2 + var(--sp-2));
+}
+.effects {
+  margin: 0;
+  padding-inline-start: var(--sp-4);
+  display: grid;
+  gap: var(--sp-1);
+}
+.noticeGrid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--sp-4) var(--gap-cols);
+  margin-block-start: var(--sp-4);
+}
+.noticeGrid > :first-child {
+  grid-column: span 5;
+}
+.noticeGrid > :last-child {
+  grid-column: span 7;
+}
+.noticeGrid p {
+  margin: var(--sp-3) 0 0;
+  overflow-wrap: anywhere;
+}
+.noticeLabel {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  font-weight: var(--fw-medium);
+  color: var(--text-3);
+}
+.diagnostics {
+  margin: 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+.diagnostics > div {
+  display: grid;
+  grid-template-columns: calc(var(--sp-8) * 4 + var(--sp-2)) minmax(0, 1fr);
+  gap: var(--sp-2);
+}
+.diagnostics dt {
+  color: var(--text-2);
+}
+.diagnostics dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+.remedies {
+  margin: 0;
+  padding-inline-start: var(--sp-5);
+  display: grid;
+  gap: var(--sp-3);
+}
+.remedies li::marker {
+  color: var(--text-3);
+}
+.skeletonLines {
+  display: grid;
+  gap: var(--sp-2);
+}
+.skeleton {
+  display: block;
+  height: var(--lh-xs);
+  border-radius: var(--r-1);
+  background: var(--bg-skeleton);
+  box-shadow: inset 0 0 0 var(--bw) var(--warning-line);
 }
 @media (max-width: 768px) {
-  .actions {
-    justify-content: flex-start;
+  .noticeGrid {
+    grid-template-columns: minmax(0, 1fr);
   }
-  .actions > .hint {
-    width: 100%;
+  .noticeGrid > :first-child,
+  .noticeGrid > :last-child {
+    grid-column: auto;
   }
-  .actions > :is(a, button) {
-    flex: 1;
+  .diagnostics > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-0-5);
   }
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: var(--bw);
+  height: var(--bw);
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

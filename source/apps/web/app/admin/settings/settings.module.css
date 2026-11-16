@@ -1,32 +1,5 @@
 /* Settings-specific row and action layout; fields and cards use @repo/ui. */
 
-.row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-6);
-  flex-wrap: wrap;
-  padding-bottom: var(--sp-6);
-  border-bottom: 1px solid var(--line-strong);
-}
-
-.row:last-of-type {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.rowTitle {
-  font-size: var(--fs-lg);
-  font-weight: 600;
-  color: var(--text-1);
-}
-
-.rowNote {
-  margin: var(--sp-1) 0 0;
-  font-size: var(--fs-sm);
-  color: var(--text-2);
-}
-
 .actions {
   display: flex;
   gap: var(--sp-2);

@@ -1,5 +1,5 @@
 "use client";
-import { Card, FormStack } from "@repo/ui";
+import { Card, FormStack, SettingRows, SettingRow } from "@repo/ui";
 import adminStyles from "@/app/admin/admin-pages.module.css";
 import resourceStyles from "@/components/resource-layout.module.css";
 import { FormErrors } from "@/components/form-errors";
@@ -7,7 +7,6 @@ import { useActionState, useState } from "react";
 import { Banner, SegmentedControl, Button } from "@repo/ui";
 import type { BasicFormState as PolicyState } from "@repo/contracts";
 import { useApiAction } from "@/lib/use-api-action";
-import styles from "./security.module.css";
 
 const INITIAL: PolicyState = { ok: false };
 
@@ -60,8 +59,8 @@ export function SecurityForm({
 
   return (
     <form action={formAction} className={resourceStyles.form}>
+      <FormErrors errors={state.fieldErrors} />
       <FormStack>
-        <FormErrors errors={state.fieldErrors} />
         <Card
           id="admin-security"
           title={<>보안 — 2FA 강제</>}
@@ -74,49 +73,44 @@ export function SecurityForm({
             <input type="hidden" name="require2faUser" value={String(user)} />
             <input type="hidden" name="require2faOauth" value={String(oauth)} />
 
-            <div className={styles.row}>
-              <div className={styles.rowText}>
-                <div className={styles.rowTitle}>관리자 계정 2FA</div>
-                <p className={styles.rowNote}>
-                  admin 역할 계정에 2단계 인증을 강제합니다.
-                </p>
-              </div>
-              <Toggle
-                value={admin}
-                onChange={setAdmin}
-                ariaLabel="관리자 계정 2FA 강제"
+            <SettingRows>
+              <SettingRow
+                label="관리자 계정 2FA"
+                wideDetail
+                detail="admin 역할 계정에 2단계 인증을 강제합니다."
+                action={
+                  <Toggle
+                    value={admin}
+                    onChange={setAdmin}
+                    ariaLabel="관리자 계정 2FA 강제"
+                  />
+                }
               />
-            </div>
-
-            <div className={styles.row}>
-              <div className={styles.rowText}>
-                <div className={styles.rowTitle}>일반 계정 2FA</div>
-                <p className={styles.rowNote}>
-                  editor·viewer 역할 계정에 2단계 인증을 강제합니다.
-                </p>
-              </div>
-              <Toggle
-                value={user}
-                onChange={setUser}
-                ariaLabel="일반 계정 2FA 강제"
+              <SettingRow
+                label="일반 계정 2FA"
+                wideDetail
+                detail="editor·viewer 역할 계정에 2단계 인증을 강제합니다."
+                action={
+                  <Toggle
+                    value={user}
+                    onChange={setUser}
+                    ariaLabel="일반 계정 2FA 강제"
+                  />
+                }
               />
-            </div>
-
-            <div className={styles.row}>
-              <div className={styles.rowText}>
-                <div className={styles.rowTitle}>OAuth 로그인 2FA</div>
-                <p className={styles.rowNote}>
-                  OAuth 로 로그인한 사용자에게도 이 앱의 2단계 인증을
-                  요구합니다. 역할과 무관한 별개 축입니다 — 공급자가 이미 2단계
-                  인증을 하는 경우가 많아, 켜면 이중이 될 수 있습니다.
-                </p>
-              </div>
-              <Toggle
-                value={oauth}
-                onChange={setOauth}
-                ariaLabel="OAuth 로그인 2FA 강제"
+              <SettingRow
+                label="OAuth 로그인 2FA"
+                wideDetail
+                detail="OAuth 로 로그인한 사용자에게도 이 앱의 2단계 인증을 요구합니다. 역할과 무관한 별개 축입니다 — 공급자가 이미 2단계 인증을 하는 경우가 많아, 켜면 이중이 될 수 있습니다."
+                action={
+                  <Toggle
+                    value={oauth}
+                    onChange={setOauth}
+                    ariaLabel="OAuth 로그인 2FA 강제"
+                  />
+                }
               />
-            </div>
+            </SettingRows>
 
             {state.ok ? (
               <Banner
@@ -133,12 +127,7 @@ export function SecurityForm({
               </Banner>
             ) : null}
             {state.error ? (
-              <Banner
-                tone="error"
-                role="alert"
-                title={state.error}
-                style={{ gridColumn: "1 / -1" }}
-              />
+              <Banner tone="error" role="alert" title={state.error} data-wide />
             ) : null}
 
             <footer className={adminStyles.foot}>

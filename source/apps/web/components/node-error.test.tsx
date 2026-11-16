@@ -190,7 +190,7 @@ describe("NodeErrorCard — 배너와 카드는 다른 것이다", () => {
 
     if (!isValidElement<{ role?: string }>(rendered))
       throw new Error("엘리먼트가 아닙니다");
-    expect(rendered.props.role).toBe(failure.kind === "unreachable" ? "alert" : "status");
+    expect(renderToStaticMarkup(rendered)).toContain(`role="${failure.kind === "unreachable" ? "alert" : "status"}"`);
   });
 
   /**

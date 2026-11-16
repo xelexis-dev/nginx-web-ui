@@ -1,6 +1,5 @@
 import layout from "@/components/page-layout.module.css";
-import { Icon, linkClassName, PageHeader, Card, FormStack } from "@repo/ui";
-import Link from "next/link";
+import { PageHeader, Card, FormStack } from "@repo/ui";
 import type { NodeView } from "@/lib/node-page";
 import { NodeEditForm } from "./node-edit-form";
 import { UnpairButton } from "./unpair-button";
@@ -20,25 +19,9 @@ import styles from "../../../../(app)/nodes/nodes.module.css";
  * 참고).
  */
 export function NodeEditView({ node }: { node: NodeView }) {
-  const id = node.id;
-
   return (
     <section className={layout.page}>
-      <PageHeader
-        title={<>{node.name} 수정</>}
-        eyebrow={
-          <>
-            {" "}
-            <Link
-              href={`/nodes/${id}`}
-              className={linkClassName({ variant: "back" })}
-            >
-              <Icon name="arrowLeft" size={14} />
-              상세로
-            </Link>{" "}
-          </>
-        }
-      />
+      <PageHeader title={<>{node.name} 수정</>} />
 
       <FormStack>
         <NodeEditForm

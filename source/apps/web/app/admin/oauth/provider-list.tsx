@@ -4,6 +4,7 @@ import {
   Icon,
   Facts,
   StatusBadge,
+  EmptyState,
   Surface,
   buttonClassName,
   Table,
@@ -67,7 +68,7 @@ export function ProviderListView({
       />
 
       <Surface title={<>공급자</>} as="section" flush>
-        <Table label="OAuth 공급자">
+        <Table label="OAuth 공급자" density="comfortable" narrow="stacked">
           <thead>
             <Tr>
               <Th>이름</Th>
@@ -80,9 +81,16 @@ export function ProviderListView({
           <tbody>
             {providers.length === 0 ? (
               <Tr>
-                <Td colSpan={5} className={styles.emptyCell}>
-                  등록된 공급자가 없습니다. 추가하면 로그인 화면에 버튼이
-                  생깁니다.
+                <Td colSpan={5}>
+                  <EmptyState
+                    description={
+                      <>
+                        {" "}
+                        등록된 공급자가 없습니다. 추가하면 로그인 화면에 버튼이
+                        생깁니다.{" "}
+                      </>
+                    }
+                  />
                 </Td>
               </Tr>
             ) : null}
@@ -102,7 +110,7 @@ export function ProviderListView({
                 <Td cell="meta" label="연동된 사용자">
                   {p.linkedUsers}명
                 </Td>
-                <Td cell="status">
+                <Td cell="status" label="상태">
                   <StatusBadge
                     tone={p.enabled ? "success" : "neutral"}
                     size="sm"
@@ -110,7 +118,7 @@ export function ProviderListView({
                     {p.enabled ? "사용" : "사용 안 함"}
                   </StatusBadge>
                 </Td>
-                <Td cell="action">
+                <Td cell="action" label="작업">
                   {/* 설정을 지우지 않고 버튼만 감추는 스위치. */}
                   {toggleForm(p)}
                 </Td>

@@ -107,6 +107,7 @@ for (const c of cases) {
         nodeError,
       });
       const result = await c.render();
+      expect(elements(result, "h1")).toHaveLength(1);
       const cards = elements(result, NodeErrorCard);
       expect(cards).toHaveLength(1);
       expect(cards[0]!.props).toEqual(nodeError);

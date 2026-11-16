@@ -133,12 +133,6 @@
 
 /* ---------------------------------------------------------------- table */
 
-.emptyCell {
-  padding: var(--sp-8) var(--sp-4);
-  text-align: left;
-  color: var(--text-2);
-}
-
 /* ---------------------------------------------------------------- badges */
 
 /* ---------------------------------------------------------------- detail */
@@ -169,7 +163,8 @@
 
 .secretValue {
   display: block;
-  padding: var(--sp-3);
+  padding: var(--sp-0-5) var(--sp-3);
+  margin-block: calc(-1 * (var(--sp-0-5) + var(--bw)));
   border: 1px dashed var(--border-control);
   border-radius: var(--r-2);
   background: var(--bg-hover);

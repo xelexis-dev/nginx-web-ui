@@ -68,7 +68,6 @@ export function MailRecipientDetailActions({
           tone={"error"}
           title={<>테스트 발송 실패 — {testState.error}</>}
           role="alert"
-          style={{ marginTop: "var(--sp-3)" }}
         ></Banner>
       ) : null}
       {testState.ok && testState.message ? (
@@ -76,7 +75,6 @@ export function MailRecipientDetailActions({
           tone={"success"}
           title={<>{testState.message}</>}
           role="status"
-          style={{ marginTop: "var(--sp-3)" }}
         ></Banner>
       ) : null}
       {deleteState.error ? (

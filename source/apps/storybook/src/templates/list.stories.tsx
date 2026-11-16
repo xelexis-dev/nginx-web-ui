@@ -69,13 +69,7 @@ const ROWS: Row[] = [
   },
 ];
 
-function ListTemplate({
-  rows,
-  cards = false,
-}: {
-  rows: Row[];
-  cards?: boolean;
-}) {
+function ListTemplate({ rows }: { rows: Row[] }) {
   const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
   const count = (f: string) =>
@@ -137,114 +131,83 @@ function ListTemplate({
           </>
         }
       >
-        {rows.length === 0 ? (
-          <EmptyState
-            title="업스트림이 없습니다"
-            description="대상 서버 묶음을 만들면 리버스 프록시가 요청을 나눠 보낼 수 있습니다."
-            action={
-              <a
-                href="#new"
-                className={buttonClassName({
-                  variant: "secondary",
-                  size: "sm",
-                })}
-              >
-                새 업스트림
-              </a>
-            }
-          />
-        ) : shown.length === 0 ? (
-          <EmptyState
-            title="조건에 맞는 업스트림이 없습니다"
-            action={
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => {
-                  setFilter("all");
-                  setQuery("");
-                }}
-              >
-                필터 초기화
-              </Button>
-            }
-          />
-        ) : cards ? (
-          <div className={styles.cards}>
+        <Table label="업스트림" density="comfortable" narrow="stacked">
+          <thead>
+            <tr>
+              <Th>상태</Th>
+              <Th>이름</Th>
+              <Th align="end">대상</Th>
+              <Th>쓰는 서버</Th>
+              <Th>마지막 변경</Th>
+              <Th>
+                <span className={styles.srOnly}>작업</span>
+              </Th>
+            </tr>
+          </thead>
+          <tbody>
+            {shown.length === 0 ? (
+              <Tr>
+                <Td colSpan={6}>
+                  <EmptyState
+                    title={
+                      rows.length === 0
+                        ? "업스트림이 없습니다"
+                        : "조건에 맞는 업스트림이 없습니다"
+                    }
+                    description={
+                      rows.length === 0
+                        ? "대상 서버 묶음을 만들면 요청을 나눠 보낼 수 있습니다."
+                        : undefined
+                    }
+                    action={
+                      rows.length ? (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => {
+                            setFilter("all");
+                            setQuery("");
+                          }}
+                        >
+                          필터 초기화
+                        </Button>
+                      ) : undefined
+                    }
+                  />
+                </Td>
+              </Tr>
+            ) : null}
             {shown.map((r) => (
-              <Surface
-                key={r.id}
-                title={
-                  <a className={styles.cardLink} href={`#${r.id}`}>
-                    {r.name}
+              <Tr key={r.id} pending={r.pending}>
+                <Td cell="status">
+                  <StatusBadge tone={r.status.tone}>
+                    {r.status.label}
+                  </StatusBadge>
+                </Td>
+                <Td cell="primary" wrap>
+                  <a href={`#${r.id}`}>{r.name}</a>
+                  {r.pending ? " · 미적용" : null}
+                </Td>
+                <Td numeric label="대상">
+                  {r.targets}개
+                </Td>
+                <Td label="쓰는 서버">{r.servers}</Td>
+                <Td label="변경">{r.changed}</Td>
+                <Td cell="action">
+                  <a
+                    href={`#${r.id}-edit`}
+                    className={buttonClassName({
+                      variant: "ghost",
+                      size: "sm",
+                    })}
+                  >
+                    수정
                   </a>
-                }
-                description={r.servers}
-              >
-                <StatusBadge tone={r.status.tone}>{r.status.label}</StatusBadge>
-                <Facts
-                  columns={2}
-                  items={[
-                    { term: "대상", value: r.targets + "개" },
-                    { term: "마지막 변경", value: r.changed },
-                  ]}
-                />
-                <a
-                  href={`#${r.id}-edit`}
-                  className={buttonClassName({ variant: "ghost", size: "sm" })}
-                >
-                  수정
-                </a>
-              </Surface>
+                </Td>
+              </Tr>
             ))}
-          </div>
-        ) : (
-          <Table label="업스트림">
-            <thead>
-              <tr>
-                <Th>상태</Th>
-                <Th>이름</Th>
-                <Th align="end">대상</Th>
-                <Th>쓰는 서버</Th>
-                <Th>마지막 변경</Th>
-                <Th>
-                  <span className={styles.srOnly}>작업</span>
-                </Th>
-              </tr>
-            </thead>
-            <tbody>
-              {shown.map((r) => (
-                <Tr key={r.id} pending={r.pending}>
-                  <Td cell="status">
-                    <StatusBadge tone={r.status.tone}>
-                      {r.status.label}
-                    </StatusBadge>
-                  </Td>
-                  <Td cell="primary" wrap>
-                    <a href={`#${r.id}`}>{r.name}</a>
-                    {r.pending ? " · 미적용" : null}
-                  </Td>
-                  <Td numeric label="대상">
-                    {r.targets}개
-                  </Td>
-                  <Td label="쓰는 서버">{r.servers}</Td>
-                  <Td label="변경">{r.changed}</Td>
-                  <Td cell="action">
-                    <a
-                      href={`#${r.id}-edit`}
-                      className={buttonClassName({
-                        variant: "ghost",
-                        size: "sm",
-                      })}
-                    >
-                      수정
-                    </a>
-                  </Td>
-                </Tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
+          </tbody>
+        </Table>
       </Surface>
     </TemplatePreview>
   );
@@ -275,5 +238,4 @@ export const Narrow: Story = {
   globals: { viewport: { value: "p390", isRotated: false } },
 };
 
-export const Cards: Story = { name: "카드 목록", args: { cards: true } };
 export const Dark: Story = { globals: { theme: "dark" } };

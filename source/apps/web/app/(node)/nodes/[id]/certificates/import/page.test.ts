@@ -78,7 +78,8 @@ describe("노드 인증서 가져오기 화면 — 접근", () => {
     const card = { card: true };
     authorizeNodePageMock.mockResolvedValue({ ok: false, render: card });
 
-    expect(await render()).toBe(card);
+    const result = await render();
+    expect(result.props.children).toContain(card);
   });
 });
 

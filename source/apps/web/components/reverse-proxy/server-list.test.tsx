@@ -222,3 +222,15 @@ it("places supplied local family tabs below the PageHeader without changing node
   );
   expect(html).toContain('href="/nodes/n1/reverse-proxy/s1"');
 });
+
+it.each(["/reverse-proxy", "/nodes/n1/reverse-proxy"])("labels both stacked row controls on %s", (basePath) => {
+  const html = renderToStaticMarkup(<ServerList {...props({ basePath })} />);
+  const cells = [...html.matchAll(/<td\b[^>]*data-cell="action"[^>]*>[\s\S]*?<\/td>/g)].map(match => match[0]);
+  expect(cells).toHaveLength(4);
+  for (let index = 0; index < cells.length; index += 2) {
+    expect(cells[index]).toContain('data-label="활성"');
+    expect(cells[index]).toContain('role="switch"');
+    expect(cells[index + 1]).toContain('data-label="작업"');
+    expect(cells[index + 1]).toContain(`href="${basePath}/`);
+  }
+});

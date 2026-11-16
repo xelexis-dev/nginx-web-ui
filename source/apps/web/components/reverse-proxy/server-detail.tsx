@@ -257,18 +257,8 @@ export function ServerDetail({
           </Link>
         }
         title={names[0] ?? data.serverName}
-        description={
-          <span className={styles.opsHeaderMeta}>
-            <StatusBadge
-              tone={
-                data.enabled ? (tlsProblem ? "warning" : "success") : "neutral"
-              }
-            >
-              {data.enabled ? "활성" : "비활성"}
-            </StatusBadge>
-            {names.length > 1 ? <span>{names.slice(1).join(" ")}</span> : null}
-          </span>
-        }
+        status={<StatusBadge tone={data.enabled ? (tlsProblem ? "warning" : "success") : "neutral"}>{data.enabled ? "활성" : "비활성"}</StatusBadge>}
+        description={names.length > 1 ? names.slice(1).join(" ") : undefined}
         actions={
           write ? (
             <ServerDetailActions

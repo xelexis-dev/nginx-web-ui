@@ -1,53 +1,8 @@
 /* Readouts and 8/4 sections use only real overview data. */
-.telemetry {
+.sectionStack {
   display: grid;
-  gap: var(--sp-4);
-}
-.sectionHeading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-4);
-}
-.sectionHeading h2 {
-  margin: 0;
-  font-size: var(--fs-lg);
-  font-weight: 600;
-}
-.configuration {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  margin: 0;
-}
-.configuration > div {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: var(--sp-3);
-  padding-block: var(--sp-3);
-  border-bottom: 1px solid var(--line-strong);
+  gap: var(--gap-section);
   min-width: 0;
-}
-.configuration > div:last-child {
-  border-bottom: 0;
-}
-.configuration dt {
-  font-size: var(--fs-xs);
-  color: var(--text-2);
-}
-.configuration dd {
-  display: flex;
-  align-items: baseline;
-  gap: var(--sp-2);
-  margin: 0;
-  font-size: var(--fs-md);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-.configuration small {
-  font-size: var(--fs-xs);
-  font-weight: 400;
-  color: var(--text-2);
 }
 .configurationFooter {
   display: flex;
@@ -56,18 +11,12 @@
   gap: var(--sp-3);
   padding-top: var(--sp-4);
   margin-top: var(--sp-4);
-  border-top: 1px solid var(--line-strong);
+  border-top: var(--bw) solid var(--line-strong);
   font-size: var(--fs-xs);
   color: var(--text-2);
 }
 .kpiNote {
   margin: var(--sp-3) 0 0;
-  color: var(--warning-text);
-  font-size: var(--fs-xs);
-}
-
-.panelError {
-  margin: 0;
   color: var(--warning-text);
   font-size: var(--fs-xs);
 }
@@ -85,7 +34,7 @@
 }
 
 .name {
-  display: inline-flex;
+  display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--sp-1) var(--sp-2);
@@ -102,7 +51,7 @@
 
 .list li {
   padding-block: var(--sp-3);
-  border-bottom: 1px solid var(--line-strong);
+  border-bottom: var(--bw) solid var(--line-strong);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -121,9 +70,10 @@
 
 .events li {
   padding-block: var(--sp-3);
-  border-bottom: 1px solid var(--line-strong);
+  border-bottom: var(--bw) solid var(--line-strong);
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto;
+  grid-template-columns: var(--size-ctl-sm) minmax(0, 1fr) auto;
+  align-items: center;
   gap: var(--sp-2);
   font-size: var(--fs-xs);
   overflow-wrap: anywhere;
@@ -166,8 +116,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: var(--size-ctl-sm);
+  height: var(--size-ctl-sm);
   border-radius: var(--r-2);
   background: var(--bg-sunken);
   color: var(--text-3);
@@ -183,14 +133,11 @@
 }
 @media (max-width: 768px) {
   .events li {
-    grid-template-columns: 28px minmax(0, 1fr);
+    grid-template-columns: var(--size-ctl-sm) minmax(0, 1fr);
   }
   .events .time {
     grid-column: 2;
     grid-row: 2;
-  }
-  .sectionHeading {
-    flex-wrap: wrap;
   }
 }
 

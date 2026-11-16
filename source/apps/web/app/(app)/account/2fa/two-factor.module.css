@@ -14,13 +14,6 @@
   align-items: start;
 }
 
-.cardTitle {
-  margin: 0;
-  font-size: var(--fs-lg);
-  font-weight: 600;
-  color: var(--text-1);
-}
-
 .qrBox {
   /* White quiet zone so the code scans on dark backgrounds too. */
   align-self: flex-start;
@@ -41,18 +34,6 @@
   color: var(--text-2);
 }
 
-.secret {
-  margin: 0;
-  padding: var(--sp-2) var(--sp-3);
-  font-family: var(--font);
-  font-size: var(--fs-md);
-  color: var(--text-1);
-  word-break: break-all;
-  background: var(--bg-sunken);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--r-2);
-}
-
 .backupCard {
   display: flex;
   flex-direction: column;
@@ -64,24 +45,6 @@
   font-size: var(--fs-md);
   line-height: var(--lh-sm);
   color: var(--text-1);
-}
-
-.backupGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: var(--sp-2);
-  margin: var(--sp-3) 0;
-}
-
-.backupCode {
-  padding: var(--sp-2) var(--sp-3);
-  font-family: var(--font);
-  font-size: var(--fs-sm);
-  text-align: center;
-  color: var(--text-1);
-  background: var(--bg-sunken);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--r-2);
 }
 
 .doneAction {
