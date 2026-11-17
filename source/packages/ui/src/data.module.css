@@ -390,3 +390,23 @@
     grid-column: 1 / -1;
   }
 }
+
+.kpis[data-ruled="false"] {
+  border-block: 0;
+}
+@media (min-width: 769px) {
+  .kpis[data-ruled="false"] .kpi {
+    padding-block: 0;
+  }
+}
+@media (max-width: 768px) {
+  .kpis[data-ruled="false"] .kpi {
+    padding-block: var(--sp-3);
+  }
+  .kpis[data-ruled="false"] .kpi:first-child {
+    padding-top: 0;
+  }
+  .kpis[data-ruled="false"] .kpi:last-child {
+    padding-bottom: 0;
+  }
+}

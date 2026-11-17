@@ -4,8 +4,9 @@
   /* Positioned, so absolutely placed content in the cells (a visually hidden column name) stays
      inside the scroll box instead of widening the page when the table scrolls. */
   position: relative;
-  margin-inline: calc(-1 * var(--cell-x));
+  margin-inline: calc(-1 * var(--table-bleed, var(--cell-x)));
   overflow-x: auto;
+  border-radius: 0 0 var(--table-corner-radius, 0) var(--table-corner-radius, 0);
   overscroll-behavior-x: contain;
 }
 
@@ -47,7 +48,7 @@
   box-sizing: border-box;
   height: var(--table-row-size);
   padding: var(--cell-y) var(--cell-x);
-  box-shadow: inset 0 calc(-1 * var(--bw)) var(--line);
+  box-shadow: inset 0 calc(-1 * var(--bw)) var(--table-row-rule, var(--line));
   color: var(--text-2);
   vertical-align: middle;
   white-space: nowrap;
@@ -321,12 +322,12 @@
     padding: var(--cell-y) var(--cell-x);
     border-bottom: 0;
     /* An inset rule preserves the 44px row with 20px text and 12px vertical padding. */
-    box-shadow: inset 0 calc(-1 * var(--bw)) var(--line);
+    box-shadow: inset 0 calc(-1 * var(--bw)) var(--table-row-rule, var(--line));
   }
   .table[data-density="comfortable"] tr[data-current] > td:first-child {
     box-shadow:
       inset var(--bw-2) 0 var(--accent),
-      inset 0 calc(-1 * var(--bw)) var(--line);
+      inset 0 calc(-1 * var(--bw)) var(--table-row-rule, var(--line));
   }
 }
 
@@ -340,7 +341,7 @@
   .table tr[data-current] > td:first-child {
     box-shadow:
       inset var(--bw-2) 0 var(--accent),
-      inset 0 calc(-1 * var(--bw)) var(--line);
+      inset 0 calc(-1 * var(--bw)) var(--table-row-rule, var(--line));
   }
 }
 .table tbody tr:has(> td[colspan]):hover td {
@@ -416,4 +417,28 @@
 
 @media (min-width: 769px) {
   .table td[data-numeric] .cellContent { justify-content: flex-end; }
+}
+
+/* Flush boxed surfaces own their edge padding; ordinary tables keep their bleed. */
+@media (min-width: 769px) {
+  .table :is(th, td):first-child {
+    padding-left: var(--table-edge-pad, var(--cell-x));
+  }
+  .table :is(th, td):last-child {
+    padding-right: var(--table-edge-pad, var(--cell-x));
+  }
+}
+@media (max-width: 768px) {
+  .table tbody tr {
+    padding-inline: var(--table-edge-pad, var(--cell-x));
+  }
+}
+
+.table tbody tr:last-child {
+  --table-row-rule: var(--table-last-line, var(--line));
+}
+@media (max-width: 768px) {
+  .table tbody tr:last-child {
+    border-bottom-color: var(--table-last-line, var(--line));
+  }
 }

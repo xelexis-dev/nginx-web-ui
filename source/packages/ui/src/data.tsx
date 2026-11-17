@@ -56,13 +56,20 @@ export interface KpiRowProps {
     icon?: ReactNode;
   }[];
   columns?: 2 | 3 | 4;
+  /** Drop the outer rules when a boxed surface already frames the readouts. */
+  ruled?: boolean;
 }
 
 /** Readouts with optional decorative context; one column on narrow screens. */
-export function KpiRow({ label, items, columns }: KpiRowProps) {
+export function KpiRow({ label, items, columns, ruled = true }: KpiRowProps) {
   return (
     <div className={styles.kpiClip}>
-      <dl className={styles.kpis} aria-label={label} data-columns={columns}>
+      <dl
+        className={styles.kpis}
+        aria-label={label}
+        data-columns={columns}
+        data-ruled={ruled ? undefined : "false"}
+      >
         {items.map((item, index) => (
           <div key={index} className={styles.kpi} data-tone={item.tone}>
             <dt>

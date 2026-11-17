@@ -183,3 +183,42 @@
     justify-content: flex-end;
   }
 }
+
+/* Overview reuses the form card frame without the form grid or stacked header actions. */
+.surface[data-variant="boxed"] {
+  border: var(--bw) solid var(--line-strong);
+  border-radius: var(--r-3);
+  background: var(--bg-canvas);
+  padding: 0;
+}
+.surface[data-variant="boxed"] .surfaceHeader {
+  margin: 0;
+  padding: var(--pad-card-head) var(--pad-card);
+  border-bottom: var(--bw) solid var(--line);
+}
+.surface[data-variant="boxed"] .surfaceBody {
+  padding: var(--pad-card);
+}
+.surface[data-variant="boxed"] .toolbar {
+  margin: 0;
+  padding: var(--pad-card-head) var(--pad-card) 0;
+}
+.surfaceFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-1) var(--sp-4);
+  padding: var(--pad-card-foot) var(--pad-card);
+  border-top: var(--bw) solid var(--line);
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+}
+.surface[data-variant="boxed"][data-flush] .surfaceBody {
+  --table-bleed: 0px;
+  --table-edge-pad: var(--pad-card);
+  --table-corner-radius: calc(var(--r-3) - var(--bw));
+  --table-last-line: transparent;
+  padding: 0;
+}

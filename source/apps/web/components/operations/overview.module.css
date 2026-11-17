@@ -1,20 +1,11 @@
 /* Readouts and 8/4 sections use only real overview data. */
+.sections,
 .sectionStack {
   display: grid;
-  gap: var(--gap-section);
+  gap: var(--gap-card);
   min-width: 0;
 }
-.configurationFooter {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  padding-top: var(--sp-4);
-  margin-top: var(--sp-4);
-  border-top: var(--bw) solid var(--line-strong);
-  font-size: var(--fs-xs);
-  color: var(--text-2);
-}
+
 .kpiNote {
   margin: var(--sp-3) 0 0;
   color: var(--warning-text);
@@ -23,7 +14,7 @@
 
 /* Only in a flush card, whose body has no padding of its own. */
 .inset {
-  padding: var(--pad-panel);
+  padding: var(--pad-card);
 }
 
 /* Separate blocks inside a card body (a list and the notes under it). */
@@ -51,7 +42,7 @@
 
 .list li {
   padding-block: var(--sp-3);
-  border-bottom: var(--bw) solid var(--line-strong);
+  border-bottom: var(--bw) solid var(--line);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -69,8 +60,8 @@
 }
 
 .events li {
-  padding-block: var(--sp-3);
-  border-bottom: var(--bw) solid var(--line-strong);
+  padding: var(--sp-3) var(--pad-card);
+  border-bottom: var(--bw) solid var(--line);
   display: grid;
   grid-template-columns: var(--size-ctl-sm) minmax(0, 1fr) auto;
   align-items: center;
@@ -102,12 +93,10 @@
 
 /* Inline links in descriptions and notices: ink with an underline, not the browser's blue. */
 
-.list li:first-child,
-.events li:first-child {
+.list li:first-child {
   padding-top: 0;
 }
-.list li:last-child,
-.events li:last-child {
+.list li:last-child {
   padding-bottom: 0;
   border-bottom: 0;
 }
@@ -144,7 +133,7 @@
 .overviewGrid {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  gap: var(--gap-cols);
+  gap: var(--gap-card);
   align-items: start;
   min-width: 0;
 }
@@ -155,4 +144,8 @@
   .overviewGrid {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+.events li:last-child {
+  border-bottom: 0;
 }

@@ -25,6 +25,9 @@ import {
   Select,
   SegmentedControl,
   Checkbox,
+  Banner,
+  PageHeader,
+  Surface,
 } from "@repo/ui";
 import styles from "./logs.module.css";
 
@@ -33,6 +36,8 @@ type ViewMode = "table" | "raw";
 type StatusClass = "" | "2xx" | "3xx" | "4xx" | "5xx";
 
 const MAX_LINES = 2000;
+// observability/logs.rs TAIL_LINES: only the reconnect prefix can replay this tail.
+const RECONNECT_TAIL_LINES = 200;
 const FLUSH_MS = 200;
 const SCROLL_BOTTOM_THRESHOLD_PX = 24;
 const RECONNECT_DELAY_MS = 2000;
@@ -243,20 +248,10 @@ function levelTone(level: string): Tone {
   return "neutral";
 }
 
-/** Raw-view only: color a whole error line by its level. */
-function rawLevelClassName(file: LogFile, text: string): string | undefined {
-  if (file !== "error") return undefined;
-  if (
-    text.includes("[error]") ||
-    text.includes("[crit]") ||
-    text.includes("[alert]") ||
-    text.includes("[emerg]")
-  ) {
-    return styles.levelError;
-  }
-  if (text.includes("[warn]")) return styles.levelWarn;
-  if (text.includes("[notice]")) return styles.levelNotice;
-  return styles.levelMuted;
+function recordTone(rec: Rec): Tone {
+  if (rec.kind === "error") return levelTone(rec.level);
+  const status = rec.kind === "access" ? statusClassOf(rec.status) : "";
+  return status ? STATUS_TONE[status] : "neutral";
 }
 
 function isNoise(rec: Rec): boolean {
@@ -293,8 +288,7 @@ const LEVEL_CHIPS = [
  * Live access/error log tail. Streams raw lines over SSE, parses each into a
  * structured record on arrival, and renders either a scannable Table (default)
  * or the Raw text.
- * Filters (search, status/level, method, noise-hide) narrow the Table view
- * only.
+ * Filters apply to both the structured table and the raw text.
  *
  * 로컬 화면(`app/(app)/logs/page.tsx`)과 노드 화면(`app/(node)/nodes/[id]/logs/`)이
  * 이 컴포넌트를 공유한다 — `streamPath` 가 갈라지는 유일한 지점이다. 노드
@@ -308,10 +302,9 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
   const [view, setView] = useState<ViewMode>("table");
   const [lines, setLines] = useState<LogLine[]>([]);
   const [autoScroll, setAutoScroll] = useState(true);
-  // 시작값은 항상 true다 — 정상적인 첫 로드에서 onopen이 오기 전까지 배너가
-  // 잠깐 번쩍이면 안 된다. onerror가 false로, onopen이 true로 되돌린다(아래
-  // connect()) — 카운팅·타이머 없이 이 두 이벤트만으로 항상 정확하다.
-  const [connected, setConnected] = useState(true);
+  const [connection, setConnection] = useState<"connecting" | "live" | "lost">("connecting");
+  const [waiting, setWaiting] = useState(0);
+  const [copyNotice, setCopyNotice] = useState("");
   // MAX_RECONNECT_ATTEMPTS번 연속 실패해 자동 재연결을 멈춘 상태. true인 동안은
   // connect()가 스스로 다시 시도하지 않는다 — 사용자가 재연결 버튼으로
   // restartKey를 올려야 새 시도가 시작된다.
@@ -330,6 +323,7 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
   const detailPrefix = useId();
 
   function toggleRow(id: number) {
+    if (expanded !== id) pause();
     setExpanded((current) => (current === id ? null : id));
   }
 
@@ -344,21 +338,28 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
   );
 
   const viewportRef = useRef<HTMLDivElement | null>(null);
+  const detailRef = useRef<HTMLDivElement | null>(null);
+  const received = useRef<string[]>([]);
   const nextId = useRef(0);
   const pendingLines = useRef<LogLine[]>([]);
-  const suppressScrollEvent = useRef(false);
+  const following = useRef(true);
+  const arrivalCount = useRef(0);
   const fileRef = useRef(file);
   fileRef.current = file;
 
   // Each tab is an independent stream — switching tabs starts fresh.
-  // connected/retriesExhausted도 같이 되돌린다 — 안 그러면 이전 탭에서 재연결을
+  // connection/retriesExhausted도 같이 되돌린다 — 안 그러면 이전 탭에서 재연결을
   // 포기한 상태가 방금 새로 시작한 스트림 위에 그대로 남아 거짓 배너가 뜬다.
   useEffect(() => {
     pendingLines.current = [];
+    received.current = [];
     setLines([]);
+    following.current = true;
+    arrivalCount.current = 0;
+    setWaiting(0);
     setAutoScroll(true);
     setExpanded(null);
-    setConnected(true);
+    setConnection("connecting");
     setRetriesExhausted(false);
   }, [file]);
 
@@ -371,21 +372,40 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
     // 끊겼다 바로 회복하는 링크가 예전 장애의 긴 대기시간을 물려받지 않는다.
     let attempt = 0;
 
+    function append(text: string) {
+      arrivalCount.current += 1;
+      received.current.push(text);
+      if (received.current.length > MAX_LINES) received.current.shift();
+      const id = nextId.current++;
+      pendingLines.current.push({ id, text, rec: parseLine(fileRef.current, text) });
+      if (pendingLines.current.length > MAX_LINES) pendingLines.current.shift();
+    }
+
     function connect() {
+      const held = received.current.slice(-RECONNECT_TAIL_LINES);
+      let candidates = held.map((_, index) => index);
+      let replay: string[] = [];
+      let overlap = 0;
+      // Match a contiguous suffix, not a set: identical new log lines must survive.
+      let matching = held.length > 0;
       es = new EventSource(`${streamPath}?file=${file}`);
       es.onopen = () => {
         if (cancelled) return;
         attempt = 0;
-        setConnected(true);
+        setConnection("live");
         setRetriesExhausted(false);
       };
       es.onmessage = (event) => {
-        const id = nextId.current++;
-        const rec = parseLine(fileRef.current, event.data);
-        pendingLines.current.push({ id, text: event.data, rec });
-        // A background tab's timer can stall while lines keep arriving.
-        if (pendingLines.current.length > MAX_LINES)
-          pendingLines.current.shift();
+        if (cancelled) return;
+        if (!matching) { append(event.data); return; }
+        replay.push(event.data);
+        candidates = candidates.filter((start) => held[start + replay.length - 1] === event.data);
+        if (candidates.some((start) => start + replay.length === held.length)) overlap = replay.length;
+        candidates = candidates.filter((start) => start + replay.length < held.length);
+        if (candidates.length) return;
+        matching = false;
+        replay.slice(overlap).forEach(append);
+        replay = [];
       };
       es.onerror = () => {
         es?.close();
@@ -394,7 +414,7 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
         // 여전히 유효한 정보다. 원인은 모른다: 이 컴포넌트는 로컬 /logs와
         // 노드 화면이 공유하므로 "노드가 죽었다"처럼 노드 탓으로 단정하지
         // 않는다 — 로컬 화면에서는 그 말이 거짓이 된다.
-        setConnected(false);
+        setConnection("lost");
         attempt += 1;
         if (attempt >= MAX_RECONNECT_ATTEMPTS) {
           // 더 두드리지 않는다 — 죽은 연결이면 영원히 실패할 시도고, 살아있는
@@ -424,6 +444,11 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
   useEffect(() => {
     const timer = setInterval(() => {
       if (pendingLines.current.length === 0) return;
+      if (!following.current) {
+        setWaiting(arrivalCount.current);
+        return;
+      }
+      arrivalCount.current = 0;
       const batch = pendingLines.current;
       pendingLines.current = [];
       setLines((prev) => {
@@ -442,6 +467,7 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
   // "다시 연결" 배너 버튼. lines는 건드리지 않는다 — 탭 전환과 달리 이건
   // 새 스트림이 아니라 같은 스트림을 다시 잇는 것이다.
   const handleManualReconnect = useCallback(() => {
+    setConnection("connecting");
     setRetriesExhausted(false);
     setRestartKey((k) => k + 1);
   }, []);
@@ -476,429 +502,182 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
     return { rows: out, hiddenNoise: hidden };
   }, [lines, file, search, status, method, level, hideNoise]);
 
-  const shown = view === "table" ? rows : lines;
+  const shown = rows;
+  const chips = (file === "access" ? STATUS_CHIPS : LEVEL_CHIPS).map((chip) => ({
+    ...chip,
+    count: lines.filter(({ rec }) => !chip.value || (rec.kind === "access"
+      ? statusClassOf(rec.status) === chip.value
+      : rec.kind === "error" && rec.level.toLowerCase() === chip.value)).length,
+  }));
+
+  function pause() {
+    following.current = false;
+    setAutoScroll(false);
+  }
+
+  function resume() {
+    const batch = pendingLines.current;
+    pendingLines.current = [];
+    arrivalCount.current = 0;
+    setLines((prev) => [...prev, ...batch].slice(-MAX_LINES));
+    setWaiting(0);
+    setExpanded(null);
+    following.current = true;
+    setAutoScroll(true);
+  }
+
+  async function copy(text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyNotice("원문을 복사했습니다.");
+    } catch {
+      setCopyNotice("복사하지 못했습니다. 원문을 선택해 복사해 주세요.");
+    }
+  }
+
+  function clearFilters() {
+    setSearch(""); setStatus(""); setMethod(""); setLevel(""); setHideNoise(false);
+  }
+
 
   // Auto-scroll to bottom on new content unless the user scrolled up.
   useEffect(() => {
     if (!autoScroll) return;
     const el = viewportRef.current;
     if (!el) return;
-    suppressScrollEvent.current = true;
     el.scrollTop = el.scrollHeight;
-  }, [shown, autoScroll]);
+  }, [shown, autoScroll, view]);
 
-  const handleScroll = useCallback(() => {
-    if (suppressScrollEvent.current) {
-      suppressScrollEvent.current = false;
-      return;
-    }
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    const detail = detailRef.current;
+    if (expanded === null || view !== "table" || !viewport || !detail) return;
+    const box = viewport.getBoundingClientRect();
+    const top = box.top + viewport.clientTop + (viewport.querySelector("thead")?.offsetHeight ?? 0);
+    const bottom = box.top + viewport.clientTop + viewport.clientHeight;
+    const bounds = detail.getBoundingClientRect();
+    const delta = bounds.height > bottom - top || bounds.top < top
+      ? bounds.top - top : Math.max(0, bounds.bottom - bottom);
+    if (delta) viewport.scrollBy({ top: delta });
+  }, [expanded, view]);
+
+  const handleScroll = () => {
     const el = viewportRef.current;
-    if (!el) return;
-    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-    setAutoScroll(distanceFromBottom <= SCROLL_BOTTOM_THRESHOLD_PX);
-  }, []);
+    if (el && el.scrollHeight - el.scrollTop - el.clientHeight > SCROLL_BOTTOM_THRESHOLD_PX) pause();
+  };
 
-  return (
-    <div className={styles.panel}>
+  const badge: { tone: Tone; text: string } = connection === "connecting" ? { tone: "info", text: "연결 중" }
+    : connection === "lost" ? { tone: "warning", text: "연결 끊김" }
+    : autoScroll ? { tone: "success", text: "실시간 수신 중" }
+    : { tone: "neutral", text: "일시 정지" };
+  const last = lines.at(-1)?.rec;
+  const lastTime = last && last.kind !== "raw" ? formatAt(last).slice(-8) : null;
+  const isFiltered = Boolean(search.trim() || (file === "access" ? status || method || hideNoise : level));
+  const number = (value: number) => value.toLocaleString("en-US");
+  const size = (value: string) => /^\d+$/.test(value) ? number(Number(value)) : value;
+  const time = (rec: Rec) => {
+    if (rec.kind === "raw") return "—";
+    const value = formatAt(rec);
+    const split = value.lastIndexOf(" ");
+    return split < 0 ? value : <><span className={styles.date}>{value.slice(0, split)}</span> {value.slice(split + 1)}</>;
+  };
+  const empty = <EmptyState
+    description={lines.length === 0 ? connection === "connecting" ? "연결하는 중…" : "대기 중입니다. 새 로그 줄이 들어오면 여기에 표시됩니다." : "필터에 맞는 로그가 없습니다."}
+    action={lines.length > 0 && isFiltered ? <Button size="sm" variant="secondary" onClick={clearFilters}>필터 지우기</Button> : undefined}
+  />;
+
+  return <>
+    <PageHeader title="로그" info="access.log / error.log를 실시간으로 확인합니다."
+      status={<StatusBadge tone={badge.tone} pulse={connection === "live" && autoScroll}>{badge.text}</StatusBadge>} />
+    <Surface>
       <div className={styles.toolbar}>
-        <SegmentedControl
-          size="sm"
-          label="로그 파일"
-          value={file}
-          onChange={setFile}
-          options={[
-            { value: "access", label: "access.log" },
-            { value: "error", label: "error.log" },
-          ]}
-        />
-        <div className={styles.toolbarRight}>
-          <StatusBadge tone={connected ? "success" : "warning"} pulse={connected}>{connected ? "연결됨" : "연결 끊김"}</StatusBadge>
-          <SegmentedControl
-            size="sm"
-            label="보기 모드"
-            value={view}
-            onChange={setView}
-            options={[
-              { value: "table", label: "표" },
-              { value: "raw", label: "Raw" },
-            ]}
-          />
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={() => {
-              pendingLines.current = [];
-              setLines([]);
-            }}
-          >
-            Clear
-          </Button>
+        <div className={styles.filters}>
+          <SegmentedControl label="로그 파일" value={file} onChange={setFile}
+            options={[{ value: "access", label: "access.log" }, { value: "error", label: "error.log" }]} />
+          <div className={styles.search}><SearchField label="로그 검색" value={search} onChange={setSearch}
+            placeholder={file === "access" ? "경로·IP·UA 검색" : "메시지 검색"} /></div>
+          <FilterChips label={file === "access" ? "상태 코드 필터" : "레벨 필터"} options={chips}
+            value={file === "access" ? status : level} onChange={(value) => file === "access" ? setStatus(value as StatusClass) : setLevel(value)} />
+          {file === "access" ? <>
+            <div className={styles.methodSelect}><Select aria-label="메서드 필터" value={method} onChange={setMethod} options={METHOD_OPTIONS} /></div>
+            <Checkbox className={styles.checkbox} checked={hideNoise} onChange={(event) => setHideNoise(event.target.checked)}
+              label={<>정적·텔레메트리 숨김{hideNoise && hiddenNoise > 0 ? ` (${number(hiddenNoise)}건 숨김)` : ""}</>} />
+          </> : null}
+        </div>
+        <div className={styles.meta}><span>{`${number(shown.length)}줄`}</span>
+          <SegmentedControl label="보기 모드" value={view} onChange={setView} options={[{ value: "table", label: "표" }, { value: "raw", label: "Raw" }]} />
         </div>
       </div>
-
-      {/* onerror/onopen이 켜고 끈다(위 connect()) — 원인은 밝히지 않는다(로컬
-          /logs와 공유하는 컴포넌트라 "노드가 죽었다"를 단정할 수 없다). 이미
-          받은 줄은 아래 viewport에 그대로 남는다. retriesExhausted가 되면
-          자동 재연결은 멈추고 사용자가 직접 눌러야 하는 상태로 바뀐다 — 조용히
-          멈추면 "끊긴 채 멈춘 화면"이 "정상"과 구별이 안 된다. */}
-      {!connected ? (
-        <div className={styles.connectionBanner} role="status">
-          {retriesExhausted ? (
-            <>
-              <span>연결이 끊어져 자동 재연결을 멈췄습니다.</span>
-              {/* A quiet outline: a filled button would shout inside the warning strip. */}
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={handleManualReconnect}
-              >
-                다시 연결
-              </Button>
-            </>
-          ) : (
-            <span>연결이 끊어졌습니다. 자동으로 다시 연결하는 중입니다…</span>
-          )}
+      {connection === "lost" ? <div className={styles.banner}><Banner tone="warning"
+        title={retriesExhausted ? "연결이 끊어져 자동 재연결을 멈췄습니다." : "연결이 끊어졌습니다. 자동으로 다시 연결하는 중입니다…"}
+        action={retriesExhausted ? <Button size="sm" variant="secondary" onClick={handleManualReconnect}><Icon name="refresh" />다시 연결</Button> : undefined} /></div> : null}
+      {view === "raw" ? <section className={styles.rawPane} aria-label="원문 로그">
+        <div className={styles.rawHead}><div><h2>{file}.log</h2><p>원문 {number(shown.length)}줄 · 앞의 시각과 상태는 복사되지 않습니다</p></div>
+          <Button size="sm" variant="secondary" onClick={() => copy(shown.map((line) => line.text).join("\n"))}><Icon name="copy" />보이는 줄 복사</Button></div>
+        <div className={styles.rawViewport} data-log-view="raw" ref={viewportRef} onScroll={handleScroll} tabIndex={0} aria-label="원문 로그 줄">
+          {shown.length === 0 ? empty : shown.map((line) => <div key={line.id} className={styles.line}>
+            <time aria-hidden="true" className={styles.rawTime}>{line.rec.kind === "raw" ? "—" : formatAt(line.rec).slice(-8)}</time>
+            <span aria-hidden="true" data-tone={recordTone(line.rec)} className={styles.rawLevel}>{line.rec.kind === "error" ? line.rec.level : line.rec.kind === "access" ? line.rec.statusRaw : "원문"}</span>
+            <span className={styles.rawMessage}>{line.text}</span>
+          </div>)}
         </div>
-      ) : null}
-
-      {view === "table" ? (
-        <div className={styles.filterBar}>
-          <div className={styles.search}>
-            <SearchField
-              size="sm"
-              label="로그 검색"
-              value={search}
-              onChange={setSearch}
-              placeholder={file === "access" ? "경로·IP·UA 검색" : "메시지 검색"}
-            />
-          </div>
-          {file === "access" ? (
-            <>
-              <FilterChips
-                label="상태 코드 필터"
-                options={STATUS_CHIPS}
-                value={status}
-                onChange={(v) => setStatus(v as StatusClass)}
-              />
-              <div className={styles.methodSelect}>
-                <Select
-                  size="sm"
-                  aria-label="메서드 필터"
-                  value={method}
-                  onChange={setMethod}
-                  options={METHOD_OPTIONS}
-                  placeholder="전체 메서드"
-                />
-              </div>
-              {/* The toolbar's caption-size, muted text comes from .checkbox on the row. */}
-              <Checkbox
-                className={styles.checkbox}
-                checked={hideNoise}
-                onChange={(e) => setHideNoise(e.target.checked)}
-                label={
-                  <>
-                    정적·텔레메트리 숨김
-                    {hideNoise && hiddenNoise > 0 ? (
-                      <span className={styles.hiddenCount}>
-                        {hiddenNoise}건 숨김
-                      </span>
-                    ) : null}
-                  </>
-                }
-              />
-            </>
-          ) : (
-            <FilterChips
-              label="레벨 필터"
-              options={LEVEL_CHIPS}
-              value={level}
-              onChange={setLevel}
-            />
-          )}
-          {/* 어느 시간대로 읽고 있는지 밝힌다 — 로그 시각은 오해하면 조사를 망친다. */}
-          <span className={styles.timeZoneNote} suppressHydrationWarning>
-            시간대 {timeZone}
-          </span>
-        </div>
-      ) : null}
-
-      <div
-        className={
-          view === "table"
-            ? `${styles.viewport} ${styles.viewportTable}`
-            : styles.viewport
-        }
-        data-log-view={view}
-        ref={viewportRef}
-        onScroll={handleScroll}
-      >
-        {shown.length === 0 ? (
-          <div className={styles.empty}>
-            <EmptyState description={lines.length === 0
-              ? "대기 중... 새 로그 라인이 들어오면 여기에 표시됩니다."
-              : "필터에 맞는 로그가 없습니다."} />
-          </div>
-        ) : view === "raw" ? (
-          shown.map((line) => (
-            <div
-              key={line.id}
-              className={`${styles.line} ${rawLevelClassName(file, line.text) ?? ""}`}
-            >
-              <time aria-hidden="true" className={styles.rawTime} title={line.rec.kind === "raw" ? undefined : formatAt(line.rec)}>{line.rec.kind === "raw" ? "—" : formatAt(line.rec).slice(-8)}</time>
-              <span aria-hidden="true" className={styles.rawLevel}>{line.rec.kind === "error" ? line.rec.level : line.rec.kind === "access" ? line.rec.statusRaw : "—"}</span>
-              <span className={styles.rawMessage}>{line.text}</span>
-            </div>
-          ))
-        ) : file === "access" ? (
-          <div className={styles.accessTable}><Table label="access.log">
-            {/* Explicit tracks keep the path column's width when a detail or unparsed row spans
-                all 8 columns on narrow screens (logs.module.css, .trackSize). */}
-            <colgroup>
-              <col className={styles.colTime} />
-              <col className={styles.colHost} />
-              <col className={styles.colIp} />
-              <col className={styles.colMethod} />
-              <col className={styles.colStatus} />
-              <col className={styles.trackSize} />
-              <col className={styles.trackPath} />
-              <col className={styles.trackUa} />
-            </colgroup>
-            <thead>
-              <Tr>
-                <Th className={styles.colTime}>일시</Th>
-                <Th className={styles.colHost}>도메인</Th>
-                <Th className={styles.colIp}>IP</Th>
-                <Th className={styles.colMethod}>메서드</Th>
-                <Th className={styles.colStatus}>상태</Th>
-                <Th className={`${styles.colBytes} ${styles.num}`}>크기</Th>
-                <Th>경로</Th>
-                <Th className={styles.colUa}>UA</Th>
-              </Tr>
-            </thead>
+      </section> : <>
+        {connection === "connecting" && !lines.length ? <div className={styles.progress} role="progressbar" aria-label="로그에 연결하는 중" /> : null}
+        <div className={styles.viewport} aria-busy={connection === "connecting" && !lines.length} data-log-view="table" ref={viewportRef} onScroll={handleScroll}>
+          <Table label={`${file}.log`} layout="fixed">
+            <colgroup><col className={styles.colTime} /><col className={styles.colStatus} />
+              {file === "access" ? <><col className={styles.colMethod} /><col className={styles.colHost} /><col /><col className={styles.colBytes} /><col className={styles.colIp} /></> : <col />}
+              <col className={styles.colAction} /></colgroup>
+            <thead><Tr><Th>일시 <span className={styles.zone}>({timeZone})</span></Th><Th>{file === "access" ? "상태" : "레벨"}</Th>
+              {file === "access" ? <><Th>메서드</Th><Th>도메인</Th><Th>경로</Th><Th align="end">크기</Th><Th>IP</Th></> : <Th>메시지</Th>}
+              <Th>상세</Th></Tr></thead>
             <tbody>
-              {shown.map((line) => {
+              {!shown.length && connection === "connecting" ? Array.from({ length: 6 }, (_, row) => <Tr key={row} aria-hidden="true">{Array.from({ length: file === "access" ? 8 : 4 }, (_, cell) => <Td key={cell} cell={cell === 1 ? "status" : cell === (file === "access" ? 4 : 2) ? "primary" : cell === (file === "access" ? 7 : 3) ? "action" : "meta"}><span className={styles.skeleton} /></Td>)}</Tr>) : !shown.length ? <Tr><Td colSpan={file === "access" ? 8 : 4}><div className={styles.empty}>{empty}</div></Td></Tr> : shown.map((line) => {
                 const r = line.rec;
-                if (r.kind !== "access") {
-                  return (
-                    <Tr key={line.id}>
-                      <Td colSpan={8} className={styles.rawCell}>
-                        {line.text}
-                      </Td>
-                    </Tr>
-                  );
-                }
                 const open = expanded === line.id;
-                const sc = statusClassOf(r.status);
-                return (
-                  <Fragment key={line.id}>
-                    <Tr
-                      className={styles.row}
-                      tabIndex={0}
-                      onClick={() => toggleRow(line.id)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          toggleRow(line.id);
-                        }
-                      }}
-                      aria-expanded={open}
-                      aria-controls={
-                        open ? `${detailPrefix}-${line.id}` : undefined
-                      }
-                    >
-                      <Td className={`${styles.colTime} ${styles.mono}`}>
-                        {formatAt(r)}
-                      </Td>
-                      <Td cell="primary" wrap
-                        className={`${styles.colHost} ${styles.mono}`}
-                        title={r.host}
-                      >
-                        {r.host || "—"}
-                      </Td>
-                      <Td className={`${styles.colIp} ${styles.mono}`}>
-                        {r.ip}
-                      </Td>
-                      <Td className={styles.colMethod}>{r.method || "—"}</Td>
-                      <Td cell="status" className={styles.colStatus}>
-                        <StatusBadge
-                          tone={sc ? STATUS_TONE[sc] : "neutral"}
-                          size="sm"
-                          dot={false}
-                        >
-                          {r.statusRaw}
-                        </StatusBadge>
-                      </Td>
-                      <Td cell="hide-narrow"
-                        className={`${styles.colBytes} ${styles.num} ${styles.mono}`}
-                      >
-                        {r.bytes}
-                      </Td>
-                      <Td label="경로" wrap
-                        className={`${styles.pathCell} ${styles.mono}`}
-                        title={r.path}
-                      >
-                        {r.path}
-                      </Td>
-                      <Td cell="hide-narrow"
-                        className={`${styles.colUa} ${styles.uaCell}`}
-                        title={r.ua}
-                      >
-                        {r.ua}
-                      </Td>
-                    </Tr>
-                    {open ? (
-                      <Tr
-                        id={`${detailPrefix}-${line.id}`}
-                        className={styles.detailRow}
-                      >
-                        <Td colSpan={8}>
-                          <Facts
-                              items={[
-                                {
-                                  term: "전체 경로",
-                                  value: (
-                                    <>
-                                      {r.method} {r.path} {r.proto}
-                                    </>
-                                  ),
-                                  mono: true,
-                                },
-                                {
-                                  term: "도메인",
-                                  value: r.host || "—",
-                                  mono: true,
-                                },
-                                {
-                                  term: "일시",
-                                  value: (
-                                    <>
-                                      {formatAt(r)} ({timeZone})
-                                    </>
-                                  ),
-                                  mono: true,
-                                },
-                                {
-                                  term: "Referer",
-                                  value: r.referer || "—",
-                                  mono: true,
-                                },
-                                {
-                                  term: "User-Agent",
-                                  value: r.ua || "—",
-                                  mono: true,
-                                },
-                                { term: "원문", value: line.text, mono: true },
-                              ]}
-                            />
-                        </Td>
-                      </Tr>
-                    ) : null}
-                  </Fragment>
-                );
-              })}
-            </tbody>
-          </Table></div>
-        ) : (
-          <Table label="error.log">
-            <colgroup><col className={styles.colTime} /><col className={styles.colLevel} /><col /></colgroup>
-            <thead>
-              <Tr>
-                <Th className={styles.colTime}>일시</Th>
-                <Th className={styles.colLevel}>레벨</Th>
-                <Th>메시지</Th>
-              </Tr>
-            </thead>
-            <tbody>
-              {shown.map((line) => {
-                const r = line.rec;
-                if (r.kind !== "error") {
-                  return (
-                    <Tr key={line.id}>
-                      <Td colSpan={3} className={styles.rawCell}>
-                        {line.text}
-                      </Td>
-                    </Tr>
-                  );
-                }
-                const open = expanded === line.id;
-                return (
-                  <Fragment key={line.id}>
-                    <Tr
-                      className={styles.row}
-                      tabIndex={0}
-                      aria-expanded={open}
-                      aria-controls={
-                        open ? `${detailPrefix}-${line.id}` : undefined
-                      }
-                      onClick={() => toggleRow(line.id)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          toggleRow(line.id);
-                        }
-                      }}
-                    >
-                      <Td className={`${styles.colTime} ${styles.mono}`}>
-                        {formatAt(r)}
-                      </Td>
-                      <Td cell="status" className={styles.colLevel}>
-                        <StatusBadge
-                          tone={levelTone(r.level)}
-                          size="sm"
-                          dot={false}
-                        >
-                          {r.level}
-                        </StatusBadge>
-                      </Td>
-                      <Td cell="primary" wrap className={`${styles.msgCell} ${styles.mono}`}>
-                        {r.message}
-                      </Td>
-                    </Tr>
-                    {open ? (
-                      <Tr
-                        id={`${detailPrefix}-${line.id}`}
-                        className={styles.detailRow}
-                      >
-                        <Td colSpan={3}>
-                          <Facts
-                            items={[
-                              {
-                                term: "일시",
-                                value: (
-                                  <>
-                                    {formatAt(r)} ({timeZone})
-                                  </>
-                                ),
-                              },
-                              { term: "레벨", value: r.level },
-                              { term: "전체 메시지", value: r.message },
-                              { term: "원문", value: line.text },
-                            ]}
-                          />
-                        </Td>
-                      </Tr>
-                    ) : null}
-                  </Fragment>
-                );
+                const title = r.kind === "access" ? r.path : r.kind === "error" ? r.message : line.text;
+                const facts = r.kind === "access" ? [
+                  { term: "전체 경로", value: `${r.method} ${r.path} ${r.proto}`, wide: true },
+                  { term: "도메인", value: r.host || "—" }, { term: "IP", value: r.ip },
+                  { term: "일시", value: `${formatAt(r)} (${timeZone})` }, { term: "크기", value: `${size(r.bytes)} bytes` },
+                  { term: "Referer", value: r.referer || "—", wide: true }, { term: "User-Agent", value: r.ua || "—", wide: true },
+                ] : r.kind === "error" ? [{ term: "일시", value: `${formatAt(r)} (${timeZone})` }, { term: "레벨", value: r.level }, { term: "전체 메시지", value: r.message, wide: true }] : [];
+                return <Fragment key={line.id}>
+                  <Tr className={styles.row} data-open={open ? "" : undefined} tabIndex={0} aria-expanded={open}
+                    aria-controls={open ? `${detailPrefix}-${line.id}` : undefined}
+                    onClick={() => toggleRow(line.id)} onKeyDown={(event) => {
+                      if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); toggleRow(line.id); }
+                    }}>
+                    <Td className={styles.time}>{time(r)}</Td>
+                    <Td cell="status"><StatusBadge tone={recordTone(r)} size="sm" dot={false}>
+                      {r.kind === "access" ? r.statusRaw : r.kind === "error" ? r.level : "원문"}</StatusBadge></Td>
+                    {file === "access" ? <><Td>{r.kind === "access" ? r.method || "—" : "—"}</Td><Td truncate title={r.kind === "access" ? r.host : undefined}>{r.kind === "access" ? r.host || "—" : "—"}</Td></> : null}
+                    <Td cell="primary" truncate className={styles.message} title={title}>{title}</Td>
+                    {file === "access" ? <><Td cell="hide-narrow" numeric>{r.kind === "access" ? size(r.bytes) : "—"}</Td><Td cell="hide-narrow">{r.kind === "access" ? r.ip : "—"}</Td></> : null}
+                    <Td cell="action"><Button size="sm" variant="ghost" aria-expanded={open} aria-controls={open ? `${detailPrefix}-${line.id}` : undefined}
+                      onClick={(event) => { event.stopPropagation(); toggleRow(line.id); }}>{open ? "접기" : "보기"}</Button></Td>
+                  </Tr>
+                  {open ? <Tr id={`${detailPrefix}-${line.id}`} className={styles.detailRow}><Td colSpan={file === "access" ? 8 : 4}>
+                    <div ref={detailRef} className={styles.detail}><Facts columns={2} items={[...facts, { term: "원문", value: line.text, wide: true }]} />
+                      <div><Button size="sm" variant="secondary" onClick={() => copy(line.text)}><Icon name="copy" />원문 복사</Button></div></div>
+                  </Td></Tr> : null}
+                </Fragment>;
               })}
             </tbody>
           </Table>
-        )}
+        </div>
+      </>}
+      <div className={styles.foot}>
+        <p className={styles.tail}>{!autoScroll ? <><b>새 줄 {number(waiting)}개</b>가 기다리고 있습니다{lastTime ? ` · 화면의 마지막 줄 ${lastTime}` : ""}</>
+          : lastTime ? <>마지막 줄 <b>{lastTime}</b></> : lines.length ? `받은 줄 ${number(lines.length)}개` : connection === "connecting" ? "연결하는 중…" : "아직 받은 줄이 없습니다"}</p>
+        <div className={styles.actions}><Button size="sm" variant="ghost" onClick={() => {
+          pendingLines.current = []; received.current = []; arrivalCount.current = 0; setWaiting(0); setLines([]); setExpanded(null);
+        }}>화면 비우기</Button>
+          {!autoScroll ? <Button size="sm" variant="secondary" onClick={resume}><Icon name="play" />이어 보기</Button>
+            : connection === "live" ? <Button size="sm" variant="secondary" onClick={pause}><Icon name="pause" />일시 정지</Button> : null}
+        </div>
       </div>
-
-      {!autoScroll ? (
-        <Button
-          variant="secondary"
-          type="button"
-          className={styles.resumeButton}
-          onClick={() => setAutoScroll(true)}
-        >
-          <Icon name="arrowDown" />
-          자동 스크롤 재개
-        </Button>
-      ) : null}
-    </div>
-  );
+      {copyNotice ? <p role="status" className={styles.copyNotice}>{copyNotice}</p> : null}
+    </Surface>
+  </>;
 }

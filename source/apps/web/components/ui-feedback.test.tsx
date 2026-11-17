@@ -10,6 +10,7 @@ import {
   StatusDot,
   KpiRow,
   Facts,
+  Surface,
 } from "@repo/ui";
 import { ConfirmDialog } from "../../../packages/ui/src/confirm-dialog";
 
@@ -181,3 +182,20 @@ it.each(["warning", "danger"] as const)(
     expect(html).toContain('aria-hidden="true"');
   },
 );
+
+it("keeps plain surfaces by default and opts boxed sections into flush bodies and a separate foot", () => {
+  const plain = renderToStaticMarkup(<Surface title="기본">본문</Surface>);
+  expect(plain).not.toContain('data-variant="boxed"');
+  expect(plain).not.toContain('data-flush');
+  const boxed = renderToStaticMarkup(<Surface variant="boxed" flush title="구성" actions={<a href="/metrics">접속 지표</a>} footer={<a href="/history">마지막 적용</a>}>본문</Surface>);
+  expect(boxed).toContain('data-variant="boxed"');
+  expect(boxed).toContain('data-flush=""');
+  expect(boxed).toMatch(/본문<\/div><div[^>]*><a href="\/history">마지막 적용<\/a><\/div><\/section>/);
+});
+it.each([undefined, true, false])("KpiRow outer rules are opt-out (%s)", (ruled) => {
+  const html = renderToStaticMarkup(<KpiRow ruled={ruled} label="연결" columns={2} items={[{label: "활성", value: 1}, {label: "대기", value: 0}]} />);
+  expect(html.includes('data-ruled="false"')).toBe(ruled === false);
+  expect(html).toContain('aria-label="연결"');
+  expect(html).toContain('data-columns="2"');
+  expect(html.match(/<dt>/g)).toHaveLength(2);
+});

@@ -51,6 +51,9 @@ export interface SurfaceProps {
   description?: ReactNode;
   info?: ReactNode;
   actions?: ReactNode;
+  /** Overview-only boxed section; the default remains a hairline section. */
+  variant?: "plain" | "boxed";
+  footer?: ReactNode;
   /** Search, filters and counts above the surface body. */
   toolbar?: ReactNode;
   /** No body padding and a rule under the header: for a table or list that runs to the edges. */
@@ -70,6 +73,8 @@ export function Surface({
   info,
   actions,
   toolbar,
+  variant = "plain",
+  footer,
   flush = false,
   as: Tag = "section",
   headingLevel = 2,
@@ -83,6 +88,7 @@ export function Surface({
       aria-labelledby={labelledBy}
       className={[styles.surface, className].filter(Boolean).join(" ")}
       data-flush={flush ? "" : undefined}
+      data-variant={variant === "boxed" ? "boxed" : undefined}
     >
       {hasHeader ? (
         <div className={styles.surfaceHeader}>
@@ -111,6 +117,7 @@ export function Surface({
       ) : null}
       {toolbar ? <div className={styles.toolbar}>{toolbar}</div> : null}
       <div className={styles.surfaceBody}>{children}</div>
+      {footer ? <div className={styles.surfaceFooter}>{footer}</div> : null}
     </Tag>
   );
 }

@@ -23,11 +23,7 @@ export default async function NodeLogsPage({ params }: { params: Promise<{ id: s
 
   return (
     <section className={layout.page}>
-      <PageHeader title={<>로그</>} info={<>access.log / error.log를 실시간으로 확인합니다.</>} />
-
-      <div>
-        <LogViewer streamPath={`/api/nodes/${id}/logs/stream`} />
-      </div>
+      <LogViewer streamPath={`/api/nodes/${id}/logs/stream`} />
     </section>
   );
 }

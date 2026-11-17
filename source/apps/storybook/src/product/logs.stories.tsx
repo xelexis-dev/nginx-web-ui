@@ -10,7 +10,7 @@ import { ProductFrame } from "./frame";
 const message =
   '42#42: *7 upstream timed out while reading response header from upstream, client: 192.0.2.10, server: gateway.example.test, request: "GET /verylongrequestpathwithoutwordbreakstochecktheexpandederrormessage HTTP/1.1", upstream: "http://upstream.example.test:8080/api/report", host: "gateway.example.test"';
 const samples = {
-  // The second line does not parse: it is shown as one full-width row, which must not narrow the path column.
+  // Unparsed lines keep the same row roles and can be expanded to inspect the original.
   access: [
     '192.0.2.10 - - [28/Sep/2026:10:00:00 +0000] "GET /api/report HTTP/1.1" 200 512 "-" "Example browser" "gateway.example.test"',
     "upstream sent an unparsable access line",
@@ -59,12 +59,8 @@ function LogsPreview({ nodeName, offline = false, longTable = false }: { nodeNam
   }, [longTable]);
   return (
     <section className={layout.page}>
-      <PageHeader
-
-        title="로그"
-        info="access.log / error.log를 실시간으로 확인합니다."
-      />
-      <div>{offline ? <NodeErrorCard nodeId="preview" failure={{ kind: "unreachable", message: "노드에 연결할 수 없습니다." }} retryHref="/nodes/preview/logs" listHref="/nodes/preview/logs" /> : ready ? <LogViewer streamPath="/storybook/logs" /> : null}</div>
+      {offline ? <PageHeader title="로그" /> : null}
+      {offline ? <NodeErrorCard nodeId="preview" failure={{ kind: "unreachable", message: "노드에 연결할 수 없습니다." }} retryHref="/nodes/preview/logs" listHref="/nodes/preview/logs" /> : ready ? <LogViewer streamPath="/storybook/logs" /> : null}
     </section>
   );
 }
@@ -89,7 +85,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 export const Access: Story = { play: async ({ canvasElement }) => {
   const canvas = within(canvasElement);
-  await expect(canvas.findByText("연결됨", { exact: true })).resolves.toBeVisible();
+  await expect(canvas.findByText("실시간 수신 중", { exact: true })).resolves.toBeVisible();
   await expect(canvasElement.querySelectorAll("[data-pulse]")).toHaveLength(1);
 } };
 export const ErrorDetails: Story = {

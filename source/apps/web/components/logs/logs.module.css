@@ -1,349 +1,83 @@
-/* Log viewer (F5): live tail panel with access/error tabs, per
-   DESIGN.md's log-viewer component. Tokens only (var(--*)) — no hardcoded
-   hex; floating controls use the shared overlay shadow token. */
-
-.panel {
-  position: relative;
+/* The shared Surface owns the section rule; the viewer owns only its bounded tail. */
+.toolbar, .filters, .meta, .foot, .actions {
   display: flex;
-  flex-direction: column;
-  border: var(--bw) solid var(--line-strong);
-  border-radius: var(--r-3);
-  background: var(--bg-canvas);
-  overflow: hidden;
+  align-items: center;
 }
-
 .toolbar {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: var(--sp-3);
-  padding: var(--sp-3) var(--sp-4);
-  border-bottom: var(--bw) solid var(--line-strong);
-  background: var(--bg-canvas);
-}
-
-.viewport {
-  height: 60vh;
-  min-height: 320px;
-  overflow-y: auto;
-  margin: 0;
-  padding: var(--sp-3) var(--sp-4);
-  font-family: var(--font);
-  font-size: var(--fs-sm);
-  line-height: var(--lh-sm);
-  background: var(--bg-sunken);
-  color: var(--text-1);
-}
-
-.line {
-  display: grid;
-  grid-template-columns: 76px 56px minmax(0, 1fr);
-  gap: var(--sp-2);
-  padding-block: var(--sp-1);
-  border-bottom: var(--bw) solid var(--line);
-  white-space: pre-wrap;
-  word-break: break-word;
-  color: var(--text-1);
-}
-
-.levelError {
-  color: var(--danger-text);
-}
-
-.levelWarn {
-  color: var(--warning-text);
-}
-
-.levelNotice {
-  color: var(--info-text);
-}
-
-.levelMuted {
-  color: var(--text-3);
-}
-
-/* Empty / waiting state — left-aligned and muted.
-   Fills the viewport (min-height:100%) so it reads as a deliberate state
-   even when the table viewport strips its own padding (.viewportTable). */
-.empty {
-  display: grid;
-  align-content: start;
-  min-height: 100%;
-  padding-inline: var(--sp-6);
-}
-
-.resumeButton {
-  position: absolute;
-  bottom: var(--sp-4);
-  right: var(--sp-4);
-  box-shadow: var(--shadow-1);
-}
-
-/* Reconnection spans the viewer; a failed retry keeps its action beside the message. */
-.connectionBanner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  padding: var(--sp-2) var(--sp-4);
-  font-size: var(--fs-xs);
-  font-weight: 500;
-  color: var(--warning-text);
-  background: var(--warning-bg);
-  border-bottom: var(--bw) solid var(--line-strong);
-}
-
-/* --- toolbar right (view toggle + Clear) --- */
-.toolbarRight {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-}
-
-/* --- filter bar (table view only) --- */
-.filterBar {
-  display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-3) var(--sp-4);
-  padding: var(--sp-3) var(--sp-4);
-  border-bottom: var(--bw) solid var(--line-strong);
-  background: var(--bg-canvas);
+  gap: var(--sp-2) var(--gap-toolbar);
+  margin-bottom: var(--sp-4);
 }
-
-.search {
-  flex: 1 1 200px;
-  min-width: 160px;
-}
-
-.methodSelect {
-  width: 160px;
-}
-
-.checkbox {
-  display: inline-flex;
-  align-items: center;
+.filters {
+  flex: 1 1 560px;
+  flex-wrap: wrap;
   gap: var(--sp-2);
-  font-size: var(--fs-xs);
-  color: var(--text-2);
-  cursor: pointer;
-}
-.checkbox input {
-  accent-color: var(--accent);
-  cursor: pointer;
-}
-.hiddenCount {
-  margin-left: var(--sp-0-5);
-  color: var(--info-text);
-  font-weight: 500;
-}
-
-/* 표시 시간대 안내: 필터 줄 오른쪽 끝에 조용히 붙는다. */
-.timeZoneNote {
-  margin-left: auto;
-  font-size: var(--fs-xs);
-  color: var(--text-2);
-  white-space: nowrap;
-}
-
-/* --- table view --- */
-.viewportTable {
-  padding: 0;
-  overflow-x: auto;
-  background: var(--bg-canvas);
-  color: var(--text-1);
-}
-
-.accessTable {
-  min-width: 1040px;
-}
-.row {
-  cursor: pointer;
-}
-.row:focus-visible {
-  outline: var(--bw-2) solid var(--focus);
-  outline-offset: calc(-1 * var(--bw-2));
-}
-.rawTime {
-  color: var(--text-2);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-.rawLevel {
-  font-weight: var(--fw-semibold);
-}
-.rawMessage {
   min-width: 0;
-  overflow-wrap: anywhere;
 }
-
-.mono {
-  font-family: var(--font);
+.search { flex: 1 1 var(--size-filter); min-width: 0; }
+.methodSelect { width: calc(var(--size-filter) - var(--size-ctl-sm)); flex: none; }
+.checkbox { color: var(--text-2); font-size: var(--fs-sm); }
+.meta { gap: var(--sp-3); margin-left: auto; color: var(--text-2); font-size: var(--fs-xs); white-space: nowrap; }
+.banner { margin-bottom: var(--sp-4); }
+.viewport {
+  height: calc(var(--size-ctl) + 12 * var(--size-row));
+  margin-inline: calc(-1 * var(--cell-x));
+  overflow: auto;
+  border-bottom: var(--bw) solid var(--line-strong);
 }
-.num {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-/* 날짜까지 표시한다: 2026-07-24 19:31:18 */
-.colTime {
-  width: 158px;
-  color: var(--text-2);
-}
-.colHost {
-  width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.colIp {
-  width: 118px;
-}
-.colMethod {
-  width: 66px;
-}
-.colStatus {
-  width: 80px;
-}
-/* StatusBadge is an atomic label, not text to ellipsize. 80px leaves 48px after cell padding. */
-.viewportTable td.colStatus {
-  overflow: visible;
-  text-overflow: clip;
-}
-.colBytes {
-  width: 74px;
-}
-.colUa {
-  width: 200px;
-}
-/* The access table's last three <col> tracks: size, path, UA on wide screens. A full-width row
-   (detail or unparsed line) spans all 8 tracks, so they exist even when narrow screens hide the
-   size and UA cells (see the ≤768px rule below). */
-.trackSize {
-  width: 74px;
-}
-.trackUa {
-  width: 200px;
-}
-.colLevel {
-  width: 86px;
-}
-
-.pathCell {
-  color: var(--text-1);
-}
-.uaCell {
-  color: var(--text-2);
-  font-family: var(--font);
-  font-size: var(--fs-xs);
-}
-.msgCell {
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-/* status badge — tint derives from the semantic text color (no hardcoded hex) */
-
-/* unparsed line shown as a full-width raw row inside the table */
-.rawCell {
-  color: var(--text-2);
-  white-space: pre-wrap;
-  word-break: break-word;
-  font-size: var(--fs-xs);
-}
-
-/* expanded detail row */
-.detailRow td {
-  background: var(--bg-sunken);
-  padding: var(--sp-3) var(--sp-4);
-  white-space: normal;
-}
+.viewport [role="region"] { margin-inline: 0; overflow: visible; }
+.viewport thead th { position: sticky; top: 0; z-index: 1; background: var(--bg-canvas); }
+.viewport td[data-truncate] { max-width: none; }
+.zone { font-weight: 400; }
+.time { font-weight: 500; }
+.date { color: var(--text-2); font-weight: 400; }
+.colTime { width: 168px; }
+.colStatus { width: 64px; }
+.colMethod { width: 76px; }
+.colHost { width: 188px; }
+.colBytes { width: 84px; }
+.colIp { width: 132px; }
+.colAction { width: 60px; }
+.row { cursor: pointer; }
+.row:focus-visible { outline: var(--bw-2) solid var(--focus); outline-offset: calc(-1 * var(--bw-2)); }
+.viewport .detailRow td { padding: var(--sp-3) var(--cell-x) var(--sp-4); background: var(--bg-sunken); white-space: normal; }
+.detail { display: grid; gap: var(--sp-3); min-width: 0; }
+.detail dd { white-space: pre-wrap; overflow-wrap: anywhere; }
+.empty { padding-block: var(--sp-6); }
+.foot { justify-content: space-between; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); margin-top: var(--sp-4); min-height: var(--size-ctl-sm); }
+.tail { margin: 0; min-width: 0; color: var(--text-2); font-size: var(--fs-xs); font-variant-numeric: tabular-nums; }
+.tail b { color: var(--text-1); font-weight: 500; }
+.actions { gap: var(--gap-actions); margin-left: auto; }
+.copyNotice { color: var(--text-2); font-size: var(--fs-xs); }
+.rawPane { border: var(--bw) solid var(--line-strong); border-radius: var(--r-3); overflow: hidden; }
+.rawHead { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--sp-3); padding: var(--sp-3) var(--pad-panel); border-bottom: var(--bw) solid var(--line-strong); }
+.rawHead h2 { margin: 0; font-size: var(--fs-sm); font-weight: 500; line-height: var(--lh-sm); }
+.rawHead p { margin: var(--sp-1) 0 0; color: var(--text-2); font-size: var(--fs-xs); }
+.rawViewport { height: calc(14 * var(--lh-sm) + 2 * var(--sp-3)); padding: var(--sp-3) var(--pad-panel); overflow-y: auto; background: var(--bg-sunken); font-size: var(--fs-sm); line-height: var(--lh-sm); font-variant-numeric: tabular-nums; }
+.line { display: grid; grid-template-columns: 64px 40px minmax(0, 1fr); gap: var(--sp-3); }
+.rawTime, .rawLevel { color: var(--text-3); user-select: none; }
+.rawLevel { font-weight: 600; }
+.rawMessage { min-width: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.rawLevel[data-tone="error"] { color: var(--danger-text); }
+.rawLevel[data-tone="warning"] { color: var(--warning-text); }
+.rawLevel[data-tone="info"] { color: var(--info-text); }
+.rawLevel[data-tone="success"] { color: var(--success-text); }
+.skeleton { display: inline-block; width: 75%; max-width: var(--size-filter); height: var(--size-skel); border-radius: var(--r-full); background: var(--bg-skeleton); }
+.progress { height: var(--size-progress); overflow: hidden; background: var(--bg-active); }
+.progress::after { content: ""; display: block; width: 30%; height: 100%; background: var(--accent); animation: connecting var(--dur-indet) var(--ease-in-out) infinite; }
+@keyframes connecting { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
+@media (prefers-reduced-motion: reduce) { .progress::after { animation: none; } }
 @media (max-width: 768px) {
-  .colUa,
-  .uaCell,
-  .colBytes {
-    display: none;
-  }
-  /* Hidden cells take no column, so the path cell moves into the size track and the last two
-     tracks stay empty. They must be 0 wide, or a full-width row splits the path's width with them. */
-  .trackSize {
-    width: auto;
-  }
-  .trackPath,
-  .trackUa {
-    width: 0;
-  }
-}
-
-@media (max-width: 1100px) {
-  .colHost {
-    width: 120px;
-  }
-}
-
-@media (max-width: 768px) {
-  .toolbar,
-  .toolbarRight {
-    flex-wrap: wrap;
-  }
-  .toolbarRight {
-    width: 100%;
-    justify-content: space-between;
-  }
-  .timeZoneNote {
-    margin-left: 0;
-    white-space: normal;
-  }
-}
-
-@media (max-width: 768px) {
-  .accessTable {
-    min-width: 0;
-  }
-}
-
-@media (max-width: 768px) {
-  .line {
-    grid-template-columns: 64px 52px minmax(0, 1fr);
-    gap: var(--sp-1-5);
-  }
-  .colTime,
-  .colHost,
-  .colIp,
-  .colMethod,
-  .colStatus,
-  .colLevel,
-  .colBytes {
-    width: auto;
-  }
-  .methodSelect {
-    width: 100%;
-  }
-}
-
-/* The existing viewport owns scrolling/autoscroll; Table contributes only its named focus stop. */
-.viewportTable [role="region"] {
-  margin-inline: 0;
-  overflow: visible;
-}
-.rawTime,
-.rawLevel {
-  user-select: none;
-}
-
-/* Bind metadata tracks so a long UA cannot steal path width; the viewport owns both axes. */
-@media (min-width: 769px) {
-  .viewportTable table {
-    table-layout: fixed;
-  }
-  .viewportTable thead th {
-    position: sticky;
-    background: var(--bg-canvas);
-    top: 0;
-    z-index: 1;
-  }
-  .viewportTable td.uaCell {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+  .filters { flex-basis: 100%; }
+  .filters > [role="group"] { width: 100%; }
+  .filters > [role="group"] > button { white-space: nowrap; }
+  .search { width: 100%; flex-basis: 100%; }
+  .methodSelect { flex: 1 1 calc(var(--size-filter) - var(--size-ctl-sm)); width: auto; }
+  .meta { width: 100%; justify-content: space-between; }
+  .meta > [role="group"] { width: auto; }
+  .viewport { height: auto; max-height: calc(var(--size-ctl) + 12 * var(--size-row)); min-height: calc(6 * var(--size-row) + var(--sp-6)); }
+  .viewport .message { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+  .viewport td[data-cell="meta"] { overflow: hidden; }
+  .viewport td[data-cell="meta"][data-truncate] { white-space: nowrap; text-overflow: ellipsis; }
 }

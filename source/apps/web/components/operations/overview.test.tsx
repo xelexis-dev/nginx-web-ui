@@ -77,7 +77,9 @@ it("keeps empty, failed and forbidden node states", () => {
 
 it("groups overview panels into two independent content stacks", () => {
   const page = OperationsOverview({ vm });
-  const grid = Children.toArray(page.props.children).find((child) => isValidElement<{className?: string}>(child) && child.props.className === styles.overviewGrid);
+  const sections = Children.toArray(page.props.children).find((child) => isValidElement<{className?: string}>(child) && child.props.className === styles.sections);
+  if (!isValidElement<{children: ReactNode}>(sections)) throw new Error("Missing overview sections");
+  const grid = Children.toArray(sections.props.children).find((child) => isValidElement<{className?: string}>(child) && child.props.className === styles.overviewGrid);
   if (!isValidElement<{children: ReactNode}>(grid)) throw new Error("Missing overview grid");
   const stacks = Children.toArray(grid.props.children);
   const headings = stacks.map((stack) => [...renderToStaticMarkup(stack).matchAll(/<h2[^>]*>(.*?)<\/h2>/g)].map((match) => match[1]));
@@ -99,4 +101,15 @@ it("uses a shared telemetry surface and configuration facts", () => {
   expect(html).toContain('data-layout="grid"');
   expect(html).toContain('data-columns="1"');
   expect(html).not.toContain("로컬 서버");
+});
+
+it("frames all overview sections and keeps only records flush", () => {
+  const html = renderToStaticMarkup(<OperationsOverview vm={vm} />);
+  expect(html.match(/<section\b[^>]*data-variant="boxed"/g)).toHaveLength(7);
+  expect(html.match(/<section\b[^>]*data-flush=""/g)).toHaveLength(2);
+  expect(html.match(/data-ruled="false"/g)).toHaveLength(1);
+  expect(html.match(/<h2\b/g)).toHaveLength(7);
+  for (const href of ["/metrics", "/reverse-proxy", "/stream", "/certificates", "/audit", "/history", "/nodes"]) {
+    expect(html).toContain(`href="${href}"`);
+  }
 });

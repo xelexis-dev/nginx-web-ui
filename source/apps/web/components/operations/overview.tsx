@@ -48,140 +48,153 @@ export function OperationsOverview({ vm }: { vm: OverviewVM }) {
         }
       />
 
-      <Surface
-        title="nginx 현황"
-        actions={
-          <Link href="/metrics" className={linkClassName({ variant: "back" })}>
-            접속 지표 <Icon name="chevronRight" size={14} />
-          </Link>
-        }
-      >
-        <KpiRow
-          label="nginx 실시간"
-          columns={4}
-          items={[
-            {
-              label: "활성 연결",
-              icon: <Icon name="servers" />,
-              value: metric(gauge?.active),
-              note: "현재 연결된 클라이언트",
-            },
-            {
-              label: "누적 요청",
-              icon: <Icon name="metrics" />,
-              value: metric(gauge?.requests),
-              note: "nginx 시작 이후 처리한 요청",
-            },
-            {
-              label: "대기(keep-alive)",
-              icon: <Icon name="stream" />,
-              value: metric(gauge?.waiting),
-              note: (
-                <>
-                  읽기 {metric(gauge?.reading)} · 쓰기 {metric(gauge?.writing)}
-                </>
-              ),
-            },
-            {
-              label: "드롭된 연결",
-              icon: <Icon name="alert" />,
-              value: gauge
-                ? metric(Math.max(0, gauge.accepts - gauge.handled))
-                : "—",
-              note: "수락한 연결 중 처리되지 않은 연결",
-            },
-          ]}
-        />
-      </Surface>
+      <div className={styles.sections}>
+        <Surface
+          variant="boxed"
+          title="nginx 현황"
+          actions={
+            <Link
+              href="/metrics"
+              className={linkClassName({ variant: "back" })}
+            >
+              접속 지표 <Icon name="chevronRight" size={14} />
+            </Link>
+          }
+        >
+          <KpiRow
+            ruled={false}
+            label="nginx 실시간"
+            columns={4}
+            items={[
+              {
+                label: "활성 연결",
+                icon: <Icon name="servers" />,
+                value: metric(gauge?.active),
+                note: "현재 연결된 클라이언트",
+              },
+              {
+                label: "누적 요청",
+                icon: <Icon name="metrics" />,
+                value: metric(gauge?.requests),
+                note: "nginx 시작 이후 처리한 요청",
+              },
+              {
+                label: "대기(keep-alive)",
+                icon: <Icon name="stream" />,
+                value: metric(gauge?.waiting),
+                note: (
+                  <>
+                    읽기 {metric(gauge?.reading)} · 쓰기{" "}
+                    {metric(gauge?.writing)}
+                  </>
+                ),
+              },
+              {
+                label: "드롭된 연결",
+                icon: <Icon name="alert" />,
+                value: gauge
+                  ? metric(Math.max(0, gauge.accepts - gauge.handled))
+                  : "—",
+                note: "수락한 연결 중 처리되지 않은 연결",
+              },
+            ]}
+          />
+        </Surface>
 
-      <div className={styles.overviewGrid}>
-        <div className={styles.sectionStack}>
-          <ServerHealth servers={vm.servers} />
-          <EventsPanel events={vm.events} />
-        </div>
-        <div className={styles.sectionStack}>
-          <AttentionPanel servers={vm.servers} />
-          <PendingPanel servers={vm.servers} />
-          <Surface title="구성">
-            <Facts
-              items={[
-                {
-                  term: (
+        <div className={styles.overviewGrid}>
+          <div className={styles.sectionStack}>
+            <ServerHealth servers={vm.servers} />
+            <EventsPanel events={vm.events} />
+          </div>
+          <div className={styles.sectionStack}>
+            <AttentionPanel servers={vm.servers} />
+            <PendingPanel servers={vm.servers} />
+            <Surface
+              variant="boxed"
+              title="구성"
+              footer={
+                <>
+                  <Link
+                    href="/audit"
+                    className={linkClassName({ variant: "back" })}
+                  >
+                    감사(24시간) {counts.audit24h.toLocaleString("ko-KR")}
+                  </Link>
+                  <span>
                     <Link
-                      href="/reverse-proxy"
+                      href="/history"
                       className={linkClassName({ variant: "back" })}
                     >
-                      리버스 프록시
-                    </Link>
-                  ),
-                  value: (
-                    <>
-                      {counts.serverActive} / {counts.serverTotal}{" "}
-                      <span className={styles.small}>활성 / 전체</span>
-                    </>
-                  ),
-                },
-                {
-                  term: (
-                    <Link
-                      href="/stream"
-                      className={linkClassName({ variant: "back" })}
-                    >
-                      Stream
-                    </Link>
-                  ),
-                  value: (
-                    <>
-                      {counts.streamActive} / {counts.streamTotal}{" "}
-                      <span className={styles.small}>활성 / 전체</span>
-                    </>
-                  ),
-                },
-                {
-                  term: (
-                    <Link
-                      href="/certificates"
-                      className={linkClassName({ variant: "back" })}
-                    >
-                      인증서
-                    </Link>
-                  ),
-                  value: (
-                    <>
-                      {vm.certificates.ok ? vm.certificates.data.total : "—"}{" "}
-                      <span className={styles.small}>등록된 인증서</span>
-                    </>
-                  ),
-                },
-              ]}
-            />
-            {vm.certificates.ok &&
-            (vm.certificates.data.expiring || vm.certificates.data.failed) ? (
-              <p className={styles.kpiNote}>
-                인증서 만료 임박(30일 이내·만료 포함){" "}
-                {vm.certificates.data.expiring}개 · 발급 실패{" "}
-                {vm.certificates.data.failed}개
-              </p>
-            ) : null}
-            <div className={styles.configurationFooter}>
-              <Link
-                href="/audit"
-                className={linkClassName({ variant: "back" })}
-              >
-                감사(24시간) {counts.audit24h.toLocaleString("ko-KR")}
-              </Link>
-              <span>
-                <Link
-                  href="/history"
-                  className={linkClassName({ variant: "back" })}
-                >
-                  마지막 적용
-                </Link>{" "}
-                {lastApplyValue(vm.lastApply)}
-              </span>
-            </div>
-          </Surface>
-          <NodesPanel nodes={vm.nodes} />
+                      마지막 적용
+                    </Link>{" "}
+                    {lastApplyValue(vm.lastApply)}
+                  </span>
+                </>
+              }
+            >
+              <Facts
+                items={[
+                  {
+                    term: (
+                      <Link
+                        href="/reverse-proxy"
+                        className={linkClassName({ variant: "back" })}
+                      >
+                        리버스 프록시
+                      </Link>
+                    ),
+                    value: (
+                      <>
+                        {counts.serverActive} / {counts.serverTotal}{" "}
+                        <span className={styles.small}>활성 / 전체</span>
+                      </>
+                    ),
+                  },
+                  {
+                    term: (
+                      <Link
+                        href="/stream"
+                        className={linkClassName({ variant: "back" })}
+                      >
+                        Stream
+                      </Link>
+                    ),
+                    value: (
+                      <>
+                        {counts.streamActive} / {counts.streamTotal}{" "}
+                        <span className={styles.small}>활성 / 전체</span>
+                      </>
+                    ),
+                  },
+                  {
+                    term: (
+                      <Link
+                        href="/certificates"
+                        className={linkClassName({ variant: "back" })}
+                      >
+                        인증서
+                      </Link>
+                    ),
+                    value: (
+                      <>
+                        {vm.certificates.ok ? vm.certificates.data.total : "—"}{" "}
+                        <span className={styles.small}>등록된 인증서</span>
+                      </>
+                    ),
+                  },
+                ]}
+              />
+              {vm.certificates.ok &&
+              (vm.certificates.data.expiring || vm.certificates.data.failed) ? (
+                <p className={styles.kpiNote}>
+                  인증서 만료 임박(30일 이내·만료 포함){" "}
+                  {vm.certificates.data.expiring}개 · 발급 실패{" "}
+                  {vm.certificates.data.failed}개
+                </p>
+              ) : null}
+            </Surface>
+            <NodesPanel nodes={vm.nodes} />
+          </div>
         </div>
       </div>
     </div>
@@ -206,7 +219,9 @@ function PanelFailure({
   inset?: boolean;
 }) {
   if (value.reason === "forbidden") return null;
-  const message = <Banner tone="warning" title={<>읽지 못했습니다: {value.message}</>} />;
+  const message = (
+    <Banner tone="warning" title={<>읽지 못했습니다: {value.message}</>} />
+  );
   return inset ? <div className={styles.inset}>{message}</div> : message;
 }
 
@@ -214,6 +229,7 @@ function ServerHealth({ servers }: { servers: OverviewVM["servers"] }) {
   if (!servers.ok && servers.reason === "forbidden") return null;
   return (
     <Surface
+      variant="boxed"
       title="서버 상태"
       info="저장된 설정·인증서 기준 · 확인이 필요한 서버가 위로"
       flush
@@ -232,12 +248,17 @@ function ServerHealth({ servers }: { servers: OverviewVM["servers"] }) {
       {!servers.ok ? (
         <PanelFailure value={servers} inset />
       ) : servers.data.rows.length === 0 ? (
-        <EmptyState title="등록된 서버가 없습니다" />
+        <div className={styles.inset}>
+          <EmptyState title="등록된 서버가 없습니다" />
+        </div>
       ) : (
         <>
           {servers.data.certificatesUnknown ? (
             <div className={styles.inset}>
-              <Banner tone="warning" title="인증서 상태를 읽지 못해 TLS 를 확인할 수 없습니다." />
+              <Banner
+                tone="warning"
+                title="인증서 상태를 읽지 못해 TLS 를 확인할 수 없습니다."
+              />
             </div>
           ) : null}
           <Table label="서버 상태">
@@ -297,25 +318,53 @@ function ServerHealth({ servers }: { servers: OverviewVM["servers"] }) {
 
 function AttentionPanel({ servers }: { servers: OverviewVM["servers"] }) {
   if (!servers.ok && servers.reason === "forbidden") return null;
-  const rows = servers.ok ? servers.data.rows.filter((s) => s.health.tone === "error" || s.health.tone === "warning") : [];
+  const rows = servers.ok
+    ? servers.data.rows.filter(
+        (s) => s.health.tone === "error" || s.health.tone === "warning",
+      )
+    : [];
   return (
-    <Surface title="확인 필요" info="저장된 설정·인증서 기준">
-      {!servers.ok ? <PanelFailure value={servers} /> : <div className={styles.stack}>
-        <Facts layout="strip" items={[
-          { term: "전체", value: `${servers.data.total}개` },
-          { term: "확인 필요", value: `${servers.data.attention}개` },
-        ]} />
-        <ul className={styles.list}>
-          {rows.map((s) => (
-            <li key={s.id}>
-              <StatusBadge tone={s.health.tone}>{s.health.label}</StatusBadge>
-              <Link href={`/reverse-proxy/${s.id}`} className={linkClassName({ variant: "back" })}>{s.serverName.split(/\s+/)[0]}</Link>
-              {s.health.reason ? <span className={styles.muted}>{s.health.reason}</span> : null}
-            </li>
-          ))}
-        </ul>
-        {servers.data.attention > rows.length ? <p className={styles.small}>외 {servers.data.attention - rows.length}건 <Link href="/reverse-proxy" className={linkClassName({ variant: "back" })}>전체 보기</Link></p> : null}
-      </div>}
+    <Surface variant="boxed" title="확인 필요" info="저장된 설정·인증서 기준">
+      {!servers.ok ? (
+        <PanelFailure value={servers} />
+      ) : (
+        <div className={styles.stack}>
+          <Facts
+            layout="strip"
+            items={[
+              { term: "전체", value: `${servers.data.total}개` },
+              { term: "확인 필요", value: `${servers.data.attention}개` },
+            ]}
+          />
+          <ul className={styles.list}>
+            {rows.map((s) => (
+              <li key={s.id}>
+                <StatusBadge tone={s.health.tone}>{s.health.label}</StatusBadge>
+                <Link
+                  href={`/reverse-proxy/${s.id}`}
+                  className={linkClassName({ variant: "back" })}
+                >
+                  {s.serverName.split(/\s+/)[0]}
+                </Link>
+                {s.health.reason ? (
+                  <span className={styles.muted}>{s.health.reason}</span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+          {servers.data.attention > rows.length ? (
+            <p className={styles.small}>
+              외 {servers.data.attention - rows.length}건{" "}
+              <Link
+                href="/reverse-proxy"
+                className={linkClassName({ variant: "back" })}
+              >
+                전체 보기
+              </Link>
+            </p>
+          ) : null}
+        </div>
+      )}
     </Surface>
   );
 }
@@ -333,13 +382,17 @@ function PendingPanel({ servers }: { servers: OverviewVM["servers"] }) {
   const count = servers.ok ? servers.data.pendingCount : null;
   return (
     <Surface
+      variant="boxed"
       title={count === null ? "미적용 변경" : `미적용 변경 ${count}건`}
       headingLevel={2}
     >
       {!servers.ok ? (
         <PanelFailure value={servers} />
       ) : !servers.data.pendingHasBaseline ? (
-        <p className={styles.small}>적용 상태 확인 필요 — 현재 동작 중인 설정을 확인하지 못했습니다. 설정을 확인한 뒤 다시 적용하세요.</p>
+        <p className={styles.small}>
+          적용 상태 확인 필요 — 현재 동작 중인 설정을 확인하지 못했습니다.
+          설정을 확인한 뒤 다시 적용하세요.
+        </p>
       ) : count === 0 ? (
         <p className={styles.small}>모든 변경이 nginx에 반영되어 있습니다.</p>
       ) : (
@@ -374,6 +427,7 @@ function NodesPanel({ nodes }: { nodes: OverviewVM["nodes"] }) {
   if (!nodes.ok && nodes.reason === "forbidden") return null;
   return (
     <Surface
+      variant="boxed"
       title="노드"
       actions={
         <Link href="/nodes" className={linkClassName({ variant: "back" })}>
@@ -397,6 +451,8 @@ function EventsPanel({ events }: { events: OverviewVM["events"] }) {
   if (!events.ok && events.reason === "forbidden") return null;
   return (
     <Surface
+      variant="boxed"
+      flush
       title="최근 이벤트"
       actions={
         <Link href="/audit" className={linkClassName({ variant: "back" })}>
@@ -406,14 +462,18 @@ function EventsPanel({ events }: { events: OverviewVM["events"] }) {
       }
     >
       {!events.ok ? (
-        <PanelFailure value={events} />
+        <PanelFailure value={events} inset />
       ) : events.data.length === 0 ? (
-        <p className={styles.small}>기록된 이벤트가 없습니다.</p>
+        <div className={styles.inset}>
+          <p className={styles.small}>기록된 이벤트가 없습니다.</p>
+        </div>
       ) : (
         <ol className={styles.events}>
           {events.data.map((e) => (
             <li key={e.id}>
-                <span className={styles.activityIcon} aria-hidden="true"><Icon name="audit" /></span>
+              <span className={styles.activityIcon} aria-hidden="true">
+                <Icon name="audit" />
+              </span>
               <time className={styles.time}>{e.time}</time>
               <span>
                 <span className={styles.strong}>{e.action}</span>
