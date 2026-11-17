@@ -88,7 +88,7 @@ fn read_open_file(file:File,path:&Path)->Result<UpgradeStatus,StepError> {
     Ok(status)
 }
 pub(crate) fn source_guidance(too_old: bool) -> Option<&'static str> {
-    too_old.then_some("먼저 1.19.11로 올린 뒤 이 이미지로 시작하세요.")
+    too_old.then_some(super::legacy::GUIDANCE)
 }
 pub(crate) fn retained_backup_notice(backup: &super::types::RetainedCopy) -> String {
     format!("보관: {} · {} 바이트 · 컨테이너를 중지하고 같은 볼륨으로 실행: {}", backup.id, backup.bytes, backup.remove_command)
@@ -116,7 +116,7 @@ pub(crate) struct UpgradeNotification {
 pub(crate) fn backup_kept_notification(backup: &super::types::RetainedCopy, location: &str) -> UpgradeNotification {
     UpgradeNotification {
         kind:"system.db_upgrade_backup_kept", severity:"info", title:"PG15 백업을 보관하고 있습니다",
-        body:format!("업그레이드 전 PG15 데이터 백업({} 바이트)을 {location}에 보관하고 있습니다. 자동으로 지우지 않습니다. 2.0 이미지가 정상 동작하는 것을 확인한 뒤 컨테이너를 중지하고 같은 볼륨으로 {} 명령을 실행하면 지울 수 있습니다. 자세한 절차는 업그레이드 안내를 참고하세요.",backup.bytes,backup.remove_command),
+        body:format!("업그레이드 전 PG15 데이터 백업({} 바이트)을 {location}에 보관하고 있습니다. 자동으로 지우지 않습니다. 1.19.11로 되돌리려면 컨테이너를 중지하고 2.0.x 최신(2.0.3 이상) 이미지의 offline entrypoint로 restore-pg15를 실행하세요. 복원하면 업그레이드 이후의 변경은 사라집니다. 2.0 이미지를 정상 시작해 2.1 데이터를 열지 마세요. 되돌릴 필요가 없으면 컨테이너를 중지하고 같은 볼륨으로 {} 명령을 실행해 지울 수 있습니다. 자세한 절차는 업그레이드 안내를 참고하세요.",backup.bytes,backup.remove_command),
         dedupe_key:format!("db-upgrade-backup:{}",backup.id),data:serde_json::json!({"backupId":backup.id,"bytes":backup.bytes}),
     }
 }
@@ -128,7 +128,7 @@ pub(crate) fn activation_failed_notification(attempt_id: &str, code: &str) -> Up
     }
 }
 pub(crate) async fn insert_notification(client: &impl tokio_postgres::GenericClient, row: &UpgradeNotification) -> Result<bool, StepError> {
-    client.execute("INSERT INTO notifications(id,type,severity,title,body,link,data,dedupe_key) VALUES($1,$2,$3::text::notification_severity,$4,$5,$6,$7,$8) ON CONFLICT(dedupe_key) DO NOTHING",
+    client.execute("INSERT INTO notifications(id,type,severity,title,body,link,data,dedupe_key) VALUES($1,$2,$3::text::notification_severity,$4,$5,$6,$7,$8) ON CONFLICT(dedupe_key) DO UPDATE SET body=excluded.body,data=excluded.data WHERE notifications.type='system.db_upgrade_backup_kept' AND (notifications.body IS DISTINCT FROM excluded.body OR notifications.data IS DISTINCT FROM excluded.data)",
         &[&uuid::Uuid::new_v4().to_string(),&row.kind,&row.severity,&row.title,&row.body,&Option::<String>::None,&row.data,&row.dedupe_key])
         .await.map(|count|count==1).map_err(|_|StepError{code:"io_error",message:"업그레이드 알림을 저장하지 못했습니다.",detail:None})
 }
@@ -217,7 +217,7 @@ pub(crate) mod tests {
     const A8_LITERAL:&str=r#"{"version":1,"updatedAt":"2026-10-28T00:00:06Z","outcome":"upgrading","branch":"upgrade","step":{"id":"p1-backup","index":3,"total":11,"startedAt":"2026-10-28T00:00:00Z","bytesDone":1024,"bytesTotal":4096},"failure":{"code":"insufficient_space","class":"transient","message":"공간을 확인하세요.","nextAction":"여유 공간을 확보하세요."},"space":{"requiredBytes":4096,"availableBytes":1024,"inodesRequired":8,"inodesAvailable":4},"locations":["/var/lib/postgresql/data/.nwui-pg15-backup/kept"],"backup":{"id":"kept","bytes":2048,"removeCommand":"nwui-db-upgrade remove-pg15-backup --confirm kept"},"discarded":[{"id":"aside","bytes":512,"removeCommand":"nwui-db-upgrade remove-discarded --confirm aside"}],"cleanupPending":true,"retry":{"nextEligibleAt":"2026-10-29T00:00:00Z","reason":"다음 시작 때 재시도합니다."}}"#;
     pub(crate) fn sample()->UpgradeStatus {serde_json::from_str(A8_LITERAL).unwrap()}
     #[test] fn g22_pure_notices_preserve_design_and_existing_backup_line() {
-        assert_eq!(source_guidance(true),Some("먼저 1.19.11로 올린 뒤 이 이미지로 시작하세요."));
+        assert_eq!(source_guidance(true),Some(super::super::legacy::GUIDANCE));
         assert_eq!(source_guidance(false),None);
         let value=sample();
         assert_eq!(retained_backup_notice(value.backup.as_ref().unwrap()),"보관: kept · 2048 바이트 · 컨테이너를 중지하고 같은 볼륨으로 실행: nwui-db-upgrade remove-pg15-backup --confirm kept");
@@ -232,7 +232,9 @@ pub(crate) mod tests {
         let value=sample();let backup=value.backup.as_ref().unwrap();let kept=backup_kept_notification(backup,"/var/lib/postgresql/data/.nwui-pg15-backup/kept");
         assert_eq!((kept.kind,kept.severity,kept.title),("system.db_upgrade_backup_kept","info","PG15 백업을 보관하고 있습니다"));
         assert_eq!(kept.dedupe_key,"db-upgrade-backup:kept");assert_eq!(kept.data,serde_json::json!({"backupId":"kept","bytes":2048}));
-        assert_eq!(kept.body,"업그레이드 전 PG15 데이터 백업(2048 바이트)을 /var/lib/postgresql/data/.nwui-pg15-backup/kept에 보관하고 있습니다. 자동으로 지우지 않습니다. 2.0 이미지가 정상 동작하는 것을 확인한 뒤 컨테이너를 중지하고 같은 볼륨으로 nwui-db-upgrade remove-pg15-backup --confirm kept 명령을 실행하면 지울 수 있습니다. 자세한 절차는 업그레이드 안내를 참고하세요.");
+        assert!(kept.body.contains("2.0.x 최신(2.0.3 이상) 이미지의 offline entrypoint"));
+        assert!(kept.body.contains("2.0 이미지를 정상 시작해 2.1 데이터를 열지 마세요"));
+        assert!(kept.body.contains("remove-pg15-backup --confirm kept"));
         let failed=activation_failed_notification("attempt","activation_failed");
         assert_eq!((failed.kind,failed.severity,failed.title),("system.db_upgrade_activation_failed","error","업그레이드 후 서비스 시작에 실패했습니다"));
         assert_eq!(failed.dedupe_key,"db-upgrade-activation:attempt:activation_failed");
@@ -258,6 +260,10 @@ pub(crate) mod tests {
         let tx=db.transaction().await.unwrap();assert!(insert_notification(&tx,&kept).await.unwrap());tx.rollback().await.unwrap();
         assert_eq!(db.query_one("SELECT count(*)::bigint FROM notifications",&[]).await.unwrap().get::<_,i64>(0),0);
         assert!(insert_notification(&db,&kept).await.unwrap());assert!(!insert_notification(&db,&kept).await.unwrap());
+        let original_id:String=db.query_one("SELECT id FROM notifications WHERE dedupe_key=$1",&[&kept.dedupe_key]).await.unwrap().get(0);
+        db.execute("UPDATE notifications SET body='old restore guidance',data='{}'::jsonb WHERE dedupe_key=$1",&[&kept.dedupe_key]).await.unwrap();
+        assert!(insert_notification(&db,&kept).await.unwrap());assert!(!insert_notification(&db,&kept).await.unwrap());
+        assert_eq!(db.query_one("SELECT id FROM notifications WHERE dedupe_key=$1",&[&kept.dedupe_key]).await.unwrap().get::<_,String>(0),original_id);
         let failed=activation_failed_notification("attempt","activation_failed");assert!(insert_notification(&db,&failed).await.unwrap());assert!(!insert_notification(&db,&failed).await.unwrap());
         let rows=db.query("SELECT type,severity::text,title,body,data,dedupe_key FROM notifications ORDER BY type",&[]).await.unwrap();assert_eq!(rows.len(),2);
         for (row,expected) in rows.iter().zip([&failed,&kept]) {

@@ -62,7 +62,7 @@ fn w13_view_releases_single_connection_before_optional_blocking_notices() {
             mfa_verified:true, expires_at:i64::MAX,
         };
         let state = db.state.clone();
-        let task = tokio::spawn(async move { views::view(&state, &session, "/reverse-proxy/notice/edit", &Default::default()).await });
+        let task = tokio::spawn(async move { views::view(&state, &(session).clone().into(), "/reverse-proxy/notice/edit", &Default::default()).await });
         // The sole blocking worker is parked, so the view must wait at the notice boundary.
         tokio::time::sleep(Duration::from_secs(1)).await;
         let pending = !task.is_finished();
@@ -81,7 +81,7 @@ fn w13_view_releases_single_connection_before_optional_blocking_notices() {
 #[ignore = "real PostgreSQL: NWUI_TEST_DATABASE_URL"]
 async fn w13_upstream_edits_refuse_only_new_consuming_listener_loops_atomically() {
     let db = test_db_with(&[("NWUI_CONTAINER", "1")]).await;
-    let actor = Actor { id:None, label:Some("w13".into()), ip:None };
+    let actor = Actor { via: None, id:None, label:Some("w13".into()), ip:None };
     db.client.execute("INSERT INTO upstreams(id,name,servers) VALUES('up','backend',$1)", &[&json!(["127.0.0.1:19000"])]).await.unwrap();
     for (id, cfg) in [
         ("id-consumer", json!({"locations":[{"path":"/","upstreamId":"up"}]})),
@@ -118,7 +118,7 @@ async fn w13_upstream_edits_refuse_only_new_consuming_listener_loops_atomically(
 #[ignore = "real PostgreSQL: NWUI_TEST_DATABASE_URL"]
 async fn w13_location_count_is_not_a_save_or_apply_limit() {
     let db = test_db_with(&[("NWUI_CONTAINER", "1")]).await;
-    let actor = Actor { id:None, label:Some("many-locations".into()), ip:None };
+    let actor = Actor { via: None, id:None, label:Some("many-locations".into()), ip:None };
     let locations: Vec<_> = (0..200).map(|i| json!({"path":format!("/route-{i}"),"mode":"direct","proxyPass":"http://192.0.2.1:19000"})).collect();
     resources::mutate(&db.state,Resource::Server,Mutation::Create,None,json!({"serverName":"many.test","listen":18089,"targetMode":"locations","locations":locations}),&actor).await.unwrap();
     let client = db.state.db.get().await.unwrap();

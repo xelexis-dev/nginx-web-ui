@@ -2,8 +2,8 @@
 use super::resources::{self, Resource};
 use crate::{
     auth::{
-        principal::{SessionPrincipal, db_unavailable},
-        rbac::{Action, can},
+        principal::{UserPrincipal, db_unavailable},
+        rbac::Action,
     },
     error::ApiError,
     state::AppState,
@@ -13,17 +13,17 @@ use std::collections::BTreeMap;
 
 pub async fn view(
     state: &AppState,
-    session: &SessionPrincipal,
+    session: &UserPrincipal,
     path: &str,
     _query: &BTreeMap<String, String>,
 ) -> Result<Option<Value>, ApiError> {
     if path == "/reverse-proxy/templates" {
-        if !can(session.role, Action::ConfigRead) {
+        if !session.can(Action::ConfigRead) {
             return Err(ApiError::forbidden());
         }
         let config = state.config.clone();
         let previews = super::internal_targets::blocking(move || template_previews(&config)).await?;
-        return Ok(Some(json!({"canWrite":can(session.role,Action::ConfigWrite),"previews":previews})));
+        return Ok(Some(json!({"canWrite":session.can(Action::ConfigWrite),"previews":previews})));
     }
     let (kind, tail) = if path == "/reverse-proxy/upstreams" {
         (Resource::Upstream, "")
@@ -44,9 +44,7 @@ pub async fn view(
         return Ok(None);
     };
     let editing = tail == "new" || tail.ends_with("/edit");
-    if !can(
-        session.role,
-        if editing {
+    if !session.can(if editing {
             Action::ConfigWrite
         } else {
             Action::ConfigRead
@@ -60,7 +58,7 @@ pub async fn view(
     }
     let client = state.db.get().await.map_err(|_| db_unavailable())?;
     let mut self_proxy_excluded = false;
-    let mut out = json!({"canWrite":can(session.role,Action::ConfigWrite),"canApply":can(session.role,Action::NginxReload),"runtimeDns":runtime_dns_status(&state.config)});
+    let mut out = json!({"canWrite":session.can(Action::ConfigWrite),"canApply":session.can(Action::NginxReload),"runtimeDns":runtime_dns_status(&state.config)});
     if tail.is_empty() {
         out[kind.plural()] = json!(resources::list(&**client, kind).await?);
     } else if tail != "new" {

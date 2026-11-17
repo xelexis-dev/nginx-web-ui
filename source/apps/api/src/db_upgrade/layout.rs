@@ -121,7 +121,7 @@ fn classify_impl(locks:Option<&crate::upgrade::StorageLocks>,roots:&Roots,read_i
         private_material_dir(&roots.app.join(".nwui-auto")).map_err(|_|refuse())?;
         Some(crate::upgrade::Journal::open(&roots.app,locks.ok_or_else(refuse)?).map_err(|_|refuse())?.load().clone())
     }else{None};
-    if exists(&roots.db.join("PG_VERSION"))? {return Err(Error::refusal(if version(&roots.db.join("PG_VERSION"))?=="15"{"pg15_requires_upgrade"}else{"unsupported_layout"}));}
+    if exists(&roots.db.join("PG_VERSION"))? {return Err(Error::refusal(if version(&roots.db.join("PG_VERSION"))?=="15"{"requires_2_0_first"}else{"unsupported_layout"}));}
     let db_empty=empty(&roots.db)?;
     // Only a new/interrupted fresh attempt may still have no DB pair after journal bootstrap.
     let app_empty=empty(&roots.app)? || journal.as_ref().is_some_and(|j|j.branch==crate::upgrade::Branch::Fresh)
@@ -237,9 +237,6 @@ pub(crate) fn validate_roots_unlocked(roots:&Roots)->Result<()> {
     Ok(())
 }
 pub(super) fn genuinely_empty(root:&Path)->Result<bool> {lost_found(root)?;empty(root)}
-
-pub(crate) fn legacy_material(roots:&Roots)->Result<()> {validate_roots(roots)?;app_material(roots,true,false,true)}
-
 pub(super) fn ready_material(roots:&Roots,pair:&Pair)->Result<()> {validate_roots(roots)?;app_material(roots,true,pair.encryption_key_required,pair.ready&&pair.mode=="migration")}
 
 #[cfg(test)]

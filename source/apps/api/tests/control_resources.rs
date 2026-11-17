@@ -8,6 +8,7 @@ use serde_json::{Value, json};
 
 fn actor() -> Actor {
     Actor {
+        via: None,
         id: None,
         label: Some("gateway:test".into()),
         ip: Some("198.51.100.7".into()),
@@ -607,7 +608,7 @@ async fn views_expose_only_safe_certificate_fields_and_enforce_edit_roles() {
     };
     let path = format!("/reverse-proxy/{}", server["id"].as_str().unwrap());
     let query = Default::default();
-    let data = nwui_api::control::views::view(&db.state, &s, &path, &query)
+    let data = nwui_api::control::views::view(&db.state, &(s).clone().into(), &path, &query)
         .await
         .unwrap()
         .unwrap();
@@ -616,21 +617,21 @@ async fn views_expose_only_safe_certificate_fields_and_enforce_edit_roles() {
     assert_eq!(data["certificates"][0]["tlsReady"], true);
     assert!(!data.to_string().contains("MATERIAL"));
     assert_eq!(
-        nwui_api::control::views::view(&db.state, &s, &format!("{path}/edit"), &query)
+        nwui_api::control::views::view(&db.state, &(s).clone().into(), &format!("{path}/edit"), &query)
             .await
             .unwrap_err()
             .status,
         403
     );
     assert_eq!(
-        nwui_api::control::views::view(&db.state, &s, "/stream/missing", &query)
+        nwui_api::control::views::view(&db.state, &(s).clone().into(), "/stream/missing", &query)
             .await
             .unwrap_err()
             .status,
         404
     );
     assert!(
-        nwui_api::control::views::view(&db.state, &s, "/unknown", &query)
+        nwui_api::control::views::view(&db.state, &(s).clone().into(), "/unknown", &query)
             .await
             .unwrap()
             .is_none()
@@ -657,7 +658,7 @@ async fn views_expose_only_safe_certificate_fields_and_enforce_edit_roles() {
         .await
         .unwrap();
     assert_eq!(
-        nwui_api::control::views::view(&db.state, &s, &path, &query)
+        nwui_api::control::views::view(&db.state, &(s).clone().into(), &path, &query)
             .await
             .unwrap()
             .unwrap()["selfProxyNotice"],
@@ -901,4 +902,19 @@ async fn audit_concurrency_server_edits_reject_the_stale_second_save() {
 async fn audit_concurrency_stream_edits_reject_the_stale_second_save() {
     stale_resource_edit_is_conflict("streams", "stream", json!({"listen":19000,"protocol":"tcp","proxyPass":"127.0.0.1:9000"}),
         json!({"listen":19001,"protocol":"tcp","proxyPass":"127.0.0.1:9001"}), json!({"listen":19002,"protocol":"tcp","proxyPass":"127.0.0.1:9002"}), "listen").await;
+}
+
+#[tokio::test]
+#[ignore = "real DB"]
+async fn mutation_audit_preserves_token_provenance_and_browser_null() {
+    let db=test_db().await;
+    insert_user(&db.client,UserRow::default(),None).await;
+    for via in [None,Some(nwui_api::contracts::Via::Token{id:"token-id".into(),name:"<token-name>".into()})] {
+        let mut a=actor(); a.id=Some("u1".into()); a.via=via.clone();
+        let result=resources::mutate(&db.state,Resource::Upstream,Mutation::Create,None,json!({"name":uuid::Uuid::new_v4().simple().to_string(),"servers":["app:8080"]}),&a).await.unwrap();
+        let row=db.client.query_one("SELECT via,actor_label,actor_id FROM audit_logs WHERE target=$1",&[&result["id"].as_str().unwrap()]).await.unwrap();
+        assert_eq!(row.get::<_,Option<Value>>(0),via.map(|v|serde_json::to_value(v).unwrap()));
+        assert_eq!(row.get::<_,String>(1),"gateway:test");
+        assert_eq!(row.get::<_,String>(2),"u1");
+    }
 }

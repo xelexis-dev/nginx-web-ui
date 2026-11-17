@@ -139,7 +139,13 @@ pub(super) async fn execute(plan: &Plan, auth_log: &File, identity: Identity) ->
     let node_probe = plan.node_probe;
     let mut identity = identity;
     if node_probe { identity.groups.clear(); }
+    #[cfg(not(test))]
     let mut command = tokio::process::Command::new(std::env::current_exe()?);
+    #[cfg(test)]
+    let mut command = tokio::process::Command::new(match std::env::var_os("NWUI_TEST_API_BIN") {
+        Some(path) => PathBuf::from(path),
+        None => std::env::current_exe()?,
+    });
     // The UID 1000 probe must not expose root's credentials through /proc/environ.
     command.env_clear().arg("access-probe").stdin(Stdio::piped()).stdout(Stdio::null()).stderr(Stdio::null()).kill_on_drop(true);
     unsafe { command.as_std_mut().pre_exec(move || {

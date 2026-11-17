@@ -30,6 +30,14 @@ fn cookie(id: &str, sv: i64, requires_2fa: bool) -> String {
     format!("authjs.session-token={token}")
 }
 
+
+async fn seed_user_token(db: &TestDb) {
+    db.client.batch_execute("INSERT INTO access_tokens(id,kind,owner_user_id,name,token_hash,token_suffix,scopes) VALUES('keep-or-revoke','user','u1','fixture','fixture-hash','test','[]')").await.unwrap();
+}
+async fn token_revoked(db: &TestDb) -> bool {
+    db.client.query_one("SELECT revoked_at IS NOT NULL FROM access_tokens WHERE id='keep-or-revoke'", &[]).await.unwrap().get(0)
+}
+
 struct Reply {
     status: StatusCode,
     set_cookies: Vec<String>,
@@ -137,10 +145,12 @@ async fn two_factor_enrollment_round_trip() {
     assert_eq!(reply.body, json!({"enabled": true, "pending": null, "verificationRequired": false}));
     assert_eq!(call(&app, "GET", "/api/ui/v1/account", &proved, None).await.status, StatusCode::OK);
 
+    seed_user_token(&db).await;
     // Disabling needs a verified session, then the password.
     assert_eq!(call(&app, "POST", "/api/ui/v1/forms/account.disableTwoFactor", &session, Some(&format!("currentPassword={PASSWORD}"))).await.status, StatusCode::UNAUTHORIZED);
     let reply = call(&app, "POST", "/api/ui/v1/forms/account.disableTwoFactor", &proved, Some("currentPassword=wrong")).await;
     assert_eq!(reply.body["error"]["fieldErrors"]["currentPassword"], "현재 비밀번호가 올바르지 않습니다.");
+    assert!(!token_revoked(&db).await);
     let reply = call(&app, "POST", "/api/ui/v1/forms/account.disableTwoFactor", &proved, Some(&format!("currentPassword={PASSWORD}"))).await;
     assert_eq!(reply.body, json!({"redirectTo": "/account/2fa"}));
     assert_eq!((&claims_of(&reply.set_cookies[0])["totpEnabled"], &claims_of(&reply.set_cookies[0])["mfaVerified"]), (&json!(false), &json!(false)));
@@ -148,6 +158,14 @@ async fn two_factor_enrollment_round_trip() {
     assert!(!enabled_after);
     assert_eq!((secret_after, backup_after, step_after), (None, None, None), "re-enrollment starts clean");
     assert_eq!(audit_rows(&db.client, "user:2fa-disable").await.len(), 1);
+    assert!(token_revoked(&db).await);
+    assert_eq!(audit_rows(&db.client,"token:revoke").await.len(),1);
+    let disabled_cookie=reply.set_cookies[0].split(';').next().unwrap();
+    let setup=call(&app,"GET","/api/ui/v1/account/2fa",disabled_cookie,None).await;
+    let secret=setup.body["pending"]["secret"].as_str().unwrap();
+    let code=totp::code_at(&totp::decode_secret(secret).unwrap(),principal::now_unix_ms() as u64);
+    assert_eq!(call(&app,"POST","/api/ui/v1/forms/account.enableTwoFactor",disabled_cookie,Some(&format!("secret={secret}&code={code}"))).await.status,StatusCode::OK);
+    assert!(token_revoked(&db).await,"re-enrollment never revives a token");
 }
 
 #[tokio::test]
@@ -158,6 +176,7 @@ async fn changing_the_own_password_ends_every_session() {
     insert_user(&db.client, UserRow::default(), Some(&password::hash_password(PASSWORD).unwrap())).await;
     insert_user(&db.client, UserRow { id: "oa", email: "oa@example.test", ..Default::default() }, None).await;
     let session = cookie("u1", 3, false);
+    seed_user_token(&db).await;
     let path = "/api/ui/v1/forms/account.changePassword";
 
     let reply = call(&app, "POST", path, &session, Some("currentPassword=&newPassword=short&confirmPassword=x")).await;
@@ -174,6 +193,8 @@ async fn changing_the_own_password_ends_every_session() {
     assert_eq!((reply.status, reply.body.clone()), (StatusCode::OK, json!({"redirectTo": "/login"})));
     assert!(reply.set_cookies.iter().all(|c| c.contains("Max-Age=0")) && !reply.set_cookies.is_empty(), "this device is signed out");
     assert_eq!(me(&db).await.4, 4, "every session ends");
+    assert!(!token_revoked(&db).await);
+    assert!(audit_rows(&db.client,"token:revoke").await.is_empty());
     let hash: String = db.client.query_one("SELECT password_hash FROM users WHERE id = 'u1'", &[]).await.unwrap().get(0);
     assert!(password::verify_password("New-passw0rd", &hash));
     assert_eq!(audit_rows(&db.client, "user:change-own-password").await.len(), 1);
@@ -319,4 +340,27 @@ async fn q3_w7_factor_changes_end_other_sessions_and_reissue_this_one() {
     assert_eq!(claims_of(&disabled.set_cookies[0])["sv"], 5);
     assert_eq!(call(&app,"GET","/api/ui/v1/account",current,None).await.status, StatusCode::UNAUTHORIZED);
     assert_eq!(call(&app,"GET","/api/ui/v1/account",disabled.set_cookies[0].split(';').next().unwrap(),None).await.status, StatusCode::OK);
+}
+
+#[tokio::test]
+#[ignore = "real DB"]
+async fn optional_policy_still_offers_local_factor_proof_before_token_issue() {
+    let db=test_db().await;
+    insert_user(&db.client,UserRow{totp_enabled:true,..Default::default()},None).await;
+    let secret=totp::generate_secret();
+    db.client.execute("UPDATE users SET totp_secret=$1 WHERE id='u1'",&[&db.state.secrets.seal(&secret).unwrap()]).await.unwrap();
+    let app=app(&db); let unverified=cookie("u1",3,false);
+    assert_eq!(call(&app,"GET","/api/ui/v1/account",&unverified,None).await.status,StatusCode::OK);
+    let view=call(&app,"GET","/api/ui/v1/account/2fa",&unverified,None).await;
+    assert_eq!(view.body["verificationRequired"],true);
+    let issue="/api/ui/v1/forms/account.tokens.issue";
+    let form="name=automation&scopes=config%3Aread&expiry=never";
+    assert_eq!(call(&app,"POST",issue,&unverified,Some(form)).await.status,StatusCode::FORBIDDEN);
+    let code=totp::code_at(&totp::decode_secret(&secret).unwrap(),principal::now_unix_ms() as u64);
+    let proved=call(&app,"POST","/api/ui/v1/forms/account.verifyTwoFactor",&unverified,Some(&format!("code={code}"))).await;
+    assert_eq!(proved.status,StatusCode::OK);
+    let verified=proved.set_cookies[0].split(';').next().unwrap();
+    let issued=call(&app,"POST",issue,verified,Some(form)).await;
+    assert_eq!(issued.status,StatusCode::OK,"{}",issued.body);
+    assert!(issued.body["result"]["token"].as_str().is_some());
 }

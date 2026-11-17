@@ -313,7 +313,7 @@ mod live {
             db.client.execute("INSERT INTO config_snapshots(id,created_at,label,data) VALUES($1,$2::text::timestamptz,$1,$3)",&[&id,&at,&json!({"servers":[{"id":"s","serverName":name,"listen":80}],"streams":[],"upstreams":[]})]).await.unwrap();
         }
         let query = std::collections::BTreeMap::new();
-        let first = operations::view(&db.state, &principal(Role::Viewer), "/history/same", &query)
+        let first = operations::view(&db.state, &(principal(Role::Viewer)).clone().into(), "/history/same", &query)
             .await
             .unwrap()
             .unwrap();
@@ -321,8 +321,7 @@ mod live {
         assert_eq!(first["diff"]["hasChanges"], false);
         assert_eq!(first["canRollback"], false);
         let last = operations::view(
-            &db.state,
-            &principal(Role::Editor),
+            &db.state, &(principal(Role::Editor)).clone().into(),
             "/history/latest",
             &query,
         )
@@ -336,7 +335,7 @@ mod live {
             "serverName"
         );
         db.client.batch_execute("INSERT INTO config_snapshots(id,created_at,data) SELECT 'extra-'||n,'2024-01-01'::timestamptz+make_interval(secs=>n),'{}'::jsonb FROM generate_series(1,60) n").await.unwrap();
-        let list = operations::view(&db.state, &principal(Role::Viewer), "/history", &query)
+        let list = operations::view(&db.state, &(principal(Role::Viewer)).clone().into(), "/history", &query)
             .await
             .unwrap()
             .unwrap();
@@ -344,8 +343,7 @@ mod live {
         assert_eq!(list["data"]["items"][0]["serverCount"], 1);
         assert_eq!(
             operations::view(
-                &db.state,
-                &principal(Role::Viewer),
+                &db.state, &(principal(Role::Viewer)).clone().into(),
                 "/history/missing",
                 &query
             )

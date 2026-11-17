@@ -102,7 +102,7 @@ async fn fxb2_apply_excludes_unavailable_tls_and_keeps_other_servers() {
     let certificate = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
     t.client.execute("INSERT INTO certificates(id,domains,status) VALUES($1,'[\"tls.test\"]','failed')", &[&certificate]).await.unwrap();
     t.client.execute("INSERT INTO nginx_servers(id,server_name,listen,certificate_id,config) VALUES('bad','tls.test',18086,$1,'{\"proxyPass\":\"http://127.0.0.1:9000\",\"tlsPort\":18443,\"redirectHttp\":true}'),('good','good.test',18087,NULL,'{\"proxyPass\":\"http://127.0.0.1:9000\"}')", &[&certificate]).await.unwrap();
-    let actor = Actor { id: None, label: Some("fxb2".into()), ip: None };
+    let actor = Actor { via: None, id: None, label: Some("fxb2".into()), ip: None };
     let mut violations = Vec::new();
     for (status, cert, key) in [("failed",Some("pem"),Some("key")),("issuing",Some("pem"),Some("key")),("issued",None,Some("key")),("issued",Some("pem"),None),("issued",Some(""),Some("key")),("issued",Some("pem"),Some(""))] {
         t.client.execute("UPDATE certificates SET status=$2::text::cert_status,cert_pem=$3,key_pem=$4 WHERE id=$1", &[&certificate,&status,&cert,&key]).await.unwrap();
@@ -121,13 +121,13 @@ async fn fxb3_legacy_admin_and_mixed_upstreams_apply_with_mixed_notice() {
     use nwui_api::{contracts::Actor};
     let (mut t,temp)=setup().await;let mut config=(*t.state.config).clone();config.in_container=true;t.state.config=std::sync::Arc::new(config);
     t.client.batch_execute("INSERT INTO upstreams(id,name,servers) VALUES('admin','admin_ui','[\"localhost:8080\",\"127.0.0.1:8080\"]'),('mixed','mixed_ui','[\"127.0.0.1:8080\",\"10.0.0.5:9000\"]'); INSERT INTO nginx_servers(id,server_name,listen,upstream_id,config) VALUES('admin','admin.test',18086,'admin','{}'),('mixed','mixed.test',18087,'mixed','{}')").await.unwrap();
-    let result=nwui_api::publisher_client::apply_saved(&t.state,&Actor{id:None,label:Some("fxb3".into()),ip:None},None).await.unwrap();assert!(result.ok,"{}",result.output);
+    let result=nwui_api::publisher_client::apply_saved(&t.state,&Actor{via: None,id:None,label:Some("fxb3".into()),ip:None},None).await.unwrap();assert!(result.ok,"{}",result.output);
     assert!(temp.path().join("conf/server-admin.conf").is_file(),"legacy admin route was excluded");assert!(temp.path().join("conf/server-mixed.conf").is_file(),"mixed route was excluded");
     assert!(result.output.contains("mixed_ui")&&result.output.contains("관리"),"mixed trust warning missing: {}",result.output);
     let count:i64=t.client.query_one("SELECT count(*) FROM notifications WHERE type='config.apply-notice' AND body LIKE '%mixed_ui%'",&[]).await.unwrap().get(0);assert_eq!(count,1,"mixed trust notice must persist");
     let groups=std::fs::read_to_string(temp.path().join("conf/upstreams.conf")).unwrap();let admin=groups.split("upstream admin_ui {").nth(1).unwrap().split('}').next().unwrap();assert!(!admin.contains("localhost"));assert_eq!(admin.matches("server 127.0.0.1:8080;").count(),1);
     let marker:serde_json::Value=t.client.query_one("SELECT data FROM applied_config WHERE id='current'",&[]).await.unwrap().get(0);let stored=marker["upstreams"].as_array().unwrap().iter().find(|row|row["id"]=="admin").unwrap();assert_eq!(stored["servers"],serde_json::json!(["localhost:8080","127.0.0.1:8080"]));assert_eq!(nwui_api::control::pending::status(&t.state).await.unwrap().count,0,"generated normalization must not create pending changes");
-    let repeated=nwui_api::publisher_client::apply_saved(&t.state,&Actor{id:None,label:Some("fxb3".into()),ip:None},None).await.unwrap();assert!(repeated.ok);
+    let repeated=nwui_api::publisher_client::apply_saved(&t.state,&Actor{via: None,id:None,label:Some("fxb3".into()),ip:None},None).await.unwrap();assert!(repeated.ok);
     let count:i64=t.client.query_one("SELECT count(*) FROM notifications WHERE type='config.apply-notice' AND body LIKE '%mixed_ui%'",&[]).await.unwrap().get(0);assert_eq!(count,1,"repeated applies must not duplicate the notice");
 }
 
@@ -139,7 +139,7 @@ async fn multihop_warning_persists_once_and_never_changes_pending_state() {
     let mut config=(*t.state.config).clone();config.in_container=true;t.state.config=std::sync::Arc::new(config);
     t.client.batch_execute("INSERT INTO nginx_servers(id,server_name,listen,config) VALUES('cycle-a','cycle-a.test',18090,'{\"proxyPass\":\"http://127.0.0.1:18091/api\"}'),('cycle-b','cycle-b.test',18091,'{\"proxyPass\":\"http://127.0.0.1:18090/auth\"}')").await.unwrap();
     for _ in 0..2 {
-        let result=nwui_api::publisher_client::apply_saved(&t.state,&Actor{id:None,label:Some("multihop".into()),ip:None},None).await.unwrap();
+        let result=nwui_api::publisher_client::apply_saved(&t.state,&Actor{via: None,id:None,label:Some("multihop".into()),ip:None},None).await.unwrap();
         assert!(result.ok,"{}",result.output);
         assert!(result.output.contains("같은 요청이 순환하면 누구나 nginx 연결을 소진시킬 수 있습니다"));
         for name in ["cycle-a","cycle-b"]{assert!(temp.path().join(format!("conf/server-{name}.conf")).is_file());}
@@ -161,7 +161,7 @@ async fn w11_postvalidation_isolation_is_saved_as_skipped_not_applied() {
     let bad=temp.path().join("conf/server-bad.conf");
     let once=temp.path().join("changed");
     std::fs::write(temp.path().join("nginx"),format!("#!/bin/sh\nif [ \"$*\" = '-t' ] && [ ! -e '{once}' ]; then touch '{once}'; sed -i 's/192.0.2.1/127.0.0.1/g' '{bad}'; fi\nexit 0\n",once=once.display(),bad=bad.display())).unwrap();
-    let result=nwui_api::publisher_client::apply_saved(&t.state,&Actor{id:None,label:Some("w11".into()),ip:None},None).await.unwrap();
+    let result=nwui_api::publisher_client::apply_saved(&t.state,&Actor{via: None,id:None,label:Some("w11".into()),ip:None},None).await.unwrap();
     assert!(result.ok,"{}",result.output);
     assert!(!bad.exists());assert!(temp.path().join("conf/server-good.conf").exists());
     let marker:serde_json::Value=t.client.query_one("SELECT data FROM applied_config WHERE id='current'",&[]).await.unwrap().get(0);

@@ -226,14 +226,14 @@ fn row_of(row: &tokio_postgres::Row) -> WebhookRow {
 const ROW_SQL: &str = "SELECT id, name, enabled, format::text AS format, events, last_attempt_at, last_success_at, last_status, last_error, \
     url_enc, headers_enc, body_template FROM webhook_targets";
 
-async fn audit_with(client: &impl tokio_postgres::GenericClient, actor: &SessionPrincipal, ctx: &RequestContext, action: &str, target: Option<&str>, before: Option<Value>, after: Option<Value>) -> AdminResult<()> {
+async fn audit_with(client: &impl tokio_postgres::GenericClient, actor: &crate::contracts::Actor, ctx: &RequestContext, action: &str, target: Option<&str>, before: Option<Value>, after: Option<Value>) -> AdminResult<()> {
     let entry = AuditEntry {
-        actor_id: Some(actor.user_id.clone()),
+        actor_id: actor.id.clone(),
         action: action.to_owned(),
         target: target.map(str::to_owned),
         before,
         after,
-        ip: ctx.ip.clone(),
+        ip: ctx.ip.clone(), via: actor.via.clone(),
         ..AuditEntry::default()
     };
     audit::write(client, &entry).await.map_err(unavailable)
@@ -287,7 +287,7 @@ pub async fn create(state: &AppState, actor: &SessionPrincipal, ctx: &RequestCon
         "name": parsed.name, "enabled": parsed.enabled, "format": parsed.format.as_str(),
         "host": host_of(&url), "events": parsed.events, "headerCount": headers.len(),
     });
-    audit_with(&*tx, actor, ctx, "settings:webhook-create", Some(&id), None, Some(after)).await?;
+    audit_with(&*tx, &actor.actor(ctx), ctx, "settings:webhook-create", Some(&id), None, Some(after)).await?;
     tx.commit().await.map_err(unavailable)?;
     Ok(id)
 }
@@ -333,7 +333,7 @@ pub async fn update(state: &AppState, actor: &SessionPrincipal, ctx: &RequestCon
         "name": parsed.name, "enabled": parsed.enabled, "format": parsed.format.as_str(), "events": parsed.events,
         "urlChanged": url_enc.is_some(), "headersChanged": headers_enc.is_some(),
     });
-    audit_with(&*tx, actor, ctx, "settings:webhook-update", Some(&id), Some(before), Some(after)).await?;
+    audit_with(&*tx, &actor.actor(ctx), ctx, "settings:webhook-update", Some(&id), Some(before), Some(after)).await?;
     tx.commit().await.map_err(unavailable)?;
     Ok(id)
 }
@@ -351,7 +351,7 @@ pub async fn delete(state: &AppState, actor: &SessionPrincipal, ctx: &RequestCon
         return Ok(());
     };
     let before = json!({"name": before.get::<_, String>("name"), "format": before.get::<_, String>("format"), "events": before.get::<_, Value>("events")});
-    audit_with(&*tx, actor, ctx, "settings:webhook-delete", Some(id), Some(before), None).await?;
+    audit_with(&*tx, &actor.actor(ctx), ctx, "settings:webhook-delete", Some(id), Some(before), None).await?;
     tx.commit().await.map_err(unavailable)
 }
 
@@ -413,7 +413,7 @@ pub async fn test_send(state: &AppState, actor: &SessionPrincipal, ctx: &Request
         .map_err(unavailable)?
         .and_then(|row| row.get(0));
     let after = json!({"host": host_of(&url), "format": parsed.format.as_str(), "storedUrl": stored_url, "storedHeaders": stored_headers});
-    audit_with(&**client, actor, ctx, "settings:webhook-test", (!id.is_empty()).then_some(id.as_str()), None, Some(after)).await?;
+    audit_with(&**client, &actor.actor(ctx), ctx, "settings:webhook-test", (!id.is_empty()).then_some(id.as_str()), None, Some(after)).await?;
     drop(client);
 
     let config = DeliveryConfig { url, headers, format: parsed.format, body_template: parsed.body_template };
@@ -449,24 +449,24 @@ async fn detail_route(State(state): State<AppState>, Extension(ctx): Extension<R
 
 async fn create_route(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<FormResult>, ApiError> {
     let (actor, form) = manager_form(&state, &ctx, request).await?;
-    let id = create(&state, &actor, &ctx, &form).await?;
+    let id = create(&state, actor.session()?, &ctx, &form).await?;
     Ok(redirect(format!("{LIST_PATH}/{id}")))
 }
 
 async fn update_route(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<FormResult>, ApiError> {
     let (actor, form) = manager_form(&state, &ctx, request).await?;
-    let id = update(&state, &actor, &ctx, &form).await?;
+    let id = update(&state, actor.session()?, &ctx, &form).await?;
     Ok(redirect(format!("{LIST_PATH}/{id}")))
 }
 
 async fn delete_route(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<FormResult>, ApiError> {
     let (actor, form) = manager_form(&state, &ctx, request).await?;
-    delete(&state, &actor, &ctx, form.get("id").unwrap_or("")).await?;
+    delete(&state, actor.session()?, &ctx, form.get("id").unwrap_or("")).await?;
     Ok(redirect(LIST_PATH))
 }
 
 /// The command ran either way; whether the receiver took it is the result.
 async fn test_route(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<FormResult>, ApiError> {
     let (actor, form) = manager_form(&state, &ctx, request).await?;
-    Ok(Json(test_send(&state, &actor, &ctx, &form, &SendOptions::default()).await?.into_result()))
+    Ok(Json(test_send(&state, actor.session()?, &ctx, &form, &SendOptions::default()).await?.into_result()))
 }

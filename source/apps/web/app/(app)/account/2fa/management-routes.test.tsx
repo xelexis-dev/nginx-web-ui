@@ -75,7 +75,7 @@ it("warns on the disable page that every registered passkey is removed", async (
       "./two-factor-forms",
     );
   expect(renderToStaticMarkup(<TwoFactorDisable />)).toContain(
-    "해제하면 기존 인증 앱과 백업 코드로 인증할 수 없고, 등록한 패스키도 모두 삭제됩니다. 현재 비밀번호를 확인합니다.",
+    "해제하면 기존 인증 앱과 백업 코드로 인증할 수 없고, 등록한 패스키도 모두 삭제됩니다. 이 계정의 API 토큰도 모두 폐기됩니다. 현재 비밀번호를 확인합니다.",
   );
   expect(html).toContain("data-disable");
 });

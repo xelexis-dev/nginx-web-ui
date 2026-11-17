@@ -79,7 +79,7 @@ test('runtime purge retains inventory proof and both no-apt build guards',()=>{
  assert.match(dockerfile,/\/verify-pins\/verify-no-apt\.sh/);
  for(const arch of ['amd64','arm64']){
   const rows=readFileSync(here+'/inventory/runtime-'+arch+'.tsv','utf8').trim().split('\n');
-  assert.equal(rows.length,130);assert.ok(rows.every(row=>!['apt','libapt-pkg7.0'].includes(row.split('\t')[0])));
+  assert.equal(rows.length,128);assert.ok(rows.every(row=>!['apt','libapt-pkg7.0'].includes(row.split('\t')[0])));
  }
 });
 const graphLock=(...names)=>'version = 4\n'+names.map(name=>'[[package]]\nname = "'+name+'"\nversion = "1.0.0"\n').join('\n');
@@ -130,6 +130,7 @@ test('build record records actual hashes/platforms and omits raw Cargo source pa
  for(const stage of ['runtime','api-builder','keyring'])writeFileSync(records+'/'+stage+'.tsv','binary\tarch\tversion\tsource\tsourceVersion\torigin\n');
  writeFileSync(records+'/cargo-tree.txt','nwui-api v0.1.0 (/private/secret-checkout)\n');writeFileSync(records+'/cargo-metadata.json',JSON.stringify({packages:[{id:'root',name:'root',version:'1',source:null,manifest_path:'/private/secret-checkout/Cargo.toml'}],resolve:{root:'root',nodes:[{id:'root',deps:[]}]}}));
  const env={TARGETARCH:'arm64',GIT_SHA:'a'.repeat(40)},record=createRecord({pinsPath:here,inputPath:input,recordPath:records,env});
+ assert(!("pg15Helper" in record.directPins));assert(!("pg15ServerSha256" in record.integrity));assert(!("pg15ClientSha256" in record.integrity));
  const schema=JSON.parse(readFileSync(here+'/build-inputs.schema.json','utf8'));assert.deepEqual(Object.keys(record).sort(),schema.required.sort());
  assert.equal(record.baseImages.node.childDigest,JSON.parse(readFileSync(here+'/base-images.json','utf8')).node.children.arm64);assert.equal(record.locks.cargoSha256,hashFile(input+'/Cargo.lock'));assert.equal(record.nodeVersions.openssl,process.versions.openssl);assert.equal(record.crateGraph.kind,'build-graph');assert.doesNotMatch(JSON.stringify(record),/secret-checkout|manifest_path/);
  assert.throws(()=>createRecord({pinsPath:here,inputPath:input,recordPath:records,env:{TARGETARCH:'arm64'}}),/GIT_SHA/);
@@ -147,36 +148,24 @@ test('OS-W1 Trixie snapshot sources are signed, limited to three approved suites
  assert.doesNotMatch(sources,/bookworm|pgdg|deb.debian.org|trusted=yes|AllowInsecure/);
 }));
 
-test('Trixie Dockerfile pins match signed provenance and keep helper origins narrow',()=>{
+test('Trixie Dockerfile pins match signed provenance without PG15 inputs',()=>{
  const dockerfile=readFileSync(source+'/Dockerfile','utf8'),proof=JSON.parse(readFileSync(here+'/trixie-provenance.json','utf8'));
  const args=Object.fromEntries([...dockerfile.matchAll(/^ARG ([A-Z][A-Z0-9_]*)=(.*)$/gm)].map(m=>[m[1],m[2]]));
  assert.equal(args.NODE_IMAGE,proof.baseImages.node.image);assert.equal(args.RUST_IMAGE,proof.baseImages.rust.image);
  for(const [name,version] of Object.entries(proof.selectedDebianVersions))assert.equal(args[name],version);
- assert.equal(args.PG15_HELPER_VERSION,proof.pgdgPolicy.version);
- for(const arch of ['amd64','arm64'])for(const [pkg,key] of [['nginx','NGINX_DEB'],['postgresql-15','PG15_SERVER'],['postgresql-client-15','PG15_CLIENT']])assert.equal(args[key+'_'+arch.toUpperCase()+'_SHA256'],proof.approvedExternalPackages.find(p=>p.Package===pkg&&p.Architecture===arch).SHA256);
+ assert(!Object.keys(args).some(k=>k.startsWith("PG15_")));
+ assert.doesNotMatch(dockerfile,/pg15-download|fetch-pg15|pg15-helper-version|postgresql\/15/);
+ for(const arch of ['amd64','arm64'])for(const [pkg,key] of [['nginx','NGINX_DEB']])assert.equal(args[key+'_'+arch.toUpperCase()+'_SHA256'],proof.approvedExternalPackages.find(p=>p.Package===pkg&&p.Architecture===arch).SHA256);
  assert.equal((dockerfile.match(/configure-apt.sh .* \/ trixie/g)||[]).length,3);
  assert.match(dockerfile,/zlib1g=\$ZLIB_VERSION/);
  assert.match(dockerfile,/libssl3t64=\$OPENSSL_VERSION/);assert.doesNotMatch(dockerfile,/libssl3=|packages\/debian bookworm/);
  assert.match(dockerfile,/postgresql-17=\$POSTGRES_SERVER_VERSION/);
  assert.equal(readFileSync(here+'/inventory-row.schema.json','utf8').includes('"pgdg"'),true);
 });
-test('only the two reviewed PGDG15 helper transactions receive pgdg origin',()=>fixture(root=>{
+test('PGDG transactions are rejected by current inventory generation',()=>fixture(root=>{
  const bin=root+'/bin';mkdirSync(bin);executable(bin+'/dpkg','echo arm64');executable(bin+'/apt-cache','echo proof');executable(bin+'/dpkg-query',`cat '${root}/rows'`);
- writeFileSync(root+'/base','');const env={PATH:bin+':'+process.env.PATH};
- for(const pkg of ['postgresql-15','postgresql-client-15','libpq5']){
-  writeFileSync(root+'/rows',`installed\t${pkg}\tarm64\t15.20-1.pgdg13+1\tpostgresql-15\t15.20-1.pgdg13+1\n`);
-  writeFileSync(root+'/tx',`'https://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-15/${pkg}_15.20-1.pgdg13+1_arm64.deb' ${pkg}_15.20-1.pgdg13+1_arm64.deb 1 SHA256:abc\n`);
-  const r=run('inventory.sh',['runtime',root+'/actual',root+'/base',root+'/tx'],env);
-  if(pkg==='libpq5')assert.notEqual(r.status,0);else{assert.equal(r.status,0,r.stderr);assert.match(readFileSync(root+'/actual','utf8'),/\tpgdg\n/);}
- }
-}));
-
-test('PG15 artifact downloader checks both hashes and rejects unsupported inputs',()=>fixture(root=>{
- const bin=root+'/bin';mkdirSync(bin);writeFileSync(root+'/bytes','reviewed artifact');
- executable(bin+'/curl',`while [ "$#" -gt 0 ]; do if [ "$1" = -o ]; then cp '${root}/bytes' "$2"; exit; fi; shift; done; exit 9`);
- const env={PATH:bin+':'+process.env.PATH},hash=hashFile(root+'/bytes');
- let r=run('fetch-pg15.sh',['arm64','15.20-1.pgdg13+1',hash,hash,root+'/ok'],env);assert.equal(r.status,0,r.stderr);
- const tx=readFileSync(root+'/ok/transaction.txt','utf8');assert.equal(tx.trim().split('\n').length,2);assert.match(tx,/postgresql-client-15_15.20-1.pgdg13\+1_arm64.deb/);
- assert.notEqual(run('fetch-pg15.sh',['arm64','15.20-1.pgdg13+1','a'.repeat(64),hash,root+'/bad'],env).status,0);
- for(const version of ['15.19-1.pgdg13+2','16.0']){const refusal=run('fetch-pg15.sh',['arm64',version,hash,hash,root+'/unsupported'],env);assert.notEqual(refusal.status,0);assert.match(refusal.stderr,/pg15\/unsupported-artifact/);}
+ writeFileSync(root+'/base','');
+ writeFileSync(root+'/rows','installed\tpostgresql-15\tarm64\t15.20-1.pgdg13+1\tpostgresql-15\t15.20-1.pgdg13+1\n');
+ writeFileSync(root+'/tx',"'https://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-15/postgresql-15_15.20-1.pgdg13+1_arm64.deb' postgresql-15_15.20-1.pgdg13+1_arm64.deb 1 SHA256:abc\n");
+ assert.notEqual(run('inventory.sh',['runtime',root+'/actual',root+'/base',root+'/tx'],{PATH:bin+':'+process.env.PATH}).status,0);
 }));

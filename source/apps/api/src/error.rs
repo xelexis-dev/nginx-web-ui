@@ -13,6 +13,7 @@ pub struct ApiError {
     pub message: String,
     pub field_errors: Option<BTreeMap<String, String>>,
     challenge: &'static str,
+    retry_after: Option<u64>,
 }
 
 impl std::fmt::Display for ApiError {
@@ -54,8 +55,16 @@ impl ApiError {
             message: message.into(),
             field_errors: None,
             challenge: "Bearer realm=\"nginx-web-ui\"",
+            retry_after: None,
         }
     }
+
+    pub fn invalid_user_token() -> Self {
+        let mut error = Self::new(StatusCode::UNAUTHORIZED, "invalid_token", "토큰이 유효하지 않거나 해지되었습니다.");
+        error.challenge = "Bearer realm=\"nginx-web-ui\", error=\"invalid_token\"";
+        error
+    }
+    pub fn with_retry_after(mut self, seconds: u64) -> Self { self.retry_after = Some(seconds.max(1)); self }
 
     pub fn not_found() -> Self {
         Self::new(
@@ -100,6 +109,9 @@ impl IntoResponse for ApiError {
                 header::WWW_AUTHENTICATE,
                 HeaderValue::from_static(self.challenge),
             );
+        }
+        if let Some(seconds) = self.retry_after {
+            response.headers_mut().insert(header::RETRY_AFTER, HeaderValue::from_str(&seconds.to_string()).expect("numeric retry interval"));
         }
         if self.code == "config_busy" {
             response.headers_mut().insert(header::RETRY_AFTER, HeaderValue::from_static("1"));

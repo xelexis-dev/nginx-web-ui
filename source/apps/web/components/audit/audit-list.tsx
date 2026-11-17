@@ -1,3 +1,4 @@
+import type { AuditVia } from "@repo/contracts";
 import { formatServerTime } from "@/lib/format-time";
 import layout from "@/components/page-layout.module.css";
 import {
@@ -32,6 +33,7 @@ export interface AuditRowVM {
   actorEmail: string | null;
   /** 사람이 아닌 주체(원격 게이트웨이)의 이름표. actorEmail 이 없을 때만 쓰인다. */
   actorLabel: string | null;
+  via?: AuditVia | null;
   action: string;
   target: string | null;
 }
@@ -55,6 +57,11 @@ export interface AuditListVM {
  */
 export function formatAuditTime(value: Date): string {
   return formatServerTime(value);
+}
+
+export function formatAuditActor(row: Pick<AuditRowVM, "actorEmail" | "actorLabel" | "via">): string {
+  const name = row.actorEmail ?? row.actorLabel ?? "system";
+  return row.via?.kind === "token" ? `${name} · 토큰 ${row.via.name}` : name;
 }
 
 /** Pagination/filter links. `basePath` is `/audit` locally, `/nodes/<id>/audit` in node context. */
@@ -130,7 +137,7 @@ export function AuditList({
               <Tr key={row.id}>
                 <Td cell="primary">{row.time}</Td>
                 <Td cell="meta" label="사용자">
-                  {row.actorEmail ?? row.actorLabel ?? "system"}
+                  {formatAuditActor(row)}
                 </Td>
                 <Td cell="meta" label="액션">
                   {row.action}

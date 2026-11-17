@@ -371,6 +371,7 @@ async fn first_actions_negotiate_before_sending_once_and_keep_stale_forms_blocke
             async move {
                 info_count.fetch_add(1,Ordering::SeqCst);
                 assert_eq!(headers["authorization"],"Bearer paired-secret");
+                assert_eq!(headers["x-gateway-version"],product_version());
                 if version=="unauthorized" {return (StatusCode::UNAUTHORIZED,[("x-node-version","2.0.0")],Json(json!({})));}
                 if version=="1.19.11" && headers["x-gateway-version"]!="1.19.11" {
                     return (StatusCode::CONFLICT,[("x-node-version",version)],Json(json!({"error":{"code":"version_mismatch"}})));
@@ -381,9 +382,8 @@ async fn first_actions_negotiate_before_sending_once_and_keep_stale_forms_blocke
         .fallback(move |request:Request<Body>| {
             let version=*wire_version.lock().unwrap();let count=count.clone();let state=remote_db.clone();
             async move {
-                // A 1.19.11 node receives the compatibility version; a 2.x node receives this product's own version.
-                let gateway=if version=="1.19.11" {"1.19.11".to_owned()} else {product_version()};
-                assert_eq!(request.headers()["x-gateway-version"].to_str().unwrap(),gateway);
+                assert_ne!(version,"1.19.11","incompatible nodes must receive no writes");
+                assert_eq!(request.headers()["x-gateway-version"].to_str().unwrap(),product_version());
                 assert_eq!(service_version(&state).await,version,"persist before write, without holding the sole pool connection");
                 if version=="2.0.0" && request.method()=="PATCH" {
                     let payload:Value=serde_json::from_slice(&axum::body::to_bytes(request.into_body(),1<<20).await.unwrap()).unwrap();
@@ -399,16 +399,28 @@ async fn first_actions_negotiate_before_sending_once_and_keep_stale_forms_blocke
     db.client.execute("INSERT INTO nodes(id,name,base_url,token_enc,token_role,instance_id) VALUES('n','remote',$1,$2,'admin','bound')",&[&base,&sealed]).await.unwrap();
     let router=nwui_api::app::with_request_context(relay::router().with_state(db.state.clone()),None);
     let common=[("_apiArgs",r#"["n"]"#),("id","s"),("name","pool"),("servers","127.0.0.1:9000"),("listen","19000"),("protocol","tcp"),("proxyPass","127.0.0.1:9000")];
-    for (command,args) in [("node.applyNodeConfig",r#"["n","/nodes/n/stream"]"#),("node.rollbackNodeSnapshot",r#"["n","snapshot"]"#),("node.updateNodeUpstream",r#"["n"]"#),("node.deleteNodeStream",r#"["n"]"#),("node.toggleNodeServer",r#"["n"]"#)] {
-        db.client.execute("UPDATE nodes SET last_version=NULL WHERE id='n'",&[]).await.unwrap();
-        let before=writes.load(Ordering::SeqCst);let probes=infos.load(Ordering::SeqCst);
-        let mut fields=common.to_vec();fields[0].1=args;
-        let result=body(router.clone().oneshot(form_request(command,&fields)).await.unwrap()).await;
-        assert_eq!(writes.load(Ordering::SeqCst),before+1,"{command}: {result}");
-        assert_eq!(infos.load(Ordering::SeqCst),probes+2,"{command}");
+    for remote_version in ["1.19.11","2.0.0","2.1.0"] {
+        *version.lock().unwrap()=remote_version;
+        for (command,args) in [("node.applyNodeConfig",r#"["n","/nodes/n/stream"]"#),("node.rollbackNodeSnapshot",r#"["n","snapshot"]"#),("node.updateNodeUpstream",r#"["n"]"#),("node.deleteNodeStream",r#"["n"]"#),("node.toggleNodeServer",r#"["n"]"#)] {
+            db.client.execute("UPDATE nodes SET last_version=NULL WHERE id='n'",&[]).await.unwrap();
+            let before=writes.load(Ordering::SeqCst);let probes=infos.load(Ordering::SeqCst);
+            let mut fields=common.to_vec();fields[0].1=args;fields.push(("resolveAtRuntime","true"));
+            let result=body(router.clone().oneshot(form_request(command,&fields)).await.unwrap()).await;
+            if remote_version=="1.19.11" {
+                let failure=result["result"].get("nodeError").map(|error|&error["failure"]).unwrap_or(&result["result"]);
+                assert_eq!(failure["kind"],"version_mismatch","{command}: {result}");
+                assert_eq!(writes.load(Ordering::SeqCst),before);
+                assert!(nwui_api::nodes::service::get(&db.state,"n").await.unwrap().last_version.is_none());
+            } else {
+                assert_eq!(writes.load(Ordering::SeqCst),before+1,"{command}: {result}");
+                assert_eq!(service_version(&db.state).await,remote_version);
+            }
+            assert_eq!(infos.load(Ordering::SeqCst),probes+1,"{command}: no 1.19 retry");
+        }
     }
     // The cache is legacy, then the node upgrades. The old draft must remain blocked on every retry.
     *version.lock().unwrap()="2.0.0";
+    db.client.execute("UPDATE nodes SET last_version='1.19.11' WHERE id='n'",&[]).await.unwrap();
     let mut fields=common.to_vec();fields.push(("nodeVersionFamily","1.19"));
     for _ in 0..3 {
         let before=writes.load(Ordering::SeqCst);
@@ -445,7 +457,7 @@ async fn first_actions_negotiate_before_sending_once_and_keep_stale_forms_blocke
     let before=writes.load(Ordering::SeqCst);assert_eq!(router.oneshot(cancel).await.unwrap().status(),StatusCode::OK);assert_eq!(writes.load(Ordering::SeqCst),before+1);
     db.client.execute("UPDATE nodes SET last_version=NULL WHERE id='n'",&[]).await.unwrap();
     let before=writes.load(Ordering::SeqCst);
-    assert!(!nwui_api::nodes::service::unpair_node(&db.state,"n",&nwui_api::contracts::Actor {id:None,label:Some("test".into()),ip:None}).await.unwrap());
+    assert!(!nwui_api::nodes::service::unpair_node(&db.state,"n",&nwui_api::contracts::Actor {via: None,id:None,label:Some("test".into()),ip:None}).await.unwrap());
     assert_eq!(writes.load(Ordering::SeqCst),before+1);
     task.abort();
 }
@@ -458,4 +470,122 @@ fn node_form_rejects_an_unknown_version_family_before_egress() {
     let mut form=FormInput::default();
     form.fields.insert("nodeVersionFamily".into(),vec!["garbage".into()]);
     assert!(relay::command("node.applyNodeConfig","n",&form).is_err());
+}
+
+#[test]
+fn http2_node_gate_refuses_unknown_and_old_and_strips_false_only() {
+    for version in [None,Some("unknown"),Some("1.19.11"),Some("2.0.99")] {
+        for name in ["node.createNodeServer","node.updateNodeServer"] {
+            let mut on=json!({"tls":{"tlsOptions":{"http2":true,"sslProtocols":"modern"}}});
+            let error=relay::check_http2_capability(name,Some(&mut on),version).unwrap_err();
+            let value=serde_json::to_value(error).unwrap();assert_eq!(value["kind"],"conflict");assert!(value["fieldErrors"]["http2"].is_string());assert_eq!(on["tls"]["tlsOptions"]["http2"],true);
+            let mut off=json!({"tls":{"tlsOptions":{"http2":false,"sslProtocols":"modern"}}});
+            relay::check_http2_capability(name,Some(&mut off),version).unwrap();assert!(off["tls"]["tlsOptions"].get("http2").is_none());assert_eq!(off["tls"]["tlsOptions"]["sslProtocols"],"modern");
+            let mut absent=json!({"tls":{}});relay::check_http2_capability(name,Some(&mut absent),version).unwrap();assert_eq!(absent,json!({"tls":{}}));
+        }
+    }
+    for version in ["2.1.0","2.1.1","2.2.0"] {let mut on=json!({"tls":{"tlsOptions":{"http2":true}}});relay::check_http2_capability("node.createNodeServer",Some(&mut on),Some(version)).unwrap();assert_eq!(on["tls"]["tlsOptions"]["http2"],true);}
+}
+
+#[tokio::test]
+#[ignore="requires NWUI_TEST_DATABASE_URL"]
+async fn http2_writes_probe_in_this_request_and_gate_downgrades_and_upgrades() {
+    use axum::routing::get;
+    let mut db=auth_support::test_db().await;
+    db.state.node_http=nwui_api::nodes::client::NodeHttp::new("2.1.0",&db.state.config).unwrap();
+    auth_support::insert_user(&db.client,auth_support::UserRow{role:"admin",..Default::default()},None).await;
+    let live=Arc::new(std::sync::Mutex::new("2.0.3"));let actual=live.clone();
+    let probes=Arc::new(AtomicUsize::new(0));let seen_probes=probes.clone();
+    let writes=Arc::new(AtomicUsize::new(0));let seen_writes=writes.clone();
+    let sent=Arc::new(std::sync::Mutex::new(Vec::<Value>::new()));let seen_bodies=sent.clone();
+    let race=Arc::new(std::sync::atomic::AtomicBool::new(false));let raced=race.clone();
+    let remote=Router::new().route("/api/v1/info",get(move || {
+        let version=*actual.lock().unwrap();seen_probes.fetch_add(1,Ordering::SeqCst);
+        async move {([("x-node-version",version)],Json(json!({"instanceId":"http2-bound","semver":version})))}
+    })).route("/api/v1/servers",post(move |Json(value):Json<Value>| {
+        seen_writes.fetch_add(1,Ordering::SeqCst);seen_bodies.lock().unwrap().push(value.clone());let changed=raced.load(Ordering::SeqCst);
+        async move {([("x-node-version",if changed {"2.0.3"} else {"2.1.0"})],Json(if changed {json!({"server":{"id":"s","config":{}}})} else {json!({"server":{"id":"s","config":{"tlsOptions":value["tls"]["tlsOptions"]}}})}))}
+    }));
+    let listener=tokio::net::TcpListener::bind((outbound_support::peer_ip(),0)).await.unwrap();let address=listener.local_addr().unwrap();
+    let task=tokio::spawn(async move {axum::serve(listener,remote).await.unwrap()});
+    let token=db.state.secrets.seal("http2-paired-test").unwrap();
+    db.client.execute("INSERT INTO nodes(id,name,base_url,token_enc,token_role,instance_id,last_version) VALUES('n','http2',$1,$2,'admin','http2-bound','2.1.0')",&[&format!("http://{address}"),&token]).await.unwrap();
+    let app=nwui_api::app::with_request_context(relay::router().with_state(db.state.clone()),None);
+    let mut fields=vec![("_apiArgs",r#"["n"]"#),("serverName","h2.test"),("listen","18080"),("mode","direct"),("proxyPass","http://127.0.0.1:9000"),("certificateId","cert"),("tlsOptions",r#"{"http2":true}"#)];
+    let response=body(app.clone().oneshot(form_request("node.createNodeServer",&fields)).await.unwrap()).await;
+    assert!(response["result"]["fieldErrors"]["http2"].is_string(),"{response}");assert_eq!(writes.load(Ordering::SeqCst),0);assert_eq!(probes.load(Ordering::SeqCst),1);
+    *live.lock().unwrap()="2.1.0";
+    let response=body(app.clone().oneshot(form_request("node.createNodeServer",&fields)).await.unwrap()).await;
+    assert!(response["redirectTo"].is_string(),"{response}");assert_eq!(writes.load(Ordering::SeqCst),1);assert_eq!(probes.load(Ordering::SeqCst),2);assert_eq!(sent.lock().unwrap()[0]["tls"]["tlsOptions"]["http2"],true);
+    // Another process may replace the node after the probe. Do not claim success.
+    race.store(true,Ordering::SeqCst);
+    let response=body(app.clone().oneshot(form_request("node.createNodeServer",&fields)).await.unwrap()).await;
+    assert!(response["redirectTo"].is_null());assert!(response.to_string().contains("다른 설정이 저장되었을 수"));assert_eq!(writes.load(Ordering::SeqCst),2);
+    *live.lock().unwrap()="2.0.3";race.store(false,Ordering::SeqCst);
+    fields.last_mut().unwrap().1=r#"{"http2":false}"#;
+    let before=probes.load(Ordering::SeqCst);
+    let response=body(app.clone().oneshot(form_request("node.createNodeServer",&fields)).await.unwrap()).await;
+    assert!(response["redirectTo"].is_string(),"{response}");assert_eq!(probes.load(Ordering::SeqCst),before);assert!(sent.lock().unwrap().last().unwrap()["tls"]["tlsOptions"].get("http2").is_none());
+    *live.lock().unwrap()="unknown";fields.last_mut().unwrap().1=r#"{"http2":true}"#;
+    db.client.execute("UPDATE nodes SET last_version=NULL WHERE id='n'",&[]).await.unwrap();
+    let before=writes.load(Ordering::SeqCst);
+    let response=body(app.oneshot(form_request("node.createNodeServer",&fields)).await.unwrap()).await;
+    assert!(response["result"]["fieldErrors"]["http2"].is_string(),"{response}");assert_eq!(writes.load(Ordering::SeqCst),before);
+    task.abort();
+}
+
+async fn plain_node_write_through_real_router(update:bool) {
+    use axum::{extract::Request as AxumRequest,middleware::{from_fn,Next}};
+    let mut gateway=auth_support::test_db().await;let mut node=auth_support::test_db().await;
+    std::sync::Arc::make_mut(&mut node.state.config).version="2.1.0".into();
+    gateway.state.node_http=nwui_api::nodes::client::NodeHttp::new("2.1.0",&gateway.state.config).unwrap();
+    auth_support::insert_user(&gateway.client,auth_support::UserRow{role:"admin",..Default::default()},None).await;
+    auth_support::gateway_issuer(&node.client).await;
+    node.client.execute("INSERT INTO gateway_tokens(id,name,token_hash,role,created_by_user_id) VALUES('plain','plain',$1,'admin','q3-gateway-issuer')",&[&nwui_api::auth::token_digest("plain-node-fixture")]).await.unwrap();
+    let server_id="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+    if update {node.client.execute("INSERT INTO nginx_servers(id,server_name,listen,config) VALUES($1,'plain-before.test',18081,$2)",&[&server_id,&json!({"proxyPass":"http://127.0.0.1:9000"})]).await.unwrap();}
+    let writes=Arc::new(AtomicUsize::new(0));let observed=writes.clone();
+    let remote=nwui_api::server::router(node.state.clone()).layer(from_fn(move |request:AxumRequest,next:Next| {
+        let observed=observed.clone();async move {
+            let(parts,body)=request.into_parts();let bytes=axum::body::to_bytes(body,1<<20).await.unwrap();
+            let payload:Value=serde_json::from_slice(&bytes).unwrap();
+            assert_eq!(payload.get("tls"),Some(&Value::Null));assert_eq!(payload.get("certificateId"),Some(&Value::Null));
+            observed.fetch_add(1,Ordering::SeqCst);
+            next.run(axum::http::Request::from_parts(parts,Body::from(bytes))).await
+        }
+    }));
+    let listener=tokio::net::TcpListener::bind((outbound_support::peer_ip(),0)).await.unwrap();let address=listener.local_addr().unwrap();
+    let task=tokio::spawn(async move {axum::serve(listener,remote.into_make_service_with_connect_info::<SocketAddr>()).await.unwrap()});
+    let sealed=gateway.state.secrets.seal("plain-node-fixture").unwrap();
+    gateway.client.execute("INSERT INTO nodes(id,name,base_url,token_enc,token_role,instance_id,last_version) VALUES('n','plain',$1,$2,'admin','plain-instance','2.1.0')",&[&format!("http://{address}"),&sealed]).await.unwrap();
+    let app=nwui_api::server::router(gateway.state.clone());
+    let fields=[("_apiArgs",r#"["n"]"#),("id",server_id),("serverName","plain-node.test"),("listen","18080"),("mode","direct"),("proxyPass","http://127.0.0.1:9000")];
+    let response=app.oneshot(form_request(if update {"node.updateNodeServer"} else {"node.createNodeServer"},&fields)).await.unwrap();
+    assert_eq!(response.status(),200);let result=body(response).await;
+    assert!(result["redirectTo"].is_string(),"plain server {update}: {result}");assert_eq!(writes.load(Ordering::SeqCst),1);
+    let row=node.client.query_one("SELECT certificate_id,config FROM nginx_servers WHERE server_name='plain-node.test'",&[]).await.unwrap();
+    assert!(row.get::<_,Option<String>>(0).is_none());let config:Value=row.get(1);assert!(config.get("tlsPort").is_none());assert!(config.get("tlsOptions").is_none());
+    task.abort();
+}
+#[tokio::test]
+#[ignore="requires NWUI_TEST_DATABASE_URL"]
+async fn plain_node_create_accepts_null_tls() {plain_node_write_through_real_router(false).await;}
+#[tokio::test]
+#[ignore="requires NWUI_TEST_DATABASE_URL"]
+async fn plain_node_update_accepts_null_tls() {plain_node_write_through_real_router(true).await;}
+
+#[tokio::test]
+#[ignore="requires NWUI_TEST_DATABASE_URL"]
+async fn plain_local_browser_create_and_update_keep_tls_absent() {
+    let db=auth_support::test_db().await;
+    auth_support::insert_user(&db.client,auth_support::UserRow{role:"admin",..Default::default()},None).await;
+    let app=nwui_api::server::router(db.state.clone());
+    let mut fields=vec![("serverName","plain-local.test"),("listen","18080"),("mode","direct"),("proxyPass","http://127.0.0.1:9000")];
+    let created=body(app.clone().oneshot(form_request("reverse-proxy.createServer",&fields)).await.unwrap()).await;
+    assert!(created["redirectTo"].is_string(),"{created}");
+    let row=db.client.query_one("SELECT id FROM nginx_servers WHERE server_name='plain-local.test'",&[]).await.unwrap();let id:String=row.get(0);
+    fields.push(("id",&id));fields[0].1="plain-local-edited.test";
+    let updated=body(app.oneshot(form_request("reverse-proxy.updateServer",&fields)).await.unwrap()).await;
+    assert!(updated["redirectTo"].is_string(),"{updated}");
+    let row=db.client.query_one("SELECT certificate_id,config FROM nginx_servers WHERE id=$1",&[&id]).await.unwrap();assert!(row.get::<_,Option<String>>(0).is_none());let config:Value=row.get(1);assert!(config.get("tlsOptions").is_none());assert!(config.get("tlsPort").is_none());
 }

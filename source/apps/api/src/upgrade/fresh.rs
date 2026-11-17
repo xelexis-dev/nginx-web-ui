@@ -30,7 +30,7 @@ mod tests {
     use super::*;use std::{fs,os::unix::fs::{PermissionsExt,DirBuilderExt}};
     fn fixture()->(tempfile::TempDir,Roots,Arc<StorageLocks>,Candidate) {
         let t=tempfile::tempdir().unwrap();fs::set_permissions(t.path(),fs::Permissions::from_mode(0o711)).unwrap();
-        let roots=Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:crate::db_upgrade::engine::architecture().unwrap().into()};
+        let roots=Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:crate::db_upgrade::paths::architecture().unwrap().into()};
         for p in [&roots.db,&roots.app]{fs::DirBuilder::new().mode(0o700).create(p).unwrap();}
         let locks=Arc::new(StorageLocks::acquire(&roots.db,&roots.app).unwrap());let candidate=Candidate{revision:"0".repeat(40),pins_sha256:"1".repeat(64),migrations_sha256:"2".repeat(64)};(t,roots,locks,candidate)
     }

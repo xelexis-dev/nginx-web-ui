@@ -10,7 +10,7 @@ use serde_json::{Value, json};
 
 use super::{AdminResult, field, unavailable};
 use crate::auth::audit::{self, AuditEntry};
-use crate::auth::principal::SessionPrincipal;
+use crate::auth::principal::{SessionPrincipal, UserPrincipal};
 use crate::contracts::FormInput;
 use crate::crypto::js_trim;
 use crate::request_context::RequestContext;
@@ -50,11 +50,11 @@ pub async fn view(state: &AppState) -> AdminResult<GeneralSettings> {
 }
 
 /// Upserts the singleton row's columns and audits, in one transaction.
-async fn save(state: &AppState, actor: &SessionPrincipal, ctx: &RequestContext, sql: &str, params: &[&(dyn tokio_postgres::types::ToSql + Sync)], action: &str, after: Value) -> AdminResult<()> {
+async fn save(state: &AppState, actor: &crate::contracts::Actor, ctx: &RequestContext, sql: &str, params: &[&(dyn tokio_postgres::types::ToSql + Sync)], action: &str, after: Value) -> AdminResult<()> {
     let mut client = state.db.get().await.map_err(unavailable)?;
     let tx = client.transaction().await.map_err(unavailable)?;
     tx.execute(sql, params).await.map_err(unavailable)?;
-    let entry = AuditEntry { actor_id: Some(actor.user_id.clone()), action: action.to_owned(), after: Some(after), ip: ctx.ip.clone(), ..AuditEntry::default() };
+    let entry = AuditEntry { actor_id: actor.id.clone(), action: action.to_owned(), after: Some(after), ip: ctx.ip.clone(), via: actor.via.clone(), ..AuditEntry::default() };
     audit::write(&*tx, &entry).await.map_err(unavailable)?;
     tx.commit().await.map_err(unavailable)
 }
@@ -68,7 +68,7 @@ pub async fn update_public_base_url(state: &AppState, actor: &SessionPrincipal, 
     }
     let value = (!raw.is_empty()).then(|| raw.trim_end_matches('/').to_owned());
     save(
-        state, actor, ctx,
+        state, &actor.actor(ctx), ctx,
         "INSERT INTO app_settings (id, public_base_url, updated_at, actor_id) VALUES ('current', $1, now(), $2) \
          ON CONFLICT (id) DO UPDATE SET public_base_url = EXCLUDED.public_base_url, updated_at = now(), actor_id = EXCLUDED.actor_id",
         &[&value, &actor.user_id],
@@ -80,7 +80,7 @@ pub async fn update_public_base_url(state: &AppState, actor: &SessionPrincipal, 
 }
 
 /// Returns the screen message.
-pub async fn update_metrics(state: &AppState, actor: &SessionPrincipal, ctx: &RequestContext, form: &FormInput) -> AdminResult<String> {
+pub async fn update_metrics(state: &AppState, actor: &UserPrincipal, ctx: &RequestContext, form: &FormInput) -> AdminResult<String> {
     let raw_days = js_trim(form.get("metricsRetentionDays").unwrap_or(""));
     let retention_days: Option<i32> = if raw_days.is_empty() {
         None
@@ -99,7 +99,7 @@ pub async fn update_metrics(state: &AppState, actor: &SessionPrincipal, ctx: &Re
     }
     let excluded = (!hosts.is_empty()).then(|| hosts.join("\n"));
     save(
-        state, actor, ctx,
+        state, &actor.actor(ctx), ctx,
         "INSERT INTO app_settings (id, metrics_retention_days, metrics_excluded_hosts, updated_at, actor_id) VALUES ('current', $1, $2, now(), $3) \
          ON CONFLICT (id) DO UPDATE SET metrics_retention_days = EXCLUDED.metrics_retention_days, \
          metrics_excluded_hosts = EXCLUDED.metrics_excluded_hosts, updated_at = now(), actor_id = EXCLUDED.actor_id",

@@ -328,21 +328,19 @@ async fn own_principal(
     headers: &HeaderMap,
     ctx: &RequestContext,
 ) -> Result<SessionPrincipal, ApiError> {
-    principal::require_session(state, headers, ctx, None, TwoFactorGate::Enforce).await
+    principal::require_user(state, headers, ctx, None, TwoFactorGate::Enforce, crate::auth::principal::Use::SessionOnly).await?.into_session()
 }
 async fn admin_principal(
     state: &AppState,
     headers: &HeaderMap,
     ctx: &RequestContext,
 ) -> Result<SessionPrincipal, ApiError> {
-    principal::require_session(
+    principal::require_user(
         state,
         headers,
         ctx,
         Some(rbac::Action::UserManage),
-        TwoFactorGate::Enforce,
-    )
-    .await
+        TwoFactorGate::Enforce, crate::auth::principal::Use::SessionOnly).await?.into_session()
 }
 pub(super) fn ensure_verified(principal: &SessionPrincipal) -> Result<(), ApiError> {
     if principal.totp_enabled && !principal.mfa_verified {

@@ -107,20 +107,20 @@ async fn role_changes_bump_the_session_version_and_keep_one_admin() {
     insert_user(&db.client, UserRow { id: "ed", email: "ed@example.test", role: "editor", sv: 7, ..Default::default() }, None).await;
     let (boss, ctx) = (actor("boss"), ctx());
 
-    assert_eq!(users::update_role(&db.state, &boss, &ctx, "boss", "viewer").await.unwrap_err(), refused("본인 계정의 역할은 변경할 수 없습니다."));
-    assert_eq!(users::update_role(&db.state, &boss, &ctx, "ed", "root").await.unwrap_err(), AdminError::Invalid([("role".to_owned(), "역할을 선택하세요.".to_owned())].into()));
-    assert_eq!(users::update_role(&db.state, &boss, &ctx, "", "viewer").await.unwrap_err(), refused("잘못된 요청입니다."));
-    assert_eq!(users::update_role(&db.state, &boss, &ctx, "nobody", "viewer").await.unwrap_err(), AdminError::NotFound);
+    assert_eq!(users::update_role(&db.state, &(boss).clone().into(), &ctx, "boss", "viewer").await.unwrap_err(), refused("본인 계정의 역할은 변경할 수 없습니다."));
+    assert_eq!(users::update_role(&db.state, &(boss).clone().into(), &ctx, "ed", "root").await.unwrap_err(), AdminError::Invalid([("role".to_owned(), "역할을 선택하세요.".to_owned())].into()));
+    assert_eq!(users::update_role(&db.state, &(boss).clone().into(), &ctx, "", "viewer").await.unwrap_err(), refused("잘못된 요청입니다."));
+    assert_eq!(users::update_role(&db.state, &(boss).clone().into(), &ctx, "nobody", "viewer").await.unwrap_err(), AdminError::NotFound);
 
-    users::update_role(&db.state, &boss, &ctx, "ed", "admin").await.unwrap();
+    users::update_role(&db.state, &(boss).clone().into(), &ctx, "ed", "admin").await.unwrap();
     assert_eq!(user_state(&db, "ed").await, ("admin".into(), true, 8));
     let audit = audit_rows(&db.client, "user:update").await;
     assert_eq!((audit[0].get::<_, Option<Value>>("before"), audit[0].get::<_, Option<Value>>("after")), (Some(json!({"role": "editor"})), Some(json!({"role": "admin"}))));
 
     // Two admins now; "ed" demoting "boss" leaves one, then nobody may demote "ed".
-    users::update_role(&db.state, &actor("ed"), &ctx, "boss", "editor").await.unwrap();
+    users::update_role(&db.state, &(actor("ed")).clone().into(), &ctx, "boss", "editor").await.unwrap();
     insert_user(&db.client, UserRow { id: "third", email: "third@example.test", role: "admin", enabled: false, ..Default::default() }, None).await;
-    assert_eq!(users::update_role(&db.state, &actor("third"), &ctx, "ed", "viewer").await.unwrap_err(), refused("마지막 남은 활성 admin의 역할은 변경할 수 없습니다."), "a disabled admin does not count");
+    assert_eq!(users::update_role(&db.state, &(actor("third")).clone().into(), &ctx, "ed", "viewer").await.unwrap_err(), refused("마지막 남은 활성 admin의 역할은 변경할 수 없습니다."), "a disabled admin does not count");
 }
 
 /// The TS race, made deterministic: another demotion has passed its guard and holds its row but
@@ -136,7 +136,7 @@ async fn the_last_admin_guard_waits_for_a_concurrent_demotion() {
     concurrent.execute("UPDATE users SET role = 'viewer' WHERE id = 'b'", &[]).await.unwrap();
 
     let state = db.state.clone();
-    let second = tokio::spawn(async move { users::update_role(&state, &actor("b"), &ctx(), "a", "viewer").await });
+    let second = tokio::spawn(async move { users::update_role(&state, &(actor("b")).clone().into(), &ctx(), "a", "viewer").await });
     tokio::time::sleep(std::time::Duration::from_millis(500)).await;
     assert!(!second.is_finished(), "the guard must block on the admin rows the other change holds");
     concurrent.commit().await.unwrap();
@@ -178,13 +178,13 @@ async fn delete_and_disable_guard_self_and_the_last_admin() {
     let (boss, ctx) = (actor("boss"), ctx());
 
     assert_eq!(users::delete(&db.state, &boss, &ctx, "boss").await.unwrap_err(), refused("본인 계정은 삭제할 수 없습니다."));
-    assert_eq!(users::toggle(&db.state, &boss, &ctx, "boss").await.unwrap_err(), refused("본인 계정은 비활성화할 수 없습니다."));
+    assert_eq!(users::toggle(&db.state, &(boss).clone().into(), &ctx, "boss").await.unwrap_err(), refused("본인 계정은 비활성화할 수 없습니다."));
     assert_eq!(users::delete(&db.state, &actor("ed"), &ctx, "boss").await.unwrap_err(), refused("마지막 남은 활성 admin은 삭제할 수 없습니다."));
-    assert_eq!(users::toggle(&db.state, &actor("ed"), &ctx, "boss").await.unwrap_err(), refused("마지막 남은 활성 admin은 비활성화할 수 없습니다."));
+    assert_eq!(users::toggle(&db.state, &(actor("ed")).clone().into(), &ctx, "boss").await.unwrap_err(), refused("마지막 남은 활성 admin은 비활성화할 수 없습니다."));
 
-    assert!(!users::toggle(&db.state, &boss, &ctx, "ed").await.unwrap());
+    assert!(!users::toggle(&db.state, &(boss).clone().into(), &ctx, "ed").await.unwrap());
     assert_eq!(user_state(&db, "ed").await, ("editor".into(), false, 5), "disabling revokes sessions");
-    assert!(users::toggle(&db.state, &boss, &ctx, "ed").await.unwrap());
+    assert!(users::toggle(&db.state, &(boss).clone().into(), &ctx, "ed").await.unwrap());
     assert_eq!(user_state(&db, "ed").await, ("editor".into(), true, 5), "enabling keeps the version");
     let disable = audit_rows(&db.client, "user:disable").await;
     assert_eq!((disable[0].get::<_, Option<Value>>("before"), disable[0].get::<_, Option<Value>>("after")), (Some(json!({"enabled": true})), Some(json!({"enabled": false}))));
@@ -445,27 +445,27 @@ async fn approval_is_once_and_reject_only_touches_pending_accounts() {
     insert_user(&db.client, UserRow { id: "p2", email: "p2@example.test", role: "viewer", approved: false, ..Default::default() }, None).await;
     let (boss, ctx) = (actor("boss"), ctx());
 
-    users::approve(&db.state, &boss, &ctx, "p1", "editor").await.unwrap();
+    users::approve(&db.state, &(boss).clone().into(), &ctx, "p1", "editor").await.unwrap();
     let row = db.client.query_one("SELECT approved, role::text FROM users WHERE id = 'p1'", &[]).await.unwrap();
     assert_eq!((row.get::<_, bool>(0), row.get::<_, String>(1).as_str()), (true, "editor"));
     let audit = audit_rows(&db.client, "user:approve").await;
     assert_eq!(audit[0].get::<_, Option<Value>>("before"), Some(json!({"approved": false, "role": "viewer"})));
     assert_eq!(audit[0].get::<_, Option<Value>>("after"), Some(json!({"approved": true, "role": "editor"})));
     // Resubmitting approval does not turn into a role change.
-    users::approve(&db.state, &boss, &ctx, "p1", "admin").await.unwrap();
+    users::approve(&db.state, &(boss).clone().into(), &ctx, "p1", "admin").await.unwrap();
     assert_eq!(user_state(&db, "p1").await.0, "editor");
     assert_eq!(audit_rows(&db.client, "user:approve").await.len(), 1);
     // Unknown role → viewer; unknown id → nothing.
-    users::approve(&db.state, &boss, &ctx, "p2", "root").await.unwrap();
+    users::approve(&db.state, &(boss).clone().into(), &ctx, "p2", "root").await.unwrap();
     assert_eq!(user_state(&db, "p2").await.0, "viewer");
-    users::approve(&db.state, &boss, &ctx, "nobody", "viewer").await.unwrap();
+    users::approve(&db.state, &(boss).clone().into(), &ctx, "nobody", "viewer").await.unwrap();
 
     insert_user(&db.client, UserRow { id: "p3", email: "p3@example.test", approved: false, ..Default::default() }, None).await;
-    users::reject(&db.state, &boss, &ctx, "p3").await.unwrap();
+    users::reject(&db.state, &(boss).clone().into(), &ctx, "p3").await.unwrap();
     assert_eq!(user_state(&db, "p3").await.1, false);
     assert_eq!(audit_rows(&db.client, "user:reject").await[0].get::<_, Option<Value>>("after"), Some(json!({"enabled": false})));
     // An approved, active account (here the only admin) is not "rejected".
-    users::reject(&db.state, &boss, &ctx, "boss").await.unwrap();
+    users::reject(&db.state, &(boss).clone().into(), &ctx, "boss").await.unwrap();
     assert_eq!(user_state(&db, "boss").await, ("admin".into(), true, 3));
     assert_eq!(audit_rows(&db.client, "user:reject").await.len(), 1);
 }
@@ -480,7 +480,7 @@ async fn audit_i5_pending_admin_cannot_justify_removing_the_last_approved_admin(
     let concurrent = db.client.transaction().await.unwrap();
     concurrent.execute("UPDATE users SET role='viewer' WHERE id='b'", &[]).await.unwrap();
     let state = db.state.clone();
-    let second = tokio::spawn(async move { users::update_role(&state, &actor("b"), &ctx(), "a", "viewer").await });
+    let second = tokio::spawn(async move { users::update_role(&state, &(actor("b")).clone().into(), &ctx(), "a", "viewer").await });
     tokio::time::sleep(std::time::Duration::from_millis(200)).await;
     assert!(!second.is_finished());
     concurrent.commit().await.unwrap();

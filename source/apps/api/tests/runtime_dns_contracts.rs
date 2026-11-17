@@ -141,6 +141,7 @@ async fn runtime_flags_persist_in_rows_and_audit_and_clear_when_old_inputs_omit_
     )
     .unwrap();
     let actor = nwui_api::contracts::Actor {
+        via: None,
         id: None,
         label: Some("runtime-dns-test".into()),
         ip: None,
@@ -374,6 +375,7 @@ async fn save_rejects_unavailable_dns_and_name_collisions_without_changing_histo
     let config = std::sync::Arc::get_mut(&mut db.state.config).unwrap();
     config.target_dns.descriptor_path = dir.path().join("dns.json");
     let actor = nwui_api::contracts::Actor {
+        via: None,
         id: None,
         label: Some("runtime-dns-test".into()),
         ip: None,
@@ -588,6 +590,7 @@ async fn local_server_location_flags_round_trip_and_resolver_ports_are_reserved_
     )
     .unwrap();
     let actor = nwui_api::contracts::Actor {
+        via: None,
         id: None,
         label: Some("dns-location-test".into()),
         ip: None,
@@ -682,6 +685,7 @@ async fn switching_a_saved_response_variable_target_to_runtime_dns_is_rejected_a
     )
     .unwrap();
     let actor = nwui_api::contracts::Actor {
+        via: None,
         id: None,
         label: Some("response-variable-test".into()),
         ip: None,

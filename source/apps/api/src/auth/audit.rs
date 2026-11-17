@@ -15,13 +15,14 @@ pub struct AuditEntry {
     pub before: Option<Value>,
     pub after: Option<Value>,
     pub ip: Option<String>,
+    pub via: Option<crate::contracts::Via>,
 }
 
 pub async fn write(client: &impl tokio_postgres::GenericClient, entry: &AuditEntry) -> Result<(), tokio_postgres::Error> {
     client
         .execute(
-            "INSERT INTO audit_logs (id, actor_id, actor_label, action, target, before, after, ip) \
-             VALUES ($1, $2, COALESCE($3, (SELECT email FROM users WHERE id=$2)), $4, $5, $6, $7, $8)",
+            "INSERT INTO audit_logs (id, actor_id, actor_label, action, target, before, after, ip, via) \
+             VALUES ($1, $2, COALESCE($3, (SELECT email FROM users WHERE id=$2)), $4, $5, $6, $7, $8, $9)",
             &[
                 &uuid::Uuid::new_v4().to_string(),
                 &entry.actor_id,
@@ -31,6 +32,7 @@ pub async fn write(client: &impl tokio_postgres::GenericClient, entry: &AuditEnt
                 &entry.before,
                 &entry.after,
                 &entry.ip,
+                &entry.via.as_ref().map(|via| serde_json::json!(via)),
             ],
         )
         .await

@@ -94,29 +94,29 @@ async fn secure_requests_read_only_the_secure_cookie_name() {
 
 #[tokio::test]
 #[ignore = "real DB: set NWUI_TEST_DATABASE_URL"]
-async fn require_session_enforces_2fa_enrollment_and_rbac_with_audit() {
+async fn require_user_session_mode_enforces_2fa_enrollment_and_rbac_with_audit() {
     use axum::response::IntoResponse;
     let db = test_db().await;
     insert_user(&db.client, UserRow { role: "viewer", ..Default::default() }, None).await;
     let ctx = ctx();
-    // require_session reads the real clock; its cookie must use that clock too.
+    // require_user reads the real clock; its cookie must use that clock too.
     let now = principal::now_unix_ms() / 1000;
 
-    let err = principal::require_session(&db.state, &HeaderMap::new(), &ctx, None, TwoFactorGate::Enforce).await.unwrap_err();
+    let err = principal::require_user(&db.state, &HeaderMap::new(), &ctx, None, TwoFactorGate::Enforce, nwui_api::auth::principal::Use::SessionOnly).await.unwrap_err();
     let response = err.into_response();
     assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
     assert_eq!(response.headers()["www-authenticate"], "Session realm=\"nginx-web-ui\"", "never a Bearer challenge on the session surface");
 
     // Required 2FA not enrolled (DB totp_enabled=false although the token claims true).
     let must_enroll = cookie_headers_at(claims_for("u1", json!(3), true), now);
-    let err = principal::require_session(&db.state, &must_enroll, &ctx, None, TwoFactorGate::Enforce).await.unwrap_err();
+    let err = principal::require_user(&db.state, &must_enroll, &ctx, None, TwoFactorGate::Enforce, nwui_api::auth::principal::Use::SessionOnly).await.unwrap_err();
     assert_eq!((err.status, err.code), (StatusCode::FORBIDDEN, "two_factor_required"));
-    assert!(principal::require_session(&db.state, &must_enroll, &ctx, None, TwoFactorGate::AllowEnrollment).await.is_ok());
+    assert!(principal::require_user(&db.state, &must_enroll, &ctx, None, TwoFactorGate::AllowEnrollment, nwui_api::auth::principal::Use::SessionOnly).await.is_ok());
 
     let viewer = cookie_headers_at(claims_for("u1", json!(3), false), now);
-    assert!(principal::require_session(&db.state, &viewer, &ctx, Some(Action::ConfigRead), TwoFactorGate::Enforce).await.is_ok());
+    assert!(principal::require_user(&db.state, &viewer, &ctx, Some(Action::ConfigRead), TwoFactorGate::Enforce, nwui_api::auth::principal::Use::SessionOnly).await.is_ok());
     assert!(audit_rows(&db.client, "rbac:denied").await.is_empty());
-    let err = principal::require_session(&db.state, &viewer, &ctx, Some(Action::ConfigWrite), TwoFactorGate::Enforce).await.unwrap_err();
+    let err = principal::require_user(&db.state, &viewer, &ctx, Some(Action::ConfigWrite), TwoFactorGate::Enforce, nwui_api::auth::principal::Use::SessionOnly).await.unwrap_err();
     assert_eq!((err.status, err.code), (StatusCode::FORBIDDEN, "forbidden"));
     let rows = audit_rows(&db.client, "rbac:denied").await;
     assert_eq!(rows.len(), 1);

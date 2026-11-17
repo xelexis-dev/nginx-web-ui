@@ -7,7 +7,7 @@ pub static SIGNAL:AtomicI32=AtomicI32::new(0);
 fn failed()->Error{Error{code:"postgres_failed",message:"전용 PostgreSQL 작업을 완료하지 못했습니다. 원본과 실패한 작업은 보존했습니다. 제한된 작업 로그를 확인하세요.",exit:1,detail:None}}
 pub fn interrupted()->Option<Error>{match SIGNAL.load(Ordering::Relaxed){signal@ (2|15)=>Some(Error{code:"interrupted",message:"이전 작업이 중단됐습니다. 원본과 현재 작업을 보존했습니다.",exit:128+signal,detail:None}),_=>None}}
 pub fn command(major:u8,tool:&str)->Result<Command> {
-    if ![15,17].contains(&major) || !["postgres","pg_ctl","pg_controldata","pg_isready","pg_upgrade","initdb","vacuumdb","pg_dump","psql"].contains(&tool){return Err(Error::refusal("unsupported_layout"));}
+    if major!=17 || !["postgres","pg_ctl","pg_controldata","pg_isready","initdb","vacuumdb","pg_dump","psql"].contains(&tool){return Err(Error::refusal("unsupported_layout"));}
     let mut c=Command::new("/usr/sbin/runuser");
     c.args(["-u","postgres","--"]).arg(format!("/usr/lib/postgresql/{major}/bin/{tool}"));
     c.env_clear().env("HOME","/var/lib/postgresql").env("PATH","/usr/bin:/bin").env("LC_ALL","C").env("TZ","UTC");
@@ -85,6 +85,7 @@ pub fn own_tree(path:&Path)->Result<()> {
 }
 // The copy never contains a source PID file; only our tools may publish this one.
 pub fn stop_working(major:u8,data:&Path)->Result<()> {
+        if major!=17{return Err(Error::refusal("unsupported_layout"));}
     use std::os::unix::ffi::OsStrExt;
     let path=data.join("postmaster.pid");
     let metadata=match fs::symlink_metadata(&path){Ok(m)=>m,Err(e)if e.kind()==std::io::ErrorKind::NotFound=>return Ok(()),Err(_)=>return Err(failed())};
@@ -260,20 +261,15 @@ impl Private {
         if !locks.holds_d() || !locks.matches_roots(&roots.db,&roots.app){return Err(Error::refusal("storage_busy"));}
         Self::start_inner(17,&roots.db.join("17/data"),work,Duration::from_secs(30),Duration::from_secs(900),true)
     }
-    /// P0/P1 already proved this source inactive and backed up its exact unclean bytes.
-    /// Only PostgreSQL may adjudicate/remove the stale PID and recover the original.
-    pub(crate) fn start_locked_legacy(locks:&crate::upgrade::StorageLocks,roots:&super::layout::Roots,data:&Path,work:&Path)->Result<Self> {
-        if !locks.holds_d() || !locks.matches_roots(&roots.db,&roots.app) || !(data==roots.db || data==roots.db.join("pgdata")){return Err(Error::refusal("storage_busy"));}
-        Self::start_inner(15,data,work,Duration::from_secs(30),Duration::from_secs(900),true)
-    }
     pub(crate) fn start_with_limits(major:u8,data:&Path,work:&Path,normal:Duration,recovery:Duration)->Result<Self> {
         Self::start_inner(major,data,work,normal,recovery,false)
     }
     fn start_inner(major:u8,data:&Path,work:&Path,normal:Duration,recovery:Duration,ready:bool)->Result<Self> {
+        if major!=17{return Err(Error::refusal("unsupported_layout"));}
         if normal.is_zero() || recovery<normal{return Err(Error::refusal("unsupported_layout"));}
         files::real_path(data).map_err(|_|failed())?;files::real_path(work).map_err(|_|failed())?;
         // Never honor ALTER SYSTEM settings from a source, or adopt a live postmaster.
-        if ready {if major==15{inactive_pid(data,true)?;}else{ready_pid(data)?;}}else if data.join("postmaster.pid").exists(){return Err(Error::refusal("unsupported_layout"));}
+        if ready {ready_pid(data)?;}else if data.join("postmaster.pid").exists(){return Err(Error::refusal("unsupported_layout"));}
         let auto=data.join("postgresql.auto.conf");files::real_path(&auto).map_err(|_|failed())?;
         if text(&auto)?.lines().any(|line|!line.trim().is_empty()&&!line.trim_start().starts_with('#')){return Err(Error::refusal("unsupported_layout"));}
         let socket_directory=SocketDirectory::new(work,&format!("s{major}"))?;let socket=socket_directory.path.clone();

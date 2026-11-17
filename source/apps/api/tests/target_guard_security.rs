@@ -12,7 +12,7 @@ async fn fxb_rollback_refuses_all_missing_or_nonissued_certificates_before_any_m
     let temp=tempfile::tempdir().unwrap();let bin=temp.path().join("nginx");std::fs::write(&bin,"#!/bin/sh\nexit 0\n").unwrap();std::fs::set_permissions(&bin,std::fs::Permissions::from_mode(0o700)).unwrap();
     let conf=temp.path().join("conf");let streams=temp.path().join("streams");let certs=temp.path().join("certs");
     let mut db=test_db_with(&[("NGINX_BIN",bin.to_str().unwrap()),("NGINX_CONF_D",conf.to_str().unwrap()),("NGINX_STREAM_D",streams.to_str().unwrap()),("CERTS_DIR",certs.to_str().unwrap())]).await;
-    g13_support::witness(&mut db.state);let actor=Actor{id:None,label:Some("fxb".into()),ip:None};
+    g13_support::witness(&mut db.state);let actor=Actor{via: None,id:None,label:Some("fxb".into()),ip:None};
     let live=resources::mutate(&db.state,Resource::Server,Mutation::Create,None,json!({"serverName":"live.test","listen":18087,"proxyPass":"http://127.0.0.1:9000"}),&actor).await.unwrap();
     let baseline=nwui_api::publisher_client::apply_saved(&db.state,&actor,Some("current")).await.unwrap();assert!(baseline.ok,"{}",baseline.output);
     db.client.batch_execute("INSERT INTO certificates(id,domains,status) VALUES('failed-cert','[\"failed.test\"]','failed')").await.unwrap();

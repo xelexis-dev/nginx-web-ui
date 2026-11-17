@@ -302,7 +302,7 @@ pub async fn test(state: &AppState, actor: &SessionPrincipal, ctx: &RequestConte
         let stored = load(&**client, false).await?;
         let config = mailer(&parsed, resolve_password(state, &parsed, stored.as_ref())?);
         let entry = AuditEntry {
-            actor_id: Some(actor.user_id.clone()),
+            actor_id: Some(actor.user_id.clone()), via: actor.actor(ctx).via,
             action: "settings:smtp-test".into(),
             after: Some(json!({"host": parsed.host, "port": parsed.port, "fromEmail": parsed.from_email, "to": (!to.is_empty()).then_some(to)})),
             ip: ctx.ip.clone(),
@@ -346,11 +346,11 @@ async fn view_route(State(state): State<AppState>, Extension(ctx): Extension<Req
 
 async fn update_route(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<FormResult>, ApiError> {
     let (actor, form) = manager_form(&state, &ctx, request).await?;
-    update(&state, &actor, &ctx, &form).await?;
+    update(&state, actor.session()?, &ctx, &form).await?;
     Ok(Json(FormResult { result: Some(json!({"ok": true, "message": "저장했습니다."})), refresh: Some(true), ..FormResult::default() }))
 }
 
 async fn test_route(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<FormResult>, ApiError> {
     let (actor, form) = manager_form(&state, &ctx, request).await?;
-    Ok(Json(test(&state, &actor, &ctx, &form).await?.into_result()))
+    Ok(Json(test(&state, actor.session()?, &ctx, &form).await?.into_result()))
 }

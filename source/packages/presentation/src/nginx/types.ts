@@ -116,6 +116,8 @@ export interface RealIpConfig {
 }
 
 export interface TlsTuning {
+  /** Opt-in for this TLS server; omission means off. */
+  http2?: boolean;
   hsts?: { enabled: boolean; maxAge: number; includeSubDomains: boolean; preload: boolean };
   sslProtocols?: "intermediate" | "modern";
   sslCiphers?: "intermediate" | "modern";

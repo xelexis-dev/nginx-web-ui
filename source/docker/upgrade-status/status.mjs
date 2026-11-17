@@ -7,7 +7,7 @@ const outcomes = {
   'refused-preflight':['업그레이드 전 검사에서 중단했습니다',''],
   'refused-fresh':['새 설치 준비를 끝내지 못했습니다',''],
   'refused-privilege':['PG17 데이터는 변경되지 않았습니다',''],
-  postponed:['업그레이드를 보류했습니다','NWUI_DB_UPGRADE 변수를 지우고 재시작하거나 1.19.11을 사용하세요.'],
+  postponed:['업그레이드를 보류했습니다','먼저 2.0.x 최신(2.0.3 이상) 이미지에서 이전을 완료한 뒤 2.1로 올리세요. 기존 데이터는 변경하지 않았습니다.'],
 };
 // Separate from `outcomes`: a Rust parity test reads that table's literal key:['title' shape.
 const badges={upgrading:['진행 중','info'],pg17:['완료','success'],postponed:['보류됨','warning'],

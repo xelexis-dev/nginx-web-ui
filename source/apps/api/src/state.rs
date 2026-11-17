@@ -20,6 +20,7 @@ pub struct RuntimeState {
     /// touch nginx's files also take `control::nginx_lock`, which the restart guard shares.
     pub apply_lock: tokio::sync::Mutex<()>,
     /// Login and node pairing share one address throttle across all handlers.
+    pub user_token_limits: crate::auth::token_limits::TokenLimits,
     pub login_throttle: crate::auth::throttle::LoginThrottle,
     /// Password sign-ins waiting for the second factor (`/login/2fa`).
     pub pending_logins: crate::auth::pending_login::PendingLogins,
@@ -40,6 +41,7 @@ impl Default for RuntimeState {
             storage_selection: Default::default(),
             apply_lock: tokio::sync::Mutex::new(()),
             login_throttle: Default::default(),
+            user_token_limits: Default::default(),
             pending_logins: Default::default(),
             passkey_ceremonies: Default::default(),
             pending_oidc: Default::default(),

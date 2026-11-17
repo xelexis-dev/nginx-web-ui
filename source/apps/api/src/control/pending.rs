@@ -74,6 +74,11 @@ fn field_value_eq(field: &str, a: Option<&Value>, b: Option<&Value>) -> bool {
             raw.map(|raw| {
                 let mut value = raw.clone();
                 if let Some(config) = value.as_object_mut() {
+                    // Only opt-in HTTP/2 is stored; old snapshots omit the off value.
+                    if let Some(options) = config.get_mut("tlsOptions").and_then(Value::as_object_mut) {
+                        if options.get("http2") == Some(&Value::Bool(false)) { options.remove("http2"); }
+                        if options.is_empty() { config.remove("tlsOptions"); }
+                    }
                     config
                         .entry("resolveAtRuntime")
                         .or_insert(Value::Bool(false));

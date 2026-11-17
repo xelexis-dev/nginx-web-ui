@@ -7,7 +7,7 @@ use std::time::Duration;
 use axum::http::{HeaderMap, StatusCode};
 use tokio::sync::watch;
 
-use super::principal::{TwoFactorGate, require_session};
+use super::principal::{TwoFactorGate, require_user};
 use super::rbac::Action;
 use crate::request_context::RequestContext;
 use crate::state::AppState;
@@ -31,7 +31,7 @@ pub fn session_bound_shutdown(
         let headers = headers.clone();
         let ctx = ctx.clone();
         async move {
-            require_session(&state, &headers, &ctx, action, TwoFactorGate::Enforce)
+            require_user(&state, &headers, &ctx, action, TwoFactorGate::Enforce, crate::auth::principal::Use::SessionOrToken)
                 .await
                 .map(|_| ())
         }
@@ -79,4 +79,37 @@ where
         let _ = tx.send(true);
     });
     rx
+}
+
+/// The body owns this future: dropping the response cancels revalidation without a detached task.
+pub fn token_lifetime(state: &AppState, headers: HeaderMap, ctx: RequestContext, actions: Vec<Action>, expires_ms: Option<i64>) -> std::pin::Pin<Box<dyn std::future::Future<Output=()> + Send>> {
+    let state=state.clone();
+    Box::pin(async move {
+        let mut shutdown=state.runtime.shutdown.subscribe();
+        let until_expiry=async move {
+            match expires_ms {
+                Some(expiry)=>tokio::time::sleep(Duration::from_millis(expiry.saturating_sub(super::principal::now_unix_ms()).max(0) as u64)).await,
+                None=>std::future::pending::<()>().await,
+            }
+        };
+        tokio::pin!(until_expiry);
+        loop {
+            tokio::select! {
+                _=shutdown.wait_for(|stop|*stop)=>return,
+                _=&mut until_expiry=>return,
+                _=tokio::time::sleep(REVALIDATE_EVERY)=>{}
+            }
+            let checked=async {
+                let user=super::principal::require_user(&state,&headers,&ctx,None,TwoFactorGate::Enforce,super::principal::Use::SessionOrToken).await?;
+                for &action in &actions {super::principal::authorize(&state,&user,&ctx,action).await?;}
+                Ok::<_,crate::error::ApiError>(())
+            };
+            // A stalled database must not extend an expired credential's stream.
+            tokio::select! {
+                _=&mut until_expiry=>return,
+                _=shutdown.wait_for(|stop|*stop)=>return,
+                result=checked=>if result.is_err(){return;}
+            }
+        }
+    })
 }

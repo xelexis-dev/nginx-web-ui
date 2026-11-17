@@ -343,6 +343,7 @@ export function ServerDetail({
                 { term: "이름 확인", value: runtimeMode },
                 { term: "커스텀 디렉티브", value: directiveLabel },
                 { term: "TLS", value: tlsLabel },
+                { term: "HTTP/2", value: data.certificateId && cfg.tlsOptions?.http2 === true ? "사용" : "사용 안 함" },
                 { term: "엣지/실 IP", value: realIpLabel },
                 { term: "서버 기본 캐시", value: cacheLabel },
                 { term: "서버 기본 gzip", value: gzipLabel },

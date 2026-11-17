@@ -215,3 +215,20 @@ fn dispatch(name: &str, args: &Value) -> Value {
         }
     }
 }
+
+#[test]
+fn http2_tls_vectors_keep_the_2_0_omission_golden_and_shared_port_independence() {
+    let vectors:Value=serde_json::from_str(include_str!("fixtures/http2-render.json")).unwrap();
+    for vector in vectors.as_array().unwrap() {
+        let rendered=vector["configs"].as_array().unwrap().iter().map(|cfg|r::render_reverse_proxy(cfg).unwrap()).collect::<String>();
+        assert_eq!(rendered,vector["expected"].as_str().unwrap(),"{}",vector["id"]);
+        assert!(!rendered.lines().any(|line|line.contains("listen")&&line.contains("http2")));
+    }
+    for redirect in [false,true] {
+        let mut cfg=vectors[2]["configs"][0].clone();cfg["tls"]["redirectHttp"]=json!(redirect);
+        let rendered=r::render_reverse_proxy(&cfg).unwrap();
+        assert_eq!(rendered.matches("http2 on;").count(),1);
+        let h2=rendered.find("http2 on;").unwrap();assert!(h2>rendered.find("ssl_certificate_key").unwrap());
+        if redirect { let last=rendered.rfind("server {").unwrap();assert!(!rendered[last..].contains("http2")); }
+    }
+}

@@ -64,6 +64,8 @@ const readPageApiMock = vi.fn(async (path: string) => {
   if (!user || (path.includes("/admin/") && user.role !== "admin"))
     redirectMock("/login");
 
+  if (path === "/api/ui/v1/account") return { totpEnabled: user!.totpEnabled ?? true };
+
   const tokens = ((await listTokensMock()) as TokenListRow[]).map(
     tokenWireFixture,
   );
@@ -473,6 +475,14 @@ describe("발급 폼 — 만료 입력칸", () => {
 });
 
 describe("발급 폼 — 오류 표시", () => {
+  it("shows the control-character name error on the name field", () => {
+    actionStateOverride = { ok: false, fieldErrors: { name: "이름에 제어 문자를 쓸 수 없습니다." } };
+    const html = renderFormWithPreset("90d");
+    expect(html).toContain("이름에 제어 문자를 쓸 수 없습니다.");
+    expect(inputById(html, "token-name")).toContain('aria-invalid="true"');
+    expect(html).not.toContain(PLAINTEXT);
+  });
+
   it("폼 레벨 오류를 그린다 — Task 6 의 액션이 쓰는 자리다", () => {
     actionStateOverride = {
       ok: false,
@@ -708,7 +718,7 @@ describe("상세", () => {
       이름: "노트북 CLI",
       토큰: MASKED,
       상태: "유효",
-      권한: "config:read (설정 읽기) nginx:reload (nginx 다시 읽기)",
+      권한: "config:read (설정 읽기) nginx:reload (저장된 전체 변경사항 적용)",
       "만든 날": "만든날-값",
       "마지막 사용": "마지막사용-값",
       만료: "만료-값",
@@ -875,3 +885,29 @@ describe("상세 페이지", () => {
 // ──────────────────────────────────────────────────────────────────────────
 // 만료 입력 해석
 // ──────────────────────────────────────────────────────────────────────────
+
+it("requires enrollment before rendering the user issue form", async () => {
+  currentUserMock.mockResolvedValue({ user: { id: "u1", role: "editor", totpEnabled: false } });
+  const html = renderToStaticMarkup(await NewTokenPage());
+  expect(html).toContain("사용자 API 토큰을 발급하려면 먼저 2단계 인증을 등록하세요.");
+  expect(html).toContain('href="/account/2fa"');
+  expect(html).not.toContain("<form");
+  expect(html).not.toContain('type="submit"');
+});
+
+it("explains bearer HTTPS use and the scope boundaries without changing expiry", () => {
+  const html = renderToStaticMarkup(<TokenForm kind="user" scopes={["config:write", "nginx:reload", "user:manage"]} action={noopIssue} basePath="/account/tokens" />);
+  expect(html).toContain("저장된 전체 변경사항 적용");
+  expect(html).toContain("config:write는 설정 적용을 포함하지 않습니다.");
+  expect(html).toContain("롤백에는 config:write와 nginx:reload가 모두 필요합니다.");
+  expect(html).toContain("user:manage는 자격증명 관리를 포함하지 않습니다.");
+  expect(html).toContain("인증서 교체에는 config:write와 nginx:reload가 모두 필요합니다.");
+  expect(html).toContain("그 역할의 모든 권한이 토큰에 있어야 합니다.");
+  expect(html).toContain("admin 계정 변경과 admin 역할 부여는 할 수 없습니다.");
+  expect(html).toContain("SMTP·웹훅 시험은 웹에서만 할 수 있습니다.");
+  actionStateOverride = { ok: true, token: PLAINTEXT, id: "tok-new", name: "노트북 CLI" };
+  const issued = renderFormWithPreset("90d");
+  expect(issued).toContain("Authorization: Bearer &lt;토큰&gt;");
+  expect(issued).toContain("&lt;관리 주소&gt;/api/ui/v1/…");
+  expect(issued).toContain("HTTPS로만 쓰세요");
+});

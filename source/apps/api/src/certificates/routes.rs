@@ -7,7 +7,7 @@ use crate::{
     },
     contracts::{Actor, FormResult},
     error::ApiError,
-    http_policy::{check_browser_origin, read_form},
+    http_policy::read_form,
     request_context::RequestContext,
     state::AppState,
 };
@@ -259,15 +259,14 @@ async fn browser_cancel(
     Path(id): Path<String>,
     request: Request,
 ) -> Result<Response, ApiError> {
-    check_browser_origin(request.headers(), &ctx)?;
-    let session = principal::require_session(
+    let session = principal::require_user(
         &state,
         request.headers(),
         &ctx,
         Some(Action::ConfigWrite),
-        TwoFactorGate::Enforce,
-    )
+        TwoFactorGate::Enforce, crate::auth::principal::Use::SessionOrToken)
     .await?;
+    session.check_origin(request.headers(), &ctx)?;
     match service::cancel(&state, &id, &session.actor(&ctx)).await {
         Ok(()) => Ok(Json(json!({"ok":true})).into_response()),
         Err(error) if error.status.is_client_error() => Ok((
@@ -283,7 +282,6 @@ async fn form(
     Extension(ctx): Extension<RequestContext>,
     request: Request,
 ) -> Result<Json<FormResult>, ApiError> {
-    check_browser_origin(request.headers(), &ctx)?;
     let name = request
         .uri()
         .path()
@@ -303,14 +301,15 @@ async fn form(
         "certificates.replaceCertificate" => "replace",
         _ => return Err(ApiError::not_found()),
     };
-    let session = principal::require_session(
+    let session = principal::require_user(
         &state,
         request.headers(),
         &ctx,
         Some(action(operation)),
-        TwoFactorGate::Enforce,
-    )
+        TwoFactorGate::Enforce, crate::auth::principal::Use::SessionOrToken)
     .await?;
+    session.check_origin(request.headers(), &ctx)?;
+    if operation == "replace" && session.is_token() { principal::authorize(&state, &session, &ctx, Action::ConfigWrite).await?; }
     let input = read_form(request).await?;
     if !input.args.is_empty() {
         return Err(ApiError::new(

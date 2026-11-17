@@ -4,34 +4,80 @@ mod auth_support;
 use axum::{Json, Router, http::{HeaderMap, StatusCode}, routing::{get, post}};
 use nwui_api::{contracts::{Actor, Role}, nodes::{client::NodeResult, service}};
 use serde_json::json;
+use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
 
 #[tokio::test]
 #[ignore = "requires NWUI_TEST_DATABASE_URL"]
-async fn legacy_pair_negotiates_once_and_remembers_version_for_refresh() {
+async fn gateway_refuses_119_pairing_without_retry_or_storing_a_node() {
+    let pairs=Arc::new(AtomicUsize::new(0));let pair_hits=pairs.clone();
+    let infos=Arc::new(AtomicUsize::new(0));let info_hits=infos.clone();
     let remote = Router::new()
-        .route("/api/v1/pair", post(|headers: HeaderMap| async move {
+        .route("/api/v1/pair", post(move |headers: HeaderMap| {let hits=pair_hits.clone();async move {
+            hits.fetch_add(1,Ordering::SeqCst);
             if headers["x-gateway-version"] != "1.19.11" {
-                return (StatusCode::CONFLICT, [("x-node-version", "1.19.11")], Json(json!({"error":{"code":"version_mismatch"}})));
+                return (StatusCode::CONFLICT, [("x-node-version", "1.19.11")], Json(json!({"error":{"code":"version_mismatch","message":"legacy-version-refusal"}})));
             }
             (StatusCode::OK, [("x-node-version", "1.19.11")], Json(json!({"token":"legacy-issued","role":"editor","instanceId":"legacy-instance","semver":"1.19.11"})))
-        }))
-        .route("/api/v1/info", get(|headers: HeaderMap| async move {
+        }}))
+        .route("/api/v1/info", get(move |headers: HeaderMap| {let hits=info_hits.clone();async move {
+            hits.fetch_add(1,Ordering::SeqCst);
             assert_eq!(headers["x-gateway-version"], "1.19.11");
             assert_eq!(headers["authorization"], "Bearer legacy-issued");
             ([("x-node-version", "1.19.11")], Json(json!({"instanceId":"legacy-instance","semver":"1.19.11"})))
-        }));
+        }}));
     let listener=tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let base_url=format!("http://{}",listener.local_addr().unwrap());
     let server=tokio::spawn(async move { axum::serve(listener,remote).await.unwrap() });
     let db=auth_support::test_db().await;
-    let id=service::pair_node(&db.state, service::NodeInput {
+    let failure=service::pair_node(&db.state, service::NodeInput {
         name:"legacy".into(),base_url,allow_insecure_tls:false,
         pair:Some(service::PairInput {token:"server-token".into(),gateway_name:"new-gateway".into(),role:Role::Editor}),
-    }, &Actor {id:None,label:Some("test".into()),ip:None}).await.unwrap().unwrap();
-    assert_eq!(service::get(&db.state,&id).await.unwrap().last_version.as_deref(),Some("1.19.11"));
-    service::refresh_statuses(&db.state).await.unwrap();
-    assert_eq!(service::get(&db.state,&id).await.unwrap().last_status.as_deref(),Some("ok"));
+    }, &Actor {via: None,id:None,label:Some("test".into()),ip:None}).await.unwrap().unwrap_err();
+    assert_eq!(failure["ok"],false);assert_eq!(failure["error"],"legacy-version-refusal");
+    assert_eq!(pairs.load(Ordering::SeqCst),1,"2.1 must not retry with a 1.19 gateway header");
+    assert_eq!(infos.load(Ordering::SeqCst),0);
+    assert_eq!(db.client.query_one("SELECT count(*) FROM nodes",&[]).await.unwrap().get::<_,i64>(0),0);
     server.abort();
+}
+
+#[tokio::test]
+#[ignore = "requires NWUI_TEST_DATABASE_URL"]
+async fn gateway_pairs_with_20_and_21_nodes_and_remembers_versions_for_refresh() {
+    for version in ["2.0.0","2.1.0"] {
+        let db=auth_support::test_db().await;
+        let gateway=db.state.config.version.clone();let pair_gateway=gateway.clone();
+        let pairs=Arc::new(AtomicUsize::new(0));let pair_hits=pairs.clone();
+        let infos=Arc::new(AtomicUsize::new(0));let info_hits=infos.clone();
+        let remote=Router::new()
+            .route("/api/v1/pair",post(move |headers:HeaderMap| {
+                let gateway=pair_gateway.clone();let hits=pair_hits.clone();async move {
+                    assert_eq!(headers["x-gateway-version"],gateway);
+                    hits.fetch_add(1,Ordering::SeqCst);
+                    ([("x-node-version",version)],Json(json!({"token":"paired-issued","role":"editor","instanceId":"remote-instance","semver":version})))
+                }
+            }))
+            .route("/api/v1/info",get(move |headers:HeaderMap| {
+                let gateway=gateway.clone();let hits=info_hits.clone();async move {
+                    assert_eq!(headers["x-gateway-version"],gateway);
+                    assert_eq!(headers["authorization"],"Bearer paired-issued");
+                    hits.fetch_add(1,Ordering::SeqCst);
+                    ([("x-node-version",version)],Json(json!({"instanceId":"remote-instance","semver":version})))
+                }
+            }));
+        let listener=tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let base_url=format!("http://{}",listener.local_addr().unwrap());
+        let server=tokio::spawn(async move{axum::serve(listener,remote).await.unwrap()});
+        let id=service::pair_node(&db.state,service::NodeInput {
+            name:"node".into(),base_url,allow_insecure_tls:false,
+            pair:Some(service::PairInput{token:"server-token".into(),gateway_name:"new-gateway".into(),role:Role::Editor}),
+        },&actor()).await.unwrap().unwrap();
+        assert_eq!(service::get(&db.state,&id).await.unwrap().last_version.as_deref(),Some(version));
+        service::refresh_statuses(&db.state).await.unwrap();
+        let node=service::get(&db.state,&id).await.unwrap();
+        assert_eq!(node.last_status.as_deref(),Some("ok"));assert_eq!(node.last_version.as_deref(),Some(version));
+        assert_eq!(pairs.load(Ordering::SeqCst),1);assert_eq!(infos.load(Ordering::SeqCst),1);
+        server.abort();
+    }
 }
 
 #[tokio::test]
@@ -49,7 +95,7 @@ async fn register(db: &auth_support::TestDb, instance: &str, proof_id: Option<&s
     let sealed=db.state.secrets.seal("paired-secret").unwrap();
     db.client.execute("INSERT INTO nodes(id,name,base_url,token_enc,token_role,instance_id,gateway_token_id,last_version) VALUES('n','node','http://127.0.0.1:9',$1,'editor',$2,$3,$4)", &[&sealed,&instance,&proof_id,&version]).await.unwrap();
 }
-fn actor() -> Actor { Actor {id:None,label:Some("test".into()),ip:None} }
+fn actor() -> Actor { Actor {via: None,id:None,label:Some("test".into()),ip:None} }
 fn update(base_url: String) -> service::NodeInput {
     service::NodeInput {name:"node".into(),base_url,allow_insecure_tls:false,pair:None}
 }
@@ -154,7 +200,7 @@ async fn challenge_unknown_revoked_and_malformed_share_errors_and_requests_are_l
 
 #[tokio::test]
 #[ignore = "requires NWUI_TEST_DATABASE_URL"]
-async fn server_reads_project_upstream_urls_only_for_legacy_gateway_headers() {
+async fn server_rejects_older_gateways_and_keeps_project_upstream_ids() {
     use axum::{body::Body,extract::ConnectInfo,http::Request};
     use tower::ServiceExt;
     let db=auth_support::test_db().await;
@@ -163,23 +209,23 @@ async fn server_reads_project_upstream_urls_only_for_legacy_gateway_headers() {
     db.client.execute("INSERT INTO upstreams(id,name,servers) VALUES('up','backend',$1)",&[&json!(["192.0.2.10:9000"])]).await.unwrap();
     db.client.execute("INSERT INTO nginx_servers(id,server_name,listen,config) VALUES('s','compat.example.test',18440,$1)",&[&json!({"locations":[{"path":"/","upstreamId":"up"}]})]).await.unwrap();
     let app=nwui_api::app::with_request_context(nwui_api::control::routes::router().with_state(db.state.clone()),None);
-    for version in ["1.19.11","2.0.0"] {
+    for version in ["1.19.11","2.0.0",db.state.config.version.as_str()] {
         for path in ["/api/v1/servers","/api/v1/servers/s"] {
             let response=app.clone().oneshot(Request::builder().uri(path).header("host","admin.test").header("x-gateway-version",version).header("authorization","Bearer read-secret")
                 .extension(ConnectInfo(std::net::SocketAddr::from(([127,0,0,1],40000)))).body(Body::empty()).unwrap()).await.unwrap();
-            assert_eq!(response.status(),StatusCode::OK);
+            let status=response.status();
             let body:serde_json::Value=serde_json::from_slice(&axum::body::to_bytes(response.into_body(),65536).await.unwrap()).unwrap();
+            if version!=db.state.config.version {
+                assert_eq!(status,StatusCode::CONFLICT);
+                assert_eq!(body["error"]["code"],"version_mismatch");
+                continue;
+            }
+            assert_eq!(status,StatusCode::OK);
             let row=if path.ends_with("/s"){&body["server"]}else{&body["servers"][0]};
             let location=&row["config"]["locations"][0];
-            if version=="1.19.11" {
-                assert_eq!(location["proxyPass"],"http://backend");
-                assert!(location.get("upstreamId").is_none());
-                assert!(location.get("upstreamName").is_none());
-            } else {
-                assert_eq!(location["upstreamId"],"up");
-                assert_eq!(location["upstreamName"],"backend");
-                assert!(location.get("proxyPass").is_none());
-            }
+            assert_eq!(location["upstreamId"],"up");
+            assert_eq!(location["upstreamName"],"backend");
+            assert!(location.get("proxyPass").is_none());
         }
     }
 }

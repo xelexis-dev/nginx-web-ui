@@ -61,8 +61,8 @@ export function createRecord({pinsPath,inputPath,recordPath,env=process.env,node
   const frontend=dockerfile.match(/^# syntax=(\S+)/)?.[1];if(!/@sha256:[a-f0-9]{64}$/.test(frontend??''))throw new Error('Frontend not pinned');
   return {schemaVersion:1,product:{version:packageJson.version,revision},architecture:arch,baseImages,
     debian:{snapshot:pin('DEBIAN_SNAPSHOT'),securitySnapshot:pin('DEBIAN_SECURITY_SNAPSHOT')},
-    directPins:Object.fromEntries(Object.entries({nginx:'NGINX_VERSION',postgresMeta:'POSTGRES_META_VERSION',postgresServer:'POSTGRES_SERVER_VERSION',pg15Helper:'PG15_HELPER_VERSION',tzdata:'TZDATA_VERSION',openssl:'OPENSSL_VERSION',caCertificates:'CA_CERTIFICATES_VERSION',s6Overlay:'S6_OVERLAY_VERSION'}).map(([key,value])=>[key,pin(value)])),
-    integrity:{frontend,nginxSigningKeySha256:pin('NGINX_SIGNING_KEY_SHA256'),nginxDebSha256:pin('NGINX_DEB_'+arch.toUpperCase()+'_SHA256'),pg15ServerSha256:pin('PG15_SERVER_'+arch.toUpperCase()+'_SHA256'),pg15ClientSha256:pin('PG15_CLIENT_'+arch.toUpperCase()+'_SHA256'),s6NoarchSha256:pin('S6_NOARCH_SHA256'),s6ArchSha256:pin('S6_'+arch.toUpperCase()+'_SHA256')},
+    directPins:Object.fromEntries(Object.entries({nginx:'NGINX_VERSION',postgresMeta:'POSTGRES_META_VERSION',postgresServer:'POSTGRES_SERVER_VERSION',tzdata:'TZDATA_VERSION',openssl:'OPENSSL_VERSION',caCertificates:'CA_CERTIFICATES_VERSION',s6Overlay:'S6_OVERLAY_VERSION'}).map(([key,value])=>[key,pin(value)])),
+    integrity:{frontend,nginxSigningKeySha256:pin('NGINX_SIGNING_KEY_SHA256'),nginxDebSha256:pin('NGINX_DEB_'+arch.toUpperCase()+'_SHA256'),s6NoarchSha256:pin('S6_NOARCH_SHA256'),s6ArchSha256:pin('S6_'+arch.toUpperCase()+'_SHA256')},
     locks:{yarnSha256:hashFile(resolve(inputPath,'yarn.lock')),cargoSha256:hashFile(resolve(inputPath,'Cargo.lock')),turboSha256:hashFile(resolve(inputPath,'package-lock.json'))},
     packageManager:JSON.parse(readFileSync(resolve(inputPath,'package.json'),'utf8')).packageManager,nodeVersions,
     inventories:Object.fromEntries([['runtime','runtime'],['apiBuilder','api-builder'],['keyring','keyring']].map(([key,name])=>[key,{sha256:hashFile(resolve(recordPath,name+'.tsv'))}])),

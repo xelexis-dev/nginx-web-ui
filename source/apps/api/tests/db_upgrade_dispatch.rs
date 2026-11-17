@@ -3,16 +3,6 @@ fn command(args:&[&str],root:&std::path::Path)->std::process::Output {
     Command::new(env!("CARGO_BIN_EXE_nwui-api")).args(args).env_clear().env("PGROOT",root).output().unwrap()
 }
 #[test]
-fn offline_json_dispatch_precedes_runtime_config_and_never_mutates_an_override() {
-    let root=tempfile::tempdir().unwrap();
-    let output=command(&["db-upgrade","status","--json"],root.path());
-    assert_eq!(output.status.code(),Some(2));
-    let state:serde_json::Value=serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(state["schemaVersion"],1);assert_eq!(state["ready"],false);assert_eq!(state["lastError"]["code"],"storage_override");
-    assert!(std::fs::read_dir(root.path()).unwrap().next().is_none());
-    let error=String::from_utf8_lossy(&output.stderr);assert!(!error.contains("DATABASE_URL"));assert!(!error.contains("AUTH_SECRET"));
-}
-#[test]
 fn storage_subcommands_refuse_conflicting_roots_before_config_or_secret_creation() {
     for args in [&["storage","classify"][..],&["storage-secrets"][..],&["storage-provision"][..]] {
         let root=tempfile::tempdir().unwrap();let output=command(args,root.path());

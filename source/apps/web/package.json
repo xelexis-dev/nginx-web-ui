@@ -2,7 +2,7 @@
   "name": "web",
   "license": "MIT",
   "private": true,
-  "version": "2.0.3",
+  "version": "2.1.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

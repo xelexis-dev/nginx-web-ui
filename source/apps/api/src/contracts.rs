@@ -9,11 +9,19 @@ pub enum Role {
     Admin,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(tag = "kind", rename_all = "lowercase", deny_unknown_fields)]
+pub enum Via {
+    Token { id: String, name: String },
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Actor {
     pub id: Option<String>,
     pub label: Option<String>,
     pub ip: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub via: Option<Via>,
 }
 
 /// Form command arguments have an explicit per-command arity and authorization.

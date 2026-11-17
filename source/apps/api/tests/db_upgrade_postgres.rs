@@ -15,14 +15,14 @@ fn postgres_commands_drop_root_and_discard_inherited_connection_and_secret_setti
     assert_eq!(command.get_args().collect::<Vec<_>>(),["-u","postgres","--","/usr/lib/postgresql/17/bin/pg_controldata"]);
     let env=command.get_envs().filter_map(|(k,v)|v.map(|v|(k.to_string_lossy().into_owned(),v.to_string_lossy().into_owned()))).collect::<Vec<_>>();
     assert_eq!(env,[("HOME".into(),"/var/lib/postgresql".into()),("LC_ALL".into(),"C".into()),("PATH".into(),"/usr/bin:/bin".into()),("TZ".into(),"UTC".into())]);
-    assert!(postgres::command(16,"postgres").is_err());assert!(postgres::command(17,"/bin/sh").is_err());
+    assert!(postgres::command(15,"postgres").is_err());assert!(postgres::command(17,"pg_upgrade").is_err());assert!(postgres::command(16,"postgres").is_err());assert!(postgres::command(17,"/bin/sh").is_err());
 }
 #[test]
 fn private_postmaster_is_socket_only_and_cannot_consume_source_auto_configuration() {
-    let command=postgres::server_command(15,Path::new("/destination/db/.nwui-work/attempt/pg15"),Path::new("/destination/db/.nwui-work/attempt/socket15"),Path::new("/destination/db/.nwui-work/attempt/private.conf")).unwrap();
+    let command=postgres::server_command(17,Path::new("/destination/db/.nwui-work/attempt/pg17"),Path::new("/destination/db/.nwui-work/attempt/socket17"),Path::new("/destination/db/.nwui-work/attempt/private.conf")).unwrap();
     let args=command.get_args().map(|a|a.to_string_lossy().into_owned()).collect::<Vec<_>>();
     for expected in ["listen_addresses=","unix_socket_permissions=0700","port=50432","config_file=/destination/db/.nwui-work/attempt/private.conf","shared_preload_libraries=","session_preload_libraries=","local_preload_libraries=","archive_mode=off","ssl=off"] {assert!(args.contains(&expected.into()),"{expected}");}
-    assert!(args.windows(2).any(|a|a==["-D","/destination/db/.nwui-work/attempt/pg15"]));
+    assert!(args.windows(2).any(|a|a==["-D","/destination/db/.nwui-work/attempt/pg17"]));
 }
 #[test]
 fn warning_control_output_and_failed_processes_are_sanitized() {
@@ -44,13 +44,13 @@ fn readonly_control_output_is_bounded_and_does_not_create_files() {
 #[test]
 fn private_socket_length_is_refused_before_starting_a_postmaster() {
     let socket=std::path::PathBuf::from(format!("/{}","x".repeat(110)));
-    assert!(postgres::server_command(15,Path::new("/data"),&socket,Path::new("/config")).is_err());
+    assert!(postgres::server_command(17,Path::new("/data"),&socket,Path::new("/config")).is_err());
 }
 
 #[test]
 fn every_offline_socket_uses_container_run_even_with_a_long_bind_log_path() {
-    let work=std::path::PathBuf::from(format!("/destination/db/.nwui-work/{}/inspect15-log","x".repeat(150)));
-    for label in ["s15","s17","upgrade"] {
+    let work=std::path::PathBuf::from(format!("/destination/db/.nwui-work/{}/inspect17-log","x".repeat(150)));
+    for label in ["s17","ready"] {
         let socket=postgres::socket_path(&work,label);
         assert!(socket.starts_with("/run"),"socket escaped container-local /run: {}",socket.display());
         assert!(socket.as_os_str().len()+"/.s.PGSQL.50432".len()<108);
@@ -59,14 +59,14 @@ fn every_offline_socket_uses_container_run_even_with_a_long_bind_log_path() {
 }
 
 #[test]
-#[ignore="native PG15/17 as root: NWUI_TEST_STOP_WORKING=1"]
+#[ignore="native PG17 as root: NWUI_TEST_STOP_WORKING=1"]
 fn working_postmaster_stop_uses_live_identity_even_when_pid_file_is_root_owned() {
     if std::env::var("NWUI_TEST_STOP_WORKING").as_deref()!=Ok("1"){return;}
     use std::{fs,os::unix::fs::{MetadataExt,PermissionsExt},time::Duration};
     use std::sync::atomic::Ordering;
     struct Reset;impl Drop for Reset{fn drop(&mut self){postgres::SIGNAL.store(0,Ordering::Relaxed);}}let _reset=Reset;
     assert_eq!(unsafe{libc::geteuid()},0);
-    for major in [15,17] {
+    for major in [17] {
         let root=std::env::temp_dir().join(format!("nwui-stop-{}",uuid::Uuid::new_v4()));postgres::directory(&root).unwrap();
         let data=root.join("data");postgres::directory(&data).unwrap();let init=root.join("init");postgres::directory(&init).unwrap();
         let mut command=postgres::command(major,"initdb").unwrap();command.arg("-D").arg(&data).args(["--locale=C","--encoding=UTF8","--auth-local=trust","--auth-host=scram-sha-256"]);postgres::capture(command,&init,Duration::from_secs(60)).unwrap();

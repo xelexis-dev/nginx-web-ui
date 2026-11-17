@@ -241,3 +241,9 @@ it("preserves already quoted arguments and titles one-sided location IDs", () =>
     afterTitle: "123456789",
   });
 });
+
+it("HTTP/2 apply review shows off/on and ignores the historical off omission", () => {
+  expect(flattenChanges("servers",item({}, {tlsOptions:{http2:true}}))).toEqual([expect.objectContaining({path:["TLS","HTTP/2"],before:"끄기",after:"켜기",changed:true})]);
+  expect(flattenChanges("servers",item({tlsOptions:{http2:true}}, {}))).toEqual([expect.objectContaining({before:"켜기",after:"끄기"})]);
+  expect(flattenChanges("servers",item({}, {tlsOptions:{http2:false}}))).toEqual([]);
+});

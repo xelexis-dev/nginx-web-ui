@@ -636,7 +636,7 @@ use axum::{Extension, Json};
 
 use super::audit::{self, AuditEntry};
 use super::login::AuthorizedUser;
-use super::principal::{TwoFactorGate, db_unavailable, now_unix_ms, require_session};
+use super::principal::{TwoFactorGate, db_unavailable, now_unix_ms, require_user};
 use super::rbac::parse_role;
 use crate::contracts::Role;
 use super::session;
@@ -706,14 +706,14 @@ async fn sign_in_start(State(state): State<AppState>, Extension(transport): Exte
 
 /// `startLink`: the signed-in (and 2FA-satisfied) user links another login method.
 async fn link_start(State(state): State<AppState>, Extension(transport): Extension<Transport>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Response, ApiError> {
-    let actor = require_session(&state, request.headers(), &ctx, None, TwoFactorGate::Enforce).await?;
+    let actor = require_user(&state, request.headers(), &ctx, None, TwoFactorGate::Enforce, crate::auth::principal::Use::SessionOnly).await?.into_session()?;
     let form = read_form(request).await?;
     let provider = crate::crypto::js_trim(form.get("providerId").unwrap_or(""));
     begin(&state, &*transport, &ctx, provider, Some(actor.user_id)).await
 }
 
 async fn unlink_route(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<FormResult>, ApiError> {
-    let actor = require_session(&state, request.headers(), &ctx, None, TwoFactorGate::Enforce).await?;
+    let actor = require_user(&state, request.headers(), &ctx, None, TwoFactorGate::Enforce, crate::auth::principal::Use::SessionOnly).await?.into_session()?;
     let form = read_form(request).await?;
     let provider = crate::crypto::js_trim(form.get("providerId").unwrap_or(""));
     unlink(&state, &actor.user_id, provider, &ctx).await?;

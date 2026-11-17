@@ -28,6 +28,7 @@ export const FIELD_LABELS: Record<string, string> = {
   tlsPort: "HTTPS 포트",
   redirectHttp: "HTTP→HTTPS 리다이렉트",
   tlsOptions: "TLS",
+  http2: "HTTP/2",
   sslProtocols: "ssl_protocols",
   sslCiphers: "ssl_ciphers",
   preferServerCiphers: "ssl_prefer_server_ciphers",
@@ -312,12 +313,13 @@ export function flattenChanges(
       return;
     }
     const format =
+      field === "http2" ? (v: unknown) => v === true ? "켜기" : "끄기" :
       field === "enabled" && path.length === 1 && group !== "upstreams"
         ? (v: unknown) => (v == null ? null : v ? "활성" : "비활성")
         : field === "protocol"
           ? (v: unknown) => scalar(v)?.toUpperCase() ?? null
           : scalar;
-    push(key, path, a, b, format);
+    push(key, path, field === "http2" ? a === true : a, field === "http2" ? b === true : b, format);
   }
   for (const change of item.changes) {
     if (full && change.field !== "config") continue;

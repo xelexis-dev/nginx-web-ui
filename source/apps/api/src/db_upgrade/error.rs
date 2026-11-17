@@ -4,7 +4,7 @@ pub struct Error { pub code:&'static str, pub message:&'static str, pub exit:i32
 impl Error {
     pub fn refusal(code:&'static str)->Self {
         let message=match code {
-            "pg15_requires_upgrade"=>"PG15 데이터가 발견됐습니다. 자동 변환하지 않습니다. 오프라인 이전 후 새 DB·앱 볼륨 쌍으로 전환하세요.",
+            "requires_2_0_first"=>"1.x(PostgreSQL 15) 데이터입니다. 먼저 2.0.x 최신(2.0.3 이상)에서 이전을 완료하세요. 기존 데이터는 변경하지 않았습니다.",
             "migration_incomplete"=>"이전이 완료되지 않았습니다. 원본은 보존하고 nwui-db-upgrade status로 상태를 확인하세요.",
             "pair_mismatch"=>"DB와 앱 데이터가 같은 백업 쌍이 아닙니다. 새 키를 만들지 않았습니다. 올바른 두 볼륨을 연결하세요.",
             "key_path_invalid"=>"DATA_KEY_FILE은 비어 있지 않은 절대 경로여야 합니다. 키나 저장소를 변경하지 않았습니다.",

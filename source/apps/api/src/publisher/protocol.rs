@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 pub struct Request { pub v: u8, pub id: String, pub op: Op, pub deadline_ms: u32, pub actor: Actor }
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
-pub struct Actor { pub user_id: Option<String>, pub label: Option<String>, pub ip: Option<String> }
+pub struct Actor { pub user_id: Option<String>, pub label: Option<String>, pub ip: Option<String>, #[serde(skip_serializing_if = "Option::is_none")] pub via: Option<crate::contracts::Via> }
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "op", content = "args", rename_all = "PascalCase", deny_unknown_fields)]
 pub enum Op { Hello, ApplySaved { label: Option<String>, expected_saved_digest: Option<String> },

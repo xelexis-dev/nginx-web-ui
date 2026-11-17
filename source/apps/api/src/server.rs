@@ -1,11 +1,11 @@
-use crate::{app::{finish_router, with_request_context}, error::ApiError, state::AppState};
+use crate::{app::{finish_router, with_user_request_context}, error::ApiError, state::AppState};
 use axum::{Json, Router, extract::State, http::StatusCode, routing::get};
 use std::{future::Future, net::SocketAddr, time::Duration};
 use tokio::net::TcpListener;
 
 pub fn router(state: AppState) -> Router {
     let version = state.config.version.clone();
-    let origin = state.config.auth_url.clone();
+    let boundary_state = state.clone();
     let routes = Router::new()
         .merge(crate::auth::router())
         .merge(crate::admin::router())
@@ -19,7 +19,7 @@ pub fn router(state: AppState) -> Router {
         .merge(crate::ui_views::router())
         .route("/api/health", get(health))
         .with_state(state);
-    finish_router(with_request_context(routes, origin), &version)
+    finish_router(with_user_request_context(routes, boundary_state), &version)
 }
 
 async fn health(State(state): State<AppState>) -> Result<Json<serde_json::Value>, ApiError> {

@@ -59,6 +59,7 @@ interface ServerFormProps {
   upstreams: { id: string; name: string; resolveAtRuntime?: boolean }[];
   runtimeDns?: RuntimeDnsStatus;
   nodeVersionFamily?: "1.19" | "2.0";
+  nodeVersion?: string | null;
   /** TLS 후보. 같은 이유로 그 서버와 같은 출처여야 한다(`toCertificateOptions`). */
   certificates: CertificateOption[];
   defaultValues?: ServerFormValues;
@@ -74,6 +75,7 @@ export function ServerForm({
   action,
   runtimeDns,
   nodeVersionFamily,
+  nodeVersion,
   upstreams,
   certificates,
   defaultValues: defaults,
@@ -147,6 +149,10 @@ export function ServerForm({
   const [certificateId, setCertificateId] = useState(
     defaultValues?.certificateId ?? "",
   );
+  const [http2, setHttp2] = useState(defaultValues?.tlsOptions?.http2 === true);
+  const nodeRelease = nodeVersion?.trim().match(/^(\d+)\.(\d+)\.\d+/);
+  const http2Supported = target?.kind !== "node" || !!nodeRelease &&
+    (Number(nodeRelease[1]) > 2 || Number(nodeRelease[1]) === 2 && Number(nodeRelease[2]) >= 1);
   const [tlsPort, setTlsPort] = useState(String(defaultValues?.tlsPort ?? 443));
   const [redirectHttp, setRedirectHttp] = useState(
     defaultValues?.redirectHttp !== false,
@@ -180,6 +186,7 @@ export function ServerForm({
   const preloadAllowed =
     Number(hstsMaxAge) >= HSTS_PRELOAD_MIN_MAX_AGE && hstsSub;
   const tlsOptions: TlsTuning = {
+    http2: !!certificateId && http2,
     hsts: hstsEnabled
       ? {
           enabled: true,
@@ -318,6 +325,8 @@ export function ServerForm({
                 ? "server-certificate"
                 : key === "tlsPort"
                   ? "server-tls-port"
+                  : key === "http2"
+                    ? "server-http2"
                   : key.startsWith("tlsOptions")
                     ? "server-certificate"
                     : key.startsWith("ipAccess")
@@ -345,6 +354,7 @@ export function ServerForm({
                 certificateId: "인증서",
                 tlsPort: "HTTPS 포트",
                 redirectHttp: "HTTP→HTTPS 리다이렉트",
+                http2: "HTTP/2",
                 tlsOptions: "TLS 세부 설정",
                 ipAccess: "IP 접근 제어",
                 realIp: "엣지 / 프록시 뒤 배치 (실 IP 복원)",
@@ -412,6 +422,7 @@ export function ServerForm({
         : `HTTP :${listen}`,
       onJump: () => jump("server-form-https"),
     },
+    { label: "HTTP/2", value: certificateId && http2 ? "사용" : "사용 안 함", onJump: () => jump("server-http2") },
     ...locations.map((route, index) => ({
       label: `경로 ${index + 1}`,
       value: (
@@ -627,7 +638,10 @@ export function ServerForm({
             certificates={certificates}
             tls={{
               certificateId,
-              setCertificateId,
+              setCertificateId: (value) => { setCertificateId(value); if (!value) setHttp2(false); },
+              http2,
+              setHttp2,
+              http2Supported,
               tlsPort,
               setTlsPort,
               redirectHttp,

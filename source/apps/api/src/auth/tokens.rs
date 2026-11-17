@@ -22,8 +22,8 @@ use tokio_postgres::error::SqlState;
 
 use super::audit::{self, AuditEntry};
 use super::principal::SessionPrincipal;
-use super::rbac::{Action, can};
-use crate::contracts::{FormInput, FormResult, Role};
+use super::rbac::{Action, can, parse_role};
+use crate::contracts::{Actor, FormInput, FormResult, Role};
 use crate::crypto::js_trim;
 use crate::error::ApiError;
 use axum::http::StatusCode;
@@ -94,6 +94,9 @@ pub enum TokenError {
     Rejected(String),
     /// Missing, not in this scope, or already revoked — deliberately one answer.
     NothingToRevoke,
+    TwoFactorRequired,
+    TwoFactorVerificationRequired,
+    SessionChanged,
     Unavailable,
 }
 
@@ -106,12 +109,16 @@ pub fn issue_error(error: TokenError) -> ApiError {
         TokenError::Invalid(fields) => validation(fields),
         TokenError::Rejected(message) => validation(BTreeMap::from([("scopes".to_owned(), message)])),
         TokenError::NothingToRevoke => ApiError::internal(),
+        TokenError::TwoFactorRequired => super::principal::two_factor_required(),
+        TokenError::TwoFactorVerificationRequired => super::principal::two_factor_verification_required(),
+        TokenError::SessionChanged => ApiError::session_required(),
         TokenError::Unavailable => super::principal::db_unavailable(),
     }
 }
 
 pub fn revoke_error(error: TokenError) -> ApiError {
     match error {
+        error @ (TokenError::TwoFactorRequired | TokenError::TwoFactorVerificationRequired | TokenError::SessionChanged) => issue_error(error),
         TokenError::NothingToRevoke => ApiError::new(StatusCode::CONFLICT, "conflict", "해지할 항목이 없습니다 — 이미 해지되었거나 없는 토큰입니다."),
         TokenError::Rejected(message) => ApiError::new(StatusCode::FORBIDDEN, "forbidden", message),
         TokenError::Invalid(fields) => validation(fields),
@@ -204,8 +211,11 @@ pub fn parse_issue_form(form: &FormInput, now_ms: i64) -> Result<IssueFormValue,
     let mut fail = |field: &str, message: String| {
         errors.insert(field.to_owned(), message);
     };
-    let name = js_trim(form.get("name").unwrap_or("")).to_owned();
-    if name.is_empty() {
+    let raw_name = form.get("name").unwrap_or("");
+    let name = js_trim(raw_name).to_owned();
+    if raw_name.chars().any(char::is_control) {
+        fail("name", "이름에 제어 문자를 쓸 수 없습니다.".into());
+    } else if name.is_empty() {
         fail("name", "이름을 입력하세요.".into());
     } else if name.encode_utf16().count() > NAME_MAX {
         fail("name", format!("이름은 {NAME_MAX}자 이하여야 합니다."));
@@ -261,15 +271,8 @@ pub async fn issue(state: &AppState, actor: &SessionPrincipal, ctx: &RequestCont
     if kind == TokenKind::Server && actor.role != Role::Admin {
         return Err(TokenError::Rejected("서버 토큰은 관리자만 발급할 수 있습니다.".into()));
     }
-    // What may be given: the vocabulary, then the kind/role bound (distinct messages).
-    let allowed = issuable_scopes(kind, actor.role);
-    for scope in &value.scopes {
-        if !ALL_SCOPES.contains(&scope.as_str()) {
-            return Err(TokenError::Rejected(format!("알 수 없는 권한입니다: {scope}")));
-        }
-        if !allowed.contains(&scope.as_str()) {
-            return Err(TokenError::Rejected(format!("이 토큰에 줄 수 없는 권한입니다: {scope}")));
-        }
+    if kind == TokenKind::Server {
+        validate_scopes(kind, actor.role, &value.scopes)?;
     }
     if kind == TokenKind::Server && value.expires_at_ms.is_none() {
         return Err(TokenError::Invalid(BTreeMap::from([("expiresAt".into(), "만료 기간을 선택하세요.".into())])));
@@ -285,6 +288,24 @@ pub async fn issue(state: &AppState, actor: &SessionPrincipal, ctx: &RequestCont
 
     let mut client = state.db.get().await.map_err(unavailable)?;
     let tx = client.transaction().await.map_err(unavailable)?;
+    if kind == TokenKind::User {
+        let row = tx.query_opt(
+            "SELECT enabled, approved, role::text AS role, session_version, totp_enabled FROM users WHERE id = $1 FOR UPDATE",
+            &[&actor.user_id],
+        ).await.map_err(unavailable)?.ok_or(TokenError::SessionChanged)?;
+        let role = parse_role(row.get::<_, &str>("role")).ok_or(TokenError::SessionChanged)?;
+        if !row.get::<_, bool>("enabled") || !row.get::<_, bool>("approved")
+            || row.get::<_, i32>("session_version") != actor.session_version || role != actor.role {
+            return Err(TokenError::SessionChanged);
+        }
+        if !row.get::<_, bool>("totp_enabled") {
+            return Err(TokenError::TwoFactorRequired);
+        }
+        if !actor.mfa_verified {
+            return Err(TokenError::TwoFactorVerificationRequired);
+        }
+        validate_scopes(kind, role, &value.scopes)?;
+    }
     let inserted = tx
         .execute(
             "INSERT INTO access_tokens (id, kind, owner_user_id, name, token_hash, token_suffix, scopes, expires_at, created_by_user_id) \
@@ -325,6 +346,37 @@ pub async fn issue(state: &AppState, actor: &SessionPrincipal, ctx: &RequestCont
     audit::write(&*tx, &entry).await.map_err(unavailable)?;
     tx.commit().await.map_err(unavailable)?;
     Ok(IssuedToken { id, token })
+}
+
+fn validate_scopes(kind: TokenKind, role: Role, scopes: &[String]) -> Result<(), TokenError> {
+    let allowed = issuable_scopes(kind, role);
+    for scope in scopes {
+        if !ALL_SCOPES.contains(&scope.as_str()) {
+            return Err(TokenError::Rejected(format!("알 수 없는 권한입니다: {scope}")));
+        }
+        if !allowed.contains(&scope.as_str()) {
+            return Err(TokenError::Rejected(format!("이 토큰에 줄 수 없는 권한입니다: {scope}")));
+        }
+    }
+    Ok(())
+}
+
+/// Caller holds the user lock before any credential lock; the audit belongs to the same change.
+pub async fn revoke_user_tokens(
+    tx: &tokio_postgres::Transaction<'_>, user_id: &str, reason: &str, actor: &Actor,
+) -> Result<u64, tokio_postgres::Error> {
+    let count = tx.execute(
+        "UPDATE access_tokens SET revoked_at = now() WHERE owner_user_id = $1 AND kind = 'user' AND revoked_at IS NULL",
+        &[&user_id],
+    ).await?;
+    if count > 0 {
+        audit::write(tx, &AuditEntry {
+            actor_id: actor.id.clone(), actor_label: actor.label.clone(), via: actor.via.clone(),
+            action: "token:revoke".into(), target: Some(user_id.into()),
+            after: Some(json!({"reason": reason, "count": count})), ip: actor.ip.clone(), ..Default::default()
+        }).await?;
+    }
+    Ok(count)
 }
 
 fn kind_str(kind: TokenKind) -> &'static str {
@@ -399,6 +451,9 @@ pub async fn revoke(state: &AppState, actor: &SessionPrincipal, ctx: &RequestCon
     let (kind, owner) = scope_parts(scope);
     let mut client = state.db.get().await.map_err(unavailable)?;
     let tx = client.transaction().await.map_err(unavailable)?;
+    if let Some(owner) = owner {
+        tx.query_opt("SELECT id FROM users WHERE id = $1 FOR UPDATE", &[&owner]).await.map_err(unavailable)?;
+    }
     // The scope narrows in this one statement; `revoked_at IS NULL` keeps the first revocation.
     let revoked = tx
         .query_opt(
@@ -468,6 +523,19 @@ mod tests {
         assert_eq!(err(""), "만료 날짜를 입력하세요.");
         assert_eq!(err("2027-02-30"), "만료 날짜 형식이 올바르지 않습니다.");
         assert_eq!(err("next week"), "만료 날짜 형식이 올바르지 않습니다.");
+    }
+
+    #[test]
+    fn token_names_reject_all_cc_characters_before_trimming() {
+        for code in (0..=0x1f).chain(0x7f..=0x9f) {
+            let control = char::from_u32(code).unwrap();
+            for name in [format!("{control}name"), format!("na{control}me"), format!("name{control}")] {
+                let errors = parse_issue_form(&form(&[("name", &name), ("scopes", "config:read"), ("expiry", "never")]), NOW).unwrap_err();
+                assert_eq!(errors["name"], "이름에 제어 문자를 쓸 수 없습니다.", "U+{code:04X}");
+            }
+        }
+        let name = " <b>한글</b> 👩‍💻 ";
+        assert_eq!(parse_issue_form(&form(&[("name", name), ("scopes", "config:read"), ("expiry", "never")]), NOW).unwrap().name, name.trim());
     }
 
     #[test]

@@ -1,5 +1,5 @@
-//! Admin HTTP surface: session-only, `user:manage`, 2FA enforced. The root boundary resolves the
-//! request context and checks Origin on unsafe `/api/ui/v1` methods first.
+//! Admin HTTP surface: live `user:manage`, 2FA enforced; token admission follows the explicit
+//! route census. Cookie writes retain the trusted same-origin boundary.
 //!
 //! | Route | TS source |
 //! | --- | --- |
@@ -35,7 +35,7 @@ use super::oauth;
 use super::security::{self, TwoFactorPolicy};
 use super::settings;
 use super::users::{self, NewUser};
-use crate::auth::principal::{SessionPrincipal, TwoFactorGate, require_session};
+use crate::auth::principal::{UserPrincipal, TwoFactorGate, require_user, Use};
 use crate::auth::rbac::Action;
 use crate::auth::tokens::{self, TokenKind, TokenScope};
 use crate::contracts::{FormInput, FormResult};
@@ -94,7 +94,7 @@ async fn general_settings(State(state): State<AppState>, Extension(ctx): Extensi
 
 async fn update_public_base_url(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<FormResult>, ApiError> {
     let (actor, form) = manager_form(&state, &ctx, request).await?;
-    Ok(message(settings::update_public_base_url(&state, &actor, &ctx, &form).await?))
+    Ok(message(settings::update_public_base_url(&state, actor.session()?, &ctx, &form).await?))
 }
 
 async fn update_metrics(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<FormResult>, ApiError> {
@@ -114,48 +114,48 @@ async fn provider_detail(State(state): State<AppState>, Extension(ctx): Extensio
 
 async fn create_provider(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<FormResult>, ApiError> {
     let (actor, form) = manager_form(&state, &ctx, request).await?;
-    let id = oauth::create(&state, &actor, &ctx, &form).await?;
+    let id = oauth::create(&state, actor.session()?, &ctx, &form).await?;
     Ok(redirect(format!("/admin/oauth/{id}")))
 }
 
 async fn update_provider(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<FormResult>, ApiError> {
     let (actor, form) = manager_form(&state, &ctx, request).await?;
-    let id = oauth::update(&state, &actor, &ctx, &form).await?;
+    let id = oauth::update(&state, actor.session()?, &ctx, &form).await?;
     Ok(redirect(format!("/admin/oauth/{id}")))
 }
 
 async fn delete_provider(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<FormResult>, ApiError> {
     let (actor, form) = manager_form(&state, &ctx, request).await?;
-    oauth::delete(&state, &actor, &ctx, form.get("id").unwrap_or("")).await?;
+    oauth::delete(&state, actor.session()?, &ctx, form.get("id").unwrap_or("")).await?;
     Ok(redirect("/admin/oauth"))
 }
 
 async fn toggle_provider(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<FormResult>, ApiError> {
     let (actor, form) = manager_form(&state, &ctx, request).await?;
-    oauth::toggle(&state, &actor, &ctx, form.get("id").unwrap_or("")).await?;
+    oauth::toggle(&state, actor.session()?, &ctx, form.get("id").unwrap_or("")).await?;
     Ok(redirect("/admin/oauth"))
 }
 
 // Server tokens: the scope is `Server` in code only — never from the form or URL.
 
 async fn list_server_tokens(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, headers: HeaderMap) -> Result<Json<Value>, ApiError> {
-    let actor = manager(&state, &headers, &ctx).await?;
-    tokens::list_view(&state, &actor, &TokenScope::Server).await.map(Json)
+    let actor = require_user(&state, &headers, &ctx, Some(Action::UserManage), TwoFactorGate::Enforce, Use::SessionOnly).await?;
+    tokens::list_view(&state, actor.session()?, &TokenScope::Server).await.map(Json)
 }
 
 async fn server_token_detail(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, headers: HeaderMap, Path(id): Path<String>) -> Result<Json<Value>, ApiError> {
-    let actor = manager(&state, &headers, &ctx).await?;
-    tokens::detail_view(&state, &actor, &TokenScope::Server, &id).await.map(Json)
+    let actor = require_user(&state, &headers, &ctx, Some(Action::UserManage), TwoFactorGate::Enforce, Use::SessionOnly).await?;
+    tokens::detail_view(&state, actor.session()?, &TokenScope::Server, &id).await.map(Json)
 }
 
 async fn issue_server_token(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<FormResult>, ApiError> {
     let (actor, form) = manager_form(&state, &ctx, request).await?;
-    tokens::issue_from_form(&state, &actor, &ctx, TokenKind::Server, &form).await.map(Json)
+    tokens::issue_from_form(&state, actor.session()?, &ctx, TokenKind::Server, &form).await.map(Json)
 }
 
 async fn revoke_server_token(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<FormResult>, ApiError> {
     let (actor, form) = manager_form(&state, &ctx, request).await?;
-    tokens::revoke_from_form(&state, &actor, &ctx, &TokenScope::Server, &form).await.map(Json)
+    tokens::revoke_from_form(&state, actor.session()?, &ctx, &TokenScope::Server, &form).await.map(Json)
 }
 
 /// Stay on the page. `result.ok` lets the browser action state clear a previous error (TS
@@ -179,23 +179,25 @@ async fn update_policy(State(state): State<AppState>, Extension(ctx): Extension<
         Ok(form.get(name)==Some("true"))
     };
     let next = TwoFactorPolicy { require2fa_admin: on("require2faAdmin")?, require2fa_user: on("require2faUser")?, require2fa_oauth: on("require2faOauth")? };
-    security::update_policy(&state, &actor, &ctx, next).await?;
+    security::update_policy(&state, actor.session()?, &ctx, next).await?;
     Ok(refresh())
 }
 
 async fn revoke_gateway(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<FormResult>, ApiError> {
     let (actor, form) = manager_form(&state, &ctx, request).await?;
-    security::revoke_gateway(&state, &actor, &ctx, form.get("id").unwrap_or("")).await?;
+    security::revoke_gateway(&state, actor.session()?, &ctx, form.get("id").unwrap_or("")).await?;
     Ok(refresh())
 }
 
-pub(super) async fn manager(state: &AppState, headers: &HeaderMap, ctx: &RequestContext) -> Result<SessionPrincipal, ApiError> {
-    require_session(state, headers, ctx, Some(Action::UserManage), TwoFactorGate::Enforce).await
+pub(super) async fn manager(state: &AppState, headers: &HeaderMap, ctx: &RequestContext) -> Result<UserPrincipal, ApiError> {
+    require_user(state, headers, ctx, Some(Action::UserManage), TwoFactorGate::Enforce, Use::SessionOrToken).await
 }
 
 /// Authorizes from the headers, then reads the form body.
-pub(super) async fn manager_form(state: &AppState, ctx: &RequestContext, request: Request) -> Result<(SessionPrincipal, FormInput), ApiError> {
-    let actor = manager(state, request.headers(), ctx).await?;
+pub(super) async fn manager_form(state: &AppState, ctx: &RequestContext, request: Request) -> Result<(UserPrincipal, FormInput), ApiError> {
+    let usage = crate::auth::route_policy::route(request.method().as_str(), request.uri().path()).map_or(Use::SessionOnly, |r|r.usage);
+    let actor = require_user(state, request.headers(), ctx, Some(Action::UserManage), TwoFactorGate::Enforce, usage).await?;
+    actor.check_origin(request.headers(), ctx)?;
     Ok((actor, read_form(request).await?))
 }
 
@@ -230,7 +232,7 @@ async fn create_user(State(state): State<AppState>, Extension(ctx): Extension<Re
         confirm_password: form.get("confirmPassword").unwrap_or(""),
         role: form.get("role").unwrap_or(""),
     };
-    let id = users::create(&state, &actor, &ctx, input).await?;
+    let id = users::create(&state, actor.session()?, &ctx, input).await?;
     Ok(redirect(format!("/admin/users/{id}")))
 }
 
@@ -242,17 +244,17 @@ async fn update_role(State(state): State<AppState>, Extension(ctx): Extension<Re
 }
 
 async fn reset_password(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<FormResult>, ApiError> {
-    let authenticated_at = crate::auth::principal::session_claims(&state, request.headers(), &ctx, crate::auth::principal::now_unix_ms() / 1000)
+    let authenticated_at = (!crate::auth::user_token::is_user_token_request(request.headers())).then(|| crate::auth::principal::session_claims(&state, request.headers(), &ctx, crate::auth::principal::now_unix_ms() / 1000)).flatten()
         .and_then(|claims| crate::auth::session::authentication_time(&claims));
     let (actor, form) = manager_form(&state, &ctx, request).await?;
     let id = form.get("id").unwrap_or("").trim().to_owned();
-    users::reset_password(&state, &actor, &ctx, &id, form.get("password").unwrap_or(""), form.get("confirmPassword").unwrap_or(""), authenticated_at).await?;
+    users::reset_password(&state, actor.session()?, &ctx, &id, form.get("password").unwrap_or(""), form.get("confirmPassword").unwrap_or(""), authenticated_at).await?;
     Ok(redirect(format!("/admin/users/{id}")))
 }
 
 async fn delete_user(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<FormResult>, ApiError> {
     let (actor, form) = manager_form(&state, &ctx, request).await?;
-    users::delete(&state, &actor, &ctx, form.get("id").unwrap_or("")).await?;
+    users::delete(&state, actor.session()?, &ctx, form.get("id").unwrap_or("")).await?;
     Ok(redirect("/admin/users"))
 }
 

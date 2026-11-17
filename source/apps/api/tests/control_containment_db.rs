@@ -103,6 +103,7 @@ fn old_file(t: &auth_support::TestDb, id: &str, name: &str, listen: u16) {
 }
 fn actor() -> Actor {
     Actor {
+        via: None,
         id: None,
         label: Some("containment test".into()),
         ip: None,

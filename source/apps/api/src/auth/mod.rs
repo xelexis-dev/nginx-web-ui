@@ -19,6 +19,9 @@ pub mod stream_guard;
 pub mod setup;
 pub mod throttle;
 pub mod tokens;
+pub mod user_token;
+pub mod token_limits;
+pub mod route_policy;
 pub mod totp;
 
 pub use routes::router;

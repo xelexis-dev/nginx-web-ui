@@ -133,7 +133,7 @@ mod tests {
     async fn database_newer_ready_failure_stops_private_postmaster() {
         if std::env::var("NWUI_TEST_PROFILE_NATIVE").as_deref()!=Ok("1"){return;}
         let t=tempfile::tempdir().unwrap();fs::set_permissions(t.path(),fs::Permissions::from_mode(0o711)).unwrap();
-        let roots=Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:crate::db_upgrade::engine::architecture().unwrap().into()};
+        let roots=Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:crate::db_upgrade::paths::architecture().unwrap().into()};
         for p in [&roots.db,&roots.app]{fs::DirBuilder::new().mode(0o700).create(p).unwrap();}
         let env=t.path().join("env");fs::DirBuilder::new().mode(0o700).create(&env).unwrap();
         let locks=Arc::new(StorageLocks::acquire(&roots.db,&roots.app).unwrap());
@@ -200,7 +200,7 @@ mod tests {
         if std::env::var("NWUI_TEST_PROFILE_NATIVE").as_deref()!=Ok("1"){return;}
         if crate::nonroot::PRIVILEGE_SPLIT{return;}
         let t=tempfile::tempdir().unwrap();fs::set_permissions(t.path(),fs::Permissions::from_mode(0o711)).unwrap();
-        let roots=Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:crate::db_upgrade::engine::architecture().unwrap().into()};
+        let roots=Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:crate::db_upgrade::paths::architecture().unwrap().into()};
         for p in [&roots.db,&roots.app]{fs::DirBuilder::new().mode(0o700).create(p).unwrap();}
         let env=t.path().join("env");fs::DirBuilder::new().mode(0o700).create(&env).unwrap();
         let locks=Arc::new(StorageLocks::acquire(&roots.db,&roots.app).unwrap());

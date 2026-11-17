@@ -1,6 +1,7 @@
 import layout from "@/components/page-layout.module.css";
 import { PageHeader } from "@repo/ui";
 import { readPageApi } from "@/lib/api-page";
+import type { AccountView } from "@repo/contracts";
 import type { TokenApiList } from "@/lib/token-api";
 import { TokenForm } from "../token-form";
 
@@ -21,9 +22,10 @@ export const runtime = "nodejs";
  * 화면이 된다 — 방어를 한 겹으로 줄이지 마라.
  */
 export default async function NewAccountTokenPage() {
-  const { issuableScopes: scopes } = await readPageApi<TokenApiList>(
-    "/api/ui/v1/account/tokens",
-  );
+  const [account, { issuableScopes: scopes }] = await Promise.all([
+    readPageApi<AccountView>("/api/ui/v1/account"),
+    readPageApi<TokenApiList>("/api/ui/v1/account/tokens"),
+  ]);
 
   return (
     <section className={layout.page}>
@@ -38,6 +40,7 @@ export default async function NewAccountTokenPage() {
 
       <TokenForm
         kind="user"
+        twoFactorEnabled={account.totpEnabled}
         scopes={scopes}
         action={{ id: "account.tokens.issue", args: [] }}
         basePath="/account/tokens"

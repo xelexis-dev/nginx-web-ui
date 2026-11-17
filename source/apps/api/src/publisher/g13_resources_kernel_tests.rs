@@ -34,13 +34,13 @@
     #[tokio::test]
     #[ignore="real DB: NWUI_TEST_DATABASE_URL"]
     async fn sr_sa_on_off_on_node_edit_pending_snapshot_and_rollback_preserve_true_only(){
-        let(state,client,_temp)=database().await;let actor=Actor{id:Some("sr-user".into()),label:None,ip:None};let up=mutate(&state,Resource::Upstream,Mutation::Create,None,json!({"name":"backend","servers":["127.0.0.1:9000"]}),&actor).await.unwrap();let uid=up["id"].as_str().unwrap();
+        let(state,client,_temp)=database().await;let actor=Actor{via: None,id:Some("sr-user".into()),label:None,ip:None};let up=mutate(&state,Resource::Upstream,Mutation::Create,None,json!({"name":"backend","servers":["127.0.0.1:9000"]}),&actor).await.unwrap();let uid=up["id"].as_str().unwrap();
         let session=crate::auth::principal::SessionPrincipal{user_id:"sr-user".into(),email:None,name:None,role:crate::contracts::Role::Admin,session_version:1,totp_enabled:false,requires_2fa:false,mfa_verified:false,expires_at:i64::MAX};
         for kind in 0..3{
             let body=|flag:Option<Value>|{let mut body=form_body(Resource::Server,&form(flag,if kind==2{"upstream"}else{"direct"})).unwrap();body["locations"][0]["upstreamId"]=json!(uid);if kind==1{body["locations"][0]["proxyPass"]=json!("http://app.test:9000/path/");body["locations"][0]["resolveAtRuntime"]=json!(true);}body};
             let row=mutate(&state,Resource::Server,Mutation::Create,None,body(Some(json!(true))),&actor).await.unwrap();let id=row["id"].as_str().unwrap().to_owned();let path=format!("/api/v1/servers/{id}");let mut off=None;
             for flag in [Some(json!(true)),Some(json!(false)),None,Some(json!(true))]{let desired=flag==Some(json!(true));let(status,response)=node(&state,"PATCH",&path,&body(flag)).await;assert_eq!(status,200,"{response}");let saved=get(&client,Resource::Server,&id).await.unwrap();let location=&saved["config"]["locations"][0];assert_eq!(location.get("retryOtherInstances"),desired.then_some(&json!(true)));assert!(location.get("directives").is_none(),"generated policy never becomes stored user directives");
-                let view=crate::control::views::view(&state,&session,&format!("/reverse-proxy/{id}/edit"),&BTreeMap::new()).await.unwrap().unwrap();assert_eq!(view["server"]["config"]["locations"][0].get("retryOtherInstances"),location.get("retryOtherInstances"));let(status,read)=node(&state,"GET",&path,&Value::Null).await;assert_eq!(status,200);assert_eq!(read["server"]["config"]["locations"][0].get("retryOtherInstances"),location.get("retryOtherInstances"));if !desired{off=Some(snapshot(&state).await);}
+                let view=crate::control::views::view(&state,&session.clone().into(),&format!("/reverse-proxy/{id}/edit"),&BTreeMap::new()).await.unwrap().unwrap();assert_eq!(view["server"]["config"]["locations"][0].get("retryOtherInstances"),location.get("retryOtherInstances"));let(status,read)=node(&state,"GET",&path,&Value::Null).await;assert_eq!(status,200);assert_eq!(read["server"]["config"]["locations"][0].get("retryOtherInstances"),location.get("retryOtherInstances"));if !desired{off=Some(snapshot(&state).await);}
             }
             let on=snapshot(&state).await;let pending=crate::control::pending::diff_config(off.as_ref(),&on);assert!(pending.has_changes);assert!(serde_json::to_string(&pending).unwrap().contains("retryOtherInstances"));
             for invalid in [Value::Null,json!("true"),json!(1)]{let raw=body(Some(invalid));let error=mutate(&state,Resource::Server,Mutation::Update,Some(&id),raw.clone(),&actor).await.unwrap_err();assert_eq!(error.status,400);assert!(error.field_errors.unwrap()["locations"].contains("재시도 설정"));let(status,error)=node(&state,"PATCH",&path,&raw).await;assert_eq!(status,400,"{error}");assert!(error["error"]["fieldErrors"]["locations"].as_str().unwrap().contains("재시도 설정"));assert_eq!(get(&client,Resource::Server,&id).await.unwrap()["config"],on.servers[0]["config"]);}
@@ -81,4 +81,31 @@
             let mut pool=state.db.get().await.unwrap();let snapshot=apply::load_snapshot(&pool).await.unwrap();assert_eq!(snapshot.servers[0]["config"],config);assert!(!pending::diff_config(Some(&snapshot),&snapshot).has_changes);
             let mut bad=snapshot.clone();bad.servers[0]["config"]["locations"][0]["upstreamId"]=json!("missing");let tx=pool.transaction().await.unwrap();assert!(rollback::replace_rows(&tx,&bad).await.is_err());let count:i64=tx.query_one("SELECT count(*) FROM nginx_servers",&[]).await.unwrap().get(0);assert_eq!(count,1,"restore must refuse before any DELETE");tx.rollback().await.unwrap();
         }
+    }
+
+    #[tokio::test]
+    #[ignore="real DB: NWUI_TEST_DATABASE_URL"]
+    async fn http2_snapshot_rollback_and_node_writes_restore_omission_as_off() {
+        let (state,client,_temp)=database().await;
+        let actor=Actor{id:Some("sr-user".into()),label:None,ip:None,via:None};
+        let cert="cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+        client.execute("INSERT INTO certificates(id,domains,status,cert_pem,key_pem) VALUES($1,'[\"h2.test\"]','issued','test-cert','test-key')",&[&cert]).await.unwrap();
+        let body=|http2:Option<bool>| {let mut raw=json!({"serverName":"h2.test","listen":18080,"proxyPass":"http://127.0.0.1:9000","certificateId":cert,"tls":{"tlsPort":18443}});if let Some(flag)=http2{raw["tls"]["tlsOptions"]=json!({"http2":flag});}raw};
+        let row=mutate(&state,Resource::Server,Mutation::Create,None,body(None),&actor).await.unwrap();let id=row["id"].as_str().unwrap();
+        let old=snapshot(&state).await;assert!(old.servers[0]["config"].get("tlsOptions").is_none());
+        let (status,result)=node(&state,"PATCH",&format!("/api/v1/servers/{id}"),&body(Some(true))).await;
+        assert_eq!(status,200,"{result}");assert_eq!(result["server"]["config"]["tlsOptions"]["http2"],true);
+        let on=snapshot(&state).await;
+        assert!(crate::control::pending::diff_config(Some(&old),&on).has_changes);
+        // The rest of tlsOptions uses replacement semantics too: omission does not merge.
+        let omitted=mutate(&state,Resource::Server,Mutation::Update,Some(id),body(None),&actor).await.unwrap();assert!(omitted["config"].get("tlsOptions").is_none());
+        for target in [&on,&old,&on] {
+            let mut pool=state.db.get().await.unwrap();let tx=pool.transaction().await.unwrap();
+            crate::publisher::rollback::replace_rows(&tx,target).await.unwrap();tx.commit().await.unwrap();drop(pool);
+            let restored=snapshot(&state).await;assert_eq!(restored.servers[0]["config"],target.servers[0]["config"]);
+            assert!(!crate::control::pending::diff_config(Some(target),&restored).has_changes);
+            let (status,read)=node(&state,"GET",&format!("/api/v1/servers/{id}"),&Value::Null).await;assert_eq!(status,200);assert_eq!(read["server"]["config"]["tlsOptions"]["http2"]==true,target.servers[0]["config"]["tlsOptions"]["http2"]==true);
+        }
+        let mut stale=body(Some(false));stale["version"]=json!("1");
+        let error=mutate(&state,Resource::Server,Mutation::Update,Some(id),stale,&actor).await.unwrap_err();assert_eq!(error.status,409);assert_eq!(get(&client,Resource::Server,id).await.unwrap()["config"]["tlsOptions"]["http2"],true);
     }

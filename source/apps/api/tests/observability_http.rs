@@ -178,3 +178,15 @@ async fn actor_snapshot_backfill_preserves_explicit_labels() {
     let labels=db.client.query("SELECT id,actor_label FROM audit_logs ORDER BY id",&[]).await.unwrap();
     assert_eq!(labels[0].get::<_,String>(1),"original-label");assert_eq!(labels[1].get::<_,String>(1),"u1@example.test");
 }
+
+#[tokio::test]
+#[ignore = "real DB"]
+async fn audit_projection_carries_via_in_list_and_detail() {
+    let db=test_db().await;
+    let via=json!({"kind":"token","id":"id","name":"<token>"});
+    db.client.execute("INSERT INTO audit_logs(id,action,actor_label,via) VALUES('via','config:write','owner@example.test',$1)",&[&via]).await.unwrap();
+    let list=nwui_api::observability::query::audit_list(&db.state,&BTreeMap::new()).await.unwrap();
+    assert_eq!(list["items"][0]["via"],via);
+    assert_eq!(list["items"][0]["actorLabel"],"owner@example.test");
+    assert_eq!(nwui_api::observability::query::audit_detail(&db.state,"via").await.unwrap()["log"]["via"],via);
+}

@@ -4,7 +4,7 @@
 # packages. snapshot.debian.org retains historical states; availability is not
 # an SLA. Builds fail on a missing/different input, never fall back to live apt.
 # Input refreshes belong to the next approved release with version + UPDATE.md.
-# Trixie/PG17 runtime; the pinned PG15 helper is used only by the private upgrade runner or explicit offline migration.
+# Trixie/PG17 runtime; 1.x data must first be migrated by the latest 2.0.x image.
 ARG NODE_IMAGE=node:24.22.3-trixie-slim@sha256:af02d57b57719b9657a45199a79264a9437940cd55b3c7b3fc99615654f124a0
 ARG RUST_IMAGE=rust:1.98.1-slim-trixie@sha256:4cd829461bd5c4d511c32e269da9cb8929223b666519d8004e35fc8d1d771ab7
 ARG DEBIAN_SNAPSHOT=20261107T082527Z
@@ -25,11 +25,6 @@ ARG S6_NOARCH_SHA256=5379750ed30a84bbd2e2dd74847ba6b5bd29cd0b2e3ea2ec58049b57eb2
 ARG S6_AMD64_SHA256=e6befcc96a437a3831386ecfc51808c5d3e939dc5fe3c02ae9284599e8aa2408
 ARG S6_ARM64_SHA256=b17f17a82e7a515c682a91edaf2ffdabb73f891981b6c1fd712115693a2f8b4c
 
-ARG PG15_HELPER_VERSION=15.20-1.pgdg13+1
-ARG PG15_SERVER_AMD64_SHA256=2aa1fe56821608958a049c0f836ed91e148c8dbfcb779e616d11e099af4a8e1f
-ARG PG15_CLIENT_AMD64_SHA256=53d423aa8601fe0377f469a71a71fb0b5e14618fea31157429f651ea95e7e07e
-ARG PG15_SERVER_ARM64_SHA256=99baceaca6a56ec25944eee60724338bfebf5eed073fddc862ba75d92e8d1c6d
-ARG PG15_CLIENT_ARM64_SHA256=684d6394eaf3921e25bc9934c303f673dcd03c80d2e5b06e1a3e7feacc6a7c68
 
 FROM ${RUST_IMAGE} AS api-builder-os-resolved
 ARG DEBIAN_SNAPSHOT
@@ -147,21 +142,6 @@ RUN --mount=type=bind,source=docker/pins,target=/verify-pins,readonly \
     && /verify-pins/fetch.sh s6 "https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz" /s6-overlay-noarch.tar.xz "$S6_NOARCH_SHA256" \
     && /verify-pins/fetch.sh s6 "https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-${s6_arch}.tar.xz" /s6-overlay-arch.tar.xz "$expected"
 
-FROM nginx-keyring AS pg15-download
-ARG TARGETARCH
-ARG PG15_HELPER_VERSION
-ARG PG15_SERVER_AMD64_SHA256
-ARG PG15_SERVER_ARM64_SHA256
-ARG PG15_CLIENT_AMD64_SHA256
-ARG PG15_CLIENT_ARM64_SHA256
-RUN --mount=type=bind,source=docker/pins,target=/verify-pins,readonly \
-    case "$TARGETARCH" in \
-      amd64) server="$PG15_SERVER_AMD64_SHA256"; client="$PG15_CLIENT_AMD64_SHA256" ;; \
-      arm64) server="$PG15_SERVER_ARM64_SHA256"; client="$PG15_CLIENT_ARM64_SHA256" ;; \
-      *) exit 1 ;; \
-    esac \
-    && /verify-pins/fetch-pg15.sh "$TARGETARCH" "$PG15_HELPER_VERSION" "$server" "$client" /pg15
-
 FROM ${NODE_IMAGE} AS runtime-os-resolved
 ARG DEBIAN_SNAPSHOT
 ARG DEBIAN_SECURITY_SNAPSHOT
@@ -178,8 +158,7 @@ ARG TARGETARCH
 COPY docker/pins/*.sh /opt/nwui-pins/
 COPY --from=nginx-keyring /nginx-archive-keyring.gpg /usr/share/keyrings/nginx-archive-keyring.gpg
 # Build-stage package managers remain available; remove them in runtime only.
-RUN --mount=type=bind,from=pg15-download,source=/pg15,target=/tmp/pg15 \
-    rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
            /opt/yarn-v* /usr/local/bin/npm /usr/local/bin/npx \
            /usr/local/bin/corepack /usr/local/bin/yarn /usr/local/bin/yarnpkg \
     && for path in /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
@@ -204,15 +183,13 @@ RUN --mount=type=bind,from=pg15-download,source=/pg15,target=/tmp/pg15 \
     && printf '%s\n' \
          'path-exclude=/usr/lib/*-linux-gnu/libLLVM*.so*' \
          'path-exclude=/usr/lib/*-linux-gnu/libz3.so*' \
-         'path-exclude=/usr/lib/postgresql/15/lib/llvmjit*' \
          'path-exclude=/usr/lib/postgresql/17/lib/llvmjit*' \
-         'path-exclude=/usr/lib/postgresql/15/lib/bitcode/*' \
          'path-exclude=/usr/lib/postgresql/17/lib/bitcode/*' \
          > /etc/dpkg/dpkg.cfg.d/nwui-no-jit \
     && /opt/nwui-pins/install.sh /nwui-record/runtime.txt \
          "nginx=$NGINX_VERSION" "postgresql=$POSTGRES_META_VERSION" \
-         "postgresql-17=$POSTGRES_SERVER_VERSION" "postgresql-client-17=$POSTGRES_SERVER_VERSION" "tzdata=$TZDATA_VERSION" xz-utils /tmp/pg15/*.deb \
-    && /opt/nwui-pins/inventory.sh runtime /nwui-record/runtime.tsv /nwui-record/base.tsv /nwui-record/bootstrap.txt /nwui-record/runtime.txt /tmp/pg15/transaction.txt \
+         "postgresql-17=$POSTGRES_SERVER_VERSION" "postgresql-client-17=$POSTGRES_SERVER_VERSION" "tzdata=$TZDATA_VERSION" xz-utils \
+    && /opt/nwui-pins/inventory.sh runtime /nwui-record/runtime.tsv /nwui-record/base.tsv /nwui-record/bootstrap.txt /nwui-record/runtime.txt \
     && dpkg-query -W -f='${binary:Package}\t${db:Status-Status}\n' apt libapt-pkg7.0 > /tmp/nwui-apt-packages \
     && awk -F '\t' '{sub(/:[^:]*$/, "", $1); if ($2!="installed") exit 1; seen[$1]++} END {if (seen["apt"]!=1 || seen["libapt-pkg7.0"]!=1) exit 1}' /tmp/nwui-apt-packages \
     && awk -F '\t' '$1=="apt" || $1=="libapt-pkg7.0" {seen[$1]++} END {if (seen["apt"]!=1 || seen["libapt-pkg7.0"]!=1) exit 1}' /nwui-record/runtime.tsv \
@@ -261,7 +238,6 @@ ARG S6_NOARCH_SHA256
 ARG S6_AMD64_SHA256
 ARG S6_ARM64_SHA256
 ARG NGINX_SIGNING_KEY_SHA256
-ARG PG15_HELPER_VERSION
 ARG GIT_SHA=""
 ARG SOURCE_TREE=""
 LABEL org.opencontainers.image.source="https://github.com/xelexis-dev/nginx-web-ui" \
@@ -270,7 +246,6 @@ LABEL org.opencontainers.image.source="https://github.com/xelexis-dev/nginx-web-
 ENV APP_GIT_SHA=$GIT_SHA
 COPY --from=api-builder /build/nwui-api /usr/local/bin/nwui-api
 LABEL org.nginx-web-ui.distro="trixie" \
-      org.nginx-web-ui.pg15-helper-version="${PG15_HELPER_VERSION}" \
       org.nginx-web-ui.nginx-version="${NGINX_VERSION}" \
       org.nginx-web-ui.postgres-version="${POSTGRES_SERVER_VERSION}" \
       org.nginx-web-ui.tzdata-version="${TZDATA_VERSION}" \

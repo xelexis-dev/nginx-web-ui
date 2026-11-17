@@ -36,6 +36,7 @@ type Kind =
   | "account"
   | "tokens"
   | "token-new"
+  | "token-new-off"
   | "token-detail"
   | "enroll"
   | "verify"
@@ -105,7 +106,7 @@ function AccountPreview({ kind }: { kind: Kind }) {
       </section>
     );
   const title =
-    kind === "token-new"
+    kind.startsWith("token-new")
       ? "새 액세스 토큰"
       : kind === "enroll"
         ? "2단계 인증 (2FA) 설정"
@@ -113,9 +114,10 @@ function AccountPreview({ kind }: { kind: Kind }) {
   return (
     <section className={layout.page}>
       <PageHeader title={title} />
-      {kind === "token-new" ? (
+      {kind.startsWith("token-new") ? (
         <TokenForm
           kind="user"
+          twoFactorEnabled={kind !== "token-new-off"}
           scopes={["config:read", "config:write", "nginx:reload"]}
           action={{ id: "account.tokens.issue", args: [] }}
           basePath="/account/tokens"
@@ -160,6 +162,7 @@ type Story = StoryObj<typeof meta>;
 export const Account: Story = {};
 export const Tokens: Story = { args: { kind: "tokens" } };
 export const NewToken: Story = { args: { kind: "token-new" } };
+export const NewTokenNeedsTwoFactor: Story = { args: { kind: "token-new-off" } };
 export const Token: Story = { args: { kind: "token-detail" } };
 export const Enroll: Story = { args: { kind: "enroll" } };
 export const VerifySession: Story = { args: { kind: "verify" } };

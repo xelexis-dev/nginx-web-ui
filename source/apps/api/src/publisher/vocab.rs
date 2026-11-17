@@ -162,6 +162,7 @@ fn cache_path(args:&[String])->bool {
 }
 // Closed renderer vocabulary; user statements still go through the stored-apply allowlist.
 fn emitted_name(context:Context,name:&str)->bool {
+    if context==Context::HttpServer && name=="http2" { return true; }
     let generated:&[&str]=match context {
         Context::Http=>&["proxy_cache_path"],
         Context::Stream=>&[],
@@ -190,6 +191,7 @@ fn validate_line(config:&RuntimeConfig,context:Context,words:&[String],stored:&[
         (Context::HttpServer,"ssl_protocols")=>args==["TLSv1.3"]||args==["TLSv1.2","TLSv1.3"],
         (Context::HttpServer,"ssl_ciphers")=>one(args,"ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-CHACHA20-POLY1305"),
         (Context::HttpServer,"ssl_prefer_server_ciphers"|"real_ip_recursive")=>one(args,"on"),
+        (Context::HttpServer,"http2")=>one(args,"on")&&lines(scope).filter(|w|w.first().is_some_and(|v|v=="http2")).count()==1,
         (Context::HttpServer,"set_real_ip_from")=>args.len()==1&&validation::assert_valid_ip_or_cidr(&args[0]).is_ok(),
         (Context::HttpServer,"real_ip_header")=>args.len()==1&&validation::REAL_IP_HEADERS.contains(&args[0].as_str()),
         (Context::HttpServer,"gzip_types")=>[performance::GZIP_TEXT_TYPES,performance::GZIP_TEXT_AND_FONTS_TYPES].contains(&args.join(" ").as_str()),
@@ -664,5 +666,21 @@ mod tests {
             assert!(validate(&config(),&http(&text),&BTreeMap::new()).is_err());
         }
         assert!(validate(&config(),&http("server { location / { proxy_pass http://peer:9000/a\0n; } }"),&BTreeMap::new()).is_err());
+    }
+}
+
+#[cfg(test)]
+mod http2_tests {
+    use super::*;
+    #[test]
+    fn http2_only_admits_one_on_in_http_server() {
+        let config=RuntimeConfig::read(|key|match key {"DATABASE_URL"=>Some("postgres://test.invalid/db".into()),"AUTH_SECRET"=>Some("http2-vocab-test".into()),_=>None}).unwrap();
+        let check=|text:&str,stream:bool| {
+            let files=BTreeMap::from([(if stream {"stream-http2.conf".into()} else {"server-aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa.conf".into()},text.as_bytes().to_vec())]);
+            if stream {validate(&config,&BTreeMap::new(),&files)} else {validate(&config,&files,&BTreeMap::new())}
+        };
+        assert!(check("server { listen 443 ssl; server_name a.test; http2 on; }",false).is_ok());
+        for text in ["http2 on;", "server { http2 off; }", "server { http2 on extra; }", "server { http2; }", "server { http2 on; http2 on; }", "server { location / { http2 on; } }", "server { listen 443 ssl http2; }"] {assert!(check(text,false).is_err(),"{text}");}
+        assert!(check("server { listen 9000; http2 on; }",true).is_err());
     }
 }

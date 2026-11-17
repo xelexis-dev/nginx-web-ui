@@ -40,3 +40,5 @@ mod key_path_tests {
         assert_eq!(resolve_data_key_file(Path::new("/isolated/app"), None), Path::new("/isolated/app/secrets/data_key"));
     }
 }
+
+pub fn architecture()->Result<&'static str>{match std::env::consts::ARCH{"aarch64"=>Ok("arm64"),"x86_64"=>Ok("amd64"),_=>Err(Error::refusal("unsupported_layout"))}}

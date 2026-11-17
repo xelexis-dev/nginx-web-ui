@@ -28,7 +28,7 @@ async fn q23_unix_targets_save_and_apply_with_legacy_unchanged_edit() {
     let temp=tempfile::tempdir().unwrap();let bin=temp.path().join("nginx");std::fs::write(&bin,"#!/bin/sh\nexit 0\n").unwrap();std::fs::set_permissions(&bin,std::fs::Permissions::from_mode(0o700)).unwrap();
     let conf=temp.path().join("conf");let streams=temp.path().join("stream");let certs=temp.path().join("certs");
     let mut db=auth_support::test_db_with(&[("NGINX_BIN",bin.to_str().unwrap()),("NGINX_CONF_D",conf.to_str().unwrap()),("NGINX_STREAM_D",streams.to_str().unwrap()),("CERTS_DIR",certs.to_str().unwrap())]).await;g13_support::witness(&mut db.state);
-    let actor=nwui_api::contracts::Actor{id:None,label:Some("q23".into()),ip:None};
+    let actor=nwui_api::contracts::Actor{via: None,id:None,label:Some("q23".into()),ip:None};
     for (i,target) in ["http://unix:/var/run/app.sock:/api/","http://unix:/tmp/x.sock"].iter().enumerate() {
         let row=resources::mutate(&db.state,Resource::Server,Mutation::Create,None,json!({"serverName":format!("socket-{i}.test"),"listen":19080+i,"proxyPass":target}),&actor).await.unwrap();
         let id=row["id"].as_str().unwrap();let applied=nwui_api::publisher_client::apply_saved(&db.state,&actor,None).await.unwrap();assert!(applied.ok,"{}",applied.output);

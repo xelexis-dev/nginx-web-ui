@@ -51,19 +51,27 @@ pub(super) fn unrecorded_branch(db:&Path)->(super::Branch,Outcome){
 /// 2.0.1 F10: a storage-permission refusal names the path, condition and host command itself.
 fn next_action(error:&StepError)->String {
     match (error.code,error.detail.as_deref()) {
+        ("requires_2_0_first",_)=>"같은 볼륨을 그대로 연결해 2.0.x 최신(2.0.3 이상)에서 이전을 마친 뒤 2.1로 올리세요.".into(),
         ("storage_permissions",Some(detail)) if !detail.is_empty()=>detail.chars().filter(|c|!c.is_control()).take(2048).collect(),
         _=>"원인을 해결한 뒤 컨테이너를 다시 시작하면 다시 확인합니다.".into(),
     }
 }
 pub(super) fn publish_unrecorded_at(error:&StepError,db:&Path,descriptor:&Path,status:&Path,notify:impl FnOnce()->Result<(),StepError>)->Result<(),StepError>{
+    let (branch,outcome)=if error.code=="requires_2_0_first"{(super::Branch::Upgrade,Outcome::RefusedPreflight)}else{unrecorded_branch(db)};
+    publish_runtime_refusal(error,branch,outcome,descriptor,status,notify)
+}
+pub(super) fn publish_readonly_refusal_at(error:&StepError,descriptor:&Path,status:&Path,notify:impl FnOnce()->Result<(),StepError>)->Result<(),StepError>{
+    publish_runtime_refusal(error,super::Branch::Upgrade,Outcome::RefusedPreflight,descriptor,status,notify)
+}
+fn publish_runtime_refusal(error:&StepError,branch:super::Branch,outcome:Outcome,descriptor:&Path,status:&Path,notify:impl FnOnce()->Result<(),StepError>)->Result<(),StepError>{
     use super::types::*;
-    let (branch,outcome)=unrecorded_branch(db);let now=chrono::Utc::now().to_rfc3339();
+    let now=chrono::Utc::now().to_rfc3339();
     let selection=StorageSelection{version:1,epoch:1,outcome,branch,pgdata:crate::db_upgrade::paths::PGDATA.into(),backup_id:None,schema_profile:"none".into(),key_binding:KeyBinding::Unverified};
     super::types::write_selection_at(descriptor,&selection)?;
     let value=UpgradeStatus{version:1,updated_at:now.clone(),outcome,branch,step:StatusStep{id:Step::P0,index:0,total:0,started_at:now,bytes_done:0,bytes_total:0},failure:Some(StatusFailure{code:error.code.into(),class:super::class_of(error.code),message:error.message.into(),next_action:next_action(error)}),space:None,locations:vec![],backup:None,discarded:vec![],cleanup_pending:false,retry:StatusRetry{next_eligible_at:None,reason:None},warnings:super::status::storage_warnings()};
     if let Err(error)=super::status::publish_at(status,&value){eprintln!("[upgrade] status publish failed: {}",error.code);}
     let detail=error.detail.as_deref().unwrap_or("").chars().filter(|c|!c.is_control()).take(2048).collect::<String>();
-    eprintln!("[upgrade] preparation failed before the recovery record: {} {detail}",error.code);
+    eprintln!("[upgrade] preparation failed before the recovery record: {} {} {detail}",error.code,error.message);
     notify()
 }
 pub(crate) fn publish_status_only(roots:&Roots,j:&Journal,would_be:Outcome,current:&super::journal::Candidate,label:Option<&str>){
@@ -90,15 +98,19 @@ pub(super) fn status_value(roots:&Roots,j:&JournalV1,outcome:Outcome,current:&su
     let discarded=super::commands::retained_discards(roots,j)?;let mut retry=StatusRetry{next_eligible_at:j.retry.backoff_until.clone(),reason:None};
     let mut failure=super::journal::last_attempt_failure(&j.records).map(|f|StatusFailure{class:super::class_of(&f.code),code:f.code,message:"시작 준비를 보류했습니다. 원본과 복구 기록은 보존했습니다.".into(),next_action:"기록된 원인을 해결한 뒤 컨테이너를 다시 시작하세요.".into()});
     match outcome{
+        Outcome::Postponed=>{
+            retry=StatusRetry{next_eligible_at:None,reason:Some(super::legacy::GUIDANCE.into())};
+            if let Some(f)=failure.as_mut(){f.next_action=super::legacy::GUIDANCE.into();}
+        },
         Outcome::Restored=>{
             backup=None;locations.clear();
             let admission=super::retry::admit(j,current,label,true,chrono::Utc::now())?;
-            retry.next_eligible_at=match &admission{super::retry::Admission::Backoff(at)=>Some(at.clone()),_=>None};
+            retry.next_eligible_at=None;
             if operator_restored(j){
                 failure=None;retry.reason=Some(super::retry::restored_next_action(&admission).into());
             }else{
                 let f=failure.as_mut().ok_or_else(failed)?;f.message="업그레이드를 끝내지 못해 원본 PG15 데이터를 검증 후 복원했습니다.".into();
-                f.next_action=match admission{super::retry::Admission::Attempt=>"원인을 해결한 뒤 컨테이너를 다시 시작하면 자동으로 다시 시도합니다. 같은 볼륨으로 1.19.11 이미지로 되돌릴 수도 있습니다.",super::retry::Admission::Backoff(_)=>"원인을 해결한 뒤 표시된 다음 재시도 가능 시각 이후에 컨테이너를 다시 시작하면 자동으로 다시 시도합니다. 같은 볼륨으로 1.19.11 이미지로 되돌릴 수도 있습니다.",super::retry::Admission::SameCandidateRefused=>"같은 볼륨으로 1.19.11 이미지로 되돌리세요. 원인을 해결했다면 NWUI_DB_UPGRADE_RETRY에 새 값을 지정하고 다시 시작하면 한 번 더 시도합니다."}.into();
+                f.next_action=super::legacy::GUIDANCE.into();
             }
         },
         Outcome::RefusedPrivilege=>{
@@ -115,17 +127,17 @@ pub(super) fn status_value(roots:&Roots,j:&JournalV1,outcome:Outcome,current:&su
             }
             retry=StatusRetry{next_eligible_at:None,reason:None};
             let f=failure.as_mut().ok_or_else(failed)?;f.message="업그레이드는 완료됐지만 서비스 시작에 실패했습니다".into();
-            f.next_action=match &backup{Some(backup)=>format!("컨테이너를 다시 시작하면 이어서 진행합니다. 계속 실패하면 컨테이너를 중지하고 같은 볼륨으로 nwui-db-upgrade restore-pg15 --confirm-loss {} 명령을 실행해 되돌릴 수 있습니다(업그레이드 이후의 변경은 사라집니다).",backup.id),None=>"컨테이너를 다시 시작하면 이어서 진행합니다.".into()};
+            f.next_action=match &backup{Some(backup)=>format!("컨테이너를 중지하고 2.0.x 최신(2.0.3 이상) 이미지의 offline entrypoint로 nwui-db-upgrade restore-pg15 --confirm-loss {} 명령을 실행하세요. 복원하면 업그레이드 이후의 변경은 사라집니다. 2.0 이미지를 정상 시작해 2.1 데이터를 열지 마세요.",backup.id),None=>"컨테이너를 다시 시작하면 이어서 진행합니다.".into()};
         },
         Outcome::RestoreIncomplete=>{
             backup=None;locations.clear();retry=StatusRetry{next_eligible_at:None,reason:None};
-            let f=failure.as_mut().ok_or_else(failed)?;f.message="원본 복원을 끝내지 못했습니다. 데이터는 아래 위치에 보존돼 있습니다.".into();f.next_action="이미지를 바꾸지 마세요. 공간을 확보하거나 표시된 원인을 해결한 뒤 이 이미지로 컨테이너를 다시 시작하면 복원을 이어서 진행합니다.".into();
+            let f=failure.as_mut().ok_or_else(failed)?;f.message="원본 복원을 끝내지 못했습니다. 데이터는 아래 위치에 보존돼 있습니다.".into();f.next_action="컨테이너를 중지하고 2.0.x 최신(2.0.3 이상) 이미지의 offline entrypoint에서 미완료 복구를 마치세요. 2.0 이미지를 정상 시작해 2.1 데이터를 열지 마세요. 기존 데이터는 보존했습니다.".into();
             let location=saved.and_then(|r|r.data.as_ref()).and_then(|v|v.get("header")).and_then(|v|v.get("sourceLocation")).and_then(|v|v.as_str()).ok_or_else(failed)?;
             let source=match location{"root"=>roots.db.clone(),"pgdata"=>roots.db.join("pgdata"),_=>return Err(failed())};let work=roots.db.join(".nwui-auto-work").join(&j.attempt_id);
             for path in [source,roots.db.join(".nwui-pg15-backup").join(&j.attempt_id),work.join("linked"),work.join("target"),roots.db.join("17")]{match std::fs::symlink_metadata(&path){Ok(_)=>locations.push(path.display().to_string()),Err(e)if e.kind()==std::io::ErrorKind::NotFound=>{},Err(_)=>return Err(failed())}}
         },_=>{},
     }
-    if outcome!=Outcome::RestoreIncomplete{if let Some(f)=failure.as_mut(){if let Some(guidance)=super::status::source_guidance(f.code=="source_too_old"){f.message.push(' ');f.message.push_str(guidance);f.next_action="1.19.11 업그레이드를 마친 뒤 다시 시작하세요.".into();}}}
+    if outcome!=Outcome::RestoreIncomplete{if let Some(f)=failure.as_mut(){if let Some(guidance)=super::status::source_guidance(f.code=="source_too_old"){f.message.push(' ');f.message.push_str(guidance);f.next_action=super::legacy::GUIDANCE.into();}}}
     if let Some(f)=failure.as_mut(){if f.code=="database_newer" && !matches!(outcome,Outcome::Restored|Outcome::RestoreIncomplete) {
         f.message="이 DB는 더 새 버전의 이미지가 사용했습니다. 데이터는 변경하지 않았습니다.".into();
         f.next_action="더 새 이미지로 다시 시작하세요. 이 버전으로 되돌리려면 업데이트 전에 만든 DB·앱 백업 쌍을 복원한 뒤 시작하세요.".into();
@@ -183,17 +195,17 @@ mod tests {
         j.record_retry_failure(Step::RRestore,"io_error",chrono::Utc::now()).unwrap();j.set_outcome(Outcome::RestoreIncomplete).unwrap();assert!(record(&r,&l,&mut j,&id).is_err());assert!(!descriptor.exists());
     }
     #[test]
-    fn restored_status_uses_backoff_or_label_admission_instead_of_error_class(){
-        let(_t,r,_l,mut j)=fixture();let now=chrono::Utc::now();for _ in 0..2{j.record_retry_failure(Step::P3Convert,"interrupted",now).unwrap();}j.set_outcome(Outcome::Restored).unwrap();let value=status_value(&r,j.load(),Outcome::Restored,&j.load().candidate,None).unwrap();assert!(value.failure.unwrap().next_action.contains("표시된 다음 재시도 가능 시각 이후"));assert!(value.retry.next_eligible_at.is_some());
-        let value=status_value(&r,j.load(),Outcome::Restored,&j.load().candidate,Some("fixed")).unwrap();assert!(value.failure.unwrap().next_action.starts_with("원인을 해결한 뒤 컨테이너를 다시 시작하면 자동"));assert!(value.retry.next_eligible_at.is_none());
-        j.record_retry_failure(Step::P2Preflight,"insufficient_space",now).unwrap();let value=status_value(&r,j.load(),Outcome::Restored,&j.load().candidate,None).unwrap();assert!(value.failure.unwrap().next_action.starts_with("원인을 해결한 뒤 컨테이너를 다시 시작하면 자동"));
+    fn restored_status_requires_the_intermediate_image_without_retry(){
+        let(_t,r,_l,mut j)=fixture();let now=chrono::Utc::now();for _ in 0..2{j.record_retry_failure(Step::P3Convert,"interrupted",now).unwrap();}j.set_outcome(Outcome::Restored).unwrap();let value=status_value(&r,j.load(),Outcome::Restored,&j.load().candidate,None).unwrap();assert!(value.failure.unwrap().next_action.contains("2.0.x 최신(2.0.3 이상)"));assert!(value.retry.next_eligible_at.is_none());
+        let value=status_value(&r,j.load(),Outcome::Restored,&j.load().candidate,Some("fixed")).unwrap();assert!(value.failure.unwrap().next_action.contains("2.0.x 최신(2.0.3 이상)"));assert!(value.retry.next_eligible_at.is_none());
+        j.record_retry_failure(Step::P2Preflight,"insufficient_space",now).unwrap();let value=status_value(&r,j.load(),Outcome::Restored,&j.load().candidate,None).unwrap();assert!(value.failure.unwrap().next_action.contains("2.0.x 최신(2.0.3 이상)"));
     }
     #[test]
     fn operator_status_and_shared_cli_text_have_the_same_admission_and_no_failure(){
         for code in [None,Some("privilege_activate_failed")]{
             let(_t,r,_l,mut j)=fixture();if let Some(code)=code{j.record_retry_failure(Step::S4Activate,code,chrono::Utc::now()).unwrap();}
             let g=uuid::Uuid::new_v4().to_string();j.record(Step::P5Commit,StepState::Intent,Some(serde_json::json!({"generation":g}))).unwrap();j.record(Step::P5Commit,StepState::Done,None).unwrap();let data=Some(serde_json::json!({"backupId":j.load().attempt_id,"generation":g,"discardId":g}));j.record(Step::CmdRestorePg15,StepState::Intent,data.clone()).unwrap();j.record(Step::CmdRestorePg15,StepState::Done,data).unwrap();j.set_outcome(Outcome::Restored).unwrap();let discard=r.db.join(".nwui-discard").join(&g);fs::create_dir_all(&discard).unwrap();fs::write(discard.join("retained"),b"1234").unwrap();
-            let admission=super::super::retry::admit(j.load(),&j.load().candidate,None,true,chrono::Utc::now()).unwrap();let value=status_value(&r,j.load(),Outcome::Restored,&j.load().candidate,None).unwrap();assert!(value.failure.is_none());assert!(value.backup.is_none());assert_eq!(value.retry.reason.as_deref(),Some(super::super::retry::restored_next_action(&admission)));assert_eq!(value.discarded.len(),1);assert_eq!(value.discarded[0].bytes,4);assert_eq!(value.discarded[0].id,g);if code.is_some(){assert!(value.retry.reason.unwrap().contains("같은 원인으로 다시 이전하지 않습니다."));}
+            let admission=super::super::retry::admit(j.load(),&j.load().candidate,None,true,chrono::Utc::now()).unwrap();let value=status_value(&r,j.load(),Outcome::Restored,&j.load().candidate,None).unwrap();assert!(value.failure.is_none());assert!(value.backup.is_none());assert_eq!(value.retry.reason.as_deref(),Some(super::super::retry::restored_next_action(&admission)));assert_eq!(value.discarded.len(),1);assert_eq!(value.discarded[0].bytes,4);assert_eq!(value.discarded[0].id,g);if code.is_some(){assert!(value.retry.reason.unwrap().contains("2.0.x 최신(2.0.3 이상)"));}
             fs::remove_dir_all(&discard).unwrap();j.record(Step::CmdRemoveDiscarded,StepState::Intent,Some(serde_json::json!({"discardId":g}))).unwrap();j.finish_remove_discarded(&g).unwrap();assert!(status_value(&r,j.load(),Outcome::Restored,&j.load().candidate,None).unwrap().discarded.is_empty());
         }
     }
@@ -203,7 +215,7 @@ mod tests {
             let t=tempfile::tempdir().unwrap();let roots=Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:"arm64".into()};for p in [&roots.db,&roots.app]{fs::create_dir(p).unwrap();fs::set_permissions(p,fs::Permissions::from_mode(0o700)).unwrap();}let locks=StorageLocks::acquire(&roots.db,&roots.app).unwrap();let mut j=Journal::begin(&roots.app,&locks,super::super::Branch::Upgrade,super::super::journal::Candidate{revision:"0".repeat(40),pins_sha256:"1".repeat(64),migrations_sha256:"2".repeat(64)}).unwrap();j.ensure_app_pool().unwrap();j.record(Step::P1Backup,StepState::Done,Some(serde_json::json!({"header":{"backupId":j.load().attempt_id,"sourceLocation":"root"},"sourceBytes":12}))).unwrap();j.record_retry_failure(Step::RRestore,code,chrono::Utc::now()).unwrap();j.set_outcome(outcome).unwrap();
             // Projection fixture only; the production outcome commit must include its receipt.
             let identity="a".repeat(64);j.record(Step::P5Publish,StepState::Done,Some(receipt(outcome,&identity).unwrap())).unwrap();record(&roots,&locks,&mut j,&identity).unwrap();let before=fs::read(roots.app.join(".nwui-auto/journal-v1.json")).unwrap();let descriptor=t.path().join("selection");let status=t.path().join("status");publish_at(&roots,&locks,&j,&identity,&j.load().candidate,None,&descriptor,&status).unwrap();let value=super::super::status::read_at(&status).unwrap();assert_eq!(value.outcome,outcome);assert!(value.backup.is_none());assert!(value.discarded.is_empty());assert!(!serde_json::to_string(&value).unwrap().contains("removeCommand"));let failure=value.failure.unwrap();assert_eq!(failure.code,code);
-            if outcome==Outcome::Restored{assert_eq!(failure.message,"업그레이드를 끝내지 못해 원본 PG15 데이터를 검증 후 복원했습니다.");assert!(value.locations.is_empty());assert!(failure.next_action.contains(if code=="ledger_unknown"{"NWUI_DB_UPGRADE_RETRY"}else{"자동으로 다시 시도"}));}else{assert_eq!(failure.message,"원본 복원을 끝내지 못했습니다. 데이터는 아래 위치에 보존돼 있습니다.");assert_eq!(value.locations,vec![roots.db.display().to_string()]);assert!(failure.next_action.starts_with("이미지를 바꾸지 마세요."));}
+            if outcome==Outcome::Restored{assert_eq!(failure.message,"업그레이드를 끝내지 못해 원본 PG15 데이터를 검증 후 복원했습니다.");assert!(value.locations.is_empty());assert!(failure.next_action.contains("2.0.x 최신(2.0.3 이상)"));}else{assert_eq!(failure.message,"원본 복원을 끝내지 못했습니다. 데이터는 아래 위치에 보존돼 있습니다.");assert_eq!(value.locations,vec![roots.db.display().to_string()]);assert!(failure.next_action.contains("offline entrypoint에서 미완료 복구"));}
             assert_eq!(super::super::runner::boot_plan(j.load(),Some(&identity)),super::super::runner::BootPlan::ParkedRefusal);assert_eq!(super::super::runner::boot_plan(j.load(),Some(&"b".repeat(64))),super::super::runner::BootPlan::Phase1);publish_at(&roots,&locks,&j,&identity,&j.load().candidate,None,&descriptor,&status).unwrap();assert_eq!(fs::read(roots.app.join(".nwui-auto/journal-v1.json")).unwrap(),before);assert!(fs::File::open(&roots.db).unwrap().try_lock().is_err());assert!(fs::File::open(&roots.app).unwrap().try_lock().is_err());
         }
     }
@@ -237,7 +249,7 @@ mod tests {
         if outcome==Outcome::Restored {if operator {assert!(offline.failure.is_none());assert!(offline.retry.reason.is_some());}else{assert_eq!(offline.failure.as_ref().unwrap().message,"업그레이드를 끝내지 못해 원본 PG15 데이터를 검증 후 복원했습니다.");}}
         if outcome==Outcome::ActivationFailed {
             assert_eq!(offline.failure.as_ref().unwrap().message,"업그레이드는 완료됐지만 서비스 시작에 실패했습니다");
-            assert_eq!(offline.failure.as_ref().unwrap().next_action,format!("컨테이너를 다시 시작하면 이어서 진행합니다. 계속 실패하면 컨테이너를 중지하고 같은 볼륨으로 nwui-db-upgrade restore-pg15 --confirm-loss {} 명령을 실행해 되돌릴 수 있습니다(업그레이드 이후의 변경은 사라집니다).",j.load().attempt_id));
+            assert_eq!(offline.failure.as_ref().unwrap().next_action,format!("컨테이너를 중지하고 2.0.x 최신(2.0.3 이상) 이미지의 offline entrypoint로 nwui-db-upgrade restore-pg15 --confirm-loss {} 명령을 실행하세요. 복원하면 업그레이드 이후의 변경은 사라집니다. 2.0 이미지를 정상 시작해 2.1 데이터를 열지 마세요.",j.load().attempt_id));
             assert!(offline.retry.next_eligible_at.is_none());assert!(offline.retry.reason.is_none());
         }
         assert_eq!(fs::read(roots.app.join(".nwui-auto/journal-v1.json")).unwrap(),before);
@@ -251,6 +263,11 @@ mod tests {
     #[test] fn offline_activation_failed_has_fixed_restart_action_without_retry(){offline_parity_case(Outcome::ActivationFailed,"interrupted",false,true);}
     #[test] fn offline_refused_preflight_matches_published_failure(){offline_parity_case(Outcome::RefusedPreflight,"ledger_unknown",false,false);}
     #[test] fn offline_other_finals_match_published_failure(){for outcome in [Outcome::RefusedFresh,Outcome::RefusedPrivilege,Outcome::Postponed] {offline_parity_case(outcome,"pair_mismatch",false,false);}}
+    #[test] fn postponed_history_requires_the_intermediate_image_without_retry(){
+        let (_t,roots,_locks,mut j)=fixture();j.record(Step::P0,StepState::Failed{code:"pair_mismatch".into()},None).unwrap();j.set_outcome(Outcome::Postponed).unwrap();
+        let value=status_value(&roots,j.load(),Outcome::Postponed,&j.load().candidate,None).unwrap();
+        assert!(value.retry.next_eligible_at.is_none());assert_eq!(value.retry.reason.as_deref(),Some(super::super::legacy::GUIDANCE));assert_eq!(value.failure.unwrap().next_action,super::super::legacy::GUIDANCE);
+    }
     #[test] fn offline_and_runner_do_not_resurrect_removed_backup_on_activation_failure() {
         let(t,roots,locks,mut j)=fixture();j.record(Step::P1Backup,StepState::Done,Some(serde_json::json!({"sourceBytes":12}))).unwrap();
         let data=Some(serde_json::json!({"backupId":j.load().attempt_id}));j.record(Step::CmdRemoveBackup,StepState::Intent,data.clone()).unwrap();j.record(Step::CmdRemoveBackup,StepState::Done,data).unwrap();

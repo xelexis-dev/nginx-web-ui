@@ -1,0 +1,107 @@
+[
+  {
+    "id": "2.0-tls-omission",
+    "configs": [
+      {
+        "serverName": "a.com",
+        "listen": 80,
+        "proxyPass": "http://127.0.0.1:3000",
+        "tls": {
+          "certPath": "/c/fullchain.pem",
+          "keyPath": "/c/privkey.pem",
+          "tlsPort": 443,
+          "redirectHttp": false,
+          "httpPort": 80
+        }
+      }
+    ],
+    "expected": "server {\n    listen 443 ssl;\n    server_name a.com;\n    include /etc/nginx/snippets/acme-challenge.conf;\n    ssl_certificate /c/fullchain.pem;\n    ssl_certificate_key /c/privkey.pem;\n    location / {\n        proxy_pass http://127.0.0.1:3000;\n        proxy_set_header Host $host;\n    }\n}\n"
+  },
+  {
+    "id": "tls-explicit-off",
+    "configs": [
+      {
+        "serverName": "a.com",
+        "listen": 80,
+        "proxyPass": "http://127.0.0.1:3000",
+        "tls": {
+          "certPath": "/c/fullchain.pem",
+          "keyPath": "/c/privkey.pem",
+          "tlsPort": 443,
+          "redirectHttp": false,
+          "httpPort": 80,
+          "tuning": {
+            "http2": false
+          }
+        }
+      }
+    ],
+    "expected": "server {\n    listen 443 ssl;\n    server_name a.com;\n    include /etc/nginx/snippets/acme-challenge.conf;\n    ssl_certificate /c/fullchain.pem;\n    ssl_certificate_key /c/privkey.pem;\n    location / {\n        proxy_pass http://127.0.0.1:3000;\n        proxy_set_header Host $host;\n    }\n}\n"
+  },
+  {
+    "id": "tls-on",
+    "configs": [
+      {
+        "serverName": "a.com",
+        "listen": 80,
+        "proxyPass": "http://127.0.0.1:3000",
+        "tls": {
+          "certPath": "/c/fullchain.pem",
+          "keyPath": "/c/privkey.pem",
+          "tlsPort": 443,
+          "redirectHttp": false,
+          "httpPort": 80,
+          "tuning": {
+            "http2": true
+          }
+        }
+      }
+    ],
+    "expected": "server {\n    listen 443 ssl;\n    server_name a.com;\n    include /etc/nginx/snippets/acme-challenge.conf;\n    ssl_certificate /c/fullchain.pem;\n    ssl_certificate_key /c/privkey.pem;\n    http2 on;\n    location / {\n        proxy_pass http://127.0.0.1:3000;\n        proxy_set_header Host $host;\n    }\n}\n"
+  },
+  {
+    "id": "no-tls",
+    "configs": [
+      {
+        "serverName": "a.com",
+        "listen": 80,
+        "proxyPass": "http://127.0.0.1:3000",
+        "http2": true
+      }
+    ],
+    "expected": "server {\n    listen 80;\n    server_name a.com;\n    include /etc/nginx/snippets/acme-challenge.conf;\n    location / {\n        proxy_pass http://127.0.0.1:3000;\n        proxy_set_header Host $host;\n    }\n}\n"
+  },
+  {
+    "id": "shared-443-on-off",
+    "configs": [
+      {
+        "serverName": "a.com",
+        "listen": 80,
+        "proxyPass": "http://127.0.0.1:3000",
+        "tls": {
+          "certPath": "/c/fullchain.pem",
+          "keyPath": "/c/privkey.pem",
+          "tlsPort": 443,
+          "redirectHttp": false,
+          "httpPort": 80,
+          "tuning": {
+            "http2": true
+          }
+        }
+      },
+      {
+        "serverName": "b.com",
+        "listen": 80,
+        "proxyPass": "http://127.0.0.1:3000",
+        "tls": {
+          "certPath": "/c/fullchain.pem",
+          "keyPath": "/c/privkey.pem",
+          "tlsPort": 443,
+          "redirectHttp": false,
+          "httpPort": 80
+        }
+      }
+    ],
+    "expected": "server {\n    listen 443 ssl;\n    server_name a.com;\n    include /etc/nginx/snippets/acme-challenge.conf;\n    ssl_certificate /c/fullchain.pem;\n    ssl_certificate_key /c/privkey.pem;\n    http2 on;\n    location / {\n        proxy_pass http://127.0.0.1:3000;\n        proxy_set_header Host $host;\n    }\n}\nserver {\n    listen 443 ssl;\n    server_name b.com;\n    include /etc/nginx/snippets/acme-challenge.conf;\n    ssl_certificate /c/fullchain.pem;\n    ssl_certificate_key /c/privkey.pem;\n    location / {\n        proxy_pass http://127.0.0.1:3000;\n        proxy_set_header Host $host;\n    }\n}\n"
+  }
+]

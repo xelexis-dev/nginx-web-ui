@@ -110,6 +110,7 @@ export type NginxGaugeView = components["schemas"]["NginxGaugeView"];
 export type DashboardView = components["schemas"]["DashboardView"];
 export type MetricsPageView = components["schemas"]["MetricsPageView"];
 export type LogsPageView = components["schemas"]["LogsPageView"];
+export type AuditVia = components["schemas"]["AuditVia"];
 export type AuditRowView = components["schemas"]["AuditRowView"];
 export type AuditRecordView = components["schemas"]["AuditRecordView"];
 export type AuditListView = components["schemas"]["AuditListView"];

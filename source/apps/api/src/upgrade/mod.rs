@@ -2,15 +2,9 @@
 pub mod journal;
 pub(crate) mod reserves;
 mod preflight;
+mod legacy;
 mod source;
-mod verification;
-pub(crate) mod collation;
 mod profile;
-mod target_boot;
-mod space;
-mod linkprobe;
-mod restore;
-mod moves;
 mod fdholder;
 mod custody;
 mod backup;
@@ -19,12 +13,7 @@ mod selector;
 mod replacement;
 mod generation;
 mod committed;
-mod publication;
-mod guard;
 mod target;
-mod conversion;
-mod rehearsal_io;
-mod rehearsal;
 pub(crate) mod runner;
 mod refusal;
 mod boot;
@@ -33,9 +22,9 @@ mod ready;
 mod service;
 mod monitor;
 mod cleanup;
+mod guard;
+mod space;
 mod diagnostics;
-mod check;
-mod template0;
 mod signals;
 mod retry;
 mod rollover;
@@ -70,5 +59,9 @@ pub fn diagnostic_log_path(db:&std::path::Path,j:&Journal,name:&str,check:bool)-
 /// Offline dispatch shared with the path-included db-upgrade transport tests.
 #[doc(hidden)]
 pub async fn operator_command(command:&str,args:&[String])->Result<String,StepError>{operator::run(command,args).await}
+
+
+#[doc(hidden)]
+pub fn legacy_admission(roots:&crate::db_upgrade::layout::Roots)->Result<(),StepError>{legacy::admit(roots)}
 
 #[cfg(test)] #[path="g18_combined_tests.rs"] mod g18_combined_tests;

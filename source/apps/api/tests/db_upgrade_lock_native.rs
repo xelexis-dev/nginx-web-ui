@@ -1,5 +1,5 @@
 #![cfg(unix)]
-use nwui_api::{crypto::SecretBox,db_upgrade::{self,files,layout::{self,Roots},pair::Pair,state::State,engine::Engine,arguments::{Arguments,Operation},key_binding}};
+use nwui_api::{crypto::SecretBox,db_upgrade::{self,files,layout::{self,Roots},pair::Pair,key_binding}};
 use std::{fs,process::{Child,Command,Stdio},time::{Duration,Instant}};
 struct Running(Child);
 impl Drop for Running {
@@ -9,7 +9,7 @@ impl Drop for Running {
 #[ignore="native PG17: NWUI_TEST_W5_LOCK=1 in disposable roots, no host ports"]
 async fn production_lock_is_shared_inherited_and_released_after_direct_sigterm(){
     if std::env::var("NWUI_TEST_W5_LOCK").as_deref()!=Ok("1"){return;}
-    let roots=Roots{db:"/var/lib/postgresql/data".into(),app:"/var/lib/nginx-web-ui".into(),architecture:db_upgrade::engine::architecture().unwrap().into()};
+    let roots=Roots{db:"/var/lib/postgresql/data".into(),app:"/var/lib/nginx-web-ui".into(),architecture:db_upgrade::paths::architecture().unwrap().into()};
     fs::create_dir_all("/run/s6/container_environment").unwrap();
     db_upgrade::fresh::secrets(&roots,&db_upgrade::fresh::Inputs::default(),std::path::Path::new("/run/s6/container_environment")).unwrap();
     db_upgrade::fresh::provision(&roots).await.unwrap();
@@ -35,15 +35,8 @@ async fn production_lock_is_shared_inherited_and_released_after_direct_sigterm()
     let key=SecretBox::load_existing(&path).unwrap();
     key_binding::mark_key_required(&roots,&|data|Ok(db_upgrade::postgres::read_control(17,data)?.system_identifier),&key).unwrap();
     assert_eq!(layout::prepare(&roots,&|data|Ok(db_upgrade::postgres::read_control(17,data)?.system_identifier)).unwrap_err().code,"storage_busy");
-    // A ready migration marker exercises the real CLI engine's admission before its inputs.
-    let mut pair:Pair=files::read_json(&roots.db.join(".nwui/pair-v1.json")).unwrap();pair.mode="migration".into();
-    let mut state:State=serde_json::from_str(include_str!("../src/db_upgrade/examples/ready.json")).unwrap();state.pair_id=Some(pair.pair_id.clone());state.target.system_identifier=pair.system_identifier.clone();state.target.architecture=roots.architecture.clone();
-    for root in [&roots.db,&roots.app]{files::atomic_json(&root.join(".nwui/pair-v1.json"),&pair).unwrap();}files::atomic_json(&roots.db.join(".nwui/migration-v1.json"),&state).unwrap();
-    let engine=Engine{source_db:"/source/db".into(),source_app:"/source/app".into(),roots:roots.clone()};
-    for operation in [Operation::Verify,Operation::Run]{let args=Arguments{operation,json:false,backup_id:None,destinations:None};assert_eq!(engine.execute(&args).await.unwrap_err().code,"storage_busy");}
     assert_eq!(unsafe{libc::kill(pg.0.id() as i32,libc::SIGTERM)},0);
     let end=Instant::now()+Duration::from_secs(10);loop{if let Some(status)=pg.0.try_wait().unwrap(){assert!(status.success());break;}assert!(Instant::now()<end,"SIGTERM did not stop supervised postmaster");tokio::time::sleep(Duration::from_millis(25)).await;}
     assert!(!roots.db.join("17/data/postmaster.pid").exists());exclusive.try_lock().unwrap();drop(exclusive);
     assert!(layout::prepare(&roots,&|data|Ok(db_upgrade::postgres::read_control(17,data)?.system_identifier)).is_ok());
-    for operation in [Operation::Verify,Operation::Run]{let args=Arguments{operation,json:false,backup_id:None,destinations:None};assert_ne!(engine.execute(&args).await.unwrap_err().code,"storage_busy","fixture has no migration inputs, but must pass lock admission after stop");}
 }

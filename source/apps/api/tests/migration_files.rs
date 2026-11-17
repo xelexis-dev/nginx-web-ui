@@ -76,16 +76,16 @@ async fn audit_actor_snapshot_upgrades_the_5de48a33_prefix_and_a_fresh_database(
     assert_eq!(latest,1793102401000);
     auth_support::insert_user(&db.client,auth_support::UserRow::default(),None).await;
     db.client.batch_execute("INSERT INTO audit_logs(id,actor_id,actor_label,action) VALUES('pre-upgrade','u1',NULL,'integration:renumber')").await.unwrap();
-    assert_eq!(nwui_api::migrations::run(&db.state.db,&root).await.unwrap(),3);
+    assert_eq!(nwui_api::migrations::run(&db.state.db,&root).await.unwrap(),4);
     assert_eq!(db.client.query_one("SELECT actor_label FROM audit_logs WHERE id='pre-upgrade'",&[]).await.unwrap().get::<_,String>(0),"u1@example.test");
     assert_eq!(db.client.query_one("SELECT count(*) FROM drizzle.__drizzle_migrations WHERE created_at=1793102402000",&[]).await.unwrap().get::<_,i64>(0),1);
     assert_eq!(nwui_api::migrations::run(&db.state.db,&root).await.unwrap(),0);
-    eprintln!("UPGRADED DB: exact 5de48a33 prefix (34 migrations, latest1793102401000) -> applied0034 through0036 once, backfill verified, repeat0");
+    eprintln!("UPGRADED DB: exact 5de48a33 prefix (34 migrations, latest1793102401000) -> applied0034 through0037 once, backfill verified, repeat0");
     let fresh=auth_support::test_db().await;
-    assert_eq!(fresh.client.query_one("SELECT count(*),max(created_at) FROM drizzle.__drizzle_migrations",&[]).await.unwrap().get::<_,i64>(0),37);
-    assert_eq!(fresh.client.query_one("SELECT max(created_at) FROM drizzle.__drizzle_migrations",&[]).await.unwrap().get::<_,i64>(0),1793102404000);
+    assert_eq!(fresh.client.query_one("SELECT count(*),max(created_at) FROM drizzle.__drizzle_migrations",&[]).await.unwrap().get::<_,i64>(0),38);
+    assert_eq!(fresh.client.query_one("SELECT max(created_at) FROM drizzle.__drizzle_migrations",&[]).await.unwrap().get::<_,i64>(0),1793102405000);
     assert_eq!(nwui_api::migrations::run(&fresh.state.db,&root).await.unwrap(),0);
-    eprintln!("FRESH DB: all37 migrations applied, latest1793102404000, repeat0");
+    eprintln!("FRESH DB: all38 migrations applied, latest1793102405000, repeat0");
 }
 
 #[tokio::test]
@@ -103,7 +103,7 @@ async fn audit_chronology_index_on_the_0034_prefix_and_fresh() {
         fs::copy(root.join(&name), baseline.path().join(name)).unwrap();
     }
     let upgraded = auth_support::test_db_with_migrations(&[], baseline.path()).await;
-    assert_eq!(nwui_api::migrations::run(&upgraded.state.db, &root).await.unwrap(), 2);
+    assert_eq!(nwui_api::migrations::run(&upgraded.state.db, &root).await.unwrap(), 3);
     let fresh = auth_support::test_db().await;
     for (label, db) in [("35-entry prefix", &upgraded), ("fresh", &fresh)] {
         let definition: String = db.client.query_one(
@@ -134,10 +134,29 @@ async fn passkey_migration_preserves_the_0035_users_and_starts_with_no_credentia
     for entry in &previous { let name=format!("{}.sql",entry["tag"].as_str().unwrap()); fs::copy(root.join(&name),baseline.path().join(name)).unwrap(); }
     let db=auth_support::test_db_with_migrations(&[],baseline.path()).await;
     auth_support::insert_user(&db.client,auth_support::UserRow::default(),Some("unchanged-password-hash")).await;
-    assert_eq!(nwui_api::migrations::run(&db.state.db,&root).await.unwrap(),1);
+    assert_eq!(nwui_api::migrations::run(&db.state.db,&root).await.unwrap(),2);
     let row=db.client.query_one("SELECT password_hash,passkey_user_handle FROM users WHERE id='u1'",&[]).await.unwrap();
     assert_eq!(row.get::<_,Option<String>>(0).as_deref(),Some("unchanged-password-hash"));
     assert!(row.get::<_,Option<Vec<u8>>>(1).is_none());
     assert_eq!(db.client.query_one("SELECT count(*) FROM user_passkeys",&[]).await.unwrap().get::<_,i64>(0),0);
     assert_eq!(nwui_api::migrations::run(&db.state.db,&root).await.unwrap(),0);
+}
+
+#[tokio::test]
+#[ignore = "real DB"]
+async fn user_token_migration_retires_only_live_user_tokens() {
+    let root=std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packages/db/drizzle");
+    let mut journal:serde_json::Value=serde_json::from_slice(&fs::read(root.join("meta/_journal.json")).unwrap()).unwrap();
+    journal["entries"].as_array_mut().unwrap().truncate(37);
+    let baseline=fixture(journal["entries"].clone());
+    for entry in journal["entries"].as_array().unwrap() { let name=format!("{}.sql",entry["tag"].as_str().unwrap()); fs::copy(root.join(&name),baseline.path().join(name)).unwrap(); }
+    let db=auth_support::test_db_with_migrations(&[],baseline.path()).await;
+    auth_support::insert_user(&db.client,auth_support::UserRow::default(),None).await;
+    db.client.batch_execute("INSERT INTO access_tokens(id,kind,owner_user_id,name,token_hash,token_suffix,scopes,revoked_at) VALUES ('live','user','u1','live','hash-live','live','[]',NULL),('old','user','u1','old','hash-old','old1','[]','2020-01-01T00:00:00Z'),('server','server',NULL,'server','hash-server','serv','[]',NULL); INSERT INTO gateway_tokens(id,name,token_hash,role) VALUES('gateway','gateway','hash-gateway','admin'); INSERT INTO audit_logs(id,action) VALUES('browser','integration:browser')").await.unwrap();
+    assert_eq!(nwui_api::migrations::run(&db.state.db,&root).await.unwrap(),1);
+    assert!(db.client.query_one("SELECT revoked_at IS NOT NULL FROM access_tokens WHERE id='live'",&[]).await.unwrap().get::<_,bool>(0));
+    assert_eq!(db.client.query_one("SELECT revoked_at::text FROM access_tokens WHERE id='old'",&[]).await.unwrap().get::<_,String>(0),"2020-01-01 00:00:00+00");
+    assert!(db.client.query_one("SELECT revoked_at IS NULL FROM access_tokens WHERE id='server'",&[]).await.unwrap().get::<_,bool>(0));
+    assert!(db.client.query_one("SELECT revoked_at IS NULL FROM gateway_tokens WHERE id='gateway'",&[]).await.unwrap().get::<_,bool>(0));
+    assert!(db.client.query_one("SELECT via IS NULL FROM audit_logs WHERE id='browser'",&[]).await.unwrap().get::<_,bool>(0));
 }

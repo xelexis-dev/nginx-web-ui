@@ -93,7 +93,7 @@ mod tests {
     use super::*;
     use super::super::{dispatcher::Dispatcher,journal::{Admission,Phase},protocol::{Actor,Op,OpResult,Request},store::{Origin,FileDigest,PayloadManifest}};
     use std::sync::{Arc,atomic::{AtomicUsize,Ordering}};
-    fn request(op:Op)->Request {Request{v:1,id:uuid::Uuid::new_v4().to_string(),op,deadline_ms:280000,actor:Actor{user_id:None,label:None,ip:None}}}
+    fn request(op:Op)->Request {Request{v:1,id:uuid::Uuid::new_v4().to_string(),op,deadline_ms:280000,actor:Actor{via: None,user_id:None,label:None,ip:None}}}
     fn manifest_size(id:&str,files:&BTreeMap<String,Vec<u8>>)->usize {
         serde_json::to_vec(&PayloadManifest{version:1,id:id.into(),origin:Origin::Publisher,derived_from:None,reason:None,model_digest:None,certificate_digests:BTreeMap::new(),files:files.iter().map(|(name,bytes)|(name.clone(),FileDigest{sha256:super::super::store::digest(bytes),bytes:bytes.len() as u64})).collect()}).unwrap().len()
     }

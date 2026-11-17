@@ -129,6 +129,7 @@ fn order(s: &Ca) -> Value {
 }
 fn actor() -> Actor {
     Actor {
+        via: None,
         id: None,
         label: Some("test:issuance".into()),
         ip: None,
@@ -325,7 +326,7 @@ async fn dashboard_releases_the_single_connection_while_status_is_stalled() {
     let state = t.state.clone();
     let dashboard = tokio::spawn(async move {
         let session = SessionPrincipal { user_id:"test".into(), email:None, name:None, role:Role::Admin, session_version:1, totp_enabled:true, requires_2fa:true, mfa_verified:true, expires_at:i64::MAX };
-        nwui_api::observability::view(&state, &session, "/", &Default::default()).await
+        nwui_api::observability::view(&state, &(session).clone().into(), "/", &Default::default()).await
     });
     tokio::time::timeout(Duration::from_secs(2), waiting).await.unwrap().unwrap();
     let query = async { t.state.db.get().await.unwrap().query_one("SELECT 1", &[]).await.unwrap() };

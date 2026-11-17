@@ -32,7 +32,7 @@ async fn legacy_stored_real_ip_and_targets_render_released_119_bytes() {
 #[ignore = "real PostgreSQL: NWUI_TEST_DATABASE_URL"]
 async fn legacy_untouched_real_ip_and_targets_remain_editable_but_changes_are_strict() {
     let db=test_db().await;
-    let actor=Actor{id:None,label:Some("legacy-save".into()),ip:None};
+    let actor=Actor{via: None,id:None,label:Some("legacy-save".into()),ip:None};
     let mut failures=vec![];
     for case in cases() {
         db.client.batch_execute("DELETE FROM nginx_servers").await.unwrap();

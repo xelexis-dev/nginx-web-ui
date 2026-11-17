@@ -154,7 +154,7 @@ async fn guard_process_waits_for_an_apply_restoring_after_a_failed_commit() {
     t.client.batch_execute("CREATE FUNCTION fail_commit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'injected commit failure'; END $$; CREATE CONSTRAINT TRIGGER fail_commit AFTER INSERT OR UPDATE ON applied_config DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION fail_commit();").await.unwrap();
     let applying = {
         let state = t.state.clone();
-        tokio::spawn(async move { nwui_api::publisher_client::apply_saved(&state,&nwui_api::contracts::Actor{id:None,label:Some("guard-test".into()),ip:None},None).await })
+        tokio::spawn(async move { nwui_api::publisher_client::apply_saved(&state,&nwui_api::contracts::Actor{via: None,id:None,label:Some("guard-test".into()),ip:None},None).await })
     };
     nginx.wait_for("api start -t").await;
     let child = guard(&nginx, &p, "20").spawn().unwrap();
@@ -195,7 +195,7 @@ async fn snapshot_rollback_waits_for_the_guard_process() {
         .unwrap();
     let child = guard(&nginx, &p, "20").spawn().unwrap();
     nginx.wait_for("guard start -t").await;
-    let actor = nwui_api::contracts::Actor { id: None, label: Some("test".into()), ip: None };
+    let actor = nwui_api::contracts::Actor { via: None, id: None, label: Some("test".into()), ip: None };
     let restored = nwui_api::publisher_client::rollback_snapshot(&t.state, "77777777-7777-4777-8777-777777777777", &actor).await.unwrap();
     assert!(restored.result.ok, "{}", restored.result.output);
     let (ok, stderr) = finish(child);

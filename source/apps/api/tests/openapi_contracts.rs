@@ -82,7 +82,7 @@ async fn registered_local_page_projections_match_the_schema_with_real_rows() {
       INSERT INTO nginx_servers(id,server_name,listen,upstream_id,certificate_id,config)
         VALUES('item','example.test',8081,'item','item','{"tlsPort":8443}');
       INSERT INTO nginx_streams(id,listen,protocol,proxy_pass) VALUES('item',9001,'tcp','127.0.0.1:9000');
-      INSERT INTO audit_logs(id,action,target) VALUES('item','contract:test','item');
+      INSERT INTO audit_logs(id,action,target,via) VALUES('item','contract:test','item','{"kind":"token","id":"fixture","name":"<automation>"}');
       INSERT INTO config_snapshots(id,label,data) VALUES('item','contract','{"upstreams":[],"servers":[],"streams":[]}');
       INSERT INTO nodes(id,name,base_url,token_enc,token_role,instance_id) VALUES('node','Test node','http://127.0.0.1:1','unreadable','admin','contract-instance');
     "#).await.unwrap();
@@ -151,7 +151,7 @@ fn browser_metrics_logs_and_cancel_routes_are_contractual() {
         assert!(operation.is_object(), "browser endpoint missing from OpenAPI: {method} {path}");
         let id = operation["operationId"].as_str().expect("generated client operation name");
         assert!(operation_ids.insert(id), "distinct browser operations: {id}");
-        assert_eq!(operation["security"], json!([{"browserSession":[]}]), "{path}");
+        assert_eq!(operation["security"], json!([{"browserSession":[]},{"userToken":[]}]), "{path}");
         let success = &operation["responses"]["200"]["content"][content_type]["schema"];
         assert!(success.is_object(), "missing {content_type} response for {path}");
         if method == "post" {
@@ -190,4 +190,37 @@ async fn browser_stream_and_cancel_errors_match_the_documented_envelopes() {
         assert!(schema.is_object(), "missing browser error contract for {pattern}");
         assert!(response_validator(schema).is_valid(&body), "{pattern}: {body}");
     }
+}
+
+#[test]
+fn http2_contract_is_optional_strict_boolean_in_tls_options() {
+    let options=validator("NodeTlsOptions");
+    for value in [json!({}),json!({"http2":true}),json!({"http2":false})] {assert!(options.is_valid(&value));}
+    for value in [Value::Null,json!(0),json!("true"),json!({}),json!([])] {assert!(!options.is_valid(&json!({"http2":value})));}
+    for name in ["NodeServerInput","NodeServerConfig"] {
+        assert!(document()["components"]["schemas"][name].to_string().contains("NodeTlsOptions"));
+    }
+}
+
+#[test]
+fn audit_provenance_accepts_old_browser_rows_and_rejects_unknown_token_fields() {
+    for name in ["AuditRowView","AuditRecordView","NodeAuditRow","NodeAuditDetail"] {
+        let schema=validator(name);
+        let mut row=json!({"id":"audit","createdAt":"2026-11-17T00:00:00Z","action":"config:write","target":null,"actorEmail":"owner@example.test","actorLabel":"owner@example.test","ip":null});
+        if matches!(name,"AuditRecordView"|"NodeAuditDetail") { row["before"]=Value::Null; row["after"]=Value::Null; }
+        assert!(schema.is_valid(&row),"{name}: older rows may omit via");
+        row["via"]=Value::Null; assert!(schema.is_valid(&row),"{name}: browser via is null");
+        row["via"]=json!({"kind":"token","id":"id","name":"<token>"}); assert!(schema.is_valid(&row),"{name}: token via");
+        row["via"]["rawToken"]=json!("must-not-appear"); assert!(!schema.is_valid(&row),"{name}: extra via fields rejected");
+    }
+}
+
+#[test]
+fn null_tls_server_input_contract_preserves_plain_server_requests() {
+    let schema=&document()["components"]["schemas"]["NodeServerInput"]["properties"]["tls"];
+    let doc=document();let full=json!({"$ref":"#/components/schemas/NodeServerInput","components":doc["components"]});
+    let check=jsonschema::validator_for(&full).unwrap();
+    let base=json!({"serverName":"plain.test","listen":18080,"proxyPass":"http://127.0.0.1:9000","tls":null});
+    assert!(check.is_valid(&base),"{schema}");
+    for bad in [json!(5),json!("x"),json!([])] {let mut value=base.clone();value["tls"]=bad;assert!(!check.is_valid(&value));}
 }

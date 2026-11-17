@@ -299,7 +299,7 @@ async fn an_enrolled_oauth_user_must_still_pass_this_apps_second_factor_when_req
     let now = nwui_api::auth::principal::now_unix_ms() / 1000;
     let claims = session::decode(&token, &[auth_support::SECRET], session::COOKIE_NAME_PLAIN, now).unwrap();
     assert_eq!((&claims["requires2fa"], claims.get("mfaVerified")), (&json!(true), Some(&json!(false))), "the provider's login is not this app's factor");
-    let guarded = nwui_api::auth::principal::require_session(
+    let guarded = nwui_api::auth::principal::require_user(
         &h.db.state,
         &{
             let mut headers = axum::http::HeaderMap::new();
@@ -308,8 +308,7 @@ async fn an_enrolled_oauth_user_must_still_pass_this_apps_second_factor_when_req
         },
         &auth_support::ctx(),
         None,
-        nwui_api::auth::principal::TwoFactorGate::Enforce,
-    )
+        nwui_api::auth::principal::TwoFactorGate::Enforce, nwui_api::auth::principal::Use::SessionOnly)
     .await;
     assert_eq!(guarded.unwrap_err().code, "two_factor_required");
 }
@@ -466,7 +465,7 @@ async fn oauth_sign_in_follows_the_role_policy_and_the_users_own_enrollment() {
             let token = session::encode(&claims, auth_support::SECRET, session::COOKIE_NAME_PLAIN, now, 3600).unwrap();
             let mut headers = axum::http::HeaderMap::new();
             headers.insert(header::COOKIE, format!("{}={token}", session::COOKIE_NAME_PLAIN).parse().unwrap());
-            nwui_api::auth::principal::require_session(&h.db.state, &headers, &auth_support::ctx(), None, nwui_api::auth::principal::TwoFactorGate::Enforce)
+            nwui_api::auth::principal::require_user(&h.db.state, &headers, &auth_support::ctx(), None, nwui_api::auth::principal::TwoFactorGate::Enforce, nwui_api::auth::principal::Use::SessionOnly)
                 .await
                 .map(|_| ())
                 .map_err(|e| e.code)

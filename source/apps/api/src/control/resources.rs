@@ -215,6 +215,7 @@ fn tls_options(raw: &Value) -> super::Result<Option<Value>> {
         return Err("TLS 설정 형식이 올바르지 않습니다.".into());
     }
     if raw["preferServerCiphers"] == true { out["preferServerCiphers"] = json!(true); }
+    if raw["http2"] == true { out["http2"] = json!(true); }
     let h = &raw["hsts"];
     if !h.is_null() && !h.is_object() { return Err("HSTS 설정 형식이 올바르지 않습니다.".into()); }
     for key in ["enabled","includeSubDomains","preload"] {
@@ -567,6 +568,19 @@ fn parse_server_with(
         Some(Value::String(value)) => value.trim_matches(super::whitespace).to_owned(),
         _ => { errors.insert("certificateId".into(),"인증서 ID는 문자열이어야 합니다.".into()); String::new() }
     };
+    if raw.get("tls").is_some_and(|tls| !tls.is_null() && !tls.is_object()) {
+        errors.insert("tlsOptions".into(), "TLS 설정 형식이 올바르지 않습니다.".into());
+    }
+    if raw["tls"].get("tlsOptions").is_some_and(|options| !options.is_null() && !options.is_object()) {
+        errors.insert("tlsOptions".into(), "TLS 설정 형식이 올바르지 않습니다.".into());
+    }
+    if let Some(value) = raw["tls"]["tlsOptions"].get("http2") {
+        if !value.is_boolean() {
+            errors.insert("http2".into(), "HTTP/2 설정은 true 또는 false여야 합니다.".into());
+        } else if value == true && cert.is_empty() {
+            errors.insert("http2".into(), "HTTP/2를 사용하려면 인증서를 선택하세요.".into());
+        }
+    }
     if !cert.is_empty() {
         let tls = &raw["tls"];
         let port = tls.get("tlsPort").map(number).unwrap_or(443.0);
@@ -1236,6 +1250,7 @@ pub async fn mutate_for_gateway(
         &AuditEntry {
             actor_id: actor.id.clone(),
             actor_label: actor.label.clone(),
+            via: actor.via.clone(),
             action: format!("{prefix}:{verb}"),
             target: Some(id),
             before,
@@ -1326,6 +1341,9 @@ fn form_directives(raw:Option<&Value>,context:valid::DirectiveContext)->super::R
 }
 
 pub fn form_body(kind: Resource, form: &FormInput) -> Result<Value, ApiError> {
+    if matches!(kind, Resource::Server) && form.fields.get("tlsOptions").is_some_and(|values| values.len() != 1) {
+        return Err(field_error("http2", "TLS 설정은 한 번만 제출하세요."));
+    }
     for (field,values) in &form.fields {
         if field.contains('\0') || values.iter().any(|value|value.contains('\0')) {
             return Err(field_error(field,"NUL 문자는 사용할 수 없습니다."));

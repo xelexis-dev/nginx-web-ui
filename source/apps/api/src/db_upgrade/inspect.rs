@@ -56,50 +56,6 @@ pub struct DatabaseSnapshot {
 // Released NWUI tables; other application relations require explicit qualification.
 const TABLES:&[&str]=&["certificate_jobs","users","sessions","audit_logs","upstreams","nginx_servers","nginx_streams","config_snapshots","applied_config","certificates","acme_accounts","acme_challenges","app_settings","gateway_tokens","access_tokens","nodes","smtp_settings","notifications","notification_deliveries","mail_recipients","webhook_targets","nginx_metric_samples","metric_hosts","domain_metric_minutes","domain_metric_hours","metric_parse_state","oauth_providers","oauth_accounts"];
 fn known_table(schema:&str,name:&str)->bool{(schema=="public"&&TABLES.contains(&name))||(schema=="drizzle"&&name=="__drizzle_migrations")}
-#[derive(Deserialize)]
-#[serde(rename_all="camelCase")]
-struct LegacySignature {hash:String,created_at:i64}
-#[derive(Deserialize)]
-struct LegacyLedger {signatures:Vec<LegacySignature>}
-pub async fn require_legacy_ledger(client:&Client)->Result<()> {
-    let refused=||Error{code:"ledger_unknown",message:"변경 이력이 지원되는 1.19.11 이력과 일치하지 않습니다. 원본과 변경 이력을 확인하세요.",exit:2,detail:None};
-    let released:LegacyLedger=serde_json::from_str(include_str!("legacy-1.19.11.json")).map_err(|_|failed())?;
-    let ordered=released.signatures.into_iter().map(|entry|(entry.hash,entry.created_at)).collect::<Vec<_>>();
-    let expected=ordered.iter().cloned().collect::<BTreeSet<_>>();
-    if expected.len()!=28{return Err(failed());}
-    // This precedes profile inspection; do not execute a history view or custom type.
-    let plain_table:bool=client.query_one("SELECT EXISTS(SELECT 1 FROM ONLY pg_catalog.pg_class c JOIN ONLY pg_catalog.pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='drizzle' AND c.relname='__drizzle_migrations' AND c.relkind='r' AND (SELECT count(*) FROM ONLY pg_catalog.pg_attribute a WHERE a.attrelid=c.oid AND a.attnum>0 AND NOT a.attisdropped AND ((a.attname='hash' AND a.atttypid='pg_catalog.text'::regtype) OR (a.attname='created_at' AND a.atttypid='pg_catalog.int8'::regtype)))=2)",&[]).await.map_err(|_|refused())?.get(0);
-    if !plain_table{return Err(refused());}
-    // ONLY avoids child/FDW execution before profile checks; distinct keeps legacy duplicates.
-    let rows=client.query("SELECT DISTINCT CASE WHEN octet_length(hash)=64 THEN hash ELSE NULL END,created_at FROM ONLY drizzle.__drizzle_migrations LIMIT 29",&[]).await.map_err(|_|refused())?;
-    let mut actual=BTreeSet::new();
-    for row in rows {
-        let hash:Option<String>=row.try_get(0).map_err(|_|refused())?;let time:Option<i64>=row.try_get(1).map_err(|_|refused())?;
-        actual.insert((hash.ok_or_else(refused)?,time.ok_or_else(refused)?));
-    }
-    if actual==expected{return Ok(());}
-    // Only a built-in id ordering may run before the schema/profile admission boundary.
-    let plain_id:bool=client.query_one("SELECT EXISTS(SELECT 1 FROM ONLY pg_catalog.pg_attribute a JOIN ONLY pg_catalog.pg_class c ON c.oid=a.attrelid JOIN ONLY pg_catalog.pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='drizzle' AND c.relname='__drizzle_migrations' AND a.attname='id' AND a.atttypid='pg_catalog.int4'::regtype AND a.attnum>0 AND NOT a.attisdropped)",&[]).await.map_err(|_|refused())?.get(0);
-    if !plain_id{return Err(refused());}
-    let rows=client.query("SELECT CASE WHEN octet_length(hash)=64 THEN hash ELSE NULL END,created_at FROM ONLY drizzle.__drizzle_migrations ORDER BY created_at,id LIMIT 29",&[]).await.map_err(|_|refused())?;
-    let mut prefix=Vec::new();for row in rows{let hash:Option<String>=row.try_get(0).map_err(|_|refused())?;let time:Option<i64>=row.try_get(1).map_err(|_|refused())?;prefix.push((hash.ok_or_else(refused)?,time.ok_or_else(refused)?));}
-    if old_ledger_prefix(&prefix,&ordered){return Err(Error{code:"source_too_old",message:"먼저 1.19.11로 올린 뒤 이 이미지로 업그레이드하세요. 원본은 보존했습니다.",exit:2,detail:None});}Err(refused())
-}
-fn old_ledger_prefix(rows:&[(String,i64)],expected:&[(String,i64)])->bool{
-    !rows.is_empty()&&rows.len()<expected.len()&&expected.len()==28&&rows.iter().zip(expected).all(|(a,b)|a==b)
-}
-#[cfg(test)]
-mod old_ledger_tests{
-    use super::*;
-    #[test]
-    fn released_older_prefixes_are_proven_but_divergence_duplicates_gaps_and_empty_are_not(){
-        #[derive(Deserialize)]#[serde(rename_all="camelCase")]struct Prefix{release:String,count:usize,ledger_sha256:String}
-        let ledger:LegacyLedger=serde_json::from_str(include_str!("legacy-1.19.11.json")).unwrap();let expected=ledger.signatures.into_iter().map(|s|(s.hash,s.created_at)).collect::<Vec<_>>();
-        let tagged:Vec<Prefix>=serde_json::from_str(include_str!("fixtures/old-release-prefixes.json")).unwrap();assert_eq!(tagged.iter().map(|p|p.count).collect::<Vec<_>>(),[14,15,18,19,20,24,25]);
-        for tag in tagged{let rows=&expected[..tag.count];let mut digest=Sha256::new();for(hash,time)in rows{digest.update(format!("{time}:{hash}\n"));}assert_eq!(hex::encode(digest.finalize()),tag.ledger_sha256,"{}",tag.release);assert!(old_ledger_prefix(rows,&expected));}
-        for change in ["hash","time","extra","gap","duplicate","reordered","empty","full"]{let mut rows=expected[..20].to_vec();match change{"hash"=>rows[2].0="f".repeat(64),"time"=>rows[2].1+=1,"extra"=>rows.push(("f".repeat(64),rows.last().unwrap().1+1)),"gap"=>{rows.remove(3);},"duplicate"=>rows.insert(3,rows[2].clone()),"reordered"=>rows.swap(2,3),"empty"=>rows.clear(),_=>rows=expected.clone()};assert!(!old_ledger_prefix(&rows,&expected),"{change}");}
-    }
-}
 async fn validate_object_catalogs(client:&Client,application:bool,admitted:&Admitted)->Result<()> {
     let catalogs=client.query(OBJECT_CATALOGS_QUERY,&[]).await.map_err(|_|failed())?.into_iter().map(|r|r.get::<_,String>(0)).collect::<Vec<_>>();
     let query=object_catalog_query(&catalogs,application,admitted)?;
@@ -344,3 +300,11 @@ pub(crate) async fn auto_collations(client:&Client)->Result<Vec<super::cluster::
 /// The frozen schema queries stay unchanged. This auto-only guard includes non-indexed
 /// attributes and every dependent class (including partition keys and domains).
 pub(crate) const AUTO_COLLATIONS_QUERY:&str="WITH used AS (SELECT a.attcollation AS oid FROM ONLY pg_catalog.pg_attribute a JOIN ONLY pg_catalog.pg_class t ON t.oid=a.attrelid JOIN ONLY pg_catalog.pg_namespace n ON n.oid=t.relnamespace WHERE a.attnum>0 AND NOT a.attisdropped AND t.relpersistence IN('p','u') AND n.nspname NOT IN('pg_catalog','information_schema') UNION SELECT unnest(i.indcollation) FROM ONLY pg_catalog.pg_index i UNION SELECT d.refobjid FROM ONLY pg_catalog.pg_depend d WHERE d.refclassid='pg_catalog.pg_collation'::regclass) SELECT DISTINCT n.nspname,c.collname,c.collprovider::text,CASE WHEN c.collprovider='c' THEN CASE WHEN c.collctype IN('C','POSIX') THEN c.collcollate ELSE COALESCE(c.collctype,'unknown libc ctype') END ELSE COALESCE(to_jsonb(c)->>'colllocale',to_jsonb(c)->>'colliculocale',c.collcollate) END,c.collversion,CASE WHEN c.collprovider='d' THEN NULL ELSE pg_collation_actual_version(c.oid) END FROM used u JOIN ONLY pg_catalog.pg_collation c ON c.oid=u.oid JOIN ONLY pg_catalog.pg_namespace n ON n.oid=c.collnamespace WHERE u.oid<>0 ORDER BY n.nspname,c.collname";
+
+#[cfg(test)] mod restored_template_tests {use super as shared;
+#[test]
+    fn shared_decoder_requires_all_ten_ordered_schema_groups(){
+        assert!(shared::non_application_snapshot(&[]).is_err());let mut groups=vec![serde_json::json!([]);shared::SCHEMA_QUERIES.len()];groups[0]=serde_json::json!([1]);assert!(shared::non_application_snapshot(&groups).is_err());
+        assert!(shared::used_collations(&serde_json::json!([["schema","name","?",null,null,null]])).is_err());
+    }
+}

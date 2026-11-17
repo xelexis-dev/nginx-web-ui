@@ -1,3 +1,4 @@
+import type { AuditVia } from "@repo/contracts";
 import layout from "@/components/page-layout.module.css";
 import { PageHeader } from "@repo/ui";
 import { AuditDetail, formatAuditJson, type AuditDetailVM } from "@/components/audit/audit-detail";
@@ -23,6 +24,7 @@ interface NodeAuditLog {
   ip: string | null;
   actorEmail: string | null;
   actorLabel: string | null;
+  via?: AuditVia | null;
   before: unknown;
   after: unknown;
 }
@@ -55,6 +57,7 @@ export default async function NodeAuditDetailPage({
         time: formatAuditTime(new Date(log.createdAt)),
         actorEmail: log.actorEmail,
         actorLabel: log.actorLabel,
+        via: log.via,
         target: log.target,
         ip: log.ip,
         beforeJson: formatAuditJson(log.before),

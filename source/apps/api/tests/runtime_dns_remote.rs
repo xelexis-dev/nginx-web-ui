@@ -208,7 +208,7 @@ async fn fixture(
     (db, mock, task)
 }
 async fn view(db: &auth_support::TestDb, path: &str) -> Value {
-    views::view(&db.state, &session(), path, &BTreeMap::new())
+    views::view(&db.state, &(session()).clone().into(), path, &BTreeMap::new())
         .await
         .unwrap()
         .unwrap()
@@ -312,7 +312,7 @@ async fn runtime_dns_is_not_requested_before_authorization_or_for_unrelated_view
     let (db, mock, task) = fixture(None).await;
     let mut viewer = session();
     viewer.role = Role::Viewer;
-    let value = views::view(&db.state, &viewer, "/nodes/n/stream/new", &BTreeMap::new())
+    let value = views::view(&db.state, &(viewer).clone().into(), "/nodes/n/stream/new", &BTreeMap::new())
         .await
         .unwrap()
         .unwrap();

@@ -81,7 +81,7 @@ export function HistoryList({
       <PageHeader title={<>{title}</>} info={<>{info}</>} />
 
       <Surface flush toolbar={notice ? <Banner tone="neutral" title={notice} /> : undefined}>
-        <Table label="설정 적용 이력">
+        <Table density="comfortable" label="설정 적용 이력">
           <thead>
             <Tr>
               <Th>라벨</Th>

@@ -97,6 +97,7 @@ pub async fn audit(
         &AuditEntry {
             actor_id,
             actor_label,
+            via: actor.via.clone(),
             ip: actor.ip.clone(),
             action: action.into(),
             target: Some(id.into()),

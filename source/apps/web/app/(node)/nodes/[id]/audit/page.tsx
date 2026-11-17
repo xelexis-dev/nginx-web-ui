@@ -1,3 +1,4 @@
+import type { AuditVia } from "@repo/contracts";
 import layout from "@/components/page-layout.module.css";
 import { PageHeader } from "@repo/ui";
 import { AuditList, formatAuditTime, type AuditListVM, type AuditRowVM } from "@/components/audit/audit-list";
@@ -17,6 +18,7 @@ interface NodeAuditRow {
   target: string | null;
   actorEmail: string | null;
   actorLabel: string | null;
+  via?: AuditVia | null;
   ip: string | null;
 }
 
@@ -70,6 +72,7 @@ export default async function NodeAuditPage({
         time: formatAuditTime(new Date(row.createdAt)),
         actorEmail: row.actorEmail,
         actorLabel: row.actorLabel,
+        via: row.via,
         action: row.action,
         target: row.target,
       }));

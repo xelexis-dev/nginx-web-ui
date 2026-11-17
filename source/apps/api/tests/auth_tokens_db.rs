@@ -27,9 +27,9 @@ fn rejected(message: &str) -> TokenError {
 }
 
 async fn people(db: &TestDb) {
-    insert_user(&db.client, UserRow { id: "boss", email: "boss@example.test", role: "admin", ..Default::default() }, None).await;
-    insert_user(&db.client, UserRow { id: "ed", email: "ed@example.test", role: "editor", ..Default::default() }, None).await;
-    insert_user(&db.client, UserRow { id: "vi", email: "vi@example.test", role: "viewer", ..Default::default() }, None).await;
+    insert_user(&db.client, UserRow { id: "boss", email: "boss@example.test", role: "admin", totp_enabled: true, ..Default::default() }, None).await;
+    insert_user(&db.client, UserRow { id: "ed", email: "ed@example.test", role: "editor", totp_enabled: true, ..Default::default() }, None).await;
+    insert_user(&db.client, UserRow { id: "vi", email: "vi@example.test", role: "viewer", totp_enabled: true, ..Default::default() }, None).await;
 }
 
 #[tokio::test]
@@ -160,4 +160,118 @@ async fn q3_w9_new_server_tokens_require_an_expiry() {
     let result=tokens::issue(&db.state,&actor("boss",Role::Admin),&ctx(),TokenKind::Server,value("pair", &["node:pair"],None)).await;
     assert!(result.is_err(),"new pairing tokens must expire");
     assert!(tokens::issue(&db.state,&actor("ed",Role::Editor),&ctx(),TokenKind::User,value("user", &["config:read"],None)).await.is_ok());
+}
+
+#[tokio::test]
+#[ignore = "real DB"]
+async fn issue_requires_current_enrollment_and_session_proof() {
+    let db = test_db().await;
+    people(&db).await;
+    let mut ed = actor("ed", Role::Editor);
+    ed.mfa_verified = false;
+    assert_eq!(tokens::issue(&db.state, &ed, &ctx(), TokenKind::User, value("unverified", &["config:read"], None)).await.unwrap_err(), TokenError::TwoFactorVerificationRequired);
+    db.client.execute("UPDATE users SET totp_enabled=false WHERE id='ed'", &[]).await.unwrap();
+    ed.mfa_verified = true;
+    assert_eq!(tokens::issue(&db.state, &ed, &ctx(), TokenKind::User, value("unenrolled", &["config:read"], None)).await.unwrap_err(), TokenError::TwoFactorRequired);
+    assert_eq!(db.client.query_one("SELECT count(*) FROM access_tokens", &[]).await.unwrap().get::<_, i64>(0), 0);
+}
+
+#[tokio::test]
+#[ignore = "real DB"]
+async fn issue_waits_for_user_lock_and_rechecks_security_changes() {
+    for change in ["enabled=false", "session_version=session_version+1", "role='viewer'", "totp_enabled=false", "approved=false"] {
+        let db = test_db().await;
+        people(&db).await;
+        let mut locker = db.state.db.get().await.unwrap();
+        let tx = locker.transaction().await.unwrap();
+        tx.query_one("SELECT id FROM users WHERE id='ed' FOR UPDATE", &[]).await.unwrap();
+        let state = db.state.clone();
+        let mut issuing = tokio::spawn(async move { tokens::issue(&state, &actor("ed", Role::Editor), &ctx(), TokenKind::User, value("raced", &["config:write"], None)).await });
+        assert!(tokio::time::timeout(std::time::Duration::from_millis(80), &mut issuing).await.is_err(), "issue must wait for user lock");
+        tx.execute(&format!("UPDATE users SET {change} WHERE id='ed'"), &[]).await.unwrap();
+        tx.commit().await.unwrap();
+        assert!(issuing.await.unwrap().is_err(), "{change}");
+        assert_eq!(db.client.query_one("SELECT count(*) FROM access_tokens", &[]).await.unwrap().get::<_, i64>(0), 0);
+    }
+}
+
+#[tokio::test]
+#[ignore = "real DB"]
+async fn admin_security_changes_revoke_atomically_and_never_revive_tokens() {
+    use nwui_api::admin::users;
+    for reason in ["password-reset", "account-disabled", "pending-reject"] {
+        for fail_audit in [true, false] {
+            let db = test_db().await;
+            people(&db).await;
+            db.client.execute("UPDATE users SET password_hash='old-hash' WHERE id='ed'", &[]).await.unwrap();
+            let token = tokens::issue(&db.state, &actor("ed", Role::Editor), &ctx(), TokenKind::User, value("retire", &["config:read"], None)).await.unwrap();
+            if reason == "pending-reject" { db.client.execute("UPDATE users SET approved=false WHERE id='ed'", &[]).await.unwrap(); }
+            if fail_audit {
+                db.client.batch_execute("CREATE FUNCTION fail_token_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.action='token:revoke' THEN RAISE EXCEPTION 'forced token audit failure'; END IF; RETURN NEW; END $$; CREATE TRIGGER fail_token_audit BEFORE INSERT ON audit_logs FOR EACH ROW EXECUTE FUNCTION fail_token_audit()").await.unwrap();
+            }
+            let boss = actor("boss", Role::Admin);
+            let result = match reason {
+                "password-reset" => users::reset_password(&db.state, &boss, &ctx(), "ed", "NewPassw0rd!", "NewPassw0rd!", None).await,
+                "account-disabled" => users::toggle(&db.state, &boss.clone().into(), &ctx(), "ed").await.map(|_| ()),
+                _ => users::reject(&db.state, &boss.clone().into(), &ctx(), "ed").await,
+            };
+            assert_eq!(result.is_err(), fail_audit, "{reason}");
+            let row = db.client.query_one("SELECT revoked_at IS NOT NULL FROM access_tokens WHERE id=$1", &[&token.id]).await.unwrap();
+            assert_eq!(row.get::<_, bool>(0), !fail_audit, "{reason}");
+            let row = db.client.query_one("SELECT enabled,session_version,password_hash FROM users WHERE id='ed'", &[]).await.unwrap();
+            if fail_audit {
+                assert!(row.get::<_, bool>(0));
+                assert_eq!(row.get::<_, i32>(1), 3);
+                assert_eq!(row.get::<_, String>(2), "old-hash");
+                assert!(audit_rows(&db.client, "token:revoke").await.is_empty());
+            } else {
+                let audit = audit_rows(&db.client, "token:revoke").await;
+                assert_eq!(audit.len(), 1);
+                assert_eq!(audit[0].get::<_, Option<Value>>("after"), Some(json!({"reason":reason,"count":1})));
+                if reason == "account-disabled" { users::toggle(&db.state, &boss.clone().into(), &ctx(), "ed").await.unwrap(); }
+                db.client.execute("UPDATE users SET totp_enabled=true WHERE id='ed'", &[]).await.unwrap();
+                assert!(db.client.query_one("SELECT revoked_at IS NOT NULL FROM access_tokens WHERE id=$1", &[&token.id]).await.unwrap().get::<_, bool>(0));
+            }
+        }
+    }
+}
+
+#[tokio::test]
+#[ignore = "real DB"]
+async fn repeated_security_revocation_has_no_extra_audit_and_preserves_other_token_kinds() {
+    let db=test_db().await; people(&db).await;
+    let ed=actor("ed",Role::Editor); let boss=actor("boss",Role::Admin);
+    let user=tokens::issue(&db.state,&ed,&ctx(),TokenKind::User,value("user",&["config:read"],None)).await.unwrap();
+    let server=tokens::issue(&db.state,&boss,&ctx(),TokenKind::Server,value("server",&["node:pair"],Some(principal::now_unix_ms()+60_000))).await.unwrap();
+    db.client.batch_execute("INSERT INTO gateway_tokens(id,name,token_hash,role,created_by_user_id) VALUES('gateway','fixture','gateway-hash','editor','ed')").await.unwrap();
+    let mut client=db.state.db.get().await.unwrap();let tx=client.transaction().await.unwrap();
+    tx.query_one("SELECT id FROM users WHERE id='ed' FOR UPDATE",&[]).await.unwrap();
+    assert_eq!(tokens::revoke_user_tokens(&tx,"ed","2fa-disable",&ed.actor(&ctx())).await.unwrap(),1);
+    assert_eq!(tokens::revoke_user_tokens(&tx,"ed","2fa-disable",&ed.actor(&ctx())).await.unwrap(),0);
+    tx.commit().await.unwrap();
+    assert_eq!(audit_rows(&db.client,"token:revoke").await.len(),1);
+    assert!(db.client.query_one("SELECT revoked_at IS NOT NULL FROM access_tokens WHERE id=$1",&[&user.id]).await.unwrap().get::<_,bool>(0));
+    assert!(db.client.query_one("SELECT revoked_at IS NULL FROM access_tokens WHERE id=$1",&[&server.id]).await.unwrap().get::<_,bool>(0));
+    assert!(db.client.query_one("SELECT revoked_at IS NULL FROM gateway_tokens WHERE id='gateway'",&[]).await.unwrap().get::<_,bool>(0));
+}
+
+#[test]
+fn provenance_protocol_is_typed_and_round_trips_without_relaxing_unknown_fields() {
+    let value=json!({"kind":"token","id":"id","name":"<name>"});
+    let via: nwui_api::contracts::Via=serde_json::from_value(value.clone()).unwrap();
+    assert_eq!(serde_json::to_value(via).unwrap(),value);
+    let actor=json!({"userId":null,"label":"owner@example.test","ip":null,"via":value});
+    let decoded:nwui_api::publisher::protocol::Actor=serde_json::from_value(actor.clone()).unwrap();
+    assert_eq!(serde_json::to_value(decoded).unwrap(),actor);
+    assert!(serde_json::from_value::<nwui_api::contracts::Via>(json!({"kind":"token","id":"id","name":"name","extra":true})).is_err());
+    assert!(serde_json::from_value::<nwui_api::publisher::protocol::Actor>(json!({"userId":null,"label":null,"ip":null,"extra":true})).is_err());
+}
+
+#[tokio::test]
+#[ignore = "real DB"]
+async fn issue_does_not_return_plaintext_or_persist_a_token_when_audit_fails() {
+    let db=test_db().await; people(&db).await;
+    db.client.batch_execute("ALTER TABLE audit_logs ADD CONSTRAINT reject_token_issue CHECK(action <> 'token:issue')").await.unwrap();
+    assert_eq!(tokens::issue(&db.state,&actor("ed",Role::Editor),&ctx(),TokenKind::User,value("not-committed",&["config:read"],None)).await.unwrap_err(),TokenError::Unavailable);
+    assert_eq!(db.client.query_one("SELECT count(*) FROM access_tokens",&[]).await.unwrap().get::<_,i64>(0),0);
 }

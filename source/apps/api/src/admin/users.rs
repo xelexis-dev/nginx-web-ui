@@ -22,8 +22,8 @@ use tokio_postgres::error::SqlState;
 use super::{AdminError, AdminResult, ApiErrorCode, field, unavailable};
 use crate::auth::audit::{self, AuditEntry};
 use crate::auth::password::validate_password;
-use crate::auth::principal::SessionPrincipal;
-use crate::auth::rbac::{parse_role, role_str};
+use crate::auth::principal::{SessionPrincipal, UserPrincipal};
+use crate::auth::rbac::{Action, can, parse_role, role_str};
 use crate::auth::setup::is_valid_email;
 use crate::contracts::Role;
 use crate::crypto::js_trim;
@@ -192,14 +192,14 @@ fn password_errors(password: &str, confirm_password: &str) -> BTreeMap<String, S
     errors
 }
 
-async fn write_audit(tx: &tokio_postgres::Transaction<'_>, actor: &SessionPrincipal, ctx: &RequestContext, action: &str, target: &str, before: Option<Value>, after: Option<Value>) -> AdminResult<()> {
+async fn write_audit(tx: &tokio_postgres::Transaction<'_>, actor: &crate::contracts::Actor, ctx: &RequestContext, action: &str, target: &str, before: Option<Value>, after: Option<Value>) -> AdminResult<()> {
     let entry = AuditEntry {
-        actor_id: Some(actor.user_id.clone()),
+        actor_id: actor.id.clone(),
         action: action.to_owned(),
         target: Some(target.to_owned()),
         before,
         after,
-        ip: ctx.ip.clone(),
+        ip: ctx.ip.clone(), via: actor.via.clone(),
         ..AuditEntry::default()
     };
     audit::write(tx, &entry).await.map_err(unavailable)
@@ -236,7 +236,7 @@ pub async fn create(state: &AppState, actor: &SessionPrincipal, ctx: &RequestCon
         return Err(unavailable(error));
     }
     // Never password material in the audit row.
-    write_audit(&tx, actor, ctx, "user:create", &id, None, Some(json!({"email": email, "role": role_str(role)}))).await?;
+    write_audit(&tx, &actor.actor(ctx), ctx, "user:create", &id, None, Some(json!({"email": email, "role": role_str(role)}))).await?;
     tx.commit().await.map_err(unavailable)?;
     Ok(id)
 }
@@ -275,11 +275,19 @@ async fn lock_with_admins(tx: &tokio_postgres::Transaction<'_>, id: &str) -> Adm
     Ok((target, admins))
 }
 
+fn authorize_token_user_change(actor: &UserPrincipal, current: Role, resulting: Option<Role>) -> AdminResult<()> {
+    if actor.is_token() && (current == Role::Admin || resulting.is_some_and(|role|
+        role == Role::Admin || Action::ALL.into_iter().any(|action|can(role, action) && !actor.can(action)))) {
+        return Err(AdminError::Forbidden);
+    }
+    Ok(())
+}
+
 fn bad_request() -> AdminError {
     AdminError::Refused("잘못된 요청입니다.".to_owned())
 }
 
-pub async fn update_role(state: &AppState, actor: &SessionPrincipal, ctx: &RequestContext, id: &str, role: &str) -> AdminResult<()> {
+pub async fn update_role(state: &AppState, actor: &UserPrincipal, ctx: &RequestContext, id: &str, role: &str) -> AdminResult<()> {
     let id = js_trim(id);
     if id.is_empty() {
         return Err(bad_request());
@@ -293,6 +301,7 @@ pub async fn update_role(state: &AppState, actor: &SessionPrincipal, ctx: &Reque
     let tx = client.transaction().await.map_err(unavailable)?;
     let (target, admins) = lock_with_admins(&tx, id).await?;
     let before = target.ok_or(AdminError::NotFound)?;
+    authorize_token_user_change(actor, before.role, Some(role))?;
     if before.role == Role::Admin && before.enabled && before.approved && role != Role::Admin && admins <= 1 {
         return Err(AdminError::Refused("마지막 남은 활성 admin의 역할은 변경할 수 없습니다.".to_owned()));
     }
@@ -303,7 +312,7 @@ pub async fn update_role(state: &AppState, actor: &SessionPrincipal, ctx: &Reque
     )
     .await
     .map_err(unavailable)?;
-    write_audit(&tx, actor, ctx, "user:update", id, Some(json!({"role": role_str(before.role)})), Some(json!({"role": role_str(role)}))).await?;
+    write_audit(&tx, &actor.actor(ctx), ctx, "user:update", id, Some(json!({"role": role_str(before.role)})), Some(json!({"role": role_str(role)}))).await?;
     tx.commit().await.map_err(unavailable)
 }
 
@@ -348,7 +357,8 @@ pub async fn reset_password(state: &AppState, actor: &SessionPrincipal, ctx: &Re
         // Deleted, or became OAuth-only, while bcrypt ran.
         return Err(AdminError::NotFound);
     }
-    write_audit(&tx, actor, ctx, "user:reset-password", id, None, Some(json!({"passwordReset": true}))).await?;
+    crate::auth::tokens::revoke_user_tokens(&tx, id, "password-reset", &actor.actor(ctx)).await.map_err(unavailable)?;
+    write_audit(&tx, &actor.actor(ctx), ctx, "user:reset-password", id, None, Some(json!({"passwordReset": true}))).await?;
     tx.commit().await.map_err(unavailable)
 }
 
@@ -374,12 +384,12 @@ pub async fn delete(state: &AppState, actor: &SessionPrincipal, ctx: &RequestCon
         }
         return Err(unavailable(error));
     }
-    write_audit(&tx, actor, ctx, "user:delete", id, Some(json!({"email": before.email, "role": role_str(before.role)})), None).await?;
+    write_audit(&tx, &actor.actor(ctx), ctx, "user:delete", id, Some(json!({"email": before.email, "role": role_str(before.role)})), None).await?;
     tx.commit().await.map_err(unavailable)
 }
 
 /// Flips `enabled`; returns the new value. Disabling revokes sessions.
-pub async fn toggle(state: &AppState, actor: &SessionPrincipal, ctx: &RequestContext, id: &str) -> AdminResult<bool> {
+pub async fn toggle(state: &AppState, actor: &UserPrincipal, ctx: &RequestContext, id: &str) -> AdminResult<bool> {
     let id = js_trim(id);
     if id.is_empty() {
         return Err(bad_request());
@@ -389,6 +399,7 @@ pub async fn toggle(state: &AppState, actor: &SessionPrincipal, ctx: &RequestCon
     let (target, admins) = lock_with_admins(&tx, id).await?;
     let before = target.ok_or(AdminError::NotFound)?;
     let enabled = !before.enabled;
+    authorize_token_user_change(actor, before.role, enabled.then_some(before.role))?;
     if !enabled {
         if id == actor.user_id {
             return Err(AdminError::Refused("본인 계정은 비활성화할 수 없습니다.".to_owned()));
@@ -404,8 +415,9 @@ pub async fn toggle(state: &AppState, actor: &SessionPrincipal, ctx: &RequestCon
         "UPDATE users SET enabled = false, session_version = session_version + 1 WHERE id = $1"
     };
     tx.execute(sql, &[&id]).await.map_err(unavailable)?;
+    if !enabled { crate::auth::tokens::revoke_user_tokens(&tx, id, "account-disabled", &actor.actor(ctx)).await.map_err(unavailable)?; }
     let action = if enabled { "user:enable" } else { "user:disable" };
-    write_audit(&tx, actor, ctx, action, id, Some(json!({"enabled": before.enabled})), Some(json!({"enabled": enabled}))).await?;
+    write_audit(&tx, &actor.actor(ctx), ctx, action, id, Some(json!({"enabled": before.enabled})), Some(json!({"enabled": enabled}))).await?;
     tx.commit().await.map_err(unavailable)?;
     Ok(enabled)
 }
@@ -413,7 +425,7 @@ pub async fn toggle(state: &AppState, actor: &SessionPrincipal, ctx: &RequestCon
 /// Approves a pending account with `role` (anything else becomes viewer, as TS). An account that
 /// is already approved or gone is left alone — the approval screen is not a role editor.
 /// No sessionVersion bump: an unapproved account never had a session.
-pub async fn approve(state: &AppState, actor: &SessionPrincipal, ctx: &RequestContext, id: &str, role: &str) -> AdminResult<()> {
+pub async fn approve(state: &AppState, actor: &UserPrincipal, ctx: &RequestContext, id: &str, role: &str) -> AdminResult<()> {
     let id = js_trim(id);
     if id.is_empty() {
         return Ok(());
@@ -422,18 +434,20 @@ pub async fn approve(state: &AppState, actor: &SessionPrincipal, ctx: &RequestCo
     let mut client = client(state).await?;
     let tx = client.transaction().await.map_err(unavailable)?;
     let Some(row) = tx
-        .query_opt("SELECT role::text AS role FROM users WHERE id = $1 AND NOT approved FOR UPDATE", &[&id])
+        .query_opt("SELECT role::text AS role, approved FROM users WHERE id = $1 FOR UPDATE", &[&id])
         .await
         .map_err(unavailable)?
     else {
         return Ok(());
     };
     let before = role_of(&row)?;
+    authorize_token_user_change(actor, before, Some(role))?;
+    if row.get::<_,bool>("approved") { return Ok(()); }
     tx.execute("UPDATE users SET approved = true, role = $2::text::role WHERE id = $1", &[&id, &role_str(role)])
         .await
         .map_err(unavailable)?;
     write_audit(
-        &tx, actor, ctx, "user:approve", id,
+        &tx, &actor.actor(ctx), ctx, "user:approve", id,
         Some(json!({"approved": false, "role": role_str(before)})),
         Some(json!({"approved": true, "role": role_str(role)})),
     )
@@ -443,7 +457,7 @@ pub async fn approve(state: &AppState, actor: &SessionPrincipal, ctx: &RequestCo
 
 /// Rejects a pending account by disabling it (kept, not deleted, so a returning person does not
 /// get a fresh account). Anything not awaiting approval is left alone.
-pub async fn reject(state: &AppState, actor: &SessionPrincipal, ctx: &RequestContext, id: &str) -> AdminResult<()> {
+pub async fn reject(state: &AppState, actor: &UserPrincipal, ctx: &RequestContext, id: &str) -> AdminResult<()> {
     let id = js_trim(id);
     if id.is_empty() {
         return Ok(());
@@ -451,14 +465,17 @@ pub async fn reject(state: &AppState, actor: &SessionPrincipal, ctx: &RequestCon
     let mut client = client(state).await?;
     let tx = client.transaction().await.map_err(unavailable)?;
     let Some(row) = tx
-        .query_opt("SELECT enabled FROM users WHERE id = $1 AND NOT approved FOR UPDATE", &[&id])
+        .query_opt("SELECT enabled, role::text AS role, approved FROM users WHERE id = $1 FOR UPDATE", &[&id])
         .await
         .map_err(unavailable)?
     else {
         return Ok(());
     };
     let before: bool = row.get(0);
+    authorize_token_user_change(actor, role_of(&row)?, None)?;
+    if row.get::<_,bool>("approved") { return Ok(()); }
     tx.execute("UPDATE users SET enabled = false WHERE id = $1", &[&id]).await.map_err(unavailable)?;
-    write_audit(&tx, actor, ctx, "user:reject", id, Some(json!({"enabled": before})), Some(json!({"enabled": false}))).await?;
+    crate::auth::tokens::revoke_user_tokens(&tx, id, "pending-reject", &actor.actor(ctx)).await.map_err(unavailable)?;
+    write_audit(&tx, &actor.actor(ctx), ctx, "user:reject", id, Some(json!({"enabled": before})), Some(json!({"enabled": false}))).await?;
     tx.commit().await.map_err(unavailable)
 }

@@ -1,3 +1,5 @@
+import type { AuditVia } from "@repo/contracts";
+import { formatAuditActor } from "./audit-list";
 import layout from "@/components/page-layout.module.css";
 import {
   Icon,
@@ -23,6 +25,7 @@ export interface AuditDetailVM {
   time: string;
   actorEmail: string | null;
   actorLabel: string | null;
+  via?: AuditVia | null;
   target: string | null;
   ip: string | null;
   /**
@@ -55,8 +58,6 @@ export function AuditDetail({
   const {
     action,
     time,
-    actorEmail,
-    actorLabel,
     target,
     ip,
     beforeJson,
@@ -87,7 +88,7 @@ export function AuditDetail({
             { term: <>시간</>, value: <>{time}</> },
             {
               term: <>사용자</>,
-              value: <>{actorEmail ?? actorLabel ?? "system"}</>,
+              value: <>{formatAuditActor(data)}</>,
             },
             { term: <>액션</>, value: <>{action}</> },
             { term: <>대상</>, value: <>{target ?? "—"}</> },

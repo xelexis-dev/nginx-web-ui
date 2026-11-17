@@ -15,7 +15,8 @@ impl Policy {
     pub(crate) fn startup()->Result<Self,StepError>{Self::read(crate::nonroot::startup_value)}
     fn read(get:impl Fn(&str)->Option<String>)->Result<Self,StepError>{
         let label=get("NWUI_DB_UPGRADE_RETRY");valid_label(label.as_deref())?;
-        Ok(Self{postponed:get("NWUI_DB_UPGRADE").as_deref()==Some("off"),label})
+        if get("NWUI_DB_UPGRADE").as_deref()==Some("off"){eprintln!("[upgrade] NWUI_DB_UPGRADE=off is ignored in 2.1; legacy data requires 2.0.x first.");}
+        Ok(Self{postponed:false,label})
     }
 }
 pub(crate) fn admit(j:&JournalV1,candidate:&Candidate,label:Option<&str>,space_sufficient:bool,now:chrono::DateTime<chrono::Utc>)->Result<Admission,StepError> {
@@ -32,13 +33,7 @@ pub(crate) fn admit(j:&JournalV1,candidate:&Candidate,label:Option<&str>,space_s
     Ok(Admission::Attempt)
 }
 /// Both the offline CLI and status use the same admission decision; CLI supplies label=None to admit.
-pub(crate) fn restored_next_action(admission:&Admission)->&'static str{
-    match admission{
-        Admission::Attempt=>"PG15로 복원했습니다. 1.19.11로 시작하거나, 2.0 이미지를 다시 시작하면 새 이전을 진행합니다.",
-        Admission::Backoff(_)=>"PG15로 복원했습니다. 1.19.11로 시작하거나, 표시된 다음 재시도 가능 시각 이후 2.0 이미지를 다시 시작하면 새 이전을 진행합니다.",
-        Admission::SameCandidateRefused=>"PG15로 복원했습니다. 1.19.11로 시작하세요. 이 이미지는 같은 원인으로 다시 이전하지 않습니다. 원인을 해결했다면 NWUI_DB_UPGRADE_RETRY에 새 값을 지정하고 다시 시작하세요.",
-    }
-}
+pub(crate) fn restored_next_action(_admission:&Admission)->&'static str{super::legacy::GUIDANCE}
 /// The real step/code remain authoritative; this never invents a successful outcome.
 #[cfg(test)]
 pub(crate) fn failed(j:&mut Journal,step:Step,code:&'static str,now:chrono::DateTime<chrono::Utc>)->Result<(),StepError> {
@@ -57,14 +52,14 @@ mod tests {
     #[test]
     fn startup_policy_reads_only_documented_settings_and_validates_retry_labels(){
         let default=Policy::read(|_|None).unwrap();assert!(!default.postponed);assert!(default.label.is_none());
-        for value in ["off","on",""]{let policy=Policy::read(|name|match name{"NWUI_DB_UPGRADE"=>Some(value.into()),"NWUI_DB_UPGRADE_RETRY"=>Some("operator-fix".into()),_=>panic!("unexpected setting")}).unwrap();assert_eq!(policy.postponed,value=="off");assert_eq!(policy.label.as_deref(),Some("operator-fix"));}
+        for value in ["off","on",""]{let policy=Policy::read(|name|match name{"NWUI_DB_UPGRADE"=>Some(value.into()),"NWUI_DB_UPGRADE_RETRY"=>Some("operator-fix".into()),_=>panic!("unexpected setting")}).unwrap();assert!(!policy.postponed);assert_eq!(policy.label.as_deref(),Some("operator-fix"));}
         for label in ["",&"x".repeat(129),"x\0y"]{assert!(Policy::read(|name|(name=="NWUI_DB_UPGRADE_RETRY").then(||label.into())).is_err());}
     }
     #[test]
-    fn restored_copy_follows_real_admission_for_success_failure_label_and_capacity(){
-        let (_t,_locks,mut j)=fixture();let candidate=j.load().candidate.clone();j.set_outcome(super::super::Outcome::Pg17).unwrap();let choice=admit(j.load(),&candidate,None,true,now()).unwrap();assert_eq!(choice,Admission::Attempt);assert!(restored_next_action(&choice).contains("새 이전을 진행합니다."));
-        failed(&mut j,Step::S4Activate,"privilege_activate_failed",now()).unwrap();j.set_outcome(super::super::Outcome::ActivationFailed).unwrap();let choice=admit(j.load(),&candidate,None,true,now()).unwrap();assert_eq!(choice,Admission::SameCandidateRefused);assert!(restored_next_action(&choice).contains("이 이미지는 같은 원인으로 다시 이전하지 않습니다."));let retry=admit(j.load(),&candidate,Some("fixed"),true,now()).unwrap();assert_eq!(retry,Admission::Attempt);
-        failed(&mut j,Step::P3Convert,"interrupted",now()).unwrap();failed(&mut j,Step::P3Convert,"interrupted",now()).unwrap();let choice=admit(j.load(),&candidate,None,true,now()).unwrap();assert!(matches!(choice,Admission::Backoff(_)));assert!(restored_next_action(&choice).contains("표시된 다음 재시도 가능 시각 이후"));
+    fn historical_admission_is_readable_but_restored_guidance_requires_20(){
+        let (_t,_locks,mut j)=fixture();let candidate=j.load().candidate.clone();j.set_outcome(super::super::Outcome::Pg17).unwrap();let choice=admit(j.load(),&candidate,None,true,now()).unwrap();assert_eq!(choice,Admission::Attempt);assert!(restored_next_action(&choice).contains("2.0.x 최신(2.0.3 이상)"));
+        failed(&mut j,Step::S4Activate,"privilege_activate_failed",now()).unwrap();j.set_outcome(super::super::Outcome::ActivationFailed).unwrap();let choice=admit(j.load(),&candidate,None,true,now()).unwrap();assert_eq!(choice,Admission::SameCandidateRefused);assert!(restored_next_action(&choice).contains("2.0.x 최신(2.0.3 이상)"));let retry=admit(j.load(),&candidate,Some("fixed"),true,now()).unwrap();assert_eq!(retry,Admission::Attempt);
+        failed(&mut j,Step::P3Convert,"interrupted",now()).unwrap();failed(&mut j,Step::P3Convert,"interrupted",now()).unwrap();let choice=admit(j.load(),&candidate,None,true,now()).unwrap();assert!(matches!(choice,Admission::Backoff(_)));assert!(restored_next_action(&choice).contains("2.0.x 최신(2.0.3 이상)"));
         failed(&mut j,Step::P2Preflight,"insufficient_space",now()).unwrap();let mut state=j.load().clone();state.retry.backoff_until=Some((now()+chrono::Duration::hours(24)).to_rfc3339());let choice=admit(&state,&candidate,None,true,now()).unwrap();assert_eq!(choice,Admission::Attempt);
     }
     #[test]

@@ -63,6 +63,7 @@ export interface TokenFormProps {
   /** 목록 경로 — 「취소」와 발급 후 「완료」가 가는 곳. */
   basePath: string;
   kind: TokenKind;
+  twoFactorEnabled?: boolean;
   /** 만료 기본 선택. 종류마다 알맞은 기본이 다를 수 있어 열어 둔다. */
   defaultPreset?: ExpiryPreset;
 }
@@ -90,6 +91,7 @@ export function TokenForm({
   action,
   basePath,
   kind,
+  twoFactorEnabled = true,
   defaultPreset = "90d",
 }: TokenFormProps) {
   const [state, formAction, pending] = useActionState(
@@ -128,6 +130,7 @@ export function TokenForm({
           <p className={styles.secretMeta}>
             이름: {state.name} · 창을 닫거나 새로고침하면 이 값은 사라집니다.
           </p>
+          {kind === "user" ? <p className={styles.secretMeta}>요청 머리글: <code>Authorization: Bearer &lt;토큰&gt;</code> · 대상: <code>&lt;관리 주소&gt;/api/ui/v1/…</code>(웹과 같은 API, HTTPS로만 쓰세요)</p> : null}
           <div className={styles.secretActions}>
             <Link
               href={basePath}
@@ -147,6 +150,16 @@ export function TokenForm({
         </div>
       </Surface>
     );
+  }
+
+  if (kind === "user" && !twoFactorEnabled) {
+    return <Surface title="2단계 인증 등록 필요">
+      <Banner tone="info" title="사용자 API 토큰을 발급하려면 먼저 2단계 인증을 등록하세요." />
+      <div className={styles.secretActions}>
+        <Link href={basePath} className={buttonClassName({ variant: "secondary" })}>취소</Link>
+        <Link href="/account/2fa" className={buttonClassName()}>2단계 인증 설정</Link>
+      </div>
+    </Surface>;
   }
 
   function toggleScope(scope: string, on: boolean) {
@@ -273,7 +286,7 @@ export function TokenForm({
               hint={
                 state.fieldErrors?.scopes
                   ? undefined
-                  : "고른 권한만 이 토큰으로 할 수 있습니다. 나중에 바꿀 수 없습니다."
+                  : kind === "user" ? "고른 권한만 이 토큰으로 할 수 있습니다. 나중에 바꿀 수 없습니다. config:write는 설정 적용을 포함하지 않습니다. 롤백에는 config:write와 nginx:reload가 모두 필요합니다. user:manage는 자격증명 관리를 포함하지 않습니다. 인증서 교체에는 config:write와 nginx:reload가 모두 필요합니다. 계정에 역할을 부여하거나 계정을 활성화할 때는 그 역할의 모든 권한이 토큰에 있어야 합니다. admin 계정 변경과 admin 역할 부여는 할 수 없습니다. SMTP·웹훅 시험은 웹에서만 할 수 있습니다." : "고른 권한만 이 토큰으로 할 수 있습니다. 나중에 바꿀 수 없습니다."
               }
               error={state.fieldErrors?.scopes}
               wide

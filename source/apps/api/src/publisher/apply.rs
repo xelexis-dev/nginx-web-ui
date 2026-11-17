@@ -433,7 +433,7 @@ pub(super) async fn certificate_audit(
     ok: bool,
     output: &str,
 ) -> Result<()> {
-    client.execute("INSERT INTO audit_logs(id,actor_id,actor_label,action,target,\"after\",ip) VALUES($1,$2,$3,'nginx:apply',$4,$5,$6)", &[&uuid::Uuid::new_v4().to_string(),&actor.id,&actor.label,&id,&json!({"source":"certificate","certificateId":id,"ok":ok,"output":output}),&actor.ip]).await?;
+    client.execute("INSERT INTO audit_logs(id,actor_id,actor_label,action,target,\"after\",ip,via) VALUES($1,$2,$3,'nginx:apply',$4,$5,$6,$7)", &[&uuid::Uuid::new_v4().to_string(),&actor.id,&actor.label,&id,&json!({"source":"certificate","certificateId":id,"ok":ok,"output":output}),&actor.ip,&actor.via.as_ref().map(|via|json!(via))]).await?;
     Ok(())
 }
 
@@ -595,7 +595,7 @@ mod fxb3_tests {
     }
 }
 
-const OPERATION_AUDIT_SQL:&str="INSERT INTO audit_logs(id,actor_id,actor_label,action,target,\"after\",ip) VALUES($1,$2,COALESCE($3,(SELECT email FROM users WHERE id=$2)),$4,$5,$6,$7) ON CONFLICT(id) DO NOTHING";
+const OPERATION_AUDIT_SQL:&str="INSERT INTO audit_logs(id,actor_id,actor_label,action,target,\"after\",ip,via) VALUES($1,$2,COALESCE($3,(SELECT email FROM users WHERE id=$2)),$4,$5,$6,$7,$8) ON CONFLICT(id) DO NOTHING";
 
 /// Root caller holds the store and application locks; this function owns SQL and files admission.
 pub(super) async fn mutate(
@@ -619,7 +619,7 @@ pub(super) async fn mutate(
     };
     if let Some(output)=failure {
         // The operation UUID makes the success/unknown/failure audit one row, even after a lost COMMIT reply.
-        let attempt=post_execute(&state.db,budget,OPERATION_AUDIT_SQL,&[&operation_id,&actor.id,&actor.label,&action,&target,&json!({"ok":false,"output":output}),&actor.ip]).await;
+        let attempt=post_execute(&state.db,budget,OPERATION_AUDIT_SQL,&[&operation_id,&actor.id,&actor.label,&action,&target,&json!({"ok":false,"output":output}),&actor.ip,&actor.via.as_ref().map(|via|json!(via))]).await;
         if let Err(error)=attempt {eprintln!("[publisher] could not record operation failure audit: {error:#}");}
     }
     result
@@ -731,7 +731,7 @@ async fn mutate_locked(
         set_completion_timeout(&tx,budget).await?;
         record_applied_state(&tx,&outcome.effective(&data,Some(&previous)),&outcome.skipped,actor.id.as_deref()).await?;
         set_completion_timeout(&tx,budget).await?;
-        tx.execute(OPERATION_AUDIT_SQL,&[&mutation.operation.id,&actor.id,&actor.label,&action,&target,&json!({"ok":true,"output":staged.result.output}),&actor.ip]).await?;
+        tx.execute(OPERATION_AUDIT_SQL,&[&mutation.operation.id,&actor.id,&actor.label,&action,&target,&json!({"ok":true,"output":staged.result.output}),&actor.ip,&actor.via.as_ref().map(|via|json!(via))]).await?;
         // Active status stays running; persist the complete intended result before COMMIT can be lost.
         mutation.operation.result=Some(serde_json::to_value(&result)?);mutation.operation.save(store)?;
         Ok::<_,anyhow::Error>(())

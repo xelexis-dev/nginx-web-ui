@@ -140,6 +140,7 @@ export function EditUserForms({
             <Card
               id="admin-user-edit-1"
               title={<>{email ?? "이 사용자"} 비밀번호 재설정</>}
+              description="비밀번호를 재설정하면 이 사용자의 API 토큰도 모두 폐기됩니다."
               errorCount={
                 Object.values({
                   ...passwordState.fieldErrors,

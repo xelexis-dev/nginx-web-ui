@@ -36,6 +36,8 @@ it.each([true, false])(
       />,
     );
     expect(html.match(/<table\b/g)).toHaveLength(1);
+    expect(html).toMatch(/<table\b[^>]*data-density="comfortable"/);
+    expect(html).toMatch(/<table\b[^>]*data-narrow="summary"/);
     expect(html.match(/data-current=""/g)).toHaveLength(1);
     expect(html).toContain("현재");
     expect(html).toContain(">적용 이력</h1>");
@@ -83,6 +85,8 @@ it.each(["/audit", "/nodes/node-a/audit"])(
     const html = renderToStaticMarkup(
       <AuditList data={data} basePath={basePath} />,
     );
+    expect(html).toMatch(/<table\b[^>]*data-density="dense"/);
+    expect(html).toMatch(/<table\b[^>]*data-narrow="summary"/);
     expect(html).toContain(`href="${basePath}?action=config.apply"`);
     expect(html).toContain(`href="${basePath}?action=config.apply&amp;page=3"`);
     expect(html).toContain(`href="${basePath}/event-a"`);

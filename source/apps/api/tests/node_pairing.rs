@@ -296,12 +296,12 @@ async fn q3_i5_viewers_do_not_receive_node_addresses_or_transport_errors() {
     db.client.execute("INSERT INTO nodes(id,name,base_url,token_enc,token_role,instance_id,last_error) VALUES('n','Node','https://private-node.test','sealed','viewer','remote','private resolver error')",&[]).await.unwrap();
     let mut actor=SessionPrincipal{user_id:"viewer".into(),email:None,name:None,role:Role::Viewer,session_version:0,totp_enabled:false,requires_2fa:false,mfa_verified:false,expires_at:0};
     for path in ["nodes","nodes/n/layout"] {
-        let value=nwui_api::nodes::views::view(&db.state,&actor,path,&Default::default()).await.unwrap().unwrap();
+        let value=nwui_api::nodes::views::view(&db.state, &(actor).clone().into(),path,&Default::default()).await.unwrap().unwrap();
         assert!(!value.to_string().contains("private-node.test"));
         assert!(!value.to_string().contains("private resolver error"));
     }
     actor.role=Role::Admin;
-    let value=nwui_api::nodes::views::view(&db.state,&actor,"nodes/n",&Default::default()).await.unwrap().unwrap();
+    let value=nwui_api::nodes::views::view(&db.state, &(actor).clone().into(),"nodes/n",&Default::default()).await.unwrap().unwrap();
     assert_eq!(value["node"]["baseUrl"],"https://private-node.test");
     assert_eq!(value["node"]["lastError"],"private resolver error");
 }

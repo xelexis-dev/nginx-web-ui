@@ -73,12 +73,6 @@ pub struct JournalMove { pub seq: u64, #[serde(flatten)] pub record: MoveRecord 
 #[cfg(test)]
 mod migrations_hash_tests {
     use super::migrations_sha256;
-    #[test]
-    fn w1_migrations_hash_matches_the_28_registered_legacy_signatures() {
-        let profile=crate::db_upgrade::profiles::released().unwrap();
-        let migrations=profile.signatures.into_iter().map(|row|crate::migrations::Migration{tag:row.tag,timestamp:row.created_at,hash:row.hash,statements:Vec::new()}).collect::<Vec<_>>();
-        assert_eq!(migrations.len(),28);assert_eq!(migrations_sha256(&migrations),profile.sha256);
-    }
     #[tokio::test]
     async fn w1_migrations_hash_tracks_raw_sql_timestamps_order_and_membership_but_not_tags() {
         use std::fs;
@@ -662,15 +656,6 @@ mod tests {
     fn pre_pool_fixture()->(tempfile::TempDir,crate::db_upgrade::layout::Roots,StorageLocks,Journal){
         let t=tempfile::tempdir().unwrap();let roots=crate::db_upgrade::layout::Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:"arm64".into()};for path in [&roots.db,&roots.app]{fs::create_dir(path).unwrap();fs::set_permissions(path,fs::Permissions::from_mode(0o700)).unwrap();}let locks=StorageLocks::acquire(&roots.db,&roots.app).unwrap();let j=Journal::begin_upgrade(&roots.app,&locks,Candidate{revision:"0".repeat(40),pins_sha256:"1".repeat(64),migrations_sha256:"2".repeat(64)},None).unwrap();(t,roots,locks,j)
     }
-    #[tokio::test]
-    async fn pre_pool_off_restarts_are_bounded_and_space_failure_can_admit_before_pools(){
-        let(_t,r,l,mut j)=pre_pool_fixture();let candidate=j.load().candidate.clone();
-        for n in 0..20{
-            let identity=format!("{n:064x}");j.finish_pre_pool(&identity,None,None).unwrap();assert_eq!(super::super::runner::boot_plan(j.load(),Some(&identity)),super::super::runner::BootPlan::ParkedRefusal);assert!(j.pre_pool().unwrap());assert!(!r.db.join(".nwui-auto-work").exists());assert!(!r.db.join(".nwui-pg15-backup").exists());assert!(j.load().previous.len()<=8);
-            let choice=super::super::rollover::rollover(&r,&l,&mut j,candidate.clone(),None,true,chrono::Utc::now()).await.unwrap();assert_eq!(choice,super::super::rollover::RolloverOutcome::RolledOver);
-        }
-        let error=StepError{code:"insufficient_space",message:"fixture",detail:None};let id="f".repeat(64);j.finish_pre_pool(&id,Some(&error),None).unwrap();assert_eq!(j.load().outcome,Outcome::RefusedPreflight);assert!(j.pre_pool().unwrap());super::super::rollover::rollover(&r,&l,&mut j,candidate,None,true,chrono::Utc::now()).await.unwrap();j.record(Step::P0b,StepState::Done,None).unwrap();assert!(j.record(Step::P1Backup,StepState::Intent,None).is_err());super::super::reserves::ensure(&r,&l,&j).unwrap();assert!(!j.pre_pool().unwrap());j.record(Step::P1Backup,StepState::Intent,None).unwrap();assert!(!r.app.join(".nwui-auto/.journal-v1.json.init").exists());
-    }
     #[test]
     fn pre_pool_refuses_stale_frames_and_never_adopts_a_replacement_coordinator(){
         let(_t,r,l,mut j)=pre_pool_fixture();let mut stale=Journal::open(&r.app,&l).unwrap();j.record(Step::P0b,StepState::Done,None).unwrap();let before=fs::read(r.app.join(".nwui-auto/journal-v1.json")).unwrap();assert!(stale.record(Step::P0b,StepState::Done,None).is_err());assert_eq!(fs::read(r.app.join(".nwui-auto/journal-v1.json")).unwrap(),before);
@@ -756,7 +741,7 @@ mod storage_tests {
         let mut next=j.load().clone();let old=PreviousAttempt{attempt_id:next.attempt_id.clone(),outcome:next.outcome,candidate:next.candidate.clone(),last_failure:last_attempt_failure(&next.records),generation:None,discard_id:None,ended_at:"2026-10-28T00:00:00Z".into()};
         next.previous.insert(0,old);next.attempt_id=uuid::Uuid::new_v4().to_string();next.outcome=Outcome::Upgrading;next.handoff=Handoff::None;next.moves.clear();next.records=vec![Record{seq:1,step:Step::P0,state:StepState::Done,at:"2026-10-28T00:00:00Z".into(),data:None},Record{seq:2,step:Step::P0b,state:StepState::Intent,at:"2026-10-28T00:00:00Z".into(),data:None}];next
     }
-    fn fixture_roots(app:&Path)->crate::db_upgrade::layout::Roots {crate::db_upgrade::layout::Roots{db:app.parent().unwrap().join("db"),app:app.to_owned(),architecture:crate::db_upgrade::engine::architecture().unwrap().into()}}
+    fn fixture_roots(app:&Path)->crate::db_upgrade::layout::Roots {crate::db_upgrade::layout::Roots{db:app.parent().unwrap().join("db"),app:app.to_owned(),architecture:crate::db_upgrade::paths::architecture().unwrap().into()}}
     #[test]
     fn w1_journal_failure_is_durable_before_a_refused_outcome_and_commands_cannot_supply_it() {
         for outcome in [Outcome::RefusedPreflight,Outcome::RefusedFresh,Outcome::RefusedPrivilege,Outcome::RestoreIncomplete,Outcome::ActivationFailed] {

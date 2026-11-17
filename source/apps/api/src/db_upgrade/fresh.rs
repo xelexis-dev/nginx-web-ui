@@ -70,11 +70,6 @@ pub(crate) fn ready_environment_locked(locks:&crate::upgrade::StorageLocks,roots
     if !pair.ready || pair.architecture!=roots.architecture{return Err(mismatch());}
     layout::ready_material(roots,&pair)?;environment(roots,&pair,envdir)
 }
-/// Publish existing PG15 credentials; only explicit operator auth/admin overrides may replace material.
-pub(crate) fn legacy_environment_locked(locks:&crate::upgrade::StorageLocks,roots:&Roots,envdir:&Path)->Result<()> {
-    if !locks.holds_d() || !locks.matches_roots(&roots.db,&roots.app){return Err(mismatch());}
-    layout::legacy_material(roots)?;environment_material(roots,envdir,true,true)
-}
 fn operator_material(path:&Path,name:&str,supplied:Option<&str>,legacy:bool)->Result<Option<String>> {
     let stored=if exists(path)?{Some(secret(path,legacy)?)}else{None};
     if let Some(value)=supplied {

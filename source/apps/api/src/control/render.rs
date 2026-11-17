@@ -599,6 +599,9 @@ fn tls_tuning(t: &Value) -> Vec<String> {
     if t["preferServerCiphers"] == true {
         lines.push("    ssl_prefer_server_ciphers on;".into());
     }
+    if t["http2"] == true {
+        lines.push("    http2 on;".into());
+    }
     if let Some(header) = hsts_header(t) {
         lines.push(format!(
             "    add_header Strict-Transport-Security \"{}\" always;",

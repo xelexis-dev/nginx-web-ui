@@ -2,9 +2,9 @@ use super::{collector, logs, query};
 use crate::{
     auth::{
         principal::{
-            SessionPrincipal, TwoFactorGate, db_unavailable, require_gateway, require_session,
+            UserPrincipal, TwoFactorGate, db_unavailable, require_gateway, require_user,
         },
-        rbac::{Action, can},
+        rbac::Action,
     },
     error::ApiError,
     request_context::RequestContext,
@@ -38,13 +38,12 @@ async fn read(
     if node {
         require_gateway(&state, request.headers(), &ctx, &[Action::ConfigRead]).await?;
     } else {
-        require_session(
+        require_user(
             &state,
             request.headers(),
             &ctx,
             Some(Action::ConfigRead),
-            TwoFactorGate::Enforce,
-        )
+            TwoFactorGate::Enforce, crate::auth::principal::Use::SessionOrToken)
         .await?;
     }
     let path = request
@@ -121,7 +120,7 @@ async fn read(
 
 pub async fn view(
     state: &AppState,
-    session: &SessionPrincipal,
+    session: &UserPrincipal,
     path: &str,
     params: &BTreeMap<String, String>,
 ) -> Result<Option<Value>, ApiError> {
@@ -133,7 +132,7 @@ pub async fn view(
     {
         return Ok(None);
     }
-    if !can(session.role, Action::ConfigRead) {
+    if !session.can(Action::ConfigRead) {
         return Err(ApiError::forbidden());
     }
     let data = match path {
@@ -153,7 +152,7 @@ pub async fn view(
     };
     Ok(Some(data))
 }
-async fn dashboard(state: &AppState, session: &SessionPrincipal) -> Result<Value, ApiError> {
+async fn dashboard(state: &AppState, session: &UserPrincipal) -> Result<Value, ApiError> {
     let client = state.db.get().await.map_err(|_| db_unavailable())?;
     let since = chrono::Utc::now() - chrono::Duration::hours(24);
     let row=client.query_one("SELECT (SELECT count(*) FROM nginx_servers) AS servers,(SELECT count(*) FROM nginx_servers WHERE enabled) AS active_servers,(SELECT count(*) FROM nginx_streams) AS streams,(SELECT count(*) FROM nginx_streams WHERE enabled) AS active_streams,(SELECT count(*) FROM audit_logs WHERE created_at >= $1) AS audits",&[&since]).await.map_err(|_|db_unavailable())?;

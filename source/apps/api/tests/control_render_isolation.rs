@@ -310,3 +310,18 @@ fn fxb2_tls_preview_uses_only_readiness_metadata_and_preserves_fail_closed_rende
     let unavailable=nwui_api::control::views::render_preview(&config,nwui_api::control::resources::Resource::Server,&row,&[],&[json!({"id":certificate,"tlsReady":false})]);
     assert!(unavailable["config"].is_null());assert!(unavailable["error"].as_str().unwrap().contains(certificate));
 }
+
+#[test]
+fn http2_model_render_keeps_tls_tuning_and_plain_redirect_isolation() {
+    let (config,_root)=config();let cert="cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+    for flag in [None,Some(false),Some(true)] {
+        let mut cfg=json!({"proxyPass":"http://127.0.0.1:9000","tlsPort":18443});
+        if let Some(value)=flag {cfg["tlsOptions"]=json!({"http2":value});}
+        let mut row=server(OK,"h2.test",18086,true,cfg);row["certificateId"]=json!(cert);
+        let preview=nwui_api::control::views::render_preview(&config,nwui_api::control::resources::Resource::Server,&row,&[],&[json!({"id":cert,"tlsReady":true})]);
+        assert!(preview["error"].is_null(),"{preview}");let text=preview["config"].as_str().unwrap();
+        assert_eq!(text.matches("http2 on;").count(),usize::from(flag==Some(true)));
+        assert!(!text.lines().any(|line|line.contains("listen")&&line.contains("http2")));
+        let plain=text.split("server {").find(|block|block.contains("listen 18086;")).unwrap();assert!(!plain.contains("http2"));
+    }
+}

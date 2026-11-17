@@ -63,3 +63,8 @@ it("WebSocket control is a non-submit action and conflict feedback requires an e
   expect(html).toContain("기존 WebSocket 설정과 충돌합니다"); expect(html).toContain("충돌한 설정 교체"); expect(html).toContain("기존 설정 유지");
   expect(state).toEqual(before);
 });
+
+it.each([true,false,undefined])("HTTP/2 detail displays saved value %s", http2 => {
+  const html=renderToStaticMarkup(<ServerDetail basePath="/reverse-proxy" configOrigin="this-instance" write={null} data={{...base,certificateId:"cert",config:{tlsOptions:{http2}}}} />);
+  expect(html).toContain("HTTP/2");expect(html).toContain(http2 ? "사용" : "사용 안 함");
+});

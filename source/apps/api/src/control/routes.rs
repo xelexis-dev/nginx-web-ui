@@ -1,12 +1,12 @@
 use super::resources::{self, Mutation, Resource};
 use crate::{
     auth::{
-        principal::{TwoFactorGate, db_unavailable, require_gateway, require_session},
+        principal::{TwoFactorGate, db_unavailable, require_gateway, require_user},
         rbac::Action,
     },
     contracts::FormResult,
     error::ApiError,
-    http_policy::{check_browser_origin, read_form},
+    http_policy::read_form,
     request_context::RequestContext,
     state::AppState,
 };
@@ -194,15 +194,14 @@ async fn form(
     Extension(ctx): Extension<RequestContext>,
     request: Request,
 ) -> Result<Json<FormResult>, ApiError> {
-    check_browser_origin(request.headers(), &ctx)?;
-    let session = require_session(
+    let session = require_user(
         &state,
         request.headers(),
         &ctx,
         Some(Action::ConfigWrite),
-        TwoFactorGate::Enforce,
-    )
+        TwoFactorGate::Enforce, crate::auth::principal::Use::SessionOrToken)
     .await?;
+    session.check_origin(request.headers(), &ctx)?;
     let command = request
         .uri()
         .path()

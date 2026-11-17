@@ -99,6 +99,7 @@ it.each([0, 2])(
     expect(html).toContain('name="id" value="u1"');
     expect(html).toContain('name="currentPassword"');
     expect(html).toContain("관리자 본인의 비밀번호입니다.");
+    expect(html).toContain("이 사용자의 API 토큰도 모두 폐기됩니다.");
     expect(html.includes(`패스키 ${count}개`)).toBe(count > 0);
     expect(html).toContain(
       "2FA가 필수이면 설정을 마쳐야 다른 화면을 쓸 수 있습니다.",
@@ -150,4 +151,12 @@ it("locks close, cancel and submit while resetting", () => {
   );
   expect(html.match(/<button\b[^>]*disabled=""/g)).toHaveLength(3);
   expect(html).toContain('aria-busy="true"');
+});
+
+import { EditUserForms } from "./[id]/edit/edit-user-forms";
+import { UserDetailActions } from "./[id]/detail-actions";
+it("warns before password reset and account disable revoke the user's tokens", () => {
+  expect(renderToStaticMarkup(<EditUserForms id="u1" email="owner@example.test" currentRole="editor" hasPassword />)).toContain("비밀번호를 재설정하면 이 사용자의 API 토큰도 모두 폐기됩니다.");
+  expect(renderToStaticMarkup(<UserDetailActions id="u1" isSelf={false} enabled />)).toContain("비활성화하면 이 사용자의 API 토큰도 모두 폐기됩니다.");
+  expect(renderToStaticMarkup(<UserDetailActions id="u1" isSelf={false} enabled={false} />)).not.toContain("API 토큰도 모두 폐기됩니다.");
 });

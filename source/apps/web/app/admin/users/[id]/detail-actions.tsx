@@ -80,6 +80,7 @@ export function UserDetailActions({
           수정
         </Link>
       </div>
+      {enabled && !isSelf ? <Banner tone="warning" title="비활성화하면 이 사용자의 API 토큰도 모두 폐기됩니다." /> : null}
       {toggleState.error ? (
         <Banner tone="error" role="alert" title={toggleState.error} />
       ) : null}

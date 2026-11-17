@@ -1,8 +1,8 @@
 //! Certificate read projections. No raw certificate or account row crosses this boundary.
 use crate::{
     auth::{
-        principal::{SessionPrincipal, db_unavailable},
-        rbac::{Action, can},
+        principal::{UserPrincipal, db_unavailable},
+        rbac::Action,
     },
     error::ApiError,
     state::AppState,
@@ -124,7 +124,7 @@ fn domains(values: &Value) -> Value {
 }
 pub async fn view(
     state: &AppState,
-    session: &SessionPrincipal,
+    session: &UserPrincipal,
     path: &str,
     query: &BTreeMap<String, String>,
 ) -> Result<Option<Value>, ApiError> {
@@ -139,13 +139,13 @@ pub async fn view(
         ["certificates", _, "replace"] => Action::NginxReload,
         _ => Action::ConfigRead,
     };
-    if !can(session.role, action) {
+    if !session.can(action) {
         return Err(ApiError::forbidden());
     }
     if parts.len() > 3 {
         return Ok(None);
     }
-    let can_write = can(session.role, Action::ConfigWrite);
+    let can_write = session.can(Action::ConfigWrite);
     if parts == ["certificates", "import"] {
         return Ok(Some(json!({})));
     }

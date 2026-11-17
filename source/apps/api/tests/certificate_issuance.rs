@@ -143,6 +143,7 @@ fn order(s: &Ca) -> Value {
 }
 fn actor() -> Actor {
     Actor {
+        via: None,
         id: None,
         label: Some("test:issuance".into()),
         ip: None,
@@ -568,6 +569,9 @@ async fn persistent_deploy_and_restore_failure_blocks_until_publisher_restart_re
 async fn linked_issuance_preserves_unapplied_edits_without_history_and_records_system_audit() {
     if !linked_child("linked_issuance_preserves_unapplied_edits_without_history_and_records_system_audit").await {return;}
     let (t, server, _ca, _tmp, id) = linked_issuance(false).await;
+    auth_support::insert_user(&t.client,auth_support::UserRow::default(),None).await;
+    let via=json!({"kind":"token","id":"issuance-token","name":"job token"});
+    t.client.execute("UPDATE certificate_jobs SET actor=actor||jsonb_build_object('id','u1','via',$1::jsonb) WHERE certificate_id=$2",&[&via,&id]).await.unwrap();
     t.client.execute("INSERT INTO nginx_servers(id,server_name,listen,config) VALUES('unrelated-draft','draft.example.com',19091,$1)", &[&json!({"proxyPass":"http://192.0.2.5:9000"})]).await.unwrap();
     assert_eq!(nwui_api::control::pending::status(&t.state).await.unwrap().count, 1);
     let worker = jobs::start(t.state.clone()).await.unwrap();
@@ -587,6 +591,9 @@ async fn linked_issuance_preserves_unapplied_edits_without_history_and_records_s
     assert!(!t.state.config.nginx_conf_dir.join("server-unrelated-draft.conf").exists());
     let actor:String=t.client.query_one("SELECT actor_label FROM audit_logs WHERE action='nginx:apply' AND (\"after\"->>'ok')::boolean",&[]).await.unwrap().get(0);
     assert_eq!(actor, "system:certificate");
+    assert!(t.client.query_one("SELECT via IS NULL FROM audit_logs WHERE action='nginx:apply' AND (\"after\"->>'ok')::boolean",&[]).await.unwrap().get::<_,bool>(0));
+    assert_eq!(t.client.query_one("SELECT via FROM audit_logs WHERE action='cert:issue-result' AND target=$1",&[&id]).await.unwrap().get::<_,Value>(0),via);
+    assert_eq!(t.client.query_one("SELECT actor_id FROM audit_logs WHERE action='cert:issue-result' AND target=$1",&[&id]).await.unwrap().get::<_,String>(0),"u1");
     server.abort();
 }
 
@@ -737,6 +744,7 @@ async fn user_pem_replace_keeps_the_callers_apply_actor() {
         key_pem: leaf.signing_key.serialize_pem(),
     };
     let actor = Actor {
+        via: None,
         id: None,
         label: Some("gateway:editor".into()),
         ip: None,

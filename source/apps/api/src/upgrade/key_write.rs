@@ -188,80 +188,6 @@ pub(crate) fn write_locked(locks:&StorageLocks,roots:&Roots,j:&mut Journal,p:Pur
     Err(key_error())
 }
 
-fn staged_parent_missing(roots:&Roots,intent:&Intent)->Result<bool,StepError> {
-    let Purpose::Staged{generation}=&intent.purpose else{return Ok(false)};
-    let generation_parent=roots.app.join(".nwui-auto/gen");let root=generation_parent.join(generation);
-    let parent=match fs::symlink_metadata(&generation_parent) {
-        Err(e)if e.kind()==io::ErrorKind::NotFound=>{let directory=key_file::validate_parent(&generation_parent,KeyPolicy::Strict).map_err(|_|key_error())?;return Ok(stat(&directory,&name(&generation_parent)?)?.is_none());},
-        Err(e)=>return Err(io_error(e)),Ok(_)=>key_file::validate_parent(&root,KeyPolicy::Strict).map_err(|_|key_error())?,
-    };
-    Ok(stat(&parent,&name(&root)?)?.is_none())
-}
-fn discard_done(j:&Journal)->bool {j.load().records.iter().any(|r|r.step==Step::RRestore && r.state==StepState::Done && r.data.as_ref().and_then(|v|v.get("recoveryEvent")).and_then(|v|v.as_str())==Some("key-discard-done"))}
-/// Synchronous R-restore step: await on a blocking thread under A+D, after owner discard and
-/// full original manifest verification. Never remove a canonical key or infer temp ownership.
-pub(crate) fn discard_upgrade_keys(roots:&Roots,locks:&StorageLocks,j:&mut Journal)->Result<(),StepError> {
-    if !locks.holds_d() || !locks.matches_roots(&roots.db,&roots.app) || !j.belongs_to(&roots.app) || j.load().branch!=Branch::Upgrade {return Err(mismatch());}
-    for path in [roots.app.join(".nwui-auto/active-v1.json"),roots.db.join("17/data")] {
-        match fs::symlink_metadata(path){Err(e)if e.kind()==io::ErrorKind::NotFound=>{},_=>return Err(mismatch())}
-    }
-    let verified=j.load().records.iter().rev().find(|r|r.step==Step::RRestore && r.state==StepState::Done && r.data.as_ref().is_some_and(|d|d.get("recoveryEvent").and_then(|v|v.as_str())==Some("entries-verified") && d.get("backupId").and_then(|v|v.as_str())==Some(j.load().attempt_id.as_str()))).ok_or_else(mismatch)?;
-    if j.load().records.iter().any(|r|r.step==Step::S4Prepare && r.seq>=verified.seq){return Err(mismatch());}
-    let work=roots.db.join(".nwui-auto-work").join(&j.load().attempt_id);
-    for data in [work.join("data"),work.join("target")] {super::source::require_no_postmaster(&data)?;}
-    super::backup::verify_restored(roots,j)?;
-    let history=events(j)?;let mut intents=std::collections::BTreeMap::new();let mut stages=std::collections::BTreeMap::new();
-    for event in &history {
-        match &event.intent.purpose {
-            Purpose::Fresh=>return Err(mismatch()),
-            Purpose::Staged{generation}=>{if event.intent.target!=(KeySource::Staged{generation:generation.clone()}).path(&roots.app,None){return Err(mismatch());}stages.insert(generation.clone(),event.clone());},
-            Purpose::Publication{..}=>{},
-        }
-        intents.insert(event.intent.id.clone(),event.intent.clone());
-    }
-    let done=discard_done(j);
-    // Prevalidate every leaf before retiring any of them. Each name was persisted before create.
-    for intent in intents.values() {
-        if staged_parent_missing(roots,intent)?{continue;}
-        let parent=key_file::validate_parent(&intent.target,policy(roots,&intent.purpose,&intent.target)).map_err(|_|key_error())?;
-        let temp=CString::new(intent.temp_name.as_str()).map_err(|_|mismatch())?;
-        if let Some(m)=stat(&parent,&temp)? {
-            if done || !regular(&m){return Err(mismatch());}
-            if m.st_nlink!=1 {
-                let leaf=stat(&parent,&name(&intent.target)?)?.ok_or_else(mismatch)?;
-                if !matches!(intent.purpose,Purpose::Staged{..}) || m.st_nlink!=2 || leaf.st_dev!=m.st_dev || leaf.st_ino!=m.st_ino || read_temp(&parent,&temp,&m,&intent.sha256,2)?.is_none(){return Err(mismatch());}
-            }
-        }
-        if matches!(intent.purpose,Purpose::Publication{..}) && stat(&parent,&name(&intent.target)?)?.is_some(){return Err(mismatch());}
-    }
-    for event in stages.values() {
-        if staged_parent_missing(roots,&event.intent)?{continue;}
-        let parent=key_file::validate_parent(&event.intent.target,KeyPolicy::Strict).map_err(|_|key_error())?;
-        if let Some(m)=stat(&parent,&name(&event.intent.target)?)? {
-            if done || event.action==Action::Retired{return Err(mismatch());}
-            if m.st_nlink==2 {
-                let temp=CString::new(event.intent.temp_name.as_str()).map_err(|_|mismatch())?;let other=stat(&parent,&temp)?.ok_or_else(mismatch)?;
-                if other.st_dev!=m.st_dev || other.st_ino!=m.st_ino || read_temp(&parent,&temp,&other,&event.intent.sha256,2)?.is_none(){return Err(mismatch());}
-            }else{validate_target(roots,&event.intent.purpose,&event.intent,&m)?;}
-        }
-    }
-    if done{return Ok(());}
-    j.record(Step::RRestore,StepState::Intent,Some(serde_json::json!({"recoveryEvent":"key-discard-intent","attemptId":j.load().attempt_id})))?;
-    for intent in intents.values() {
-        if staged_parent_missing(roots,intent)?{continue;}
-        let parent=key_file::validate_parent(&intent.target,policy(roots,&intent.purpose,&intent.target)).map_err(|_|key_error())?;
-        let temp=CString::new(intent.temp_name.as_str()).map_err(|_|mismatch())?;
-        if let Some(m)=stat(&parent,&temp)? {if !regular(&m) || !matches!(m.st_nlink,1|2){return Err(mismatch());}unlink(&parent,&temp)?;checkpoint("discard-temp");}
-    }
-    for event in stages.values() {
-        if staged_parent_missing(roots,&event.intent)?{continue;}
-        let parent=key_file::validate_parent(&event.intent.target,KeyPolicy::Strict).map_err(|_|key_error())?;
-        let leaf=name(&event.intent.target)?;
-        if let Some(m)=stat(&parent,&leaf)? {validate_target(roots,&event.intent.purpose,&event.intent,&m)?;unlink(&parent,&leaf)?;checkpoint("discard-staged");}
-    }
-    j.record(Step::RRestore,StepState::Done,Some(serde_json::json!({"recoveryEvent":"key-discard-done","attemptId":j.load().attempt_id})))?;checkpoint("discard-done");Ok(())
-}
-
 pub(super) fn source(j:&Journal)->Result<KeySource,StepError> {
     let mut source=KeySource::Canonical;let mut pending=false;
     for e in events(j)? {
@@ -344,92 +270,9 @@ fn ensure_sync(roots:&Roots,locks:&StorageLocks,j:&mut Journal,required:bool)->R
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{crypto::SecretBox,db_upgrade::{engine,files}};
+    use crate::{crypto::SecretBox,db_upgrade::{paths,files}};
     use super::super::{Branch,Step,StepState,journal::Candidate};
     use std::{fs,path::{Path,PathBuf},os::unix::{fs::{MetadataExt,PermissionsExt},process::ExitStatusExt}};
-    fn restored_key_fixture()->(tempfile::TempDir,Roots,StorageLocks,Journal,String) {
-        let (t,r)=fixture(Branch::Upgrade);let (locks,mut j)=open(&r);
-        fs::create_dir(r.db.join("global")).unwrap();fs::write(r.db.join("global/pg_control"),b"original control").unwrap();fs::write(r.db.join("PG_VERSION"),b"15\n").unwrap();
-        let control=crate::db_upgrade::control::Control::parse(&format!("Database system identifier: 123\nDatabase cluster state: shut down\n{}",crate::db_upgrade::control::COMPATIBILITY_FIELDS.iter().map(|f|format!("{f}: 1\n")).collect::<String>()),"").unwrap();
-        let prepared=super::super::backup::prepare(&r,&locks,&j.load().attempt_id,super::super::backup_format::SourceLocation::Root,&std::collections::BTreeSet::from(["PG_VERSION".into(),"global".into()]),&control,"2026-10-28T00:00:00Z").unwrap();super::super::backup::create_verified(&r,&locks,&mut j,&prepared).unwrap();
-        let g=uuid::Uuid::new_v4().to_string();write_locked(&locks,&r,&mut j,Purpose::Staged{generation:g.clone()},Mode::Publish).unwrap();write_locked(&locks,&r,&mut j,Purpose::Publication{generation:g.clone()},Mode::Prepare).unwrap();super::super::restore::restore_entries(&r,&locks,&mut j).unwrap();(t,r,locks,j,g)
-    }
-    #[test]
-    fn g49_stale_private_pidfiles_allow_key_discard_and_work_disposal() {
-        for pid in [i32::MAX,std::process::id() as i32] {for leaf in ["data","target"] {
-            let (_t,r,locks,mut j,_)=restored_key_fixture();j.record_retry_failure(Step::P4Target,"verification_failed",chrono::Utc::now()).unwrap();let work=r.db.join(".nwui-auto-work").join(&j.load().attempt_id);fs::create_dir_all(work.join(leaf)).unwrap();
-            let path=work.join(leaf).join("postmaster.pid");fs::write(&path,format!("{pid}\n")).unwrap();fs::set_permissions(&path,fs::Permissions::from_mode(0o600)).unwrap();let before=fs::read(&path).unwrap();
-            discard_upgrade_keys(&r,&locks,&mut j).unwrap();assert_eq!(fs::read(&path).unwrap(),before);
-            super::super::restore::discard_work(&r,&locks,&mut j).unwrap();assert!(!work.exists());
-        }}
-    }
-    #[test]
-    fn g49_unsafe_private_pidfiles_refuse_without_journal_mutation() {
-        for case in ["empty","malformed","zero","oversized","mode","hardlink","symlink","directory","owner"] {
-            let (_t,r,locks,mut j,_)=restored_key_fixture();let data=r.db.join(".nwui-auto-work").join(&j.load().attempt_id).join("data");fs::create_dir_all(&data).unwrap();let path=data.join("postmaster.pid");
-            fs::write(&path,format!("{}\n",i32::MAX)).unwrap();fs::set_permissions(&path,fs::Permissions::from_mode(0o600)).unwrap();
-            match case {
-                "empty"=>fs::write(&path,b"").unwrap(),"malformed"=>fs::write(&path,b"not a pid\n").unwrap(),"zero"=>fs::write(&path,b"0\n").unwrap(),"oversized"=>fs::write(&path,vec![b'1';16385]).unwrap(),
-                "mode"=>fs::set_permissions(&path,fs::Permissions::from_mode(0o666)).unwrap(),"hardlink"=>fs::hard_link(&path,data.join("other")).unwrap(),
-                "symlink"=>{fs::remove_file(&path).unwrap();std::os::unix::fs::symlink("absent",&path).unwrap();},"directory"=>{fs::remove_file(&path).unwrap();fs::create_dir(&path).unwrap();},
-                _=>{use std::os::unix::ffi::OsStrExt;let name=std::ffi::CString::new(path.as_os_str().as_bytes()).unwrap();assert_eq!(unsafe{libc::chown(name.as_ptr(),99,99)},0);},
-            }
-            let before=fs::read(r.app.join(".nwui-auto/journal-v1.json")).unwrap();assert!(discard_upgrade_keys(&r,&locks,&mut j).is_err(),"{case}");assert_eq!(fs::read(r.app.join(".nwui-auto/journal-v1.json")).unwrap(),before);assert!(fs::symlink_metadata(&path).is_ok());
-        }
-    }
-    #[test]
-    #[ignore="native PG17: real private postmaster exclusion and SIGKILL stale pid recovery"]
-    fn g49_native_private_postmaster_busy_then_dead_allows_discard() {
-        if std::env::var("NWUI_TEST_PROFILE_NATIVE").as_deref()!=Ok("1"){return;}
-        use crate::db_upgrade::postgres;
-        let (t,r,locks,mut j,_)=restored_key_fixture();j.record_retry_failure(Step::P4Target,"verification_failed",chrono::Utc::now()).unwrap();let work=r.db.join(".nwui-auto-work").join(&j.load().attempt_id);let data=work.join("data");fs::create_dir_all(&work).unwrap();
-        for p in [t.path(),r.db.as_path(),work.parent().unwrap(),work.as_path()] {fs::set_permissions(p,fs::Permissions::from_mode(0o711)).unwrap();}
-        postgres::directory(&data).unwrap();let logs=t.path().join("logs");postgres::directory(&logs).unwrap();let init=logs.join("init");postgres::directory(&init).unwrap();
-        let mut cmd=postgres::command(17,"initdb").unwrap();cmd.arg("-D").arg(&data).args(["--no-locale","--encoding=UTF8","--auth=trust"]);postgres::capture(cmd,&init,std::time::Duration::from_secs(300)).unwrap();
-        let run=logs.join("run");postgres::directory(&run).unwrap();let server=postgres::Private::start(17,&data,&run).unwrap();let path=data.join("postmaster.pid");let bytes=fs::read(&path).unwrap();
-        let before=fs::read(r.app.join(".nwui-auto/journal-v1.json")).unwrap();assert_eq!(discard_upgrade_keys(&r,&locks,&mut j).unwrap_err().code,"storage_busy");assert_eq!(fs::read(r.app.join(".nwui-auto/journal-v1.json")).unwrap(),before);assert_eq!(fs::read(&path).unwrap(),bytes);
-        let pid:i32=std::str::from_utf8(&bytes).unwrap().lines().next().unwrap().parse().unwrap();assert_eq!(unsafe{libc::kill(pid,libc::SIGKILL)},0);drop(server);assert!(path.exists());
-        for p in [r.db.as_path(),work.parent().unwrap(),work.as_path()] {fs::set_permissions(p,fs::Permissions::from_mode(0o700)).unwrap();}
-        discard_upgrade_keys(&r,&locks,&mut j).unwrap();assert_eq!(fs::read(&path).unwrap(),bytes);super::super::restore::discard_work(&r,&locks,&mut j).unwrap();assert!(!work.exists());
-    }
-    #[test]
-    fn w1_key_restore_discards_only_owned_stage_and_publication_temp_and_replays() {
-        for hardlink in [false,true] {
-            let (_t,r,locks,mut j,g)=restored_key_fixture();let staged=target(&r,&Purpose::Staged{generation:g.clone()}).unwrap();
-            let original=events(&j).unwrap();let stage=original.iter().find(|e|matches!(e.intent.purpose,Purpose::Staged{..})).unwrap().intent.clone();
-            if hardlink{fs::hard_link(&staged,staged.parent().unwrap().join(&stage.temp_name)).unwrap();}
-            discard_upgrade_keys(&r,&locks,&mut j).unwrap();assert!(!staged.exists());assert!(!canonical(&r).exists());assert!(fs::read_dir(r.app.join("secrets")).unwrap().next().is_none());
-            assert_eq!(fs::read(r.db.join("PG_VERSION")).unwrap(),b"15\n");let count=j.load().records.len();discard_upgrade_keys(&r,&locks,&mut j).unwrap();assert_eq!(count,j.load().records.len());assert_eq!(j.load().outcome,super::super::Outcome::Upgrading);
-            // The outer generation cleanup may already have removed its now-empty directory.
-            fs::remove_dir(staged.parent().unwrap()).unwrap();discard_upgrade_keys(&r,&locks,&mut j).unwrap();
-        }
-    }
-    #[test]
-    fn w1_key_restore_discard_child() {
-        let Some(base)=std::env::var_os("NWUI_KEY_DISCARD_FIXTURE")else{return};let r=roots(Path::new(&base));let (locks,mut j)=open(&r);discard_upgrade_keys(&r,&locks,&mut j).unwrap();
-    }
-    #[test]
-    fn w1_key_restore_real_kills_resume_temp_stage_and_done_without_creating_canonical() {
-        for point in ["discard-temp","discard-staged","discard-done"] {
-            let (t,r,locks,j,g)=restored_key_fixture();drop(j);drop(locks);
-            let result=std::process::Command::new(std::env::current_exe().unwrap()).args(["--exact","upgrade::key_write::tests::w1_key_restore_discard_child","--nocapture"]).env("NWUI_KEY_DISCARD_FIXTURE",t.path()).env("NWUI_KEY_WRITE_KILL_POINT",point).status().unwrap();assert_eq!(result.signal(),Some(libc::SIGKILL),"{point}");
-            let (locks,mut j)=open(&r);discard_upgrade_keys(&r,&locks,&mut j).unwrap();assert!(!canonical(&r).exists());assert!(!target(&r,&Purpose::Staged{generation:g}).unwrap().exists());assert!(fs::read_dir(r.app.join("secrets")).unwrap().next().is_none());super::super::backup::verify_restored(&r,&j).unwrap();
-        }
-    }
-    #[test]
-    fn w1_key_restore_preserves_invalid_staged_keys_foreign_temps_and_canonical_material() {
-        for case in ["stage","temp","canonical","selector","unverified"] {
-            let (_t,r,locks,mut j,g)=restored_key_fixture();let staged=target(&r,&Purpose::Staged{generation:g}).unwrap();
-            match case {
-                "stage"=>fs::write(&staged,b"invalid").unwrap(),
-                "temp"=>{let e=events(&j).unwrap().into_iter().find(|e|matches!(e.intent.purpose,Purpose::Publication{..})).unwrap();let p=e.intent.target.parent().unwrap().join(e.intent.temp_name);fs::remove_file(&p).unwrap();std::os::unix::fs::symlink("/not-followed",p).unwrap();},
-                "canonical"=>{SecretBox::load_or_create(&canonical(&r)).unwrap();},
-                "selector"=>fs::write(r.app.join(".nwui-auto/active-v1.json"),b"committed").unwrap(),
-                _=>{let mut state=j.load().clone();state.records.retain(|r|r.data.as_ref().and_then(|d|d.get("recoveryEvent")).and_then(|v|v.as_str())!=Some("entries-verified"));fs::write(r.app.join(".nwui-auto/journal-v1.json"),serde_json::to_vec(&state).unwrap()).unwrap();j=Journal::open(&r.app,&locks).unwrap();},
-            }
-            let count=j.load().records.len();let before=fs::read(&staged).unwrap();assert!(discard_upgrade_keys(&r,&locks,&mut j).is_err(),"{case}");assert_eq!(j.load().records.len(),count);assert_eq!(fs::read(&staged).unwrap(),before);
-        }
-    }
     #[test]
     fn w1_key_write_rejects_generation_aliases_before_any_mutation() {
         let (_t,r)=fixture(Branch::Upgrade);let (locks,mut j)=open(&r);
@@ -495,7 +338,7 @@ mod tests {
         assert_eq!(result.key.bytes,before);
     }
     const CHILD:&str="NWUI_KEY_WRITE_FIXTURE";
-    fn roots(base:&Path)->Roots {Roots {db:base.join("db"),app:base.join("app"),architecture:engine::architecture().unwrap().into()}}
+    fn roots(base:&Path)->Roots {Roots {db:base.join("db"),app:base.join("app"),architecture:paths::architecture().unwrap().into()}}
     fn fixture(branch:Branch)->(tempfile::TempDir,Roots) {
         let t=tempfile::tempdir().unwrap();let r=roots(t.path());
         for p in [&r.db,&r.app] {fs::create_dir(p).unwrap();fs::set_permissions(p,fs::Permissions::from_mode(0o700)).unwrap();}

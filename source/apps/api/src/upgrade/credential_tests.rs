@@ -1,3 +1,4 @@
+//! Migrated PG17 retains the legacy credential policy; this fixture runs only PG17 tools.
 use super::*;
 use crate::db_upgrade::{inspect,layout::Roots,postgres};
 use std::{fs,os::unix::fs::PermissionsExt,path::{Path,PathBuf},process::Stdio,sync::Arc,time::Duration};
@@ -8,32 +9,33 @@ struct Fixture{server:Option<postgres::Private>,locks:Arc<super::super::StorageL
 impl Fixture{
  async fn new(major:u8,stored:Option<&str>,actual:&str)->Self{
   assert_eq!(std::env::var("NWUI_TEST_PROFILE_NATIVE").as_deref(),Ok("1"));
-  let temp=tempfile::tempdir().unwrap();fs::set_permissions(temp.path(),fs::Permissions::from_mode(0o711)).unwrap();let roots=Roots{db:temp.path().join("db"),app:temp.path().join("app"),architecture:crate::db_upgrade::engine::architecture().unwrap().into()};private(&roots.db);private(&roots.app);if major==17{fs::set_permissions(&roots.db,fs::Permissions::from_mode(0o711)).unwrap();postgres::directory(&roots.db.join("17")).unwrap();}
-  let data=if major==15{roots.db.clone()}else{roots.db.join("17/data")};if major==17{postgres::directory(&data).unwrap();}else{postgres::own(&data).unwrap();}let log=temp.path().join("logs");postgres::directory(&log).unwrap();
+  let temp=tempfile::tempdir().unwrap();fs::set_permissions(temp.path(),fs::Permissions::from_mode(0o711)).unwrap();let roots=Roots{db:temp.path().join("db"),app:if std::env::var_os("NWUI_TEST_API_BIN").is_some(){crate::db_upgrade::paths::APPROOT.into()}else{temp.path().join("app")},architecture:crate::db_upgrade::paths::architecture().unwrap().into()};private(&roots.db);private(&roots.app);unsafe{std::env::set_var("NWUI_TEST_PUBLISHER_ROOT",&roots.app);}assert_eq!(major,17);postgres::own(&roots.db).unwrap();postgres::directory(&roots.db.join("17")).unwrap();
+  let data=roots.db.join("17/data");postgres::directory(&data).unwrap();let log=temp.path().join("logs");postgres::directory(&log).unwrap();
   let mut init=postgres::command(major,"initdb").unwrap();init.arg("-D").arg(&data).args(["--no-locale","--encoding=UTF8","--auth-local=trust","--auth-host=reject"]).stdout(Stdio::null()).stderr(Stdio::null());postgres::wait(init.spawn().unwrap(),Duration::from_secs(60)).unwrap();let server=postgres::Private::start(major,&data,&log).unwrap();
   let root=inspect::connect(&server.socket,"postgres","postgres",None).await.unwrap();root.client.batch_execute("SET default_transaction_read_only=off").await.unwrap();assert!(actual.bytes().all(|b|b.is_ascii_alphanumeric()||b==b'-'));root.client.batch_execute(&format!("CREATE ROLE nginx LOGIN PASSWORD '{actual}'")).await.unwrap();root.client.batch_execute("CREATE DATABASE nginx_web_ui OWNER nginx").await.unwrap();drop(root);
   private(&roots.app.join("secrets"));private(&roots.app.join("tls"));write(&roots.app.join("secrets/auth_secret"),"g37-stored-auth-secret",0o644);if let Some(password)=stored{write(&roots.app.join("secrets/db_password"),password,0o644);}
   let cert=rcgen::generate_simple_self_signed(vec!["g37.invalid".into()]).unwrap();write(&roots.app.join("tls/default.crt"),&cert.cert.pem(),0o644);write(&roots.app.join("tls/default.key"),&cert.signing_key.serialize_pem(),0o600);
+  let mut pair=crate::db_upgrade::pair::Pair::fresh(&roots.architecture);pair.mode="migration".into();pair.ready=true;pair.fresh_step=None;pair.system_identifier=Some(postgres::read_control(17,&data).unwrap().system_identifier);for root in [&roots.db,&roots.app]{private(&root.join(".nwui"));crate::db_upgrade::files::atomic_json(&root.join(".nwui/pair-v1.json"),&pair).unwrap();}
   let locks=Arc::new(super::super::StorageLocks::acquire(&roots.db,&roots.app).unwrap());Self{_temp:temp,roots,locks,server:Some(server),data}
  }
- fn publish(&self){private(Path::new("/run/s6/container_environment"));crate::db_upgrade::fresh::legacy_environment_locked(&self.locks,&self.roots,Path::new("/run/s6/container_environment")).unwrap();}
+ fn publish(&self){private(Path::new("/run/s6/container_environment"));crate::db_upgrade::fresh::ready_environment_locked(&self.locks,&self.roots,Path::new("/run/s6/container_environment")).unwrap();}
 }
 #[tokio::test]
-#[ignore="A37 native PG15 authentication; isolated container with image fallback DATABASE_URL"]
+#[ignore="A37 native migrated PG17 authentication; isolated container with image fallback DATABASE_URL"]
 async fn native_g37_stored_password_authenticates_after_legacy_publication(){
  if std::env::var("NWUI_TEST_PROFILE_NATIVE").as_deref()!=Ok("1"){return;}
- let f=Fixture::new(15,Some(STORED),STORED).await;f.publish();
+ let f=Fixture::new(17,Some(STORED),STORED).await;f.publish();
  let config=read_config().unwrap();let credentials:tokio_postgres::Config=config.database_url.parse().unwrap();let password=std::str::from_utf8(credentials.get_password().unwrap()).unwrap();
  let connected=inspect::connect(&f.server.as_ref().unwrap().socket,"nginx_web_ui","nginx",Some(password)).await;
- assert!(connected.is_ok(),"P2 must authenticate using the published stored credential, not the image fallback; refusal={:?}",connected.as_ref().err().map(|e|e.code));
+ assert!(connected.is_ok(),"PG17 must authenticate using the published stored credential, not the image fallback; refusal={:?}",connected.as_ref().err().map(|e|e.code));
  let connected=connected.unwrap();let user:String=connected.client.query_one("SELECT current_user",&[]).await.unwrap().get(0);assert_eq!(user,"nginx");
 }
 
 #[tokio::test]
-#[ignore="A37 native PG15 pre-random-password legacy compatibility"]
+#[ignore="A37 native migrated PG17 pre-random-password legacy compatibility"]
 async fn native_g37_legacy_missing_password_uses_nginx_without_rewriting_secrets(){
  if std::env::var("NWUI_TEST_PROFILE_NATIVE").as_deref()!=Ok("1"){return;}
- let f=Fixture::new(15,None,"nginx").await;let before=crate::db_upgrade::files::snapshot(&f.roots.app).unwrap();f.publish();
+ let f=Fixture::new(17,None,"nginx").await;let before=crate::db_upgrade::files::snapshot(&f.roots.app).unwrap();f.publish();
  let config=read_config().unwrap();let credentials:tokio_postgres::Config=config.database_url.parse().unwrap();let password=std::str::from_utf8(credentials.get_password().unwrap()).unwrap();
  let connected=inspect::connect(&f.server.as_ref().unwrap().socket,"nginx_web_ui","nginx",Some(password)).await.unwrap();assert_eq!(connected.client.query_one("SELECT 1",&[]).await.unwrap().get::<_,i32>(0),1);
  assert!(!f.roots.app.join("secrets/db_password").exists());assert_eq!(crate::db_upgrade::files::snapshot(&f.roots.app).unwrap(),before);
@@ -42,21 +44,21 @@ async fn native_g37_legacy_missing_password_uses_nginx_without_rewriting_secrets
 #[ignore="A37 native random-marker refusal before publishing or connecting"]
 async fn native_g37_missing_password_with_random_marker_never_falls_back(){
  if std::env::var("NWUI_TEST_PROFILE_NATIVE").as_deref()!=Ok("1"){return;}
- let f=Fixture::new(15,None,STORED).await;write(&f.data.join(".db-random-pw"),"",0o600);private(Path::new("/run/s6/container_environment"));
- let before=crate::db_upgrade::files::snapshot(&f.roots.app).unwrap();let error=crate::db_upgrade::fresh::legacy_environment_locked(&f.locks,&f.roots,Path::new("/run/s6/container_environment")).unwrap_err();assert_eq!(error.code,"pair_mismatch");assert_eq!(error.detail,Some("db_password_missing_random_marker"));assert!(!Path::new("/run/s6/container_environment/DATABASE_URL").exists());assert_eq!(crate::db_upgrade::files::snapshot(&f.roots.app).unwrap(),before);
+ let f=Fixture::new(17,None,STORED).await;write(&f.data.join(".db-random-pw"),"",0o600);private(Path::new("/run/s6/container_environment"));
+ let before=crate::db_upgrade::files::snapshot(&f.roots.app).unwrap();let error=crate::db_upgrade::fresh::ready_environment_locked(&f.locks,&f.roots,Path::new("/run/s6/container_environment")).unwrap_err();assert_eq!(error.code,"pair_mismatch");assert_eq!(error.detail,Some("db_password_missing_random_marker"));assert!(!Path::new("/run/s6/container_environment/DATABASE_URL").exists());assert_eq!(crate::db_upgrade::files::snapshot(&f.roots.app).unwrap(),before);
 }
 #[tokio::test]
-#[ignore="A37 native PG15 wrong stored password produces only a static auth diagnostic"]
+#[ignore="A37 native migrated PG17 wrong stored password produces only a static auth diagnostic"]
 async fn native_g37_wrong_stored_password_has_sanitized_auth_detail(){
  if std::env::var("NWUI_TEST_PROFILE_NATIVE").as_deref()!=Ok("1"){return;}
- let f=Fixture::new(15,Some("g37-wrong-fixture-password"),STORED).await;f.publish();let config=read_config().unwrap();let credentials:tokio_postgres::Config=config.database_url.parse().unwrap();let password=std::str::from_utf8(credentials.get_password().unwrap()).unwrap();
+ let f=Fixture::new(17,Some("g37-wrong-fixture-password"),STORED).await;f.publish();let config=read_config().unwrap();let credentials:tokio_postgres::Config=config.database_url.parse().unwrap();let password=std::str::from_utf8(credentials.get_password().unwrap()).unwrap();
  let error=inspect::connect(&f.server.as_ref().unwrap().socket,"nginx_web_ui","nginx",Some(password)).await.err().unwrap();assert_eq!(error.code,"pair_mismatch");assert_eq!(error.detail,Some("db_auth_failed"));assert!(!error.to_string().contains(STORED));
 }
 #[tokio::test]
 #[ignore="A37 native connection diagnostic classes without PostgreSQL text"]
 async fn native_g37_other_connection_diagnostics_are_static(){
  if std::env::var("NWUI_TEST_PROFILE_NATIVE").as_deref()!=Ok("1"){return;}
- let f=Fixture::new(15,Some(STORED),STORED).await;let connected=inspect::connect(&f.server.as_ref().unwrap().socket,"nginx_web_ui","nginx",Some(STORED)).await.unwrap();
+ let f=Fixture::new(17,Some(STORED),STORED).await;let connected=inspect::connect(&f.server.as_ref().unwrap().socket,"nginx_web_ui","nginx",Some(STORED)).await.unwrap();
  let sql=connected.client.query_one("SELECT 1/0",&[]).await.unwrap_err();assert_eq!(inspect::connection_error(&sql).detail,Some("db_connect_failed"));drop(connected);f.server.unwrap().stop().unwrap();
  let error=inspect::connect(Path::new("/run/nwui-g37-no-such-socket"),"nginx_web_ui","nginx",Some(STORED)).await.err().unwrap();assert_eq!(error.code,"pair_mismatch");assert_eq!(error.detail,Some("db_unreachable"));
 }
@@ -64,7 +66,7 @@ async fn native_g37_other_connection_diagnostics_are_static(){
 #[ignore="A37 native trusted reader and process-only non-credential override"]
 async fn native_g37_reader_never_falls_back_and_keeps_data_key_override(){
  if std::env::var("NWUI_TEST_PROFILE_NATIVE").as_deref()!=Ok("1"){return;}
- let f=Fixture::new(15,Some(STORED),STORED).await;f.publish();let env=Path::new("/run/s6/container_environment");write(&env.join("DATA_KEY_FILE"),"/not-the-process-key",0o600);
+ let f=Fixture::new(17,Some(STORED),STORED).await;f.publish();let env=Path::new("/run/s6/container_environment");write(&env.join("DATA_KEY_FILE"),"/not-the-process-key",0o600);
  assert_eq!(crate::nonroot::startup_value("DATA_KEY_FILE").as_deref(),Some("/tmp/g37-process-key-dir/data_key"));assert_eq!(read_config().unwrap().data_key_file,Path::new("/tmp/g37-process-key-dir/data_key"));
  for field in ["AUTH_SECRET","DATABASE_URL"]{let path=env.join(field);let original=fs::read(&path).unwrap();fs::set_permissions(&path,fs::Permissions::from_mode(0o666)).unwrap();assert!(read_config().is_err());fs::set_permissions(&path,fs::Permissions::from_mode(0o600)).unwrap();fs::remove_file(&path).unwrap();assert!(read_config().is_err());fs::write(&path,&original).unwrap();fs::set_permissions(&path,fs::Permissions::from_mode(0o600)).unwrap();}
 }
@@ -81,8 +83,10 @@ async fn native_g37_operator_admin_seed_persists_and_skips_existing(){
  ready_restart_with_seed(true).await;
 }
 async fn ready_restart_with_seed(seed:bool){
+ assert!(std::env::var_os("NWUI_TEST_API_BIN").is_some_and(|path|Path::new(&path).is_file()),"Ready native tests require NWUI_TEST_API_BIN pointing to the built real nwui-api for the actual-UID access probe");
  let original_password=std::env::var("ADMIN_PASSWORD").ok();
  let mut f=Fixture::new(17,Some(STORED),STORED).await;let server=f.server.take().unwrap();server.stop().unwrap();
+ unsafe{std::env::set_var("DATA_KEY_FILE",f.roots.app.join("secrets/data_key"));}
  let mut pair=crate::db_upgrade::pair::Pair::fresh(&f.roots.architecture);pair.ready=true;pair.fresh_step=None;pair.system_identifier=Some(postgres::read_control(17,&f.data).unwrap().system_identifier);
  for root in [&f.roots.db,&f.roots.app]{private(&root.join(".nwui"));crate::db_upgrade::files::atomic_json(&root.join(".nwui/pair-v1.json"),&pair).unwrap();}
  let dir=Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packages/db/drizzle");let migrations=crate::migrations::read_migrations(&dir).await.unwrap();let candidate=super::super::journal::Candidate{revision:"0".repeat(40),pins_sha256:"1".repeat(64),migrations_sha256:super::super::journal::migrations_sha256(&migrations)};private(Path::new("/run/s6/container_environment"));
@@ -126,23 +130,23 @@ async fn native_g37_operator_auth_rotates_ready_and_restarts_without_writes(){
 async fn native_g37_operator_equal_legacy_secret_is_not_written(){
  if std::env::var("NWUI_TEST_PROFILE_NATIVE").as_deref()!=Ok("1"){return;}
  use std::os::unix::fs::MetadataExt;
- let f=Fixture::new(15,Some(STORED),STORED).await;let path=f.roots.app.join("secrets/auth_secret");let before=fs::metadata(&path).unwrap();let app=crate::db_upgrade::files::snapshot(&f.roots.app).unwrap();f.publish();let after=fs::metadata(&path).unwrap();assert_eq!((before.ino(),before.mtime(),before.mtime_nsec(),before.mode()),(after.ino(),after.mtime(),after.mtime_nsec(),after.mode()));assert_eq!(after.mode()&0o7777,0o644);assert_eq!(crate::db_upgrade::files::snapshot(&f.roots.app).unwrap(),app);
+ let f=Fixture::new(17,Some(STORED),STORED).await;let path=f.roots.app.join("secrets/auth_secret");let before=fs::metadata(&path).unwrap();let app=crate::db_upgrade::files::snapshot(&f.roots.app).unwrap();f.publish();let after=fs::metadata(&path).unwrap();assert_eq!((before.ino(),before.mtime(),before.mtime_nsec(),before.mode()),(after.ino(),after.mtime(),after.mtime_nsec(),after.mode()));assert_eq!(after.mode()&0o7777,0o644);assert_eq!(crate::db_upgrade::files::snapshot(&f.roots.app).unwrap(),app);
 }
 #[tokio::test]
 #[ignore="A37 empty operator AUTH is absent; invalid bytes/text or stored file still refuse"]
 async fn native_g37_operator_invalid_and_empty_values_preserve_material(){
  if std::env::var("NWUI_TEST_PROFILE_NATIVE").as_deref()!=Ok("1"){return;}
  use std::os::unix::ffi::OsStringExt;
- let f=Fixture::new(15,Some(STORED),STORED).await;let before=crate::db_upgrade::files::snapshot(&f.roots.app).unwrap();f.publish();assert_eq!(crate::db_upgrade::files::snapshot(&f.roots.app).unwrap(),before);
- for value in [std::ffi::OsString::from_vec(vec![0xff]),std::ffi::OsString::from("x".repeat(65537))]{unsafe{std::env::set_var("AUTH_SECRET",value);}let error=crate::db_upgrade::fresh::legacy_environment_locked(&f.locks,&f.roots,Path::new("/run/s6/container_environment")).unwrap_err();assert_eq!(error.code,"pair_mismatch");assert_eq!(crate::db_upgrade::files::snapshot(&f.roots.app).unwrap(),before);}
- unsafe{std::env::set_var("AUTH_SECRET","g37-operator-auth-secret");}let path=f.roots.app.join("secrets/auth_secret");fs::remove_file(&path).unwrap();std::os::unix::fs::symlink("db_password",&path).unwrap();let before=fs::read(f.roots.app.join("secrets/db_password")).unwrap();let error=crate::db_upgrade::fresh::legacy_environment_locked(&f.locks,&f.roots,Path::new("/run/s6/container_environment")).unwrap_err();assert_eq!(error.code,"pair_mismatch");assert_eq!(fs::read_link(&path).unwrap(),Path::new("db_password"));assert_eq!(fs::read(f.roots.app.join("secrets/db_password")).unwrap(),before);
+ let f=Fixture::new(17,Some(STORED),STORED).await;let before=crate::db_upgrade::files::snapshot(&f.roots.app).unwrap();f.publish();assert_eq!(crate::db_upgrade::files::snapshot(&f.roots.app).unwrap(),before);
+ for value in [std::ffi::OsString::from_vec(vec![0xff]),std::ffi::OsString::from("x".repeat(65537))]{unsafe{std::env::set_var("AUTH_SECRET",value);}let error=crate::db_upgrade::fresh::ready_environment_locked(&f.locks,&f.roots,Path::new("/run/s6/container_environment")).unwrap_err();assert_eq!(error.code,"pair_mismatch");assert_eq!(crate::db_upgrade::files::snapshot(&f.roots.app).unwrap(),before);}
+ unsafe{std::env::set_var("AUTH_SECRET","g37-operator-auth-secret");}let path=f.roots.app.join("secrets/auth_secret");fs::remove_file(&path).unwrap();std::os::unix::fs::symlink("db_password",&path).unwrap();let before=fs::read(f.roots.app.join("secrets/db_password")).unwrap();let error=crate::db_upgrade::fresh::ready_environment_locked(&f.locks,&f.roots,Path::new("/run/s6/container_environment")).unwrap_err();assert_eq!(error.code,"pair_mismatch");assert_eq!(fs::read_link(&path).unwrap(),Path::new("db_password"));assert_eq!(fs::read(f.roots.app.join("secrets/db_password")).unwrap(),before);
 }
 
 #[tokio::test]
 #[ignore="A37 first legacy boot admin seed uses supplied and persisted credentials"]
 async fn native_g37_operator_admin_seeds_legacy_database(){
  if std::env::var("NWUI_TEST_PROFILE_NATIVE").as_deref()!=Ok("1"){return;}
- let f=Fixture::new(15,Some(STORED),STORED).await;f.publish();let inputs=super::super::boot::Inputs::startup();
+ let f=Fixture::new(17,Some(STORED),STORED).await;f.publish();let inputs=super::super::boot::Inputs::startup();
  let mut config:tokio_postgres::Config=read_config().unwrap().database_url.parse().unwrap();config.host_path(&f.server.as_ref().unwrap().socket).port(50432);
  let manager=deadpool_postgres::Manager::new(config,tokio_postgres::NoTls);let pool=deadpool_postgres::Pool::builder(manager).max_size(2).runtime(deadpool_postgres::Runtime::Tokio1).build().unwrap();
  {let client=pool.get().await.unwrap();client.batch_execute("SET default_transaction_read_only=off; CREATE TABLE users(id text PRIMARY KEY,email text,password_hash text,role text)").await.unwrap();}

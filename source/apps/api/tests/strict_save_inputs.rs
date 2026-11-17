@@ -53,7 +53,7 @@ fn fx_a_direct_proxy_targets_reject_interior_backslashes_and_controls(){
  assert!(validation::assert_valid_proxy_target("http://127.0.0.1:19000/a%5Cb").is_ok());
  assert!(validation::assert_valid_directive("rewrite",&["^/a\\.txt$".into(),"/b".into(),"last".into()],validation::DirectiveContext::Location).is_ok());
 }
-fn actor()->Actor{Actor{id:None,label:Some("fx-a".into()),ip:None}}
+fn actor()->Actor{Actor{via: None,id:None,label:Some("fx-a".into()),ip:None}}
 async fn write(db:&TestDb,op:Mutation,id:Option<&str>,v:Value)->Result<Value,ApiError>{resources::mutate(&db.state,Resource::Server,op,id,v,&actor()).await}
 #[tokio::test]
 #[ignore="real DB: NWUI_TEST_DATABASE_URL"]

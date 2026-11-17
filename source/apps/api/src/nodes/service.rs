@@ -3,7 +3,7 @@ use super::client::{DEFAULT_TIMEOUT, FailureKind, NodeResult, NodeTarget, PROBE_
 use crate::{
     auth::{
         audit::{self, AuditEntry},
-        principal::{SessionPrincipal, db_unavailable},
+        principal::{UserPrincipal, db_unavailable},
         rbac::{Action, can, parse_role, role_str},
     },
     contracts::{Actor, FormInput, Role},
@@ -224,12 +224,12 @@ pub async fn get(state: &AppState, id: &str) -> Result<NodeView, ApiError> {
 }
 pub async fn resolve(
     state: &AppState,
-    session: &SessionPrincipal,
+    session: &UserPrincipal,
     id: &str,
     action: Action,
 ) -> Result<NodeAccess, ApiError> {
-    let access = load_access(state, id, session.role).await?;
-    if !can(access.effective_role, action) {
+    let access = load_access(state, id, session.role_label()).await?;
+    if !session.can(action) || !can(access.node.token_role, action) {
         return Err(ApiError::forbidden());
     }
     Ok(access)
@@ -266,6 +266,11 @@ pub fn needs_negotiation(version: Option<&str>, include_legacy: bool) -> bool {
 /// Resolve/RBAC stays local; callers explicitly opt into the authenticated read.
 pub async fn prepare_access(state: &AppState, access: &mut NodeAccess, include_legacy: bool) -> Result<(), NodeResult> {
     if !needs_negotiation(access.target.node_version.as_deref(), include_legacy) { return Ok(()); }
+    probe_access(state, access).await
+}
+
+/// Capability-sensitive writes require a probe in this request, even for known versions.
+pub async fn probe_access(state: &AppState, access: &mut NodeAccess) -> Result<(), NodeResult> {
     let result = state.node_http.negotiate_info(&state.secrets, &access.target, &access.node.instance_id).await;
     let NodeResult::Success { node_version, .. } = &result else { return Err(result); };
     record_probe(state, &access.node.id, &result).await.map_err(|_|NodeResult::failure(
@@ -295,6 +300,7 @@ pub fn audit_entry(node: &NodeView, action: &str, actor: &Actor, mut detail: Val
     AuditEntry {
         actor_id: actor.id.clone(),
         actor_label: actor.label.clone(),
+        via: actor.via.clone(),
         action: format!("node:{action}"),
         target: Some(node.name.clone()),
         after: Some(detail),
@@ -396,7 +402,7 @@ pub async fn pair_node(
         if let Some(row)=tx.query_opt("SELECT name FROM nodes WHERE instance_id=$1",&[&instance]).await.map_err(|_|db_unavailable())?{return Err(ApiError::new(axum::http::StatusCode::CONFLICT,"duplicate_node",format!("이미 「{}」으로 등록된 노드입니다.",row.get::<_,String>(0))));}
         let id=uuid::Uuid::new_v4().to_string();
         tx.execute("INSERT INTO nodes(id,name,base_url,token_enc,token_role,allow_insecure_tls,instance_id,gateway_name,created_by_user_id) VALUES($1,$2,$3,$4,$5::text::role,$6,$7,$8,$9)",&[&id,&input.name,&input.base_url,&target.token_enc,&role_str(role),&input.allow_insecure_tls,&instance,&pair.gateway_name,&actor.id]).await.map_err(|e|if e.code()==Some(&tokio_postgres::error::SqlState::UNIQUE_VIOLATION){ApiError::new(axum::http::StatusCode::CONFLICT,"duplicate_node","이미 등록된 노드입니다.")}else{db_unavailable()})?;
-        audit::write(&*tx,&AuditEntry{actor_id:actor.id.clone(),actor_label:actor.label.clone(),action:"node:pair".into(),target:Some(input.name.clone()),after:Some(json!({"nodeId":id,"baseUrl":input.base_url,"role":role,"gatewayName":pair.gateway_name})),ip:actor.ip.clone(),..Default::default()}).await.map_err(|_|db_unavailable())?;
+        audit::write(&*tx,&AuditEntry{actor_id:actor.id.clone(),actor_label:actor.label.clone(),via:actor.via.clone(),action:"node:pair".into(),target:Some(input.name.clone()),after:Some(json!({"nodeId":id,"baseUrl":input.base_url,"role":role,"gatewayName":pair.gateway_name})),ip:actor.ip.clone(),..Default::default()}).await.map_err(|_|db_unavailable())?;
         tx.execute("UPDATE nodes SET last_version=$2,gateway_token_id=$3 WHERE id=$1", &[&id, &target.node_version, &value["gatewayTokenId"].as_str().filter(|v| !v.is_empty())]).await.map_err(|_|db_unavailable())?;
         tx.commit().await.map_err(|_|db_unavailable())?;
         Ok(id)

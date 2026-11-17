@@ -1797,3 +1797,36 @@ async fn delayed_two_factor_enable_cannot_restore_factor_after_reset() {
     let after=disable_state(&db).await; assert_eq!(after["sv"],5); assert_eq!(after["enabled"],false); assert!(after["secret"].is_null());
     assert!(audit_rows(&db.client,"user:2fa-enable").await.is_empty());
 }
+
+async fn seed_owner_token(db: &TestDb) {
+    db.client.batch_execute("INSERT INTO access_tokens(id,kind,owner_user_id,name,token_hash,token_suffix,scopes) VALUES('owner-token','user','owner','fixture','fixture-hash','test','[]')").await.unwrap();
+}
+async fn owner_token_revoked(db: &TestDb) -> bool {
+    db.client.query_one("SELECT revoked_at IS NOT NULL FROM access_tokens WHERE id='owner-token'",&[]).await.unwrap().get(0)
+}
+#[tokio::test]
+#[ignore = "real PostgreSQL"]
+async fn factor_changes_revoke_tokens_in_the_same_transaction() {
+    for admin in [false,true] {
+        for fail in [true,false] {
+            let db=test_db().await; two_factor_owner(&db).await; reset_admin(&db).await;
+            seed_owner_token(&db).await;
+            let before=disable_state(&db).await;
+            if fail { db.client.batch_execute("ALTER TABLE audit_logs ADD CONSTRAINT reject_token_revoke CHECK(action <> 'token:revoke')").await.unwrap(); }
+            let reply=if admin { reset_factor(&db).await } else { command(&app(&db),"account.disableTwoFactor",&cookie("owner",3,true),&form(&[("currentPassword",PASSWORD)])).await };
+            assert_eq!(reply.status,if fail {503} else {200},"{}",reply.body);
+            assert_eq!(owner_token_revoked(&db).await,!fail);
+            assert_eq!(audit_rows(&db.client,"token:revoke").await.len(),if fail {0} else {1});
+            if fail { assert_eq!(disable_state(&db).await,before); }
+        }
+    }
+}
+#[tokio::test]
+#[ignore = "real PostgreSQL"]
+async fn not_enrolled_factor_reset_keeps_tokens() {
+    let db=test_db().await; two_factor_owner(&db).await; reset_admin(&db).await; seed_owner_token(&db).await;
+    db.client.execute("UPDATE users SET totp_enabled=false WHERE id='owner'",&[]).await.unwrap();
+    assert_eq!(reset_factor(&db).await.status,409);
+    assert!(!owner_token_revoked(&db).await);
+    assert!(audit_rows(&db.client,"token:revoke").await.is_empty());
+}

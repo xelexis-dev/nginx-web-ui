@@ -3,13 +3,13 @@ use super::{model::{ApplyResult,RollbackKind},pending};
 use crate::{
     auth::{
         principal::{
-            SessionPrincipal, TwoFactorGate, db_unavailable, require_gateway, require_session,
+            UserPrincipal, TwoFactorGate, db_unavailable, require_gateway, require_user,
         },
-        rbac::{Action, can},
+        rbac::Action,
     },
     contracts::FormResult,
     error::ApiError,
-    http_policy::{check_browser_origin, read_form},
+    http_policy::read_form,
     request_context::RequestContext,
     state::AppState,
 };
@@ -178,7 +178,6 @@ async fn form(
     Extension(ctx): Extension<RequestContext>,
     request: Request,
 ) -> Result<Json<FormResult>, ApiError> {
-    check_browser_origin(request.headers(), &ctx)?;
     let command = request
         .uri()
         .path()
@@ -186,15 +185,15 @@ async fn form(
         .next()
         .unwrap_or("")
         .to_owned();
-    let session = require_session(
+    let session = require_user(
         &state,
         request.headers(),
         &ctx,
         Some(Action::NginxReload),
-        TwoFactorGate::Enforce,
-    )
+        TwoFactorGate::Enforce, crate::auth::principal::Use::SessionOrToken)
     .await?;
-    if command == "history.rollback" && !can(session.role, Action::ConfigWrite) {
+    session.check_origin(request.headers(), &ctx)?;
+    if command == "history.rollback" && !session.can(Action::ConfigWrite) {
         return Err(ApiError::forbidden());
     }
     let input = read_form(request).await?;
@@ -237,14 +236,14 @@ async fn form(
 
 pub async fn view(
     state: &AppState,
-    session: &SessionPrincipal,
+    session: &UserPrincipal,
     path: &str,
     _query: &BTreeMap<String, String>,
 ) -> Result<Option<Value>, ApiError> {
     if path != "/history" && !path.starts_with("/history/") {
         return Ok(None);
     }
-    if !can(session.role, Action::ConfigRead) {
+    if !session.can(Action::ConfigRead) {
         return Err(ApiError::forbidden());
     }
     let mut client = state.db.get().await.map_err(|_| db_unavailable())?;
@@ -277,7 +276,7 @@ pub async fn view(
     let snapshot = json!({"id":row.get::<_,String>(0),"createdAt":iso,"label":row.get::<_,Option<String>>(2),"data":row.get::<_,Value>(3),"actorEmail":row.get::<_,Option<String>>(4),"actorId":row.get::<_,Option<String>>(5)});
     tx.commit().await.map_err(|_| db_unavailable())?;
     Ok(Some(
-        json!({"snapshot":snapshot,"upstreams":data.upstreams,"servers":data.servers,"streams":data.streams,"diff":diff,"isFirst":before.is_none(),"canRollback":can(session.role,Action::ConfigWrite)&&can(session.role,Action::NginxReload),"iso":iso}),
+        json!({"snapshot":snapshot,"upstreams":data.upstreams,"servers":data.servers,"streams":data.streams,"diff":diff,"isFirst":before.is_none(),"canRollback":session.can(Action::ConfigWrite)&&session.can(Action::NginxReload),"iso":iso}),
     ))
 }
 

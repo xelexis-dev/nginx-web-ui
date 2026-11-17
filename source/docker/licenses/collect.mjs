@@ -108,10 +108,10 @@ async function binaryDeb(row) {
   if(row.name==='libcrypt-dev')row=inventory().find(r=>r.name==='libcrypt1'&&r.arch===row.arch&&r.sourceVersion===row.sourceVersion);
   const pins=Object.fromEntries([...readFileSync(join(root,'Dockerfile'),'utf8').matchAll(/^ARG ([A-Z][A-Z0-9_]*)=(.*)$/gm)].map(m=>[m[1],m[2]]));
   let bytes;
-  if(row.name==='nginx'||['postgresql-15','postgresql-client-15'].includes(row.name)) {
+  if(row.name==='nginx') {
     const arch=row.arch.toUpperCase();
-    const key=row.name==='nginx'?`NGINX_DEB_${arch}_SHA256`:`PG15_${row.name==='postgresql-15'?'SERVER':'CLIENT'}_${arch}_SHA256`;
-    const url=row.name==='nginx'?`https://nginx.org/packages/debian/pool/nginx/n/nginx/nginx_${row.version}_${row.arch}.deb`:`https://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-15/${row.name}_${row.version}_${row.arch}.deb`;
+    const key=`NGINX_DEB_${arch}_SHA256`;
+    const url=`https://nginx.org/packages/debian/pool/nginx/n/nginx/nginx_${row.version}_${row.arch}.deb`;
     bytes=await get(url);if(sha256(bytes)!==pins[key])throw new Error('Debian pinned binary checksum mismatch');
   }else {
     const meta=await json(`https://snapshot.debian.org/mr/binary/${row.name}/${encodeURIComponent(row.version)}/binfiles`);

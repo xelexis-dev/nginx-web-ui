@@ -94,6 +94,7 @@ async fn registry_seals_returned_token_uses_remote_role_and_revokes_duplicates()
     let server = tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
     let db = auth_support::test_db_with(&[("API_DB_POOL_SIZE", "1")]).await;
     let actor = nwui_api::contracts::Actor {
+        via: None,
         id: None,
         label: Some("test".into()),
         ip: None,
@@ -222,7 +223,7 @@ async fn audit_i18_a_different_origin_cannot_receive_the_stored_node_token() {
     let db = auth_support::test_db_with(&[("API_DB_POOL_SIZE", "1")]).await;
     let token = db.state.secrets.seal("must-not-leak").unwrap();
     db.client.execute("INSERT INTO nodes(id,name,base_url,token_enc,token_role,instance_id,gateway_name) VALUES('known','Known','http://127.0.0.1:9',$1,'viewer','original-instance','gateway')", &[&token]).await.unwrap();
-    let actor = nwui_api::contracts::Actor { id:None, label:Some("audit".into()), ip:None };
+    let actor = nwui_api::contracts::Actor { via: None, id:None, label:Some("audit".into()), ip:None };
     let result = service::update_node(&db.state, "known", service::NodeInput { name:"Renamed".into(),base_url:new_url,allow_insecure_tls:false,pair:None }, &actor).await;
     if result.is_ok() { service::refresh_statuses(&db.state).await.unwrap(); }
     assert!(!leaked.load(Ordering::SeqCst), "editing baseUrl leaked the stored token to a different node instance");
@@ -248,9 +249,10 @@ async fn first_page_and_edit_reads_use_negotiated_metadata_and_read_failures_kee
     use axum::{Router,Json,http::{HeaderMap,StatusCode},routing::get};
     use std::sync::{Arc,atomic::{AtomicUsize,Ordering}};
     use nwui_api::nodes::views;
+    use axum::response::IntoResponse;
     let db=auth_support::test_db_with(&[("API_DB_POOL_SIZE","1")]).await;
     let mode=Arc::new(std::sync::Mutex::new("1.19.11"));let current=mode.clone();
-    let page_hits=Arc::new(AtomicUsize::new(0));let hits=page_hits.clone();
+    let page_hits=Arc::new(AtomicUsize::new(0));let hits=page_hits.clone();let page_version=mode.clone();
     let remote=Router::new().route("/api/v1/info",get(move |headers:HeaderMap| {
         let version=*current.lock().unwrap();async move {
             if version=="slow" {tokio::time::sleep(std::time::Duration::from_secs(4)).await;}
@@ -258,24 +260,34 @@ async fn first_page_and_edit_reads_use_negotiated_metadata_and_read_failures_kee
             if version=="1.19.11" && headers["x-gateway-version"]!="1.19.11" {return (StatusCode::CONFLICT,[("x-node-version",version)],Json(json!({"error":{"code":"version_mismatch"}})));}
             (StatusCode::OK,[("x-node-version",version)],Json(json!({"instanceId":"bound","semver":version})))
         }
-    })).fallback(move || {let hits=hits.clone();async move {hits.fetch_add(1,Ordering::SeqCst);Json(json!({"upstream":{"id":"u","resolveAtRuntime":true}}))}});
+    })).fallback(move |headers:HeaderMap| {let hits=hits.clone();let version=*page_version.lock().unwrap();async move {
+        hits.fetch_add(1,Ordering::SeqCst);
+        if version=="1.19.11" && headers["x-gateway-version"]!="1.19.11" {
+            return (StatusCode::CONFLICT,[("x-node-version",version)],Json(json!({"error":{"code":"version_mismatch"}}))).into_response();
+        }
+        Json(json!({"upstream":{"id":"u","resolveAtRuntime":true}})).into_response()
+    }});
     let listener=tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();let base=format!("http://{}",listener.local_addr().unwrap());
     let server=tokio::spawn(async move {axum::serve(listener,remote).await.unwrap()});
     let token=db.state.secrets.seal("paired-secret").unwrap();
     db.client.execute("INSERT INTO nodes(id,name,base_url,token_enc,token_role,instance_id) VALUES('n','node',$1,$2,'admin','bound')",&[&base,&token]).await.unwrap();
     let session=nwui_api::auth::principal::SessionPrincipal {user_id:"viewer".into(),email:None,name:None,role:Role::Editor,session_version:0,totp_enabled:false,requires_2fa:false,mfa_verified:true,expires_at:i64::MAX};
-    for (stored,actual,path) in [(None,"1.19.11","/nodes/n"),(None,"2.0.0","/nodes/n/reverse-proxy/upstreams/u/edit"),(Some("1.19.11"),"2.0.0","/nodes/n/reverse-proxy/upstreams/u/edit")] {
+    let refused=views::view(&db.state,&(session).clone().into(),"/nodes/n",&Default::default()).await.unwrap().unwrap();
+    assert_eq!(refused["ok"],false);assert_eq!(refused["nodeError"]["failure"]["kind"],"version_mismatch");
+    assert!(service::get(&db.state,"n").await.unwrap().last_version.is_none());
+    for (stored,actual,path) in [(None,"2.0.0","/nodes/n"),(None,"2.1.0","/nodes/n"),(None,"2.0.0","/nodes/n/reverse-proxy/upstreams/u/edit"),(Some("1.19.11"),"2.0.0","/nodes/n/reverse-proxy/upstreams/u/edit")] {
         *mode.lock().unwrap()=actual;
         db.client.execute("UPDATE nodes SET last_version=$1 WHERE id='n'",&[&stored]).await.unwrap();
-        let result=views::view(&db.state,&session,path,&Default::default()).await.unwrap().unwrap();
+        let result=views::view(&db.state, &(session).clone().into(),path,&Default::default()).await.unwrap().unwrap();
         assert_eq!(result["ok"],true,"{result}");assert_eq!(result["node"]["lastVersion"],actual);
         assert_eq!(service::get(&db.state,"n").await.unwrap().last_version.as_deref(),Some(actual));
     }
+    // Failed probes after a remote upgrade must preserve the stale 1.19 cache.
     for failure in ["unauthorized","slow"] {
         *mode.lock().unwrap()=failure;
         db.client.execute("UPDATE nodes SET last_version='1.19.11' WHERE id='n'",&[]).await.unwrap();
         let before=page_hits.load(Ordering::SeqCst);let started=std::time::Instant::now();
-        let result=views::view(&db.state,&session,"/nodes/n",&Default::default()).await.unwrap().unwrap();
+        let result=views::view(&db.state, &(session).clone().into(),"/nodes/n",&Default::default()).await.unwrap().unwrap();
         assert_eq!(service::get(&db.state,"n").await.unwrap().last_version.as_deref(),Some("1.19.11"));
         if failure=="slow" {
             assert_eq!(result["ok"],false);assert!(result.to_string().contains("unreachable"));
@@ -283,4 +295,22 @@ async fn first_page_and_edit_reads_use_negotiated_metadata_and_read_failures_kee
         } else {assert_eq!(result["ok"],true);assert_eq!(result["node"]["lastVersion"],"1.19.11");}
     }
     server.abort();
+}
+
+#[tokio::test]
+#[ignore = "real DB"]
+async fn local_node_relay_audit_keeps_token_via_and_browser_null() {
+    let db=auth_support::test_db().await;
+    auth_support::insert_user(&db.client,auth_support::UserRow::default(),None).await;
+    db.client.execute("INSERT INTO nodes(id,name,base_url,token_enc,token_role,instance_id) VALUES('via-node','node','https://node.test','sealed','editor','remote')",&[]).await.unwrap();
+    let node=service::get(&db.state,"via-node").await.unwrap();
+    for via in [None,Some(nwui_api::contracts::Via::Token{id:"relay-id".into(),name:"relay-token".into()})] {
+        let actor=nwui_api::contracts::Actor{id:Some("u1".into()),label:Some("owner@example.test".into()),ip:None,via:via.clone()};
+        service::audit_node(&db.state,&node,"config:write",&actor,json!({"operation":"test"})).await.unwrap();
+    }
+    let rows=db.client.query("SELECT via,actor_id FROM audit_logs ORDER BY created_at,id",&[]).await.unwrap();
+    assert_eq!(rows.len(),2);
+    assert!(rows.iter().all(|row|row.get::<_,String>(1)=="u1"));
+    assert_eq!(rows[0].get::<_,Option<serde_json::Value>>(0),None);
+    assert_eq!(rows[1].get::<_,serde_json::Value>(0),json!({"kind":"token","id":"relay-id","name":"relay-token"}));
 }

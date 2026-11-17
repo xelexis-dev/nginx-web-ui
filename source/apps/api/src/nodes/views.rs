@@ -1,8 +1,8 @@
 use super::service;
 use crate::{
     auth::{
-        principal::{SessionPrincipal, db_unavailable},
-        rbac::{Action, can},
+        principal::{UserPrincipal, db_unavailable},
+        rbac::Action,
     },
     error::ApiError,
     state::AppState,
@@ -10,8 +10,8 @@ use crate::{
 use serde_json::{Value, json};
 use std::collections::BTreeMap;
 
-fn visible_node(mut node: service::NodeView, session: &SessionPrincipal) -> service::NodeView {
-    if session.role == crate::contracts::Role::Viewer {
+fn visible_node(mut node: service::NodeView, session: &UserPrincipal) -> service::NodeView {
+    if !session.can(Action::ConfigWrite) && !session.can(Action::UserManage) {
         node.base_url.clear();
         node.last_error = None;
     }
@@ -20,7 +20,7 @@ fn visible_node(mut node: service::NodeView, session: &SessionPrincipal) -> serv
 
 pub async fn view(
     state: &AppState,
-    session: &SessionPrincipal,
+    session: &UserPrincipal,
     path: &str,
     query: &BTreeMap<String, String>,
 ) -> Result<Option<Value>, ApiError> {
@@ -28,10 +28,10 @@ pub async fn view(
     if parts.first() != Some(&"nodes") {
         return Ok(None);
     }
-    if !can(session.role, Action::ConfigRead) {
+    if !session.can(Action::ConfigRead) {
         return Err(ApiError::forbidden());
     }
-    let can_write = can(session.role, Action::UserManage);
+    let can_write = session.can(Action::UserManage);
     if parts.len() == 1 {
         let warning = if query.get("unpairWarning").map(String::as_str) == Some("revoke_failed") {
             Some(
@@ -85,7 +85,7 @@ pub async fn view(
     };
     let mut access = match service::resolve(state, session, node_id, plan.action).await {
         Ok(access) => access,
-        Err(e) if e.status == axum::http::StatusCode::FORBIDDEN => {
+        Err(e) if e.status == axum::http::StatusCode::FORBIDDEN && !session.is_token() => {
             return Ok(Some(failed(
                 node_id,
                 path,
@@ -177,7 +177,7 @@ pub async fn view(
             }
         }
     }
-    let mut result = json!({"ok":true,"node":access.node,"effectiveRole":access.effective_role,"data":if plan.aggregate{Value::Object(data)}else{single},"canManage":can_write});
+    let mut result = json!({"ok":true,"node":access.node,"effectiveRole":access.effective_role,"data":if plan.aggregate{Value::Object(data)}else{single},"canManage":can_write,"canWrite":session.can(Action::ConfigWrite)&&crate::auth::rbac::can(access.node.token_role,Action::ConfigWrite),"canApply":session.can(Action::NginxReload)&&crate::auth::rbac::can(access.node.token_role,Action::NginxReload)});
     if let Some(status) = runtime_dns {
         result["runtimeDns"] = status;
     }

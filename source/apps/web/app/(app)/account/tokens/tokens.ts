@@ -18,7 +18,7 @@ import type { TokenScope } from "@repo/contracts";
 export const SCOPE_LABELS: Record<TokenScope, string> = {
   "config:read": "설정 읽기",
   "config:write": "설정 변경",
-  "nginx:reload": "nginx 다시 읽기",
+  "nginx:reload": "저장된 전체 변경사항 적용",
   "user:manage": "사용자 관리",
   "node:pair": "노드 연결",
 };

@@ -57,7 +57,7 @@ fn interrupted_pair_write_is_not_automatically_adopted_or_repaired() {
 }
 #[test]
 fn pg15_and_unknown_layouts_are_refused_without_mutation() {
- for (path,major,code)in[("PG_VERSION","15","pg15_requires_upgrade"),("PG_VERSION","17","unsupported_layout"),("PG_VERSION","16","unsupported_layout"),("postgres/pgdata/PG_VERSION","15","unsupported_layout")] {
+ for (path,major,code)in[("PG_VERSION","15","requires_2_0_first"),("PG_VERSION","17","unsupported_layout"),("PG_VERSION","16","unsupported_layout"),("postgres/pgdata/PG_VERSION","15","unsupported_layout")] {
   let t=tempfile::tempdir().unwrap();let r=roots(t.path());let path=r.db.join(path);fs::create_dir_all(path.parent().unwrap()).unwrap();fs::write(path,major).unwrap();
   let before=(files::snapshot(&r.db).unwrap(),files::snapshot(&r.app).unwrap());assert_eq!(classify(&r).unwrap_err().code,code);assert_eq!(before,(files::snapshot(&r.db).unwrap(),files::snapshot(&r.app).unwrap()));
  }

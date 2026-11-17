@@ -107,6 +107,7 @@ export default async function NewNodeServerPage({
       <ServerForm
         target={{ kind: "node", id, name: loaded.node.name }}
         nodeName={loaded.node.name}
+          nodeVersion={loaded.node.lastVersion}
         legacyNode={/^1\.19\.\d+/.test(loaded.node.lastVersion ?? "")}
         runtimeDns={loaded.runtimeDns}
         action={{ id: "node.createNodeServer", args: [id] }}

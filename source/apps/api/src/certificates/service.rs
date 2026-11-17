@@ -252,6 +252,7 @@ mod hostname_coverage_tests {
 }
 pub(crate) async fn apply(state: &AppState, id: &str, digest: &str, actor: Option<&Actor>) -> Option<String> {
     let system = Actor {
+        via: None,
         id: None,
         label: Some("system:certificate".into()),
         ip: None,
@@ -680,7 +681,7 @@ mod publisher_caller_tests {
         ];
         for(script,expected,explicit_actor)in cases {
             let server=Server::start(script).await.unwrap();let(_root,state)=state_with_client(Client::socket_for_tests(server.path().to_owned(),Bounds::default()),"postgres://fixture@127.0.0.1:1/unused");
-            let actor=Actor{id:Some("operator".into()),label:Some("operator-label".into()),ip:Some("198.51.100.8".into())};let id="3d521ab4-34ad-44e8-b7eb-882c0feff693";let digest="1".repeat(64);
+            let actor=Actor{via: None,id:Some("operator".into()),label:Some("operator-label".into()),ip:Some("198.51.100.8".into())};let id="3d521ab4-34ad-44e8-b7eb-882c0feff693";let digest="1".repeat(64);
             let result=tokio::time::timeout(Duration::from_secs(5),apply(&state,id,&digest,explicit_actor.then_some(&actor))).await.unwrap();assert_eq!(result.as_deref(),expected);
             let requests=server.requests.lock().await;assert!(!requests.is_empty());
             assert!(matches!(&requests[0].op,Op::DeployCertificate{certificate_id,content_digest} if certificate_id==id&&content_digest==&digest));

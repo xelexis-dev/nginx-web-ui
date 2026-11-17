@@ -2,7 +2,7 @@
 //!
 //! Route handlers first decide which kind of principal they accept, then check role/resource
 //! permission. The kinds never bridge: a gateway Bearer token is never a browser session, and
-//! the browser/admin surface accepts sessions only.
+//! browser business routes accept a session or an explicitly scoped user token.
 //!
 //! - **Session** — the Auth.js-compatible cookie (see [`super::session`]). The cookie only proves
 //!   we issued it; the user row must still exist, be enabled and approved, and carry the same
@@ -63,8 +63,85 @@ impl SessionPrincipal {
     }
 
     pub fn actor(&self, ctx: &RequestContext) -> Actor {
-        Actor { id: Some(self.user_id.clone()), label: None, ip: ctx.ip.clone() }
+        Actor { via: None, id: Some(self.user_id.clone()), label: None, ip: ctx.ip.clone() }
     }
+}
+
+/// Business authority. Session security services keep the actual SessionPrincipal.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct UserPrincipal {
+    pub user_id: String,
+    pub email: Option<String>,
+    pub name: Option<String>,
+    role: Role,
+    credential: UserCredential,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+enum UserCredential {
+    Session(SessionPrincipal),
+    Token { id: String, name: String, scopes: std::collections::HashSet<Action>, expires_ms: Option<i64> },
+}
+impl From<SessionPrincipal> for UserPrincipal {
+    fn from(session: SessionPrincipal) -> Self {
+        Self { user_id: session.user_id.clone(), email: session.email.clone(), name: session.name.clone(), role: session.role, credential: UserCredential::Session(session) }
+    }
+}
+impl UserPrincipal {
+    pub(super) fn token(user_id: String, email: Option<String>, role: Role, id: String, name: String, scopes: std::collections::HashSet<Action>, expires_ms: Option<i64>) -> Self {
+        Self { user_id, email, name: None, role, credential: UserCredential::Token { id, name, scopes, expires_ms } }
+    }
+    pub fn can(&self, action: Action) -> bool {
+        can(self.role, action) && match &self.credential { UserCredential::Session(_) => true, UserCredential::Token { scopes, .. } => scopes.contains(&action) }
+    }
+    /// Display only: authorization always uses can().
+    pub fn role_label(&self) -> Role { self.role }
+    pub fn is_token(&self) -> bool { matches!(self.credential, UserCredential::Token { .. }) }
+    pub fn token_id(&self) -> Option<&str> { match &self.credential { UserCredential::Token { id, .. } => Some(id), _ => None } }
+    pub fn expires_ms(&self) -> Option<i64> { match &self.credential { UserCredential::Token { expires_ms, .. } => *expires_ms, _ => None } }
+    pub fn into_session(self) -> Result<SessionPrincipal, ApiError> {
+        match self.credential { UserCredential::Session(session) => Ok(session), _ => Err(session_only()) }
+    }
+    pub fn session(&self) -> Result<&SessionPrincipal, ApiError> {
+        match &self.credential { UserCredential::Session(session) => Ok(session), _ => Err(session_only()) }
+    }
+    pub fn actor(&self, ctx: &RequestContext) -> Actor {
+        Actor { id: Some(self.user_id.clone()), label: None, ip: ctx.ip.clone(), via: match &self.credential {
+            UserCredential::Token { id, name, .. } => Some(crate::contracts::Via::Token { id: id.clone(), name: name.clone() }),
+            UserCredential::Session(_) => None,
+        } }
+    }
+    pub fn check_origin(&self, headers: &HeaderMap, ctx: &RequestContext) -> Result<(), ApiError> {
+        if self.is_token() { super::user_token::check_fetch_metadata(headers) } else { crate::http_policy::check_browser_origin(headers, ctx) }
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Use { SessionOnly, SessionOrToken }
+pub fn session_only() -> ApiError {
+    ApiError::new(StatusCode::FORBIDDEN, "session_required_for_action", "이 작업은 웹에 로그인한 세션에서만 할 수 있습니다.")
+}
+/// Authenticate one credential and enforce the route's explicit use and action.
+pub async fn require_user(state: &AppState, headers: &HeaderMap, ctx: &RequestContext, action: Option<Action>, gate: TwoFactorGate, usage: Use) -> Result<UserPrincipal, ApiError> {
+    let principal = if super::user_token::is_user_token_request(headers) {
+        let principal = super::user_token::authenticate(state, headers, ctx).await?;
+        super::user_token::check_fetch_metadata(headers)?;
+        if usage == Use::SessionOnly { return Err(session_only()); }
+        principal
+    } else {
+        let session = authenticate_session(state, headers, ctx, now_unix_ms()/1000).await?.ok_or_else(ApiError::session_required)?;
+        if gate == TwoFactorGate::Enforce && session.must_enroll_2fa() { return Err(two_factor_required()); }
+        if gate == TwoFactorGate::Enforce && session.must_verify_2fa() { return Err(two_factor_verification_required()); }
+        session.into()
+    };
+    if let Some(action) = action { authorize(state, &principal, ctx, action).await?; }
+    Ok(principal)
+}
+pub async fn authorize(state: &AppState, principal: &UserPrincipal, ctx: &RequestContext, action: Action) -> Result<(), ApiError> {
+    if principal.can(action) { return Ok(()); }
+    if let Ok(client) = state.db.get().await {
+        let entry = AuditEntry { actor_id: Some(principal.user_id.clone()), action: "rbac:denied".into(), target: Some(action.as_str().into()), via: principal.actor(ctx).via, before: Some(json!({"role":role_str(principal.role_label()),"requiredAction":action.as_str()})), ip: ctx.ip.clone(), ..Default::default() };
+        let _ = audit::write(&**client, &entry).await;
+    }
+    Err(if principal.is_token() { ApiError::new(StatusCode::FORBIDDEN,"insufficient_scope","이 토큰으로는 할 수 없는 동작입니다.") } else { ApiError::forbidden() })
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -76,7 +153,7 @@ pub struct GatewayPrincipal {
 
 impl GatewayPrincipal {
     pub fn actor(&self, ctx: &RequestContext) -> Actor {
-        Actor { id: None, label: Some(format!("gateway:{}", self.name)), ip: ctx.ip.clone() }
+        Actor { via: None, id: None, label: Some(format!("gateway:{}", self.name)), ip: ctx.ip.clone() }
     }
 }
 
@@ -179,47 +256,6 @@ pub async fn authenticate_session(state: &AppState, headers: &HeaderMap, ctx: &R
         mfa_verified: claims.get("mfaVerified").and_then(Value::as_bool).unwrap_or(false),
         expires_at: claims.get("exp").and_then(Value::as_f64).map(|e| e as i64).unwrap_or(now),
     }))
-}
-
-/// The session guard for browser routes.
-///
-/// No/invalid/revoked session → [`ApiError::session_required`]. 2FA not enrolled while required
-/// and `gate` is `Enforce` → 403 `two_factor_required`. Role lacks `action` → best-effort
-/// `rbac:denied` audit, then [`ApiError::forbidden`].
-pub async fn require_session(
-    state: &AppState,
-    headers: &HeaderMap,
-    ctx: &RequestContext,
-    action: Option<Action>,
-    gate: TwoFactorGate,
-) -> Result<SessionPrincipal, ApiError> {
-    let principal = authenticate_session(state, headers, ctx, now_unix_ms() / 1000)
-        .await?
-        .ok_or_else(ApiError::session_required)?;
-    if gate == TwoFactorGate::Enforce && principal.must_enroll_2fa() {
-        return Err(two_factor_required());
-    }
-    if gate == TwoFactorGate::Enforce && principal.must_verify_2fa() {
-        return Err(two_factor_verification_required());
-    }
-    if let Some(action) = action
-        && !can(principal.role, action)
-    {
-        // A failed audit write must never turn the denial into something else.
-        if let Ok(client) = state.db.get().await {
-            let entry = AuditEntry {
-                actor_id: Some(principal.user_id.clone()),
-                action: "rbac:denied".into(),
-                target: Some(action.as_str().into()),
-                before: Some(json!({"role": role_str(principal.role), "requiredAction": action.as_str()})),
-                ip: ctx.ip.clone(),
-                ..AuditEntry::default()
-            };
-            let _ = audit::write(&**client, &entry).await;
-        }
-        return Err(ApiError::forbidden());
-    }
-    Ok(principal)
 }
 
 // ───────────────────────────── gateway ─────────────────────────────

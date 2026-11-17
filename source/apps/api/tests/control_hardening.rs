@@ -249,6 +249,7 @@ fn m1_bad_legacy_directive_is_skipped() {
 async fn referenced_upstream(operation: Mutation) {
     let db = auth_support::test_db().await;
     let actor = Actor {
+        via: None,
         id: None,
         label: Some("test".into()),
         ip: None,
@@ -395,6 +396,7 @@ async fn upgrade_rows_skip_and_apply_healthy_proxy() {
     let result = nwui_api::publisher_client::apply_saved(
         &db.state,
         &Actor {
+            via: None,
             id: None,
             label: Some("upgrade".into()),
             ip: None,
@@ -589,6 +591,7 @@ fn review_mixed_case_flags_survive_upgrade() {
 async fn review_s14_edit_excludes_own_ports_but_not_other_rows() {
     let db = auth_support::test_db().await;
     let actor = Actor {
+        via: None,
         id: None,
         label: Some("test".into()),
         ip: None,
@@ -648,6 +651,7 @@ async fn review_s14_edit_excludes_own_ports_but_not_other_rows() {
 async fn review_s12_unreferenced_rename_and_same_name_update_are_allowed() {
     let db = auth_support::test_db().await;
     let actor = Actor {
+        via: None,
         id: None,
         label: Some("test".into()),
         ip: None,

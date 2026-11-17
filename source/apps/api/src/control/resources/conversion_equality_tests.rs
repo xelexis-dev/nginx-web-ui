@@ -28,7 +28,7 @@ async fn pf_a2_conversion_equality_rust_render_matrix_and_local_node_form_round_
         let upstream=target<2;let mut old=json!({"serverId":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","serverName":"example.test","listen":8081,"cache":{"enabled":cache},"gzip":{"enabled":gzip},"realIp":real,"serverDirectives":[{"name":"add_header","args":["X-Example","one"]},{"name":"proxy_read_timeout","args":["300s"]},{"name":"server_tokens","args":["off"]}]});
         if upstream{old["upstreamName"]=json!("backend");}else{old["proxyPass"]=json!(uri);if target==3{old["resolveAtRuntime"]=json!(true);}}
         if let Some(dirs)=dirs{old["locationDirectives"]=dirs.clone();}
-        if tls{old["tls"]=json!({"tlsPort":8443,"httpPort":8081,"redirectHttp":false,"certPath":"/cert/fullchain.pem","keyPath":"/cert/privkey.pem","tuning":{"hsts":{"enabled":true,"maxAge":3600,"includeSubDomains":true}}});}
+        if tls{old["tls"]=json!({"tlsPort":8443,"httpPort":8081,"redirectHttp":false,"certPath":"/cert/fullchain.pem","keyPath":"/cert/privkey.pem","tuning":{"http2":true,"hsts":{"enabled":true,"maxAge":3600,"includeSubDomains":true}}});}
         let form=carried_form(&old,upstream);let raw=form_body(Resource::Server,&form).unwrap();
         for node in [false,true]{
             // The relay sends this exact JSON body to the node; its save parser runs again.
@@ -76,7 +76,7 @@ async fn database()->(AppState,tokio_postgres::Client,tempfile::TempDir){
     let admin=std::env::var("NWUI_TEST_DATABASE_URL").unwrap();let name=format!("pf_a2_{}",uuid::Uuid::new_v4().simple());connect(&admin).await.batch_execute(&format!("CREATE DATABASE {name}")).await.unwrap();let url=format!("{}/{name}",admin.rsplit_once('/').unwrap().0);let temp=tempfile::tempdir().unwrap();let key=temp.path().join("key");
     let mut config=crate::config::RuntimeConfig::read(|k|match k{"DATABASE_URL"=>Some(url.clone()),"AUTH_SECRET"=>Some("pf-a2-test-only".into()),"DATA_KEY_FILE"=>Some(key.display().to_string()),"API_DB_POOL_SIZE"=>Some("1".into()),_=>None}).unwrap();config.target_dns.descriptor_path=temp.path().join("dns.json");std::fs::write(&config.data_key_file,"A5".repeat(32)).unwrap();let state=AppState::new(config).unwrap();crate::migrations::run(&state.db,&std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packages/db/drizzle")).await.unwrap();(state,connect(&url).await,temp)
 }
-fn actor()->Actor{Actor{id:None,label:Some("pf-a2".into()),ip:None}}
+fn actor()->Actor{Actor{via: None,id:None,label:Some("pf-a2".into()),ip:None}}
 #[tokio::test]
 #[ignore="real DB: NWUI_TEST_DATABASE_URL"]
 async fn pf_a2_conversion_equality_local_and_node_save_resolution_preserves_bytes(){

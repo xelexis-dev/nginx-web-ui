@@ -17,32 +17,20 @@ pub(crate) fn resume_phase1_locked(roots:&crate::db_upgrade::layout::Roots,locks
     super::rollover::cleanup_consumed_manifests(roots,locks,&journal)?;
     Ok(journal)
 }
-/// Container-start boundary only. Finish old recovery before manifest cleanup or admission.
-/// Some(admission) parks an old refusal. Re-evaluate boot_plan after None: recovery may have parked this boot.
-pub(crate) async fn resume_before_admission(roots:crate::db_upgrade::layout::Roots,locks:std::sync::Arc<super::StorageLocks>,mut j:super::Journal,candidate:super::journal::Candidate,label:Option<String>,space_sufficient:bool,now:chrono::DateTime<chrono::Utc>,identity:Option<String>)->Result<(super::Journal,Option<super::retry::Admission>),StepError> {
+/// Finish committed recovery before cleaning consumed manifests.
+pub(crate) async fn resume_before_admission(roots:crate::db_upgrade::layout::Roots,locks:std::sync::Arc<super::StorageLocks>,mut j:super::Journal,identity:Option<String>)->Result<super::Journal,StepError> {
     if !locks.holds_d() || !locks.matches_roots(&roots.db,&roots.app) || !j.belongs_to(&roots.app){return Err(preparation_error());}
-    if identity.as_deref().is_some_and(|id|super::refusal::outcome(j.load(),id).is_some()){return Ok((j,None));}
+    if identity.as_deref().is_some_and(|id|super::refusal::outcome(j.load(),id).is_some()){return Ok(j);}
     let r=roots.clone();let l=locks.clone();
     let committed=tokio::task::spawn_blocking(move|| {
         if !l.matches_roots(&r.db,&r.app){return Err(preparation_error());}
         super::replacement::is_committed(&r)
     }).await.map_err(|_|preparation_error())??;
     if committed{j=super::committed::resume(roots.clone(),locks.clone(),j).await?;}
-    let backed=j.load().records.iter().any(|r|r.step==Step::P1Backup && r.state==StepState::Done);
-    if j.load().branch==super::Branch::Upgrade && !committed && (j.load().outcome==Outcome::RestoreIncomplete || j.load().outcome==Outcome::Upgrading && backed) {
-        let failure=super::journal::last_attempt_failure(&j.load().records).unwrap_or_else(||super::journal::PreviousFailure{step:j.load().records.iter().rev().find(|r|!matches!(r.step,Step::CmdRestorePg15|Step::CmdRemoveBackup|Step::CmdRemoveDiscarded)).map(|r|r.step).unwrap_or(Step::P2Preflight),code:"interrupted".into()});
-        j=super::restore::recover_with_context(roots.clone(),locks.clone(),j,failure.step,&failure.code,identity.clone(),candidate.clone(),label.clone()).await?;
-        // This boot has completed its recovery attempt; its atomic receipt parks it, never admission.
-        return Ok((j,None));
-    }
     // This also runs for active/committed journals, before any future fold can prune ownership.
     let r=roots.clone();let l=locks.clone();j=tokio::task::spawn_blocking(move||{super::rollover::cleanup_consumed_manifests(&r,&l,&j)?;Ok(j)}).await.map_err(|_|preparation_error())??;
-    if j.load().branch!=super::Branch::Upgrade || committed || matches!(j.load().outcome,Outcome::Upgrading|Outcome::Pg17|Outcome::ActivationFailed|Outcome::RestoreIncomplete){return Ok((j,None));}
-    let admission=match super::rollover::rollover(&roots,&locks,&mut j,candidate,label.as_deref(),space_sufficient,now).await? {
-        super::rollover::RolloverOutcome::RolledOver=>None,
-        super::rollover::RolloverOutcome::NotAdmitted(admission)=>Some(admission),
-    };
-    Ok((j,admission))
+    if j.load().branch==super::Branch::Upgrade && !committed{return Err(super::legacy::required());}
+    Ok(j)
 }
 
 /// Missing identity (including a read error) must never skip phase 1.
@@ -62,16 +50,17 @@ pub(crate) struct Startup {
     pub plan:BootPlan,
 }
 fn startup_error(code:&'static str,message:&'static str)->StepError {StepError{code,message,detail:None}}
-fn initial_journal(app:&Path)->Result<Option<JournalV1>,StepError> {
+fn initial_journal_hint(app:&Path)->Result<Option<JournalV1>,StepError> {
     match std::fs::symlink_metadata(app.join(".nwui-auto/journal-v1.json")) {
-        Ok(_)=>{
-            let journal=super::journal::read_only(app)?;
-            if !super::journal::commands_settled(&journal.records){return Err(startup_error("pair_mismatch","오프라인 관리 작업이 완료되지 않았습니다. 해당 restore-pg15 또는 remove 명령을 다시 실행해 완료하세요. 기존 데이터를 보존했습니다."));}
-            Ok(Some(journal))
-        },
+        Ok(_)=>super::journal::read_only(app).map(Some),
         Err(e)if e.kind()==std::io::ErrorKind::NotFound=>Ok(None),
         Err(_)=>Err(startup_error("io_error","복구 기록을 읽지 못했습니다. 기존 데이터를 보존했습니다.")),
     }
+}
+fn initial_journal(app:&Path)->Result<Option<JournalV1>,StepError> {
+    let journal=initial_journal_hint(app)?;
+    if journal.as_ref().is_some_and(|j|!super::journal::commands_settled(&j.records)){return Err(startup_error("pair_mismatch","오프라인 관리 작업이 완료되지 않았습니다. 해당 remove 명령을 다시 실행해 완료하세요. 기존 데이터를 보존했습니다."));}
+    Ok(journal)
 }
 fn same_plan(before:Option<&JournalV1>,after:Option<&JournalV1>,identity:Option<&str>)->Result<BootPlan,StepError> {
     let plan=|j:Option<&JournalV1>|j.map(|j|boot_plan(j,identity)).unwrap_or(BootPlan::Phase1);
@@ -85,7 +74,7 @@ pub(crate) async fn start()->Result<Startup,StepError> {
     super::status::log_storage_warning();
     let roots=crate::db_upgrade::layout::Roots {
         db:crate::db_upgrade::paths::PGROOT.into(),app:crate::db_upgrade::paths::APPROOT.into(),
-        architecture:crate::db_upgrade::engine::architecture().map_err(|e|startup_error(e.code,e.message))?.into(),
+        architecture:crate::db_upgrade::paths::architecture().map_err(|e|startup_error(e.code,e.message))?.into(),
     };
     let read_roots=roots.clone();
     let (before,identity)=tokio::task::spawn_blocking(move|| {
@@ -93,14 +82,16 @@ pub(crate) async fn start()->Result<Startup,StepError> {
         crate::db_upgrade::paths::startup_data_key_file(&read_roots.app).map_err(|e|startup_error(e.code,e.message))?;
         super::preflight::startup_ports()?;
         crate::db_upgrade::layout::validate_roots_unlocked(&read_roots).map_err(|e|StepError{code:e.code,message:e.message,detail:e.detail.map(str::to_owned)})?;
-        Ok::<_,StepError>((initial_journal(&read_roots.app)?,super::boot_identity::current().ok()))
+        Ok::<_,StepError>((initial_journal_hint(&read_roots.app)?,super::boot_identity::current().ok()))
     }).await.map_err(|_|startup_error("io_error","시작 전 검사를 완료하지 못했습니다."))??;
     let need_d=before.as_ref().map(|j|boot_plan(j,identity.as_deref())!=BootPlan::Phase2).unwrap_or(true);
     let mut custody=super::custody::Custody::acquire(roots.clone(),need_d).await?;
     let locks=custody.locks.clone();let owned_roots=roots.clone();let saved=before.clone();let boot=identity.clone();
     let (journal,plan)=custody.during(async move {
         tokio::task::spawn_blocking(move|| {
+            super::legacy::admit(&owned_roots)?;
             let current=initial_journal(&owned_roots.app)?;
+            if current.as_ref().is_some_and(|j|!super::journal::commands_settled(&j.records)){return Err(preparation_error());}
             let plan=same_plan(saved.as_ref(),current.as_ref(),boot.as_deref())?;
             let journal=if current.is_some(){Some(super::Journal::open(&owned_roots.app,&locks)?)}else{None};
             if plan==BootPlan::Phase1 {clear_runtime_records()?;} else {strict_roots(&owned_roots)?;}
@@ -201,7 +192,17 @@ fn unrecorded(app:&Path,descriptor:&Path)->bool {
         && match super::types::read_selection_at(descriptor){Ok(value)=>value.outcome!=Outcome::Pg17,Err(error)=>error.code=="postponed"}
 }
 async fn run_phases(signals:&mut super::signals::Signals)->Result<(),StepError>{
-    let policy=super::retry::Policy::startup()?;let current=super::journal::Candidate::current().await?;let mut startup=start().await?;
+    let policy=super::retry::Policy::startup()?;let current=super::journal::Candidate::current().await?;let mut startup=match start().await {
+        Ok(startup)=>startup,
+        Err(error)=>{
+            if Path::new(crate::db_upgrade::paths::APPROOT).join(".nwui-auto/journal-v1.json").symlink_metadata().is_ok(){
+                super::refusal::publish_readonly_refusal_at(&error,Path::new("/run/nwui-storage.json"),Path::new(super::status::STATUS_PATH),notify_readiness)?;
+            }else{
+            super::refusal::publish_unrecorded_at(&error,Path::new(crate::db_upgrade::paths::PGROOT),Path::new("/run/nwui-storage.json"),Path::new(super::status::STATUS_PATH),notify_readiness)?;
+            }
+            return super::signals::park().await;
+        },
+    };
     let phase=Phase1Step::new(Step::P0b);
     signals.drain(async{
         if startup.plan==BootPlan::ParkedRefusal{resume_refusal(&startup,&current,policy.label.as_deref())?;return startup.custody.during(super::signals::park()).await;}
@@ -231,31 +232,19 @@ async fn run_phases(signals:&mut super::signals::Signals)->Result<(),StepError>{
 async fn phase1(startup:&mut Startup,current:&super::journal::Candidate,policy:&super::retry::Policy,phase:&Phase1Step)->Result<(),StepError>{
     let identity=startup.identity.clone().ok_or_else(||startup_error("verification_failed","이 실행의 식별자를 확인하지 못해 시작을 보류했습니다."))?;
     phase.set(Step::Y1);
-    // 2.0.1: under A+D, before the journal's own checks, legacy15, ready classify and P0 (F1, R1-5).
+    // Admission has already rejected legacy data before any persistent writes.
     // Here a refusal reaches reconcile_failure: parked and published with a journal (R4-2).
     let r=startup.roots.clone();let l=startup.custody.locks.clone();let journal=startup.journal.is_some();
     startup.custody.during(async move{tokio::task::spawn_blocking(move||super::storage_modes::normalize(&r,&l,journal).map(|_|())).await.map_err(|_|preparation_error())?}).await?;
     if let Some(j)=startup.journal.take(){
-        let eligible=!matches!(j.load().outcome,Outcome::Upgrading|Outcome::Pg17|Outcome::ActivationFailed|Outcome::RestoreIncomplete);
-        let sufficient=if eligible&&!policy.postponed{
-            let r=startup.roots.clone();let l=startup.custody.locks.clone();let frame=j.load().clone();
-            startup.custody.during(async move{tokio::task::spawn_blocking(move||{let j=super::Journal::open(&r.app,&l)?;if serde_json::to_value(j.load()).map_err(|_|preparation_error())?!=serde_json::to_value(frame).map_err(|_|preparation_error())?{return Err(preparation_error());}match super::preflight::legacy15(&r,&l)?{Some(legacy)=>Ok(super::preflight::assess_backup(&r,&l,&j,&legacy)?.1.space_sufficient),None=>Ok(false)}}).await.map_err(|_|preparation_error())?}).await?
-        }else{false};
         let roots=startup.roots.clone();let locks=startup.custody.locks.clone();
-        let(j,admission)=startup.custody.during(resume_before_admission(roots,locks,j,current.clone(),policy.label.clone(),sufficient,chrono::Utc::now(),Some(identity.clone()))).await?;
+        let j=startup.custody.during(resume_before_admission(roots,locks,j,Some(identity.clone()))).await?;
         startup.journal=Some(j);startup.plan=boot_plan(startup.journal.as_ref().ok_or_else(preparation_error)?.load(),Some(&identity));
         if startup.plan==BootPlan::ParkedRefusal{resume_refusal(startup,current,policy.label.as_deref())?;return Ok(());}
-        if admission.is_some(){let j=startup.journal.as_mut().ok_or_else(preparation_error)?;finalize_refusal(&startup.roots,&startup.custody.locks,j,&identity,current,policy.label.as_deref())?;startup.plan=BootPlan::ParkedRefusal;return Ok(());}
     }
-    let r=startup.roots.clone();let l=startup.custody.locks.clone();
-    let legacy=startup.custody.during(async move{tokio::task::spawn_blocking(move||super::preflight::legacy15(&r,&l)).await.map_err(|_|preparation_error())?}).await?;
-    let Some(legacy)=legacy else{return prepare_and_handoff(startup,current.clone(),phase).await;};
-    phase.set(Step::P0b);if startup.journal.is_none(){let r=startup.roots.clone();let l=startup.custody.locks.clone();let c=current.clone();let label=policy.label.clone();startup.journal=Some(startup.custody.during(async move{tokio::task::spawn_blocking(move||super::Journal::begin_upgrade(&r.app,&l,c,label.as_deref())).await.map_err(|_|preparation_error())?}).await?);}
-    if policy.postponed{
-        let j=startup.journal.as_mut().ok_or_else(preparation_error)?;postpone(&startup.roots,&startup.custody.locks,j,&identity,current,policy.label.as_deref())?;startup.plan=BootPlan::ParkedRefusal;return Ok(());
-    }
-    upgrade_legacy(startup,current.clone(),legacy,phase).await
+    prepare_and_handoff(startup,current.clone(),phase).await
 }
+
 pub(super) fn committed_failure_outcome(j:&JournalV1,step:Step)->Outcome{
     let commit=j.records.iter().rev().find(|r|r.step==Step::P5Commit&&r.state==StepState::Done&&r.data.is_none());
     let current_upgrade=j.branch==super::Branch::Upgrade&&commit.is_some_and(|commit|!j.records.iter().any(|r|r.step==Step::Handoff&&r.state==StepState::Done&&r.seq>commit.seq));
@@ -281,10 +270,7 @@ async fn reconcile_failure(startup:&mut Startup,current:&super::journal::Candida
         finalize_refusal(&startup.roots,&startup.custody.locks,&mut j,identity,current,policy.label.as_deref())?;
         startup.journal=Some(j);startup.plan=BootPlan::ParkedRefusal;return Ok(());
     }
-    let backed=j.load().records.iter().any(|r|r.step==Step::P1Backup&&r.state==StepState::Done);
-    let mut j=if j.load().branch==super::Branch::Upgrade&&backed{
-        startup.custody.during(super::restore::recover_with_context(startup.roots.clone(),startup.custody.locks.clone(),j,step,error.code,startup.identity.clone(),current.clone(),policy.label.clone())).await?
-    }else{
+    let mut j={
         let mut j=j;let identity=startup.identity.as_deref().ok_or_else(preparation_error)?;
         if j.pre_pool()?{let space=super::refusal::status_value(&startup.roots,j.load(),j.load().outcome,current,policy.label.as_deref())?.space;if let Err(publication)=j.finish_pre_pool(identity,Some(&error),space){super::refusal::publish_status_only(&startup.roots,&j,Outcome::RefusedPreflight,current,policy.label.as_deref());return Err(publication);}}else{
             let outcome=match j.load().branch{super::Branch::Fresh=>Outcome::RefusedFresh,super::Branch::Ready=>Outcome::RefusedPrivilege,super::Branch::Upgrade=>Outcome::RefusedPreflight};
@@ -294,61 +280,6 @@ async fn reconcile_failure(startup:&mut Startup,current:&super::journal::Candida
     let identity=startup.identity.clone().ok_or_else(preparation_error)?;finalize_refusal(&startup.roots,&startup.custody.locks,&mut j,&identity,current,policy.label.as_deref())?;startup.journal=Some(j);startup.plan=BootPlan::ParkedRefusal;Ok(())
 }
 
-/// One finite legacy attempt; errors are reconciled from disk by the outer coordinator.
-async fn upgrade_legacy(startup:&mut Startup,current:super::journal::Candidate,legacy:super::preflight::Legacy15,phase:&Phase1Step)->Result<(),StepError>{
-    use crate::db_upgrade::{fresh,key_file,paths,postgres};
-    let roots=startup.roots.clone();let locks=startup.custody.locks.clone();let j=startup.journal.take().ok_or_else(preparation_error)?;
-    let r=roots.clone();let l=locks.clone();
-    phase.set(Step::P0b);let progress=phase.clone();
-    let mut j=startup.custody.during(async move{tokio::task::spawn_blocking(move||{
-        let mut j=j;let(prepared,assessment)=super::preflight::assess_backup(&r,&l,&j,&legacy)?;j.record(Step::P0b,StepState::Intent,Some(serde_json::json!({"space":assessment.space})))?;assessment.require()?;
-        j.record(Step::P0b,StepState::Done,Some(serde_json::json!({"space":assessment.space})))?;publish_step(&r,&j,Step::P0b,0,prepared.source_bytes,None,false);super::reserves::ensure(&r,&l,&j)?;
-        progress.set(Step::P1Backup);publish_step(&r,&j,Step::P1Backup,0,prepared.source_bytes,None,false);
-        super::backup::create_verified(&r,&l,&mut j,&prepared)?;publish_step(&r,&j,Step::P1Backup,prepared.source_bytes,prepared.source_bytes,None,false);
-        progress.set(Step::P2Preflight);fresh::legacy_environment_locked(&l,&r,Path::new("/run/s6/container_environment")).map_err(|e|StepError{code:e.code,message:e.message,detail:e.detail.map(str::to_owned)})?;Ok(j)
-    }).await.map_err(|_|preparation_error())?}).await?;
-    phase.set(Step::P2Preflight);let config=read_config()?;let credentials:tokio_postgres::Config=config.database_url.parse().map_err(|_|preparation_error())?;
-    let password=std::str::from_utf8(credentials.get_password().ok_or_else(preparation_error)?).map_err(|_|preparation_error())?.to_owned();
-    let r=roots.clone();let l=locks.clone();
-    let (journal,name,observed)=startup.custody.during(async move{tokio::task::spawn_blocking(move||{
-        let header=super::backup::open_verified_manifest(&r,&j)?.header;let source=match header.source_location{super::backup_format::SourceLocation::Root=>r.db.clone(),super::backup_format::SourceLocation::Pgdata=>r.db.join("pgdata")};
-        let control=postgres::read_control(15,&source).map_err(|e|startup_error(e.code,e.message))?;
-        let path=paths::startup_data_key_file(&r.app).map_err(|e|startup_error(e.code,e.message))?;
-        let observed=match key_file::read_key_file(&path,key_file::canonical_policy(&r.app,&path)){Ok(key)=>Some(key),Err(key_file::KeyFileError::Missing)=>None,Err(_)=>return Err(startup_error("key_path_invalid","기존 암호화 키 파일을 확인하지 못했습니다. 기존 파일을 보존했습니다."))};
-        let name=super::check::begin_locked(&r,&l,&mut j,&control)?;Ok((j,name,observed))
-    }).await.map_err(|_|preparation_error())?}).await?;
-    j=journal;let key_required=observed.is_some();let observed=observed.map(|k|std::sync::Arc::new(k.secrets));
-    let packaged=crate::migrations::read_migrations(&config.migrations_dir).await.map_err(|_|startup_error("migration_failed","적용할 변경 이력을 읽지 못했습니다."))?;
-    let (source,schema)=startup.custody.during(super::check::inspect_source(roots.clone(),locks.clone(),&j,&name,&password,observed,&packaged)).await?;
-    let(j,source)=startup.custody.during(super::check::finish(roots.clone(),locks.clone(),j,source,schema,&config,&name)).await?;
-    let r=roots.clone();let l=locks.clone();
-    phase.set(Step::P3Convert);let(j,source,id)=startup.custody.during(async move{tokio::task::spawn_blocking(move||{
-        let mut j=j;let backup=super::backup::open_verified_manifest(&r,&j)?;let bytes=backup.summary.data_bytes;let header=backup.header;let original=match header.source_location{super::backup_format::SourceLocation::Root=>r.db.clone(),super::backup_format::SourceLocation::Pgdata=>r.db.join("pgdata")};
-        let control=postgres::read_control(15,&original).map_err(|e|startup_error(e.code,e.message))?;publish_step(&r,&j,Step::P3Convert,0,bytes,None,false);
-        let target=super::conversion::run_locked(&r,&l,&mut j,&control,&source.snapshot)?;publish_step(&r,&j,Step::P3Convert,bytes,bytes,None,false);Ok((j,source,target.system_identifier))
-    }).await.map_err(|_|preparation_error())?}).await?;
-    phase.set(Step::P4Target);let ensured=startup.custody.during(super::key_write::ensure_key_locked(roots.clone(),locks.clone(),j,key_required)).await?;
-    let r=roots.clone();let l=locks.clone();let runtime=tokio::runtime::Handle::current();let progress=phase.clone();
-    let(j,selection,privileges)=startup.custody.during(async move{tokio::task::spawn_blocking(move||{
-        let mut j=ensured.journal;let source_key=ensured.source;let key=ensured.key;let proof=super::profile::proof(&j)?;
-        let generation=match &source_key{super::KeySource::Staged{generation}=>generation.clone(),super::KeySource::Canonical=>uuid::Uuid::new_v4().to_string()};
-        let mut pair=crate::db_upgrade::pair::Pair::fresh(&r.architecture);pair.mode="migration".into();pair.ready=true;pair.fresh_step=None;pair.system_identifier=Some(id.clone());pair.encryption_key_required=key_required;
-        let binding=super::KeyBinding::Verified{pair_id:pair.pair_id.clone()};
-        let selection=super::StorageSelection{version:1,epoch:j.load().records.last().ok_or_else(preparation_error)?.seq.checked_add(1).ok_or_else(preparation_error)?,outcome:Outcome::Upgrading,branch:super::Branch::Upgrade,pgdata:r.db.join(".nwui-auto-work").join(&j.load().attempt_id).join("data"),backup_id:Some(j.load().attempt_id.clone()),schema_profile:proof.profile_id.clone(),key_binding:binding.clone()};
-        let name=j.load().records.iter().rev().find(|v|v.step==Step::P3Convert&&v.state==StepState::Done).and_then(|v|v.data.as_ref()).and_then(|v|v.get("logName")).and_then(|v|v.as_str()).ok_or_else(preparation_error)?;
-        let log=super::diagnostics::path(&r.db,&j.load().attempt_id,name)?.join("boot");postgres::directory(&log).map_err(|e|startup_error(e.code,e.message))?;
-        let server=postgres::Private::start(17,&selection.pgdata,&log).map_err(|e|startup_error(e.code,e.message))?;
-        let pg=super::PrivatePg{socket_dir:server.socket.clone(),port:50432,dbname:"nginx_web_ui".into(),role:"nginx".into(),major:17};
-        publish_step(&r,&j,Step::P4Target,0,0,None,false);
-        let prepared=runtime.block_on(super::target_boot::prepare(&r,&l,&mut j,&source,&current,&selection,&pg,&config,&key.secrets,super::boot::Inputs::startup()));
-        let stopped=server.stop().map_err(|e|startup_error(e.code,e.message));let privileges=match prepared{Err(error)=>{stopped?;return Err(error)},Ok(value)=>{stopped?;value}};
-        publish_step(&r,&j,Step::P4Target,0,0,None,false);
-        let draft=super::generation::GenerationDraft{generation:&generation,origin:super::selector::Origin::Auto,source_profile:Some((&proof.profile_id,&proof.profile_sha256)),actual_id:&id,db_pair:&pair,app_pair:&pair,agreement:&binding,key_source:&source_key,key:&key};
-        let selection=super::publication::publish_upgrade_locked(&r,&l,&mut j,&selection,draft,&progress)?;Ok((j,selection,privileges))
-    }).await.map_err(|_|preparation_error())?}).await?;
-    phase.set(Step::P5Commit);let mut j=startup.custody.during(super::committed::resume(roots,locks,j)).await?;
-    let identity=startup.identity.clone().ok_or_else(preparation_error)?;phase.set(Step::S4Activate);let result=finish_phase1(&startup.roots,&mut startup.custody,&mut j,&selection,&privileges,&identity).await;startup.journal=Some(j);if result.is_ok(){startup.plan=BootPlan::Phase2;}result
-}
 fn read_config()->Result<crate::config::RuntimeConfig,StepError>{
     let invalid=||startup_error("boot_step_failed","실행 환경 설정을 확인하세요. 기존 데이터를 보존했습니다.");
     let auth=crate::nonroot::runner_value("AUTH_SECRET").filter(|s|!s.is_empty()).ok_or_else(invalid)?;
@@ -535,15 +466,6 @@ pub(crate) fn resume_readiness(app:&Path,locks:&super::StorageLocks,j:&super::Jo
 /// Run in an awaited blocking operation under A+D custody; the receipt precedes publication.
 pub(crate) fn finalize_refusal(roots:&crate::db_upgrade::layout::Roots,locks:&super::StorageLocks,j:&mut super::Journal,identity:&str,current:&super::journal::Candidate,label:Option<&str>)->Result<(),StepError> {
     super::refusal::record(roots,locks,j,identity)?;super::refusal::publish(roots,locks,j,identity,current,label)?;notify_readiness()
-}
-/// Operator opt-out is final for this boot, before P1/reserves/private PG startup.
-pub(crate) fn postpone(roots:&crate::db_upgrade::layout::Roots,locks:&super::StorageLocks,j:&mut super::Journal,identity:&str,current:&super::journal::Candidate,label:Option<&str>)->Result<(),StepError>{
-    if !locks.holds_d()||!locks.matches_roots(&roots.db,&roots.app)||!j.belongs_to(&roots.app)||j.load().branch!=super::Branch::Upgrade||j.load().records.iter().any(|r|matches!(r.step,Step::P1Backup|Step::P2Preflight|Step::P3Convert|Step::P5Commit)){return Err(preparation_error());}
-    // Validate the identity before exposing the outcome; an unreadable identity never signals ready.
-    super::refusal::receipt(Outcome::Postponed,identity)?;
-    if j.pre_pool()?{if let Err(error)=j.finish_pre_pool(identity,None,None){super::refusal::publish_status_only(roots,j,Outcome::Postponed,current,label);return Err(error);}}else{j.record(Step::P0b,StepState::Done,Some(serde_json::json!({"upgradePolicy":"off"})))?;j.set_outcome(Outcome::Postponed)?;}
-    eprintln!("[upgrade] 업그레이드를 보류했습니다 — NWUI_DB_UPGRADE 변수를 지우고 재시작하거나 1.19.11을 사용하세요.");
-    finalize_refusal(roots,locks,j,identity,current,label)
 }
 /// Same-boot replay does not append records, re-run admission or release D.
 pub(crate) fn resume_refusal(startup:&Startup,current:&super::journal::Candidate,label:Option<&str>)->Result<(),StepError> {
@@ -758,7 +680,7 @@ mod tests {
     }
     #[test]
     fn w1_runner_resume_consumes_old_manifests_before_the_next_admission_can_prune_previous() {
-        let (t,locks,j)=journal();let roots=crate::db_upgrade::layout::Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:crate::db_upgrade::engine::architecture().unwrap().into()};
+        let (t,locks,j)=journal();let roots=crate::db_upgrade::layout::Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:crate::db_upgrade::paths::architecture().unwrap().into()};
         let old=uuid::Uuid::new_v4().to_string();let mut state=j.load().clone();
         state.previous.push(super::super::journal::PreviousAttempt{attempt_id:old.clone(),outcome:Outcome::Restored,candidate:state.candidate.clone(),last_failure:None,generation:None,discard_id:None,ended_at:chrono::Utc::now().to_rfc3339()});
         let path=roots.app.join(".nwui-auto/journal-v1.json");let before=serde_json::to_vec(&state).unwrap();fs::write(&path,&before).unwrap();
@@ -876,7 +798,6 @@ mod tests {
     }
 }
 
-#[cfg(test)] #[path="credential_tests.rs"] mod credential_tests;
 
 #[cfg(test)]mod desktop_shared_tests{
  use super::*;
@@ -886,3 +807,5 @@ mod tests {
   std::fs::create_dir(t.path().join(".nwui-auto")).unwrap();std::fs::write(t.path().join(".nwui-auto/journal-v1.json"),b"corrupt").unwrap();assert_ne!(require_recovery_journal(t.path(),&error).unwrap_err().code,"key_missing");
  }
 }
+
+#[cfg(test)] #[path="credential_tests.rs"] mod credential_tests;

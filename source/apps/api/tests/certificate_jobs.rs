@@ -7,6 +7,7 @@ use serde_json::json;
 use std::time::Duration;
 fn actor() -> Actor {
     Actor {
+        via: None,
         id: None,
         label: Some("test".into()),
         ip: None,
@@ -226,7 +227,10 @@ async fn worker_manual_dns_begin_persists_sealed_order_and_releases_queue() {
         &json!({"domains":["example.com"],"email":"admin@example.com","challengeType":"dns-01"}),
     )
     .unwrap();
-    let id = service::create(&t.state, &input, &actor()).await.unwrap();
+    auth_support::insert_user(&t.client,auth_support::UserRow::default(),None).await;
+    let mut token_actor=actor(); token_actor.id=Some("u1".into());
+    token_actor.via=Some(nwui_api::contracts::Via::Token{id:"job-token-id".into(),name:"job-token".into()});
+    let id = service::create(&t.state, &input, &token_actor).await.unwrap();
     let worker = jobs::start(t.state.clone()).await.unwrap();
     assert_eq!(wait_terminal(&t, &id).await, "succeeded");
     worker.shutdown().await.unwrap();
@@ -244,6 +248,8 @@ async fn worker_manual_dns_begin_persists_sealed_order_and_releases_queue() {
     assert!(order["keyPem"].as_str().unwrap().starts_with("enc:v1:"));
     assert!(row.get::<_, Option<String>>(2).is_none());
     assert!(row.get::<_, Option<String>>(3).is_none());
+    assert_eq!(t.client.query_one("SELECT via FROM audit_logs WHERE action='cert:dns-begin' AND target=$1",&[&id]).await.unwrap().get::<_,serde_json::Value>(0),json!({"kind":"token","id":"job-token-id","name":"job-token"}));
+    assert_eq!(t.client.query_one("SELECT actor_id FROM audit_logs WHERE action='cert:dns-begin' AND target=$1",&[&id]).await.unwrap().get::<_,String>(0),"u1");
     ca.abort();
 }
 #[tokio::test]

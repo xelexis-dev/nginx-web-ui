@@ -1,5 +1,6 @@
 //! Source preflight and merge-joined verification of frozen A.16 JSONL backup authority.
-use super::{Journal,Step,StepError,StepState,StorageLocks,restore::set_aside_allowed,backup_format::{self as format,Entry,Header,Kind,Reader,Root,SourceLocation,StreamWriter,Summary}};
+use super::{Journal,Step,StepError,StepState,backup_format::{self as format,Entry,Header,Kind,Reader,Root,SourceLocation}};
+#[cfg(test)] use super::{StorageLocks,backup_format::{StreamWriter,Summary}};
 use crate::db_upgrade::{control::Control,files,layout::Roots};
 use sha2::{Digest,Sha256};
 use std::{collections::BTreeSet,fs::{self,OpenOptions},io::{self,Read,Write},os::unix::fs::{MetadataExt,OpenOptionsExt},path::{Path,PathBuf}};
@@ -75,12 +76,14 @@ impl Iterator for TreeWalk {
 }
 fn source(roots:&Roots,location:SourceLocation)->PathBuf {match location {SourceLocation::Root=>roots.db.clone(),SourceLocation::Pgdata=>roots.db.join("pgdata")}}
 /// Only scalar preflight results and the small top-level original inventory are retained.
+#[cfg(test)]
 pub(crate) struct PreparedBackup {pub header:Header,pub entries:u64,pub manifest_bytes:u64,pub source_bytes:u64,names:BTreeSet<String>}
 /// Run before journal/coordinator allocation; original_names is the validated original inventory.
 /// The small header is associated with the attempt ID before output is created.
+#[cfg(test)]
 pub(crate) fn prepare(roots:&Roots,locks:&StorageLocks,attempt_id:&str,location:SourceLocation,original_names:&BTreeSet<String>,control:&Control,created_at:&str)->Result<PreparedBackup,StepError> {
     if !locks.holds_d() || !locks.matches_roots(&roots.db,&roots.app){return Err(StepError {code:"storage_busy",message:"저장소 잠금이 유지되지 않았습니다.",detail:None});}
-    super::source::control(control)?;super::source::require_idle(roots,locks,&source(roots,location))?;
+    control.validate().map_err(|_|failed())?;
     if original_names.iter().any(|name|!set_aside_allowed(name,location==SourceLocation::Root)) || !original_names.contains("PG_VERSION") || !original_names.contains("global"){return Err(failed());}
     let root=source(roots,location);let checkpoint=entry(&root,"global/pg_control".into(),true)?;
     let header=Header {version:1,backup_id:attempt_id.into(),source:"L".into(),created_at:created_at.into(),source_location:location,control_state:control.cluster_state.clone(),system_identifier:control.system_identifier.clone(),checkpoint_sha256:checkpoint.sha256.ok_or_else(failed)?,root:root_info(&root)?};
@@ -88,17 +91,10 @@ pub(crate) fn prepare(roots:&Roots,locks:&StorageLocks,attempt_id:&str,location:
     let measured=TreeWalk::new(&root,Some(original_names),false)?.map(|value|{
         let value=value?;entries=entries.checked_add(1).ok_or_else(format::too_large)?;source_bytes=source_bytes.checked_add(value.bytes).ok_or_else(format::too_large)?;Ok(value)
     });
-    let manifest_bytes=super::space::manifest_bytes(&header,measured)?;format::authority_space(entries)?;
+    let manifest_bytes=manifest_bytes(&header,measured)?;format::authority_space(entries)?;
     Ok(PreparedBackup {header,entries,manifest_bytes,source_bytes,names:original_names.clone()})
 }
-/// Apparent app bytes/inodes, excluding our coordinator pool; metadata only, no secret reads.
-pub(super) fn app_usage(roots:&Roots,locks:&StorageLocks)->Result<(u64,u64),StepError>{
-    if !locks.holds_d()||!locks.matches_roots(&roots.db,&roots.app){return Err(failed());}
-    let selected=names(&roots.app)?.into_iter().filter(|name|name!=".nwui-auto").collect();let mut bytes=0u64;let mut count=1u64;
-    for value in TreeWalk::new(&roots.app,Some(&selected),false)?{
-        let value=value?;count=count.checked_add(1).ok_or_else(format::too_large)?;if count>format::MAX_ENTRIES{return Err(format::too_large());}bytes=bytes.checked_add(value.bytes).ok_or_else(format::too_large)?;
-    }Ok((bytes,count))
-}
+#[cfg(test)]
 fn write_source<W:Write>(output:W,prepared:&PreparedBackup,root:&Path)->Result<(W,Summary),StepError> {
     if root_info(root)?!=prepared.header.root{return Err(failed());}
     let mut writer=StreamWriter::new(output,&prepared.header)?;
@@ -107,6 +103,7 @@ fn write_source<W:Write>(output:W,prepared:&PreparedBackup,root:&Path)->Result<(
     if summary.entries!=prepared.entries || summary.bytes!=prepared.manifest_bytes || summary.data_bytes!=prepared.source_bytes {return Err(failed());}Ok((output,summary))
 }
 /// Pass 2 is a merge-join with independent, identically ordered tree walks, not path lookup.
+#[cfg(test)]
 fn verify_pair(reader:&mut Reader,prepared:&PreparedBackup,original:&Path,backup:&Path)->Result<(),StepError> {
     if reader.header!=prepared.header || root_info(original)?!=prepared.header.root || root_info(backup)?!=prepared.header.root {return Err(failed());}
     let mut original=TreeWalk::new(original,Some(&prepared.names),true)?;let mut backup=TreeWalk::new(backup,None,true)?;
@@ -120,6 +117,7 @@ fn verify_pair(reader:&mut Reader,prepared:&PreparedBackup,original:&Path,backup
     if original.next().is_some() || backup.next().is_some() || names!=prepared.names || !has_control || !has_version {return Err(failed());}Ok(())
 }
 /// The fixed authority pathname is derived from the validated journal, never JSON path metadata.
+#[cfg(test)]
 pub(crate) fn publish_verified(roots:&Roots,locks:&StorageLocks,j:&mut Journal,prepared:&PreparedBackup)->Result<Summary,StepError> {
     if !locks.holds_d() || !locks.matches_roots(&roots.db,&roots.app) || prepared.header.backup_id!=j.load().attempt_id {return Err(failed());}
     let record=j.load().records.iter().rev().find(|r|r.step==Step::P1Backup).ok_or_else(failed)?;
@@ -159,61 +157,8 @@ pub(crate) fn verify_backup(roots:&Roots,j:&Journal)->Result<Header,StepError> {
     if walk.next().is_some(){return Err(failed());}Ok(reader.header)
 }
 
-/// Before a resumed restore, verify the union of remaining BK and journal-restored L entries.
-/// Only the small top-level placement sets are retained; both trees are independently merge-joined.
-pub(crate) fn verify_restore_union(roots:&Roots,j:&Journal,reader:&mut Reader)->Result<(),StepError> {
-    let original=source(roots,reader.header.source_location);let backup=roots.db.join(".nwui-pg15-backup").join(&reader.header.backup_id);
-    if root_info(&backup)?!=reader.header.root {return Err(failed());}
-    let mut bk=BTreeSet::new();let mut restored=BTreeSet::new();
-    if j.load().moves.iter().any(|r|r.record.phase==super::MovePhase::Restore && !reader.top_names.contains(&r.record.entry)){return Err(failed());}
-    for name in &reader.top_names {
-        let record=j.load().moves.iter().rev().find(|r|r.record.phase==super::MovePhase::Restore && &r.record.entry==name);
-        let exists=|root:&Path|->Result<bool,StepError>{match fs::symlink_metadata(root.join(name)){Ok(_)=>Ok(true),Err(e)if e.kind()==io::ErrorKind::NotFound=>Ok(false),Err(e)=>Err(format::io_error(e))}};
-        let in_bk=exists(&backup)?;
-        let destination=if let Some(record)=record {
-            if record.record.from!="BK" || record.record.to!="L" || !matches!(record.record.state,StepState::Intent|StepState::Done) {return Err(failed());}
-            let in_l=exists(&original)?;if in_bk==in_l || record.record.state==StepState::Done && in_bk {return Err(failed());}!in_bk
-        }else{if !in_bk{return Err(failed());}false};
-        if destination {restored.insert(name.clone());}else{bk.insert(name.clone());}
-    }
-    if names(&backup)?.into_iter().collect::<BTreeSet<_>>()!=bk {return Err(failed());}
-    let mut old=TreeWalk::new(&backup,Some(&bk),true)?.peekable();let mut new=TreeWalk::new(&original,Some(&restored),true)?.peekable();
-    let expected_names=reader.top_names.clone();let top=reader.for_each(|expected| {
-        let choose_old=match(old.peek(),new.peek()) {
-            (Some(Ok(a)),Some(Ok(b)))=>match format::compare_paths(&a.path,&b.path){std::cmp::Ordering::Less=>true,std::cmp::Ordering::Greater=>false,std::cmp::Ordering::Equal=>return Err(failed())},
-            (Some(Err(_)),_)|(_,Some(Err(_)))=>return Err(failed()),(Some(_),None)=>true,(None,Some(_))=>false,(None,None)=>return Err(failed()),
-        };
-        let actual=if choose_old{old.next()}else{new.next()}.ok_or_else(failed)??;if actual!=*expected{return Err(failed());}Ok(())
-    })?;
-    if old.next().is_some() || new.next().is_some() || top!=expected_names {return Err(failed());}Ok(())
-}
-/// Independent full original-entry walk catches missing AND extra entries after R-restore.
-/// Guard marker/coordinator paths are deliberately outside the old-cluster entry inventory.
-pub(crate) fn verify_restored(roots:&Roots,j:&Journal)->Result<BTreeSet<String>,StepError> {
-    let mut reader=open_verified_manifest(roots,j)?;let root=source(roots,reader.header.source_location);
-    if root_info(&root)?!=reader.header.root {return Err(failed());}
-    let l_is_d=reader.header.source_location==SourceLocation::Root;let mut selected=BTreeSet::new();
-    for name in names(&root)? {
-        if set_aside_allowed(&name,l_is_d) {selected.insert(name);continue;}
-        let allowed=matches!(name.as_str(),"UPGRADED-TO-PG17.txt"|"NWUI-RESTORE-IN-PROGRESS.txt"|"lost+found")
-            || l_is_d && matches!(name.as_str(),".nwui-auto-work"|".nwui-pg15-backup"|".nwui-discard"|"17");
-        if !allowed {return Err(failed());}
-        let m=fs::symlink_metadata(root.join(&name)).map_err(format::io_error)?;
-        if !storage_owner(m.uid()) || m.file_type().is_symlink() || (!m.is_dir() && !m.is_file()) || m.mode()&0o022!=0 || m.is_file() && m.nlink()!=1 {return Err(failed());}
-        if name=="lost+found" && (!m.is_dir() || m.uid()!=0 || fs::read_dir(root.join(&name)).map_err(format::io_error)?.next().is_some()) {return Err(failed());}
-    }
-    let mut actual=TreeWalk::new(&root,Some(&selected),true)?;
-    let checkpoint_sha=reader.header.checkpoint_sha256.clone();let mut control=false;let mut version=false;
-    let top=reader.for_each(|expected| {
-        if actual.next().ok_or_else(failed)??!=*expected {return Err(failed());}
-        if expected.path=="global/pg_control" {control=expected.sha256.as_deref()==Some(checkpoint_sha.as_str());}
-        if expected.path=="PG_VERSION" {version=expected.kind==Kind::File;}
-        Ok(())
-    })?;
-    if actual.next().is_some() || top!=selected || !control || !version {return Err(failed());}Ok(top)
-}
-
 fn storage_owner(uid:u32)->bool {uid==0 || crate::db_upgrade::postgres::postgres_ids().is_ok_and(|(postgres,_)|uid==postgres)}
+#[cfg(test)]
 fn backup_parent(roots:&Roots)->Result<PathBuf,StepError> {
     let path=roots.db.join(".nwui-pg15-backup");
     // Accepted legacy root-owned parents are not migrated.
@@ -226,6 +171,7 @@ fn backup_parent(roots:&Roots)->Result<PathBuf,StepError> {
     if !storage_owner(m.uid()) {return Err(failed());}
     Ok(path)
 }
+#[cfg(test)]
 fn remove_partial(parent:&Path,id:&str)->Result<(),StepError> {
     use std::os::fd::AsRawFd;
     let parent=OpenOptions::new().read(true).custom_flags(libc::O_NOFOLLOW|libc::O_DIRECTORY).open(parent).map_err(format::io_error)?;
@@ -241,6 +187,7 @@ fn remove_partial(parent:&Path,id:&str)->Result<(),StepError> {
 #[cfg(not(test))]fn copy_checkpoint(_point:&str) {}
 /// P1 copies and independently re-reads the inactive source, before recovery/link mutations.
 /// An interrupted pre-manifest copy is discarded only under its existing exact journal intent.
+#[cfg(test)]
 pub(crate) fn create_verified(roots:&Roots,locks:&StorageLocks,j:&mut Journal,prepared:&PreparedBackup)->Result<Summary,StepError> {
     use std::os::unix::fs::{DirBuilderExt,PermissionsExt};
     if !locks.holds_d() || !locks.matches_roots(&roots.db,&roots.app) || !j.belongs_to(&roots.app) || prepared.header.backup_id!=j.load().attempt_id
@@ -258,7 +205,7 @@ pub(crate) fn create_verified(roots:&Roots,locks:&StorageLocks,j:&mut Journal,pr
     }
     let original=source(roots,prepared.header.source_location);
     // Hash/canonical-name checks precede the first backup allocation, including resumed attempts.
-    super::source::require_idle(roots,locks,&original)?;
+
     write_source(io::sink(),prepared,&original)?;
     let parent=backup_parent(roots)?;
     j.record(Step::P1Backup,StepState::Intent,Some(serde_json::json!({"header":prepared.header,"backupCopy":"reset-intent"})))?;
@@ -274,6 +221,23 @@ pub(crate) fn create_verified(roots:&Roots,locks:&StorageLocks,j:&mut Journal,pr
     })();
     if copy.is_err() && matches!(fs::symlink_metadata(&authority),Err(e)if e.kind()==io::ErrorKind::NotFound) {remove_partial(&parent,&prepared.header.backup_id)?;}
     copy
+}
+
+
+#[cfg(test)]
+pub(crate) fn manifest_bytes(header:&super::backup_format::Header,entries:impl IntoIterator<Item=Result<super::backup_format::Entry,StepError>>)->Result<u64,StepError>{
+    let mut writer=super::backup_format::StreamWriter::new(std::io::sink(),header)?;
+    for entry in entries{
+        let mut entry=entry?;if entry.kind==super::backup_format::Kind::File{entry.sha256=Some("0".repeat(64));}
+        writer.entry(&entry)?;
+    }
+    Ok(writer.finish()?.1.bytes)
+}
+
+#[cfg(test)]
+pub(crate) fn set_aside_allowed(entry:&str,l_is_d:bool)->bool {
+    !matches!(entry,"UPGRADED-TO-PG17.txt"|"NWUI-RESTORE-IN-PROGRESS.txt"|"lost+found"|".nwui")
+        && !entry.starts_with(".nwui-") && !(l_is_d && entry=="17")
 }
 
 #[cfg(test)]
@@ -376,16 +340,6 @@ mod tests {
         for phase in [false,true] {let (_t,roots,locks,mut j,prepared)=fixture(SourceLocation::Pgdata);let path=make_backup(&roots,&prepared);let before=files::snapshot(&path).unwrap();
             if phase {j.record(Step::P3Convert,StepState::Intent,None).unwrap();}
             assert!(create_verified(&roots,&locks,&mut j,&prepared).is_err());assert_eq!(files::snapshot(&path).unwrap(),before);
-        }
-    }
-    #[test]
-    fn w1_backup_restored_verification_binds_journal_and_rejects_extra_missing_or_changed_files() {
-        for change in ["none","extra","reserved-extra","missing","content","journal"] {
-            let (_t,roots,locks,mut j,prepared)=fixture(SourceLocation::Pgdata);make_backup(&roots,&prepared);intent(&mut j,&prepared);publish_verified(&roots,&locks,&mut j,&prepared).unwrap();
-            let original=source(&roots,SourceLocation::Pgdata);
-            match change {"extra"=>fs::write(original.join("foreign"),"keep").unwrap(),"reserved-extra"=>fs::write(original.join(".nwui-foreign"),"keep").unwrap(),"missing"=>fs::remove_file(original.join("a/b")).unwrap(),"content"=>fs::write(original.join("a/b"),"changed").unwrap(),"journal"=>{j.record(Step::P1Backup,StepState::Done,Some(serde_json::json!({"header":prepared.header,"manifestSha256":"0".repeat(64)}))).unwrap();},_=>{}}
-            let result=verify_restored(&roots,&j);assert_eq!(result.is_ok(),change=="none","{change}");
-            if let Ok(top)=result {assert_eq!(top,prepared.names);}
         }
     }
     #[test]

@@ -38,7 +38,7 @@ use axum::{Extension, Json, Router};
 use serde_json::{Value, json};
 
 use super::audit::{self, AuditEntry};
-use super::principal::{SessionPrincipal, TwoFactorGate, db_unavailable, now_unix_ms, require_session};
+use super::principal::{SessionPrincipal, TwoFactorGate, db_unavailable, now_unix_ms, require_user};
 use super::tokens::{self, TokenKind, TokenScope};
 use super::{password, session, totp};
 use crate::contracts::{FormInput, FormResult};
@@ -98,7 +98,7 @@ fn redirect(to: &str) -> Response {
 }
 
 async fn gate(state: &AppState, headers: &HeaderMap, ctx: &RequestContext, gate: TwoFactorGate) -> Result<SessionPrincipal, ApiError> {
-    require_session(state, headers, ctx, None, gate).await
+    require_user(state, headers, ctx, None, gate, crate::auth::principal::Use::SessionOnly).await?.into_session()
 }
 
 async fn authorized_form(state: &AppState, ctx: &RequestContext, request: Request, two_factor: TwoFactorGate) -> Result<(SessionPrincipal, HeaderMap, FormInput), ApiError> {
@@ -217,7 +217,7 @@ async fn change_password(State(state): State<AppState>, Extension(ctx): Extensio
 async fn two_factor_view(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, headers: HeaderMap) -> Result<Json<Value>, ApiError> {
     let principal = gate(&state, &headers, &ctx, TwoFactorGate::AllowEnrollment).await?;
     if principal.totp_enabled {
-        return Ok(Json(json!({"enabled": true, "pending": null, "verificationRequired": principal.must_verify_2fa()})));
+        return Ok(Json(json!({"enabled": true, "pending": null, "verificationRequired": !principal.mfa_verified})));
     }
     // A fresh pending secret per view; persisted only once a code proves possession.
     let secret = totp::generate_secret();
@@ -329,6 +329,7 @@ async fn disable_two_factor(State(state): State<AppState>, Extension(ctx): Exten
     }
     super::passkey_routes::remove_all_passkeys(&tx, &principal.user_id, &principal.user_id, &ctx, "2fa-disable").await?;
     let version = clear_two_factor(&tx, &principal.user_id).await?;
+    tokens::revoke_user_tokens(&tx, &principal.user_id, "2fa-disable", &principal.actor(&ctx)).await.map_err(|_| db_unavailable())?;
     audit::write(&*tx, &AuditEntry {
         actor_id: Some(principal.user_id.clone()),
         action: "user:2fa-disable".into(),
@@ -357,7 +358,7 @@ async fn clear_two_factor(tx: &tokio_postgres::Transaction<'_>, user_id: &str) -
 }
 
 async fn reset_two_factor(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Response, ApiError> {
-    let principal = require_session(&state, request.headers(), &ctx, Some(super::rbac::Action::UserManage), TwoFactorGate::Enforce).await?;
+    let principal = require_user(&state, request.headers(), &ctx, Some(super::rbac::Action::UserManage), TwoFactorGate::Enforce, crate::auth::principal::Use::SessionOnly).await?.into_session()?;
     super::passkey_routes::ensure_verified(&principal)?;
     let form = read_form(request).await?;
     let target = form.get("id").filter(|id| !id.is_empty()).ok_or_else(ApiError::not_found)?;
@@ -393,6 +394,7 @@ async fn reset_two_factor(State(state): State<AppState>, Extension(ctx): Extensi
     }
     super::passkey_routes::remove_all_passkeys(&tx, &principal.user_id, target, &ctx, "2fa-reset").await?;
     clear_two_factor(&tx, target).await?;
+    tokens::revoke_user_tokens(&tx, target, "2fa-reset", &principal.actor(&ctx)).await.map_err(|_| db_unavailable())?;
     audit::write(&*tx, &AuditEntry {
         actor_id: Some(principal.user_id.clone()), action: "user:2fa-reset".into(),
         target: Some(target.into()), before: Some(json!({"totpEnabled": true})),

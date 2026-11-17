@@ -123,7 +123,7 @@ pub async fn collector_health(
 }
 
 fn audit_row(r: &tokio_postgres::Row, detail: bool) -> Value {
-    let mut v = json!({"id":r.get::<_,String>("id"),"createdAt":r.get::<_,DateTime<Utc>>("created_at").to_rfc3339_opts(chrono::SecondsFormat::Millis,true),"action":r.get::<_,String>("action"),"target":r.get::<_,Option<String>>("target"),"actorEmail":r.get::<_,Option<String>>("email"),"actorLabel":r.get::<_,Option<String>>("actor_label"),"ip":r.get::<_,Option<String>>("ip")});
+    let mut v = json!({"id":r.get::<_,String>("id"),"createdAt":r.get::<_,DateTime<Utc>>("created_at").to_rfc3339_opts(chrono::SecondsFormat::Millis,true),"action":r.get::<_,String>("action"),"target":r.get::<_,Option<String>>("target"),"actorEmail":r.get::<_,Option<String>>("email"),"actorLabel":r.get::<_,Option<String>>("actor_label"),"ip":r.get::<_,Option<String>>("ip"),"via":r.get::<_,Option<Value>>("via")});
     if detail {
         v["before"] = r.get::<_, Option<Value>>("before").unwrap_or(Value::Null);
         v["after"] = r.get::<_, Option<Value>>("after").unwrap_or(Value::Null);
@@ -145,7 +145,7 @@ pub async fn audit_list(
         .filter(|n| *n > 0 && *n <= i64::MAX / 50)
         .unwrap_or(1);
     let offset = (page - 1) * 50;
-    let rows=client.query("SELECT a.id,a.created_at,a.action,a.target,CASE WHEN u.email IS NOT NULL THEN COALESCE(a.actor_label,u.email) END AS email,a.actor_label,a.ip FROM audit_logs a LEFT JOIN users u ON u.id=a.actor_id WHERE ($1::text IS NULL OR a.action=$1) ORDER BY a.created_at DESC,a.id DESC LIMIT 50 OFFSET $2",&[&action,&offset]).await.map_err(|_|db_unavailable())?;
+    let rows=client.query("SELECT a.id,a.created_at,a.action,a.target,CASE WHEN u.email IS NOT NULL THEN COALESCE(a.actor_label,u.email) END AS email,a.actor_label,a.ip,a.via FROM audit_logs a LEFT JOIN users u ON u.id=a.actor_id WHERE ($1::text IS NULL OR a.action=$1) ORDER BY a.created_at DESC,a.id DESC LIMIT 50 OFFSET $2",&[&action,&offset]).await.map_err(|_|db_unavailable())?;
     let total: i64 = client
         .query_one(
             "SELECT count(*) FROM audit_logs WHERE ($1::text IS NULL OR action=$1)",
@@ -170,6 +170,6 @@ pub async fn audit_list(
 }
 pub async fn audit_detail(state: &AppState, id: &str) -> Result<Value, ApiError> {
     let client = state.db.get().await.map_err(|_| db_unavailable())?;
-    let row=client.query_opt("SELECT a.id,a.created_at,a.action,a.target,a.before,a.after,a.ip,CASE WHEN u.email IS NOT NULL THEN COALESCE(a.actor_label,u.email) END AS email,a.actor_label FROM audit_logs a LEFT JOIN users u ON u.id=a.actor_id WHERE a.id=$1",&[&id]).await.map_err(|_|db_unavailable())?.ok_or_else(ApiError::not_found)?;
+    let row=client.query_opt("SELECT a.id,a.created_at,a.action,a.target,a.before,a.after,a.ip,CASE WHEN u.email IS NOT NULL THEN COALESCE(a.actor_label,u.email) END AS email,a.actor_label,a.via FROM audit_logs a LEFT JOIN users u ON u.id=a.actor_id WHERE a.id=$1",&[&id]).await.map_err(|_|db_unavailable())?.ok_or_else(ApiError::not_found)?;
     Ok(json!({"log":audit_row(&row,true)}))
 }

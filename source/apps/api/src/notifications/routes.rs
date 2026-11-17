@@ -1,11 +1,11 @@
 use crate::{
     auth::{
-        principal::{TwoFactorGate, db_unavailable, require_session},
+        principal::{TwoFactorGate, db_unavailable, require_user},
         rbac::Action,
     },
     contracts::FormResult,
     error::ApiError,
-    http_policy::{check_browser_origin, read_form},
+    http_policy::read_form,
     request_context::RequestContext,
     state::AppState,
 };
@@ -29,13 +29,12 @@ async fn feed(
     Extension(ctx): Extension<RequestContext>,
     request: Request,
 ) -> Result<Json<Value>, ApiError> {
-    let session = require_session(
+    let session = require_user(
         &state,
         request.headers(),
         &ctx,
         Some(Action::ConfigRead),
-        TwoFactorGate::Enforce,
-    )
+        TwoFactorGate::Enforce, crate::auth::principal::Use::SessionOrToken)
     .await?;
     let client = state.db.get().await.map_err(|_| db_unavailable())?;
     let rows=client.query("SELECT id,type,severity::text,title,body,link,created_at FROM notifications ORDER BY created_at DESC,id DESC LIMIT 20",&[]).await.map_err(|_|db_unavailable())?;
@@ -48,15 +47,14 @@ async fn seen(
     Extension(ctx): Extension<RequestContext>,
     request: Request,
 ) -> Result<Json<Value>, ApiError> {
-    check_browser_origin(request.headers(), &ctx)?;
-    let session = require_session(
+    let session = require_user(
         &state,
         request.headers(),
         &ctx,
         Some(Action::ConfigRead),
-        TwoFactorGate::Enforce,
-    )
+        TwoFactorGate::Enforce, crate::auth::principal::Use::SessionOrToken)
     .await?;
+    session.check_origin(request.headers(), &ctx)?;
     mark_seen(&state, &session.user_id).await?;
     Ok(Json(json!({"ok":true})))
 }
@@ -65,15 +63,14 @@ async fn mark_form(
     Extension(ctx): Extension<RequestContext>,
     request: Request,
 ) -> Result<Json<FormResult>, ApiError> {
-    check_browser_origin(request.headers(), &ctx)?;
-    let session = require_session(
+    let session = require_user(
         &state,
         request.headers(),
         &ctx,
         Some(Action::ConfigRead),
-        TwoFactorGate::Enforce,
-    )
+        TwoFactorGate::Enforce, crate::auth::principal::Use::SessionOrToken)
     .await?;
+    session.check_origin(request.headers(), &ctx)?;
     let form = read_form(request).await?;
     if !form.args.is_empty() {
         return Err(ApiError::new(

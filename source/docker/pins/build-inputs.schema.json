@@ -162,7 +162,8 @@
         },
         "pg15Helper": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Historical v1 records only; omitted by current builds."
         }
       }
     },
@@ -199,11 +200,13 @@
         },
         "pg15ServerSha256": {
           "type": "string",
-          "pattern": "^[0-9a-f]{64}$"
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Historical v1 records only; omitted by current builds."
         },
         "pg15ClientSha256": {
           "type": "string",
-          "pattern": "^[0-9a-f]{64}$"
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Historical v1 records only; omitted by current builds."
         }
       }
     },

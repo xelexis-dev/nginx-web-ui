@@ -42,7 +42,7 @@ it("tells password accounts, not OAuth-only ones, that disabling removes every p
   for (const hasPassword of [true, false]) {
     read.mockResolvedValueOnce({ enabled: true, verificationRequired: false }).mockResolvedValueOnce({ hasPassword });
     const html = renderToStaticMarkup(await Page());
-    expect(html.includes("현재 비밀번호로 본인을 확인한 뒤 해제합니다. 해제하면 등록한 패스키도 모두 삭제됩니다. 2FA가 필수인 계정은 해제 후 다시 설정해야 합니다.")).toBe(hasPassword);
+    expect(html.includes("현재 비밀번호로 본인을 확인한 뒤 해제합니다. 해제하면 등록한 패스키도 모두 삭제되고, 이 계정의 API 토큰도 모두 폐기됩니다. 2FA가 필수인 계정은 해제 후 다시 설정해야 합니다.")).toBe(hasPassword);
     expect(html.includes('href="/account/2fa/disable"')).toBe(hasPassword);
   }
 });

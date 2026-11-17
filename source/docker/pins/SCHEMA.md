@@ -18,7 +18,7 @@ fallback to the binary package/version when the source field is absent.
 Stages: `api-builder`, `keyring`, `runtime`. Only their OS dependencies are in
 these inventories; JS/Rust/tool artifacts have separate lock/integrity records.
 `origin` is `base` for an unchanged base row; otherwise apt's signed configured
-index/transaction identifies `debian`, `debian-security`, `nginx.org`, or `pgdg` for exactly the two reviewed migration-only PG15 packages.
+index/transaction identifies `debian`, `debian-security`, or `nginx.org`. Historical v1 records may retain `pgdg` origins.
 It is never inferred from dpkg alone. If origin is ambiguous, generation fails.
 
 The runtime installed set is recorded after purging only `apt` and `libapt-pkg7.0`.
@@ -55,4 +55,4 @@ No private source hosts, credentials or checkout paths belong in either record.
 Build infrastructure versions are recorded separately in job evidence; they are
 not reproducible product inputs managed by this repository.
 
-Trixie records additionally carry `directPins.pg15Helper` and the two per-architecture `integrity.pg15ServerSha256`/`pg15ClientSha256` artifact hashes. These optional v1 fields preserve readability of prior Bookworm records; the Trixie Dockerfile always supplies them. PGDG is never configured as an apt source; its two verified local artifacts have explicit transaction provenance, with dependencies resolved exclusively from signed Debian snapshots.
+Historical v1 records may carry `directPins.pg15Helper` and the per-architecture `integrity.pg15ServerSha256`/`pg15ClientSha256` hashes. The schema retains these optional fields for old records; current builds omit them and contain no PG15 helper. PGDG is not configured as an apt source.

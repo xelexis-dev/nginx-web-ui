@@ -75,7 +75,7 @@ pub(super) async fn reconcile_and_adopt(state:&AppState,store:&super::store::Pub
 pub(super) async fn execute(state:&AppState,store:&super::store::PublisherStore,request:super::protocol::Request,mut operation:super::journal::Operation,budget:super::confirmation::Budget)->super::protocol::OpResult {
     use super::protocol::{Op,OpResult};
     let _apply=match budget.admit(state.runtime.apply_lock.lock()).await {Ok(owner)=>owner,Err(_)=>return OpResult::Busy};
-    let actor=crate::contracts::Actor{id:request.actor.user_id,label:request.actor.label,ip:request.actor.ip};
+    let actor=crate::contracts::Actor{via: request.actor.via,id:request.actor.user_id,label:request.actor.label,ip:request.actor.ip};
     match request.op {
         command@Op::ApplySaved{..}|command@Op::RollbackSnapshot{..}=>super::apply::mutate(state,store,operation,command,&actor,&budget).await,
         Op::DeployCertificate{certificate_id,content_digest}=>{
@@ -228,7 +228,7 @@ mod tests {
         use tokio::io::{AsyncReadExt,AsyncWriteExt};
         async fn exchange(path:&std::path::Path,op:Op)->OpResult {
             let mut socket=tokio::net::UnixStream::connect(path).await.unwrap();
-            let request=Request{v:1,id:uuid::Uuid::new_v4().to_string(),op,deadline_ms:5000,actor:Actor{user_id:None,label:None,ip:None}};
+            let request=Request{v:1,id:uuid::Uuid::new_v4().to_string(),op,deadline_ms:5000,actor:Actor{via: None,user_id:None,label:None,ip:None}};
             let body=serde_json::to_vec(&request).unwrap();socket.write_u32(body.len()as u32).await.unwrap();socket.write_all(&body).await.unwrap();socket.shutdown().await.unwrap();
             let size=socket.read_u32().await.unwrap();let mut body=vec![0;size as usize];socket.read_exact(&mut body).await.unwrap();serde_json::from_slice::<Response>(&body).unwrap().result
         }

@@ -3,7 +3,7 @@
   "info": {
     "title": "nginx-web-ui browser API",
     "version": "1.18.0",
-    "description": "RFC 9110 HTTP semantics and RFC 8259 JSON. Browser cookie writes require trusted same-origin context. Response models are safe projections; no database entities, token hashes, sealed values or credentials."
+    "description": "RFC 9110 HTTP semantics and RFC 8259 JSON. Cookie-authenticated writes require trusted same-origin context. User API bearer writes do not require Origin; cross-site Fetch Metadata is still refused. No CORS access is added. Response models are safe projections; no database entities, token hashes, sealed values or credentials. Only the Bearer nwu_u_ namespace selects user-token authentication (scheme case-insensitive); other Authorization values preserve browser cookie authentication."
   },
   "paths": {
     "/api/ui/v1/auth/options": {
@@ -279,6 +279,9 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "responses": {
@@ -306,8 +309,15 @@
           },
           "503": {
             "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ],
+        "description": "User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After."
       }
     },
     "/api/ui/v1/admin/users/{id}": {
@@ -316,6 +326,9 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "parameters": [
@@ -350,8 +363,15 @@
           },
           "503": {
             "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ],
+        "description": "User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After."
       }
     },
     "/api/ui/v1/admin/pending": {
@@ -360,6 +380,9 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "responses": {
@@ -387,8 +410,15 @@
           },
           "503": {
             "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ],
+        "description": "User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After."
       }
     },
     "/api/ui/v1/admin/security": {
@@ -397,6 +427,9 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "responses": {
@@ -421,8 +454,15 @@
           },
           "503": {
             "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ],
+        "description": "User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After."
       }
     },
     "/api/ui/v1/admin/oauth": {
@@ -431,6 +471,9 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "responses": {
@@ -458,8 +501,15 @@
           },
           "503": {
             "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ],
+        "description": "User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After."
       }
     },
     "/api/ui/v1/admin/oauth/{id}": {
@@ -468,6 +518,9 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "parameters": [
@@ -502,8 +555,15 @@
           },
           "503": {
             "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ],
+        "description": "User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After."
       }
     },
     "/api/ui/v1/admin/settings/general": {
@@ -512,6 +572,9 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "responses": {
@@ -536,8 +599,15 @@
           },
           "503": {
             "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ],
+        "description": "User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After."
       }
     },
     "/api/ui/v1/admin/secrets": {
@@ -546,6 +616,9 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "responses": {
@@ -573,8 +646,15 @@
           },
           "503": {
             "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ],
+        "description": "User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After."
       }
     },
     "/api/ui/v1/notifications": {
@@ -583,6 +663,9 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "responses": {
@@ -607,8 +690,15 @@
           },
           "503": {
             "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:read"
+        ],
+        "description": "User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After."
       }
     },
     "/api/ui/v1/session/refresh": {
@@ -649,9 +739,12 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
-        "description": "Origin checked. Updates only the authenticated session user notification read marker.",
+        "description": "Origin checked. Updates only the authenticated session user notification read marker. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "responses": {
           "200": {
             "description": "Marker updated",
@@ -680,8 +773,14 @@
           },
           "503": {
             "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:read"
+        ]
       }
     },
     "/api/ui/v1/admin/settings/smtp": {
@@ -690,6 +789,9 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "responses": {
@@ -714,8 +816,15 @@
           },
           "503": {
             "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ],
+        "description": "User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After."
       }
     },
     "/api/ui/v1/admin/notifications/mail": {
@@ -724,6 +833,9 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "responses": {
@@ -751,8 +863,15 @@
           },
           "503": {
             "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ],
+        "description": "User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After."
       }
     },
     "/api/ui/v1/admin/notifications/mail/{id}": {
@@ -761,6 +880,9 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "parameters": [
@@ -795,8 +917,15 @@
           },
           "503": {
             "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ],
+        "description": "User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After."
       }
     },
     "/api/ui/v1/admin/notifications/webhooks": {
@@ -805,6 +934,9 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "responses": {
@@ -832,8 +964,15 @@
           },
           "503": {
             "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ],
+        "description": "User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After."
       }
     },
     "/api/ui/v1/admin/notifications/webhooks/{id}": {
@@ -842,6 +981,9 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "parameters": [
@@ -876,8 +1018,15 @@
           },
           "503": {
             "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ],
+        "description": "User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After."
       }
     },
     "/api/ui/v1/forms/account.changePassword": {
@@ -1790,10 +1939,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "admin.mailRecipients.create",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -1894,7 +2046,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ]
       }
     },
     "/api/ui/v1/forms/admin.mailRecipients.delete": {
@@ -1903,10 +2058,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "admin.mailRecipients.delete",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -2007,7 +2165,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ]
       }
     },
     "/api/ui/v1/forms/admin.mailRecipients.test": {
@@ -2016,10 +2177,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "admin.mailRecipients.test",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -2120,7 +2284,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ]
       }
     },
     "/api/ui/v1/forms/admin.mailRecipients.update": {
@@ -2129,10 +2296,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "admin.mailRecipients.update",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -2233,7 +2403,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ]
       }
     },
     "/api/ui/v1/forms/admin.oauth.create": {
@@ -2694,10 +2867,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "admin.pending.approve",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. User tokens cannot change an admin target or grant admin. Role changes, approval and enabling require every resulting role action to be allowed by the token. Disabling and rejecting non-admin targets remain permitted. Browser sessions retain their existing authority.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -2798,7 +2974,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ]
       }
     },
     "/api/ui/v1/forms/admin.pending.reject": {
@@ -2807,10 +2986,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "admin.pending.reject",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. User tokens cannot change an admin target or grant admin. Role changes, approval and enabling require every resulting role action to be allowed by the token. Disabling and rejecting non-admin targets remain permitted. Browser sessions retain their existing authority.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -2911,7 +3093,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ]
       }
     },
     "/api/ui/v1/forms/admin.security.revokeGateway": {
@@ -3146,10 +3331,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "admin.settings.updateMetrics",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -3250,7 +3438,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ]
       }
     },
     "/api/ui/v1/forms/admin.settings.updatePublicBaseUrl": {
@@ -3375,7 +3566,7 @@
           }
         ],
         "summary": "admin.smtp.test",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. Session-only: testing sends secrets with submitted connection parameters.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -4163,10 +4354,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "admin.users.toggle",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. User tokens cannot change an admin target or grant admin. Role changes, approval and enabling require every resulting role action to be allowed by the token. Disabling and rejecting non-admin targets remain permitted. Browser sessions retain their existing authority.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -4267,7 +4461,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ]
       }
     },
     "/api/ui/v1/forms/admin.users.updateRole": {
@@ -4276,10 +4473,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "admin.users.updateRole",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. User tokens cannot change an admin target or grant admin. Role changes, approval and enabling require every resulting role action to be allowed by the token. Disabling and rejecting non-admin targets remain permitted. Browser sessions retain their existing authority.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -4380,7 +4580,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ]
       }
     },
     "/api/ui/v1/forms/admin.webhooks.create": {
@@ -4618,7 +4821,7 @@
           }
         ],
         "summary": "admin.webhooks.test",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. Session-only: testing sends secrets with submitted connection parameters.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -4841,10 +5044,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "apply.applyConfig",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -4945,7 +5151,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "nginx:reload"
+        ]
       }
     },
     "/api/ui/v1/forms/certificates.createCertificate": {
@@ -4954,10 +5163,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "certificates.createCertificate",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -5058,7 +5270,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/certificates.deleteCertificate": {
@@ -5067,10 +5282,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "certificates.deleteCertificate",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -5171,7 +5389,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/certificates.importCertificate": {
@@ -5180,10 +5401,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "certificates.importCertificate",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -5284,7 +5508,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/certificates.renewCertificate": {
@@ -5293,10 +5520,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "certificates.renewCertificate",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -5397,7 +5627,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "nginx:reload"
+        ]
       }
     },
     "/api/ui/v1/forms/certificates.renewDnsCertificate": {
@@ -5406,10 +5639,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "certificates.renewDnsCertificate",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -5510,7 +5746,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "nginx:reload"
+        ]
       }
     },
     "/api/ui/v1/forms/certificates.replaceCertificate": {
@@ -5519,10 +5758,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "certificates.replaceCertificate",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -5623,7 +5865,11 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write",
+          "nginx:reload"
+        ]
       }
     },
     "/api/ui/v1/forms/certificates.retryCertificate": {
@@ -5632,10 +5878,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "certificates.retryCertificate",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -5736,7 +5985,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/certificates.submitDnsChallengeAction": {
@@ -5745,10 +5997,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "certificates.submitDnsChallengeAction",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -5849,7 +6104,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/certificates.updateCertificate": {
@@ -5858,10 +6116,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "certificates.updateCertificate",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -5962,7 +6223,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/history.rollback": {
@@ -5971,10 +6235,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "history.rollback",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "snapshotId"
         ],
@@ -6077,7 +6344,11 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write",
+          "nginx:reload"
+        ]
       }
     },
     "/api/ui/v1/forms/login.loginAction": {
@@ -6304,10 +6575,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.applyNodeConfig",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId",
           "basePath"
@@ -6411,7 +6685,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "nginx:reload"
+        ]
       }
     },
     "/api/ui/v1/forms/node.createNodeCertificate": {
@@ -6420,10 +6697,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.createNodeCertificate",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -6526,7 +6806,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/node.createNodeServer": {
@@ -6535,10 +6818,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.createNodeServer",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -6641,7 +6927,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/node.createNodeStream": {
@@ -6650,10 +6939,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.createNodeStream",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -6756,7 +7048,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/node.createNodeUpstream": {
@@ -6765,10 +7060,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.createNodeUpstream",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -6871,7 +7169,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/node.deleteNodeCertificate": {
@@ -6880,10 +7181,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.deleteNodeCertificate",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -6986,7 +7290,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/node.deleteNodeServer": {
@@ -6995,10 +7302,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.deleteNodeServer",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -7101,7 +7411,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/node.deleteNodeStream": {
@@ -7110,10 +7423,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.deleteNodeStream",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -7216,7 +7532,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/node.deleteNodeUpstream": {
@@ -7225,10 +7544,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.deleteNodeUpstream",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -7331,7 +7653,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/node.importNodeCertificate": {
@@ -7340,10 +7665,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.importNodeCertificate",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -7446,7 +7774,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/node.renewDnsNodeCertificate": {
@@ -7455,10 +7786,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.renewDnsNodeCertificate",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -7561,7 +7895,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "nginx:reload"
+        ]
       }
     },
     "/api/ui/v1/forms/node.renewNodeCertificate": {
@@ -7570,10 +7907,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.renewNodeCertificate",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -7676,7 +8016,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "nginx:reload"
+        ]
       }
     },
     "/api/ui/v1/forms/node.replaceNodeCertificate": {
@@ -7685,10 +8028,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.replaceNodeCertificate",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -7791,7 +8137,11 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write",
+          "nginx:reload"
+        ]
       }
     },
     "/api/ui/v1/forms/node.retryNodeCertificate": {
@@ -7800,10 +8150,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.retryNodeCertificate",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -7906,7 +8259,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/node.rollbackNodeSnapshot": {
@@ -7915,10 +8271,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.rollbackNodeSnapshot",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId",
           "snapshotId"
@@ -8022,7 +8381,11 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write",
+          "nginx:reload"
+        ]
       }
     },
     "/api/ui/v1/forms/node.submitNodeDnsChallenge": {
@@ -8031,10 +8394,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.submitNodeDnsChallenge",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -8137,7 +8503,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/node.toggleNodeServer": {
@@ -8146,10 +8515,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.toggleNodeServer",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -8252,7 +8624,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/node.toggleNodeStream": {
@@ -8261,10 +8636,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.toggleNodeStream",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -8367,7 +8745,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/node.updateNodeCertificate": {
@@ -8376,10 +8757,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.updateNodeCertificate",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -8482,7 +8866,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/node.updateNodeServer": {
@@ -8491,10 +8878,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.updateNodeServer",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -8597,7 +8987,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/node.updateNodeStream": {
@@ -8606,10 +8999,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.updateNodeStream",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -8712,7 +9108,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/node.updateNodeUpstream": {
@@ -8721,10 +9120,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "node.updateNodeUpstream",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [
           "nodeId"
         ],
@@ -8827,7 +9229,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/nodes.pairNode": {
@@ -8949,10 +9354,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "nodes.refreshStatuses",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -9053,7 +9461,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "user:manage"
+        ]
       }
     },
     "/api/ui/v1/forms/nodes.unpairNode": {
@@ -9288,10 +9699,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "notifications.markSeen",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -9392,7 +9806,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:read"
+        ]
       }
     },
     "/api/ui/v1/forms/reverse-proxy.createServer": {
@@ -9401,10 +9818,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "reverse-proxy.createServer",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -9505,7 +9925,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/reverse-proxy.deleteServer": {
@@ -9514,10 +9937,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "reverse-proxy.deleteServer",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -9618,7 +10044,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/reverse-proxy.toggleServer": {
@@ -9627,10 +10056,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "reverse-proxy.toggleServer",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -9731,7 +10163,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/reverse-proxy.updateServer": {
@@ -9740,10 +10175,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "reverse-proxy.updateServer",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -9844,7 +10282,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/session.signOut": {
@@ -10075,10 +10516,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "stream.createStream",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -10179,7 +10623,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/stream.deleteStream": {
@@ -10188,10 +10635,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "stream.deleteStream",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -10292,7 +10742,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/stream.toggleStream": {
@@ -10301,10 +10754,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "stream.toggleStream",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -10405,7 +10861,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/stream.updateStream": {
@@ -10414,10 +10873,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "stream.updateStream",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -10518,7 +10980,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/upstreams.createUpstream": {
@@ -10527,10 +10992,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "upstreams.createUpstream",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -10631,7 +11099,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/upstreams.deleteUpstream": {
@@ -10640,10 +11111,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "upstreams.deleteUpstream",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -10744,7 +11218,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/forms/upstreams.updateUpstream": {
@@ -10753,10 +11230,13 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "summary": "upstreams.updateUpstream",
-        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.",
+        "description": "Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "x-command-arguments": [],
         "requestBody": {
           "required": true,
@@ -10857,7 +11337,10 @@
           "503": {
             "$ref": "#/components/responses/ApiError"
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/v1/info": {
@@ -25351,10 +25834,13 @@
       "get": {
         "operationId": "readBrowserView",
         "summary": "Read an authorized browser page projection",
-        "description": "Fresh database-validated browser session with MFA enforcement. Each static view applies its own role gate. Response shape is selected by the path query parameter using x-view-registry; no credentials, PEM keys, sealed values or token hashes are returned. Local views have fixed schemas; remote data remains untrusted JSON.",
+        "description": "Fresh database-validated browser session with MFA enforcement. Each static view applies its own role gate. Response shape is selected by the path query parameter using x-view-registry; no credentials, PEM keys, sealed values or token hashes are returned. Local views have fixed schemas; remote data remains untrusted JSON. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "parameters": [
@@ -25565,6 +26051,9 @@
             "$ref": "#/components/responses/ApiError"
           },
           "503": {
+            "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
             "$ref": "#/components/responses/ApiError"
           }
         },
@@ -25893,6 +26382,197 @@
             },
             "permission": "nginx:reload"
           }
+        },
+        "x-nwui-token-scope": {
+          "byPath": {
+            "/reverse-proxy": [
+              "config:read"
+            ],
+            "/reverse-proxy/new": [
+              "config:read",
+              "config:write"
+            ],
+            "/reverse-proxy/templates": [
+              "config:read"
+            ],
+            "/reverse-proxy/{id}": [
+              "config:read"
+            ],
+            "/reverse-proxy/{id}/edit": [
+              "config:read",
+              "config:write"
+            ],
+            "/reverse-proxy/upstreams": [
+              "config:read"
+            ],
+            "/reverse-proxy/upstreams/new": [
+              "config:read",
+              "config:write"
+            ],
+            "/reverse-proxy/upstreams/{id}": [
+              "config:read"
+            ],
+            "/reverse-proxy/upstreams/{id}/edit": [
+              "config:read",
+              "config:write"
+            ],
+            "/stream": [
+              "config:read"
+            ],
+            "/stream/new": [
+              "config:read",
+              "config:write"
+            ],
+            "/stream/{id}": [
+              "config:read"
+            ],
+            "/stream/{id}/edit": [
+              "config:read",
+              "config:write"
+            ],
+            "/": [
+              "config:read"
+            ],
+            "/metrics": [
+              "config:read"
+            ],
+            "/logs": [
+              "config:read"
+            ],
+            "/audit": [
+              "config:read"
+            ],
+            "/audit/{id}": [
+              "config:read"
+            ],
+            "/history": [
+              "config:read"
+            ],
+            "/history/{id}": [
+              "config:read"
+            ],
+            "/certificates": [
+              "config:read"
+            ],
+            "/certificates/new": [
+              "config:read",
+              "config:write"
+            ],
+            "/certificates/import": [
+              "config:read",
+              "config:write"
+            ],
+            "/certificates/{id}": [
+              "config:read"
+            ],
+            "/certificates/{id}/edit": [
+              "config:read",
+              "config:write"
+            ],
+            "/certificates/{id}/replace": [
+              "config:read",
+              "config:write",
+              "nginx:reload"
+            ],
+            "/nodes": [
+              "config:read"
+            ],
+            "/nodes/new": [
+              "config:read",
+              "user:manage"
+            ],
+            "/nodes/{nodeId}/edit": [
+              "config:read",
+              "user:manage"
+            ],
+            "/nodes/{nodeId}/layout": [
+              "config:read"
+            ],
+            "/nodes/{nodeId}": [
+              "config:read"
+            ],
+            "/nodes/{nodeId}/metrics": [
+              "config:read"
+            ],
+            "/nodes/{nodeId}/logs": [
+              "config:read"
+            ],
+            "/nodes/{nodeId}/history": [
+              "config:read"
+            ],
+            "/nodes/{nodeId}/audit": [
+              "config:read"
+            ],
+            "/nodes/{nodeId}/audit/{id}": [
+              "config:read"
+            ],
+            "/nodes/{nodeId}/reverse-proxy": [
+              "config:read"
+            ],
+            "/nodes/{nodeId}/reverse-proxy/new": [
+              "config:read",
+              "config:write"
+            ],
+            "/nodes/{nodeId}/reverse-proxy/upstreams": [
+              "config:read"
+            ],
+            "/nodes/{nodeId}/reverse-proxy/upstreams/new": [
+              "config:read",
+              "config:write"
+            ],
+            "/nodes/{nodeId}/reverse-proxy/upstreams/{id}": [
+              "config:read"
+            ],
+            "/nodes/{nodeId}/reverse-proxy/upstreams/{id}/edit": [
+              "config:read",
+              "config:write"
+            ],
+            "/nodes/{nodeId}/reverse-proxy/{id}": [
+              "config:read"
+            ],
+            "/nodes/{nodeId}/reverse-proxy/{id}/edit": [
+              "config:read",
+              "config:write"
+            ],
+            "/nodes/{nodeId}/stream": [
+              "config:read"
+            ],
+            "/nodes/{nodeId}/stream/new": [
+              "config:read",
+              "config:write"
+            ],
+            "/nodes/{nodeId}/stream/{id}": [
+              "config:read"
+            ],
+            "/nodes/{nodeId}/stream/{id}/edit": [
+              "config:read",
+              "config:write"
+            ],
+            "/nodes/{nodeId}/certificates": [
+              "config:read"
+            ],
+            "/nodes/{nodeId}/certificates/new": [
+              "config:read",
+              "config:write"
+            ],
+            "/nodes/{nodeId}/certificates/import": [
+              "config:read",
+              "config:write"
+            ],
+            "/nodes/{nodeId}/certificates/{id}": [
+              "config:read"
+            ],
+            "/nodes/{nodeId}/certificates/{id}/edit": [
+              "config:read",
+              "config:write"
+            ],
+            "/nodes/{nodeId}/certificates/{id}/replace": [
+              "config:read",
+              "config:write",
+              "nginx:reload"
+            ]
+          },
+          "unknown": "session-only"
         }
       }
     },
@@ -26578,6 +27258,9 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "parameters": [
@@ -26612,12 +27295,24 @@
           },
           "default": {
             "$ref": "#/components/responses/ApiError"
+          },
+          "401": {
+            "$ref": "#/components/responses/ApiError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiError"
           }
         },
         "x-required-actions": [
           "config:read"
         ],
-        "description": "Authenticated browser read; requires config:read and the current MFA policy."
+        "description": "Authenticated browser read; requires config:read and the current MFA policy. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
+        "x-nwui-token-scope": [
+          "config:read"
+        ]
       }
     },
     "/api/ui/v1/logs/stream": {
@@ -26626,6 +27321,9 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "parameters": [
@@ -26670,12 +27368,24 @@
           },
           "default": {
             "$ref": "#/components/responses/ApiError"
+          },
+          "401": {
+            "$ref": "#/components/responses/ApiError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiError"
           }
         },
         "x-required-actions": [
           "config:read"
         ],
-        "description": "Authenticated browser read; requires config:read and the current MFA policy."
+        "description": "Authenticated browser read; requires config:read and the current MFA policy. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. Token streams revalidate every 30 seconds and at expiry.",
+        "x-nwui-token-scope": [
+          "config:read"
+        ]
       }
     },
     "/api/nodes/{id}/metrics": {
@@ -26684,6 +27394,9 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "parameters": [
@@ -26726,12 +27439,24 @@
           },
           "default": {
             "$ref": "#/components/responses/ApiError"
+          },
+          "401": {
+            "$ref": "#/components/responses/ApiError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiError"
           }
         },
         "x-required-actions": [
           "config:read"
         ],
-        "description": "Authenticated browser read; requires config:read and the current MFA policy. The gateway relays the selected node; failures remain safe API errors."
+        "description": "Authenticated browser read; requires config:read and the current MFA policy. The gateway relays the selected node; failures remain safe API errors. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
+        "x-nwui-token-scope": [
+          "config:read"
+        ]
       }
     },
     "/api/nodes/{id}/logs/stream": {
@@ -26740,6 +27465,9 @@
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "parameters": [
@@ -26792,21 +27520,36 @@
           },
           "default": {
             "$ref": "#/components/responses/ApiError"
+          },
+          "401": {
+            "$ref": "#/components/responses/ApiError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ApiError"
+          },
+          "429": {
+            "$ref": "#/components/responses/ApiError"
           }
         },
         "x-required-actions": [
           "config:read"
         ],
-        "description": "Authenticated browser read; requires config:read and the current MFA policy. The gateway relays the selected node; failures remain safe API errors."
+        "description": "Authenticated browser read; requires config:read and the current MFA policy. The gateway relays the selected node; failures remain safe API errors. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. Token streams revalidate every 30 seconds and at expiry.",
+        "x-nwui-token-scope": [
+          "config:read"
+        ]
       }
     },
     "/api/certificates/{id}/cancel": {
       "post": {
         "operationId": "cancelBrowserCertificate",
-        "description": "Cancel certificate issuance. Requires browser session, config:write, the current MFA policy and a matching Origin. The UI alias has the same behavior; remote failures may include a safe node failure code.",
+        "description": "Cancel certificate issuance. Requires browser session, config:write, the current MFA policy and a matching Origin. The UI alias has the same behavior; remote failures may include a safe node failure code. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "parameters": [
@@ -26839,17 +27582,53 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowserCertificateCancelError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowserCertificateCancelError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowserCertificateCancelError"
+                }
+              }
+            }
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/ui/v1/certificates/{id}/cancel": {
       "post": {
         "operationId": "cancelBrowserCertificateAlias",
-        "description": "Cancel certificate issuance. Requires browser session, config:write, the current MFA policy and a matching Origin. The UI alias has the same behavior; remote failures may include a safe node failure code.",
+        "description": "Cancel certificate issuance. Requires browser session, config:write, the current MFA policy and a matching Origin. The UI alias has the same behavior; remote failures may include a safe node failure code. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "parameters": [
@@ -26882,17 +27661,53 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowserCertificateCancelError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowserCertificateCancelError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowserCertificateCancelError"
+                }
+              }
+            }
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/nodes/{id}/certificates/{cid}/cancel": {
       "post": {
         "operationId": "cancelRemoteBrowserCertificate",
-        "description": "Cancel certificate issuance. Requires browser session, config:write, the current MFA policy and a matching Origin. The UI alias has the same behavior; remote failures may include a safe node failure code.",
+        "description": "Cancel certificate issuance. Requires browser session, config:write, the current MFA policy and a matching Origin. The UI alias has the same behavior; remote failures may include a safe node failure code. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.",
         "security": [
           {
             "browserSession": []
+          },
+          {
+            "userToken": []
           }
         ],
         "parameters": [
@@ -26933,8 +27748,41 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowserCertificateCancelError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowserCertificateCancelError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowserCertificateCancelError"
+                }
+              }
+            }
           }
-        }
+        },
+        "x-nwui-token-scope": [
+          "config:write"
+        ]
       }
     },
     "/api/v1/identity-challenge": {
@@ -29808,6 +30656,10 @@
       "NodeTlsOptions": {
         "type": "object",
         "properties": {
+          "http2": {
+            "type": "boolean",
+            "description": "Enable HTTP/2 for this TLS server. Omission means off; requires a certificate and a node at version 2.1 or later."
+          },
           "sslProtocols": {
             "type": "string",
             "enum": [
@@ -30404,7 +31256,10 @@
             }
           },
           "tls": {
-            "type": "object",
+            "type": [
+              "object",
+              "null"
+            ],
             "properties": {
               "tlsPort": {
                 "type": "integer",
@@ -31365,6 +32220,17 @@
               "string",
               "null"
             ]
+          },
+          "via": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuditVia"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Token provenance at the time of the action; absent or null for a browser session."
           }
         },
         "required": [
@@ -31420,6 +32286,17 @@
           },
           "after": {
             "$ref": "#/components/schemas/NodeJsonValue"
+          },
+          "via": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuditVia"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Token provenance at the time of the action; absent or null for a browser session."
           }
         },
         "required": [
@@ -32276,6 +33153,17 @@
               "string",
               "null"
             ]
+          },
+          "via": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuditVia"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Token provenance at the time of the action; absent or null for a browser session."
           }
         }
       },
@@ -32333,6 +33221,17 @@
           },
           "after": {
             "description": "Audited action-specific JSON or null; historical payload schema depends on action."
+          },
+          "via": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuditVia"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Token provenance at the time of the action; absent or null for a browser session."
           }
         }
       },
@@ -33251,7 +34150,8 @@
             "$ref": "#/components/schemas/NodeView"
           },
           "effectiveRole": {
-            "$ref": "#/components/schemas/Role"
+            "$ref": "#/components/schemas/Role",
+            "description": "Display only. canWrite and canApply include the current user token scopes and node role."
           },
           "data": {
             "description": "Untrusted remote node JSON, null for pages with no remote request, or an object of untrusted responses for fanout pages. The browser defensively decodes each expected payload before use."
@@ -33261,6 +34161,12 @@
           },
           "runtimeDns": {
             "$ref": "#/components/schemas/RuntimeDnsStatus"
+          },
+          "canWrite": {
+            "type": "boolean"
+          },
+          "canApply": {
+            "type": "boolean"
           }
         }
       },
@@ -33568,6 +34474,27 @@
             }
           }
         }
+      },
+      "AuditVia": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "id",
+          "name"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "token"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
       }
     },
     "securitySchemes": {
@@ -33586,6 +34513,12 @@
         "type": "http",
         "scheme": "bearer",
         "description": "Opaque gateway credential minted by POST /api/v1/pair. Fresh stored gateway role is checked on each call. Browser relay additionally restricts operations to min(fresh user role, node token role)."
+      },
+      "userToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "nwu_u_<32 random bytes, base64url without padding>",
+        "description": "HTTPS only. Exactly one Authorization: Bearer nwu_u_… header (scheme case-insensitive); no query or body tokens. Only this namespace selects token authentication: its cookies are ignored, invalid user tokens never fall back, and responses set no cookie. Other Authorization values preserve browser cookie authentication. Per token and owner: 600 reads/min, 60 mutations/min; concurrent streams: 3 per token, 6 per owner."
       }
     }
   },
@@ -33688,325 +34621,511 @@
       "schema": {
         "$ref": "#/components/schemas/ServerListView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/reverse-proxy/new": {
       "schema": {
         "$ref": "#/components/schemas/ServerOptionsView"
       },
-      "permission": "config:write"
+      "permission": "config:write",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write"
+      ]
     },
     "/reverse-proxy/templates": {
       "schema": {
         "$ref": "#/components/schemas/TemplateGalleryView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/reverse-proxy/{id}": {
       "schema": {
         "$ref": "#/components/schemas/ServerDetailView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/reverse-proxy/{id}/edit": {
       "schema": {
         "$ref": "#/components/schemas/ServerEditView"
       },
-      "permission": "config:write"
+      "permission": "config:write",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write"
+      ]
     },
     "/reverse-proxy/upstreams": {
       "schema": {
         "$ref": "#/components/schemas/UpstreamListView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/reverse-proxy/upstreams/new": {
       "schema": {
         "$ref": "#/components/schemas/ControlPermissionsView"
       },
-      "permission": "config:write"
+      "permission": "config:write",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write"
+      ]
     },
     "/reverse-proxy/upstreams/{id}": {
       "schema": {
         "$ref": "#/components/schemas/UpstreamItemView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/reverse-proxy/upstreams/{id}/edit": {
       "schema": {
         "$ref": "#/components/schemas/UpstreamItemView"
       },
-      "permission": "config:write"
+      "permission": "config:write",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write"
+      ]
     },
     "/stream": {
       "schema": {
         "$ref": "#/components/schemas/StreamListView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/stream/new": {
       "schema": {
         "$ref": "#/components/schemas/StreamOptionsView"
       },
-      "permission": "config:write"
+      "permission": "config:write",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write"
+      ]
     },
     "/stream/{id}": {
       "schema": {
         "$ref": "#/components/schemas/StreamDetailView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/stream/{id}/edit": {
       "schema": {
         "$ref": "#/components/schemas/StreamEditView"
       },
-      "permission": "config:write"
+      "permission": "config:write",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write"
+      ]
     },
     "/": {
       "schema": {
         "$ref": "#/components/schemas/DashboardView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/metrics": {
       "schema": {
         "$ref": "#/components/schemas/MetricsPageView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/logs": {
       "schema": {
         "$ref": "#/components/schemas/LogsPageView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/audit": {
       "schema": {
         "$ref": "#/components/schemas/AuditListView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/audit/{id}": {
       "schema": {
         "$ref": "#/components/schemas/AuditDetailView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/history": {
       "schema": {
         "$ref": "#/components/schemas/HistoryView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/history/{id}": {
       "schema": {
         "$ref": "#/components/schemas/HistoryDetailView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/certificates": {
       "schema": {
         "$ref": "#/components/schemas/CertificateListView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/certificates/new": {
       "schema": {
         "$ref": "#/components/schemas/CertificateNewView"
       },
-      "permission": "config:write"
+      "permission": "config:write",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write"
+      ]
     },
     "/certificates/import": {
       "schema": {
         "$ref": "#/components/schemas/CertificateImportView"
       },
-      "permission": "config:write"
+      "permission": "config:write",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write"
+      ]
     },
     "/certificates/{id}": {
       "schema": {
         "$ref": "#/components/schemas/CertificateDetailView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/certificates/{id}/edit": {
       "schema": {
         "$ref": "#/components/schemas/CertificateEditView"
       },
-      "permission": "config:write"
+      "permission": "config:write",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write"
+      ]
     },
     "/certificates/{id}/replace": {
       "schema": {
         "$ref": "#/components/schemas/CertificateReplaceView"
       },
-      "permission": "nginx:reload"
+      "permission": "nginx:reload",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write",
+        "nginx:reload"
+      ]
     },
     "/nodes": {
       "schema": {
         "$ref": "#/components/schemas/NodesListView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/nodes/new": {
       "schema": {
         "$ref": "#/components/schemas/NodeNewView"
       },
-      "permission": "user:manage"
+      "permission": "user:manage",
+      "x-nwui-token-scope": [
+        "config:read",
+        "user:manage"
+      ]
     },
     "/nodes/{nodeId}/edit": {
       "schema": {
         "$ref": "#/components/schemas/NodeMetadataView"
       },
-      "permission": "user:manage"
+      "permission": "user:manage",
+      "x-nwui-token-scope": [
+        "config:read",
+        "user:manage"
+      ]
     },
     "/nodes/{nodeId}/layout": {
       "schema": {
         "$ref": "#/components/schemas/NodeMetadataView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/nodes/{nodeId}": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/nodes/{nodeId}/metrics": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/nodes/{nodeId}/logs": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/nodes/{nodeId}/history": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/nodes/{nodeId}/audit": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/nodes/{nodeId}/audit/{id}": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/nodes/{nodeId}/reverse-proxy": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/nodes/{nodeId}/reverse-proxy/new": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:write"
+      "permission": "config:write",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write"
+      ]
     },
     "/nodes/{nodeId}/reverse-proxy/upstreams": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/nodes/{nodeId}/reverse-proxy/upstreams/new": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:write"
+      "permission": "config:write",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write"
+      ]
     },
     "/nodes/{nodeId}/reverse-proxy/upstreams/{id}": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/nodes/{nodeId}/reverse-proxy/upstreams/{id}/edit": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:write"
+      "permission": "config:write",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write"
+      ]
     },
     "/nodes/{nodeId}/reverse-proxy/{id}": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/nodes/{nodeId}/reverse-proxy/{id}/edit": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:write"
+      "permission": "config:write",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write"
+      ]
     },
     "/nodes/{nodeId}/stream": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/nodes/{nodeId}/stream/new": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:write"
+      "permission": "config:write",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write"
+      ]
     },
     "/nodes/{nodeId}/stream/{id}": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/nodes/{nodeId}/stream/{id}/edit": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:write"
+      "permission": "config:write",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write"
+      ]
     },
     "/nodes/{nodeId}/certificates": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/nodes/{nodeId}/certificates/new": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:write"
+      "permission": "config:write",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write"
+      ]
     },
     "/nodes/{nodeId}/certificates/import": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:write"
+      "permission": "config:write",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write"
+      ]
     },
     "/nodes/{nodeId}/certificates/{id}": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:read"
+      "permission": "config:read",
+      "x-nwui-token-scope": [
+        "config:read"
+      ]
     },
     "/nodes/{nodeId}/certificates/{id}/edit": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "config:write"
+      "permission": "config:write",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write"
+      ]
     },
     "/nodes/{nodeId}/certificates/{id}/replace": {
       "schema": {
         "$ref": "#/components/schemas/RemoteNodeView"
       },
-      "permission": "nginx:reload"
+      "permission": "nginx:reload",
+      "x-nwui-token-scope": [
+        "config:read",
+        "config:write",
+        "nginx:reload"
+      ]
     }
   },
   "x-node-policies": {

@@ -5,7 +5,7 @@ use nwui_api::{contracts::Actor, control::{model, pending, resources::{self, Mut
 use serde_json::{Value, json};
 use std::path::{Path, PathBuf};
 
-fn actor() -> Actor { Actor { id: None, label: Some("version-test".into()), ip: None } }
+fn actor() -> Actor { Actor { via: None, id: None, label: Some("version-test".into()), ip: None } }
 fn migration_dir() -> PathBuf { Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packages/db/drizzle") }
 fn cases() -> [(Resource, Value);3] { [
     (Resource::Upstream, json!({"name":"backend","servers":["127.0.0.1:9000"]})),

@@ -9,11 +9,11 @@ fn invoke(args:&[&str],root:&std::path::Path)->Output {
 #[test]
 fn operator_cli_rejects_missing_or_wrong_confirmation_without_changing_storage() {
     let temp=tempfile::tempdir().unwrap();fs::write(temp.path().join("canary"),b"unchanged").unwrap();
-    for (command,wrong) in [("restore-pg15","--confirm"),("remove-pg15-backup","--confirm-loss"),("remove-discarded","--confirm-loss")] {
+    for (command,wrong) in [("remove-pg15-backup","--confirm-loss"),("remove-discarded","--confirm-loss")] {
         for args in [vec![command],vec![command,wrong,"11111111-1111-4111-8111-111111111111"]] {
             let output=invoke(&args,temp.path());assert!(!output.status.success());
             let stderr=String::from_utf8(output.stderr).unwrap();assert!(stderr.contains("invalid_arguments"),"{command}: {stderr}");
-            assert!(stderr.contains("restore-pg15 --confirm-loss"),"{command}: {stderr}");
+            assert!(stderr.contains("remove"),"{command}: {stderr}");
             assert_eq!(fs::read(temp.path().join("canary")).unwrap(),b"unchanged");assert_eq!(fs::read_dir(temp.path()).unwrap().count(),1);
         }
     }
@@ -23,6 +23,6 @@ fn operator_cli_rejects_missing_or_wrong_confirmation_without_changing_storage()
 fn operator_cli_unknown_command_prints_complete_usage() {
     let temp=tempfile::tempdir().unwrap();let output=invoke(&["unknown-command"],temp.path());assert!(!output.status.success());
     let stderr=String::from_utf8(output.stderr).unwrap();
-    for expected in ["Usage:","check|run","auto-status","restore-pg15 --confirm-loss","remove-pg15-backup --confirm","remove-discarded --confirm"] {assert!(stderr.contains(expected),"missing {expected}: {stderr}");}
+    for expected in ["Usage:","auto-status","remove-pg15-backup --confirm","remove-discarded --confirm"] {assert!(stderr.contains(expected),"missing {expected}: {stderr}");}
     assert_eq!(fs::read_dir(temp.path()).unwrap().count(),0);
 }

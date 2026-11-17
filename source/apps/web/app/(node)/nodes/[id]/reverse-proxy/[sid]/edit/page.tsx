@@ -133,6 +133,7 @@ export default async function EditNodeServerPage({
         <ServerForm
           target={{ kind: "node", id, name: loaded.node.name }}
           nodeName={loaded.node.name}
+          nodeVersion={loaded.node.lastVersion}
           legacyNode={legacyNode}
           nodeVersionFamily={legacyNode ? "1.19" : "2.0"}
           runtimeDns={loaded.runtimeDns}

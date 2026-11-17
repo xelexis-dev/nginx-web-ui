@@ -319,6 +319,7 @@ it.each([
     const value = html.match(/name="tlsOptions" value="([^"]*)"/)?.[1];
     expect(value).toBeDefined();
     expect(JSON.parse(value!.replaceAll("&quot;", '"'))).toEqual({
+      http2: false,
       hsts: {
         enabled: true,
         maxAge: expected,

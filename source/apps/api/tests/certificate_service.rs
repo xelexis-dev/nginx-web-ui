@@ -6,6 +6,7 @@ use nwui_api::{
 use serde_json::json;
 fn actor() -> Actor {
     Actor {
+        via: None,
         id: None,
         label: Some("gateway:test".into()),
         ip: None,
@@ -19,6 +20,7 @@ async fn queued_job_audit_survives_actor_deleted_before_completion() {
     let mut db = t.state.db.get().await.unwrap();
     let tx = db.transaction().await.unwrap();
     let deleted = Actor {
+        via: None,
         id: Some("removed-user".into()),
         label: None,
         ip: None,

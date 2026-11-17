@@ -166,7 +166,7 @@ async fn recover_response(path:&Path,bounds:&Bounds,checks:bool,req:&Request,fir
         Ok(response)=>Ok(response),
         Err(failure) if !failure.sent=>Err(failure.error.into()),
         Err(_)=>{
-            let status=request(Op::OperationStatus{operation_id:req.id.clone()},protocol::Actor{user_id:req.actor.user_id.clone(),label:req.actor.label.clone(),ip:req.actor.ip.clone()},bounds.status.as_millis().clamp(1,280_000)as u32);
+            let status=request(Op::OperationStatus{operation_id:req.id.clone()},protocol::Actor{via: req.actor.via.clone(),user_id:req.actor.user_id.clone(),label:req.actor.label.clone(),ip:req.actor.ip.clone()},bounds.status.as_millis().clamp(1,280_000)as u32);
             match exchange(path,bounds,checks,&status,Instant::now()+bounds.status).await {
                 Ok(response) if !matches!(&response.result,OpResult::Unknown|OpResult::Busy|OpResult::Unavailable|OpResult::Conflict|OpResult::BadRequest{..}) && !matches!(&response.result,OpResult::Ok{phase,..}if phase=="running")=>Ok(response),
                 _=>Err(ClientError::Unconfirmed{operation_id:req.id.clone()}.into()),
@@ -183,7 +183,7 @@ async fn mutate(state:&AppState,op:Op,actor:&Actor)->anyhow::Result<RollbackResu
     let start=Instant::now();let deadline=start+bounds.operation;
     let rollback=matches!(op,Op::RollbackSnapshot{..});
     let name=match &op{Op::ApplySaved{..}=>"ApplySaved",Op::RollbackSnapshot{..}=>"RollbackSnapshot",_=>"DeployCertificate"};
-    let req=request(op,protocol::Actor{user_id:actor.id.clone(),label:actor.label.clone(),ip:actor.ip.clone()},deadline_ms(deadline,Instant::now()));
+    let req=request(op,protocol::Actor{via: actor.via.clone(),user_id:actor.id.clone(),label:actor.label.clone(),ip:actor.ip.clone()},deadline_ms(deadline,Instant::now()));
     let _guard=match timeout_at(start+bounds.admission,state.runtime.apply_lock.lock()).await {
         Ok(guard)=>guard,
         Err(_)=>{
@@ -207,7 +207,7 @@ async fn readonly<T>(state:&AppState,op:Op,map:impl FnOnce(Response)->Result<T,C
     };
     let is_hello=matches!(op,Op::Hello);let name=if is_hello{"Hello"}else{"ValidateLive"};
     let duration=if is_hello{bounds.hello}else{bounds.validate+bounds.slack};
-    let req=request(op,protocol::Actor{user_id:None,label:None,ip:None},if is_hello{2000}else{bounds.validate.as_millis().clamp(1,280_000)as u32});
+    let req=request(op,protocol::Actor{via: None,user_id:None,label:None,ip:None},if is_hello{2000}else{bounds.validate.as_millis().clamp(1,280_000)as u32});
     let result=exchange(path,bounds,*checks,&req,Instant::now()+duration).await.map_err(|failure|failure.error).and_then(map);
     if let Err(error)=&result {eprintln!("{}",failure_line(name,&req.id,error));}
     result
@@ -216,7 +216,7 @@ async fn readonly<T>(state:&AppState,op:Op,map:impl FnOnce(Response)->Result<T,C
 #[cfg(any(test, feature = "test-support"))]
 async fn in_process_mutate(state:&AppState,op:Op,actor:&Actor)->anyhow::Result<RollbackResult> {
     let rollback=matches!(op,Op::RollbackSnapshot{..});
-    let req=request(op,protocol::Actor{user_id:actor.id.clone(),label:actor.label.clone(),ip:actor.ip.clone()},280000);
+    let req=request(op,protocol::Actor{via: actor.via.clone(),user_id:actor.id.clone(),label:actor.label.clone(),ip:actor.ip.clone()},280000);
     let id=req.id.clone();
     mutation_result(crate::publisher::test_support::dispatch(state,req).await,&id,rollback)
 }
@@ -255,7 +255,7 @@ pub async fn validate_live(state: &AppState) -> Result<LiveValidation, ClientErr
     match &state.runtime.publisher.mode {
         #[cfg(any(test, feature = "test-support"))]
         Mode::InProcess => {
-            let req=request(Op::ValidateLive,protocol::Actor{user_id:None,label:None,ip:None},35000);
+            let req=request(Op::ValidateLive,protocol::Actor{via: None,user_id:None,label:None,ip:None},35000);
             match crate::publisher::test_support::dispatch(state,req).await {
                 OpResult::Ok{apply:Some(r),..}=>Ok(LiveValidation::Checked{ok:r.ok,output:r.output}),
                 OpResult::Busy=>Ok(LiveValidation::Busy),
@@ -278,7 +278,7 @@ pub async fn hello(state: &AppState) -> Result<Hello, ClientError> {
     match &state.runtime.publisher.mode {
         #[cfg(any(test, feature = "test-support"))]
         Mode::InProcess => {
-            let req=request(Op::Hello,protocol::Actor{user_id:None,label:None,ip:None},2000);
+            let req=request(Op::Hello,protocol::Actor{via: None,user_id:None,label:None,ip:None},2000);
             match crate::publisher::test_support::dispatch(state,req).await {
                 OpResult::Ok{phase,uncertain,..}=>Ok(Hello{ready:phase=="ready",uncertain,epoch:0}),
                 OpResult::Unavailable=>Err(unavailable("publisher unavailable")),
@@ -414,7 +414,7 @@ mod tests {
         AppState::new(config).unwrap()
     }
     fn request()->protocol::Request {
-        protocol::Request {v:1,id:uuid::Uuid::new_v4().to_string(),op:Op::Hello,deadline_ms:2000,actor:protocol::Actor{user_id:None,label:None,ip:None}}
+        protocol::Request {v:1,id:uuid::Uuid::new_v4().to_string(),op:Op::Hello,deadline_ms:2000,actor:protocol::Actor{via: None,user_id:None,label:None,ip:None}}
     }
     #[test]
     fn tests_default_to_in_process_and_system_remains_socket() {
@@ -487,7 +487,7 @@ mod tests {
     async fn noncanonical_rollback_returns_not_found_without_io() {
         let dir=tempfile::tempdir().unwrap();let mut state=state(dir.path());
         std::sync::Arc::get_mut(&mut state.runtime).unwrap().publisher=Client::system();
-        let actor=Actor{id:None,label:None,ip:None};
+        let actor=Actor{via: None,id:None,label:None,ip:None};
         for id in ["missing","AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA"] {
             let result=rollback_snapshot(&state,id,&actor).await.unwrap();
             assert!(!result.result.ok);assert!(matches!(result.kind,Some(RollbackKind::NotFound)));
@@ -501,7 +501,7 @@ mod tests {
         std::sync::Arc::get_mut(&mut state.runtime).unwrap().publisher=Client::socket_for_tests(server.path().into(),fast_bounds());
         state
     }
-    fn actor()->Actor {Actor{id:Some("user-only".into()),label:Some("operator-only".into()),ip:Some("192.0.2.1".into())}}
+    fn actor()->Actor {Actor{via: None,id:Some("user-only".into()),label:Some("operator-only".into()),ip:Some("192.0.2.1".into())}}
     fn success()->OpResult {OpResult::Ok{apply:Some(ApplyResult{ok:true,output:"applied".into(),rolled_back_to:Some(crate::control::model::RestoredCounts{conf:1,stream:2})}),skipped:vec![],uncertain:false,phase:"done".into()}}
     fn failed(code:&str)->OpResult {OpResult::Failed{code:code.into(),output:"original output".into()}}
     fn client_error(error:&anyhow::Error)->&ClientError {error.downcast_ref::<ClientError>().expect("typed client error")}

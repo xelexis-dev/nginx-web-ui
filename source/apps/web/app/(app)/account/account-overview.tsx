@@ -141,7 +141,7 @@ export function AccountOverview({
           <SettingRow
             label="액세스 토큰"
             wideDetail
-            detail="API나 자동화 도구가 이 계정의 권한으로 접근할 때 씁니다. 목록 확인, 발급, 폐기는 토큰 페이지에서 합니다."
+            detail="API나 자동화 도구가 이 계정으로 작업할 때 씁니다. 계정의 현재 역할과 토큰에 고른 권한이 모두 허락하는 작업만 할 수 있습니다. 비밀번호·2단계 인증·패스키·토큰 관리 같은 계정 보안 작업은 토큰으로 할 수 없습니다. SMTP·웹훅 시험은 웹에서만 할 수 있습니다. 토큰을 쓰려면 2단계 인증을 등록해야 합니다."
             action={
               <Link
                 href="/account/tokens"

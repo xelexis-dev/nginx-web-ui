@@ -7,7 +7,7 @@ use crate::{
     },
     contracts::FormResult,
     error::ApiError,
-    http_policy::{check_browser_origin, read_form},
+    http_policy::read_form,
     request_context::RequestContext,
     state::AppState,
 };
@@ -170,15 +170,14 @@ async fn form(
     Extension(ctx): Extension<RequestContext>,
     request: Request,
 ) -> Result<Json<FormResult>, ApiError> {
-    check_browser_origin(request.headers(), &ctx)?;
-    let session = principal::require_session(
+    let usage = crate::auth::route_policy::route(request.method().as_str(), request.uri().path()).map_or(crate::auth::principal::Use::SessionOnly, |r|r.usage);
+    let session = principal::require_user(
         &state,
         request.headers(),
         &ctx,
         Some(Action::UserManage),
-        TwoFactorGate::Enforce,
-    )
-    .await?;
+        TwoFactorGate::Enforce, usage).await?;
+    session.check_origin(request.headers(), &ctx)?;
     let command = request
         .uri()
         .path()

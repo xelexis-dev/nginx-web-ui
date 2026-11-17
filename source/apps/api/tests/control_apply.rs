@@ -78,6 +78,7 @@ async fn real_db(temp: &TempDir) -> auth_support::TestDb {
 }
 fn actor() -> nwui_api::contracts::Actor {
     nwui_api::contracts::Actor {
+        via: None,
         id: None,
         label: Some("test-control".into()),
         ip: None,

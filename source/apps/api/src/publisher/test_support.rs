@@ -89,7 +89,7 @@ mod tests {
         let directory=root.path().join("fixture-socket");let _server=serve(&state,&directory,17).unwrap();
         let mut socket=tokio::net::UnixStream::connect(directory.join("control.sock")).await.unwrap();
         let id=uuid::Uuid::new_v4().to_string();
-        let request=super::super::protocol::Request{v:1,id:id.clone(),op:super::super::protocol::Op::Hello,deadline_ms:5000,actor:super::super::protocol::Actor{user_id:None,label:None,ip:None}};
+        let request=super::super::protocol::Request{v:1,id:id.clone(),op:super::super::protocol::Op::Hello,deadline_ms:5000,actor:super::super::protocol::Actor{via: None,user_id:None,label:None,ip:None}};
         let bytes=serde_json::to_vec(&request).unwrap();socket.write_all(&(bytes.len() as u32).to_be_bytes()).await.unwrap();socket.write_all(&bytes).await.unwrap();socket.shutdown().await.unwrap();
         let mut size=[0;4];socket.read_exact(&mut size).await.unwrap();let mut bytes=vec![0;u32::from_be_bytes(size) as usize];socket.read_exact(&mut bytes).await.unwrap();
         let response:super::super::protocol::Response=serde_json::from_slice(&bytes).unwrap();
@@ -108,7 +108,7 @@ mod tests {
         let mut runtime=crate::state::RuntimeState::default();
         runtime.publisher=crate::publisher_client::Client::socket_for_tests(directory.join("control.sock"),Default::default());
         state.runtime=Arc::new(runtime);
-        let error=crate::publisher_client::apply_saved(&state,&crate::contracts::Actor{id:None,label:None,ip:None},None).await.unwrap_err();
+        let error=crate::publisher_client::apply_saved(&state,&crate::contracts::Actor{via: None,id:None,label:None,ip:None},None).await.unwrap_err();
         assert!(matches!(error.downcast_ref::<crate::publisher_client::ClientError>(),Some(crate::publisher_client::ClientError::Unconfirmed{operation_id}) if uuid::Uuid::parse_str(operation_id).is_ok()));
         assert_eq!(calls.load(Ordering::SeqCst),1);server.abort();let _=server.await;
     }

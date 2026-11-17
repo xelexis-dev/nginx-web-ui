@@ -4,7 +4,7 @@ use nwui_api::{publisher::{protocol::{Actor,Op,OpResult,Request},test_support},c
 use serde_json::json;
 use std::os::unix::fs::PermissionsExt;
 const SERVER:&str="11111111-1111-4111-8111-111111111111";
-fn request(id:&str,op:Op)->Request {Request{v:1,id:id.into(),op,deadline_ms:280000,actor:Actor{user_id:None,label:Some("root-mutation-fixture".into()),ip:Some("192.0.2.1".into())}}}
+fn request(id:&str,op:Op)->Request {Request{v:1,id:id.into(),op,deadline_ms:280000,actor:Actor{via: Some(nwui_api::contracts::Via::Token{id:"token-id".into(),name:"publisher-token".into()}),user_id:None,label:Some("root-mutation-fixture".into()),ip:Some("192.0.2.1".into())}}}
 fn checked(result:OpResult)->nwui_api::control::model::ApplyResult {
     match result {OpResult::Ok{apply:Some(result),..}=>result,other=>panic!("{}",serde_json::to_string(&other).unwrap())}
 }
@@ -46,6 +46,7 @@ async fn durable_apply_rollback_and_exact_replay_preserve_metadata_and_full_file
     let replay=test_support::dispatch(&db.state,request(&first,Op::ApplySaved{label:Some("first durable apply".into()),expected_saved_digest:None})).await;
     assert_eq!(serde_json::to_value(replay).unwrap(),original_json);
     assert_eq!(db.client.query_one("SELECT count(*) FROM audit_logs WHERE id=$1",&[&first]).await.unwrap().get::<_,i64>(0),1);
+    assert_eq!(db.client.query_one("SELECT via FROM audit_logs WHERE id=$1",&[&first]).await.unwrap().get::<_,serde_json::Value>(0),json!({"kind":"token","id":"token-id","name":"publisher-token"}));
     db.client.execute("UPDATE nginx_servers SET config=$1 WHERE id=$2",&[&json!({"proxyPass":"http://127.0.0.1:19001"}),&SERVER]).await.unwrap();
     let second=uuid::Uuid::new_v4().to_string();assert!(checked(test_support::dispatch(&db.state,request(&second,Op::ApplySaved{label:Some("second durable apply".into()),expected_saved_digest:None})).await).ok);
     assert!(std::fs::read_to_string(conf.join(format!("server-{SERVER}.conf"))).unwrap().contains("127.0.0.1:19001"));

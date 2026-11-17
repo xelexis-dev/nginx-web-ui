@@ -21,8 +21,8 @@ const REPORT_MAX:u64=65536;
 
 fn refused(detail:String)->String {let detail=detail.chars().filter(|c|!c.is_control()).take(2048).collect::<String>();eprintln!("[storage] refused: {detail}");detail}
 pub(crate) type Chmod<'a>=&'a dyn Fn(RawFd,u32)->io::Result<()>;
-/// Test seams; production passes proc_chmod, the source liveness check and files::CANCELLED.
-pub(crate) struct Seams<'a> {pub chmod:Chmod<'a>,pub idle:&'a dyn Fn(&Path)->Result<(),StepError>,pub cancelled:&'a dyn Fn()->bool,pub readonly:Option<bool>}
+/// Test seams for permission changes and cancellation.
+pub(crate) struct Seams<'a> {pub chmod:Chmod<'a>,pub cancelled:&'a dyn Fn()->bool,pub readonly:Option<bool>}
 
 #[derive(Clone,Copy,PartialEq,Eq,Debug,Serialize,Deserialize,PartialOrd,Ord)]
 #[serde(rename_all="lowercase")]
@@ -69,7 +69,7 @@ impl Report {
 
 struct Root {file:File,dev:u64,mnt:u64,scope:Scope,readonly:bool}
 #[derive(Clone,Copy)]
-struct Layout {legacy:Option<bool>,legacy_modes:bool,canonical_key:bool}
+struct Layout {legacy_modes:bool,canonical_key:bool}
 
 fn open_child(parent:&File,name:&OsStr)->io::Result<Option<File>> {
     let name=CString::new(name.as_bytes()).map_err(|_|io::Error::from(io::ErrorKind::InvalidInput))?;
@@ -111,15 +111,13 @@ fn root(fd:BorrowedFd<'_>,scope:Scope)->io::Result<Root> {
     Ok(Root{file,dev:m.dev(),mnt,scope,readonly})
 }
 fn layout(db:&File,roots:&Roots)->Layout {
-    let at_root=present(db,"PG_VERSION");let nested=present_in(db,"pgdata","PG_VERSION");
-    let legacy=(at_root!=nested && !present(db,"17") && !present(db,".nwui")).then_some(at_root);
     let canonical=crate::db_upgrade::paths::startup_data_key_file(&roots.app).is_ok_and(|p|p==roots.app.join("secrets/data_key"));
     // layout.rs:56 accepts a legacy 0644 secret on the 1.19 path and on migration pairs (their state file).
-    Layout{legacy,legacy_modes:legacy.is_some()||present_in(db,".nwui","migration-v1.json"),canonical_key:canonical}
+    Layout{legacy_modes:present_in(db,".nwui","migration-v1.json"),canonical_key:canonical}
 }
 
 struct Run<'a> {
-    roots:&'a Roots,layout:Layout,journal:bool,pg:Option<(u32,u32)>,chmod:Chmod<'a>,cancelled:&'a dyn Fn()->bool,
+    roots:&'a Roots,layout:Layout,pg:Option<(u32,u32)>,chmod:Chmod<'a>,cancelled:&'a dyn Fn()->bool,
     apply:bool,seen:u64,planned:u64,applied:u64,fixed:Vec<FixedChange>,deep:BTreeMap<(u32,u32),u64>,
 }
 impl Run<'_> {
@@ -203,40 +201,6 @@ impl Run<'_> {
         self.fixed(root,Some((parent,OsStr::new(name))),&file,&path,kind,owner,rule)?;
         Ok(real_dir(&file).then_some(file))
     }
-    /// F6: a journal means earlier manifests may record L's mode; refuse instead of changing it.
-    fn protected(&self,root:&Root,file:&File,path:&Path)->Result<(),StepError> {
-        let meta=file.metadata().map_err(|e|self.unreadable(path,&e))?;
-        if !meta.is_dir() || meta.file_type().is_symlink() {return Ok(());}
-        let old=meta.mode()&0o7777;let Some(new)=Rule::DataDir.target(old) else {return Ok(())};
-        Err(self.refusal(format!("{}: 이전 업그레이드 기록이 있어 PostgreSQL 데이터 폴더의 권한(현재 {old:04o})을 자동으로 바꾸지 않습니다. {}",path.display(),self.chmod_hint(root.scope,path,new))))
-    }
-    fn bound(&self,path:&Path)->StepError {
-        self.refusal(format!("{}: 확인할 항목이 너무 많거나 너무 깊습니다(최대 {MAX_ENTRIES}개·깊이 {MAX_DEPTH}). PostgreSQL 데이터 폴더를 확인하세요.",path.display()))
-    }
-    /// F3: every directory and file of the original inventory, because R-restore sets all of it aside.
-    fn deep(&mut self,root:&Root,directory:&File,directory_path:&Path,depth:u32)->Result<(),StepError> {
-        if depth>MAX_DEPTH {return Err(self.bound(directory_path));}
-        for name in names(directory).map_err(|e|self.unreadable(directory_path,&e))? {self.entry(root,directory,directory_path,&name,depth)?;}
-        Ok(())
-    }
-    fn entry(&mut self,root:&Root,parent:&File,parent_path:&Path,name:&OsStr,depth:u32)->Result<(),StepError> {
-        let path=parent_path.join(name);self.interrupted()?;
-        self.seen+=1;if self.seen>MAX_ENTRIES {return Err(self.bound(&path));}
-        let Some(file)=open_child(parent,name).map_err(|e|self.unreadable(&path,&e))? else {return Ok(())};
-        let meta=file.metadata().map_err(|e|self.unreadable(&path,&e))?;let ft=meta.file_type();
-        // R4-3: regular_tree (layout.rs:80-89) refuses these later; refuse in the scan, before any change.
-        if ft.is_symlink() || !(ft.is_dir()||ft.is_file()) {
-            return Err(self.refusal(format!("{}: PostgreSQL 데이터 폴더 안의 심볼릭 링크나 특수 파일은 지원하지 않습니다. 원본 설치에서 이 항목을 확인하세요.",path.display())));
-        }
-        let old=meta.mode()&0o7777;let target=Rule::Strip.target(old);
-        let same_mount=if target.is_some()||ft.is_dir(){meta.dev()==root.dev && shared_folder::mnt_id(&file).map_err(|e|self.unreadable(&path,&e))?==root.mnt}else{true};
-        if let Some(new)=target {
-            self.candidate(root,&meta,&path,old,new,Owner::RootOrPostgres,same_mount)?;
-            if self.apply {self.change(root,&file,Some((parent,name)),&path,ft.is_dir(),old,new)?;*self.deep.entry((old,new)).or_default()+=1;}else{self.planned+=1;}
-        }
-        if ft.is_dir() && same_mount {self.deep(root,&file,&path,depth+1)?;}
-        Ok(())
-    }
     fn pass(&mut self,app:&Root,db:&Root)->Result<(),StepError> {
         self.seen=0;self.deep.clear();
         let roots=self.roots;let secrets=roots.app.join("secrets");let tls=roots.app.join("tls");
@@ -252,25 +216,9 @@ impl Run<'_> {
             self.child(app,&directory,&tls,"default.key",Kind::File,Owner::Root,key)?;
             self.child(app,&directory,&tls,"default.crt",Kind::File,Owner::Root,Rule::Exact(&[0o644],0o644))?;
         }
-        let Some(at_root)=self.layout.legacy else {
-            return self.fixed(db,None,&db.file,&roots.db,Kind::Dir,Owner::RootOrPostgres,Rule::Strip);
-        };
-        let l_path=if at_root{roots.db.clone()}else{roots.db.join("pgdata")};
-        let nested=if at_root {None} else {
-            self.fixed(db,None,&db.file,&roots.db,Kind::Dir,Owner::RootOrPostgres,Rule::Strip)?;
-            Some(open_child(&db.file,OsStr::new("pgdata")).map_err(|e|self.unreadable(&l_path,&e))?.filter(real_dir).ok_or_else(||self.unreadable(&l_path,&io::Error::from(io::ErrorKind::NotFound)))?)
-        };
-        let l=nested.as_ref().unwrap_or(&db.file);
-        if self.journal {self.protected(db,l,&l_path)?;}
-        else {let parent=nested.as_ref().map(|_|(&db.file,OsStr::new("pgdata")));self.fixed(db,parent,l,&l_path,Kind::Dir,Owner::RootOrPostgres,Rule::DataDir)?;}
-        // F8 (R4-7): the DB root and L come before their child lost+found.
-        self.child(db,&db.file,&roots.db,"lost+found",Kind::Dir,Owner::Root,Rule::Strip)?;
-        if self.journal {return Ok(());}
-        for name in names(l).map_err(|e|self.unreadable(&l_path,&e))? {
-            if name.to_str().is_some_and(|n|super::restore::set_aside_allowed(n,at_root)) {self.entry(db,l,&l_path,&name,1)?;}
-        }
-        Ok(())
+        self.fixed(db,None,&db.file,&roots.db,Kind::Dir,Owner::RootOrPostgres,Rule::Strip)
     }
+
     fn report(&self,l_path:&Path)->Report {
         let mut pairs=self.deep.iter().map(|(&(old,new),&count)|(old,new,count)).collect::<Vec<_>>();
         pairs.sort_by(|a,b|b.2.cmp(&a.2).then((a.0,a.1).cmp(&(b.0,b.1))));
@@ -281,10 +229,11 @@ impl Run<'_> {
     }
 }
 
-/// Phase-1 boot only, under A+D custody, before journal-driven work, legacy15 and ready classify.
+/// Phase-1 boot only, under A+D custody, before journal-driven work, PG17 classification and ready classify.
 pub(crate) fn normalize(roots:&Roots,locks:&StorageLocks,journal_present:bool)->Result<Report,StepError> {
+    super::legacy::admit(roots)?;
     let cancelled=||crate::db_upgrade::files::CANCELLED.load(std::sync::atomic::Ordering::Relaxed);
-    let result=normalize_seams(roots,locks,journal_present,&Seams{chmod:&proc_chmod,idle:&|data|super::source::require_idle_before_modes(roots,locks,data),cancelled:&cancelled,readonly:None});
+    let result=normalize_seams(roots,locks,journal_present,&Seams{chmod:&proc_chmod,cancelled:&cancelled,readonly:None});
     let mut report=match result {
         Ok(report)=>report,
         Err(error)=>{
@@ -303,11 +252,8 @@ pub(crate) fn normalize(roots:&Roots,locks:&StorageLocks,journal_present:bool)->
     }
     Ok(report)
 }
-pub(crate) fn normalize_with(roots:&Roots,locks:&StorageLocks,journal_present:bool,chmod:Chmod<'_>,idle:&dyn Fn(&Path)->Result<(),StepError>)->Result<Report,StepError> {
-    normalize_seams(roots,locks,journal_present,&Seams{chmod,idle,cancelled:&||false,readonly:None})
-}
-pub(crate) fn normalize_seams(roots:&Roots,locks:&StorageLocks,journal_present:bool,seams:&Seams<'_>)->Result<Report,StepError> {
-    let (chmod,idle)=(seams.chmod,seams.idle);
+pub(crate) fn normalize_seams(roots:&Roots,locks:&StorageLocks,_journal_present:bool,seams:&Seams<'_>)->Result<Report,StepError> {
+    let chmod=seams.chmod;
     let busy=||StepError{code:"storage_busy",message:"저장소 잠금이 유지되지 않았습니다.",detail:None};
     if !locks.holds_d() || !locks.matches_roots(&roots.db,&roots.app) {return Err(busy());}
     let d=locks.d_fd().ok_or_else(busy)?;
@@ -319,12 +265,10 @@ pub(crate) fn normalize_seams(roots:&Roots,locks:&StorageLocks,journal_present:b
         if root.readonly {return Err(StepError{code:"storage_permissions",message:MESSAGE,detail:Some(refused(format!("{}: 읽기 전용으로 연결돼 있습니다. 시작할 때 이 저장소에 기록해야 하므로 쓰기 가능하게 연결한 뒤 다시 시작하세요.",path.display())))});}
     }
     let layout=layout(&db.file,roots);
-    let mut run=Run{roots,layout,journal:journal_present,pg:crate::db_upgrade::postgres::postgres_ids().ok(),chmod,cancelled:seams.cancelled,apply:false,seen:0,planned:0,applied:0,fixed:vec![],deep:BTreeMap::new()};
+    let mut run=Run{roots,layout,pg:crate::db_upgrade::postgres::postgres_ids().ok(),chmod,cancelled:seams.cancelled,apply:false,seen:0,planned:0,applied:0,fixed:vec![],deep:BTreeMap::new()};
     run.pass(&app,&db)?;
     if run.planned==0 {return Ok(Report::empty());}
-    let l_path=match layout.legacy {Some(true)=>roots.db.clone(),Some(false)=>roots.db.join("pgdata"),None=>roots.db.clone()};
-    // R1-1: a detectable live PG15 refuses with zero changes; only the pid file's mode check waits.
-    if layout.legacy.is_some() {idle(&l_path)?;}
+    let l_path=roots.db.clone();
     run.apply=true;run.pass(&app,&db)?;
     Ok(run.report(&l_path))
 }
@@ -394,41 +338,20 @@ fn message(report:&Report)->String {
     out.push('.');out.push_str(tail);out
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::upgrade::StorageLocks;
-    use std::{os::unix::fs::{symlink,chown},path::PathBuf};
-    struct Fixture {_t:tempfile::TempDir,roots:Roots,locks:StorageLocks,outside:PathBuf}
+#[cfg(test)] mod restored_tests {use super::*;use std::{collections::BTreeMap,os::unix::fs::{symlink,chown},path::PathBuf};struct Fixture{_t:tempfile::TempDir,roots:Roots,locks:StorageLocks,outside:PathBuf}
+    /// The 1.19.11 legacy root layout from the field record, before any host mode damage.
+fn fixture(_nested:bool)->Fixture {
+ let t=tempfile::tempdir().unwrap();set(t.path(),0o711);let roots=Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:"arm64".into()};for p in [&roots.db,&roots.app]{dir(p,0o700);}for p in [roots.app.join("secrets"),roots.app.join("tls")]{dir(&p,0o700);}
+ write(&roots.app.join("secrets/auth_secret"),b"fixture-auth",0o600);write(&roots.app.join("secrets/db_password"),b"nginx",0o600);
+ let key=rcgen::KeyPair::generate().unwrap();let cert=rcgen::CertificateParams::new(vec!["unconfigured.invalid".into()]).unwrap().self_signed(&key).unwrap();write(&roots.app.join("tls/default.crt"),cert.pem().as_bytes(),0o644);write(&roots.app.join("tls/default.key"),key.serialize_pem().as_bytes(),0o600);
+ let outside=t.path().join("outside");dir(&outside,0o755);let locks=StorageLocks::acquire(&roots.db,&roots.app).unwrap();Fixture{_t:t,roots,locks,outside}
+}
     fn set(path:&Path,mode:u32) {fs::set_permissions(path,fs::Permissions::from_mode(mode)).unwrap();}
     fn mode(path:&Path)->u32 {fs::symlink_metadata(path).unwrap().mode()&0o7777}
     fn write(path:&Path,bytes:&[u8],m:u32) {fs::write(path,bytes).unwrap();set(path,m);}
     fn dir(path:&Path,m:u32) {fs::create_dir(path).unwrap();set(path,m);}
-    /// The 1.19.11 legacy root layout from the field record, before any host mode damage.
-    fn fixture(nested:bool)->Fixture {
-        let t=tempfile::tempdir().unwrap();set(t.path(),0o711);
-        let roots=Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:"arm64".into()};
-        for p in [&roots.db,&roots.app] {dir(p,0o700);}
-        for p in [roots.app.join("secrets"),roots.app.join("tls")] {dir(&p,0o700);}
-        write(&roots.app.join("secrets/auth_secret"),b"fixture-auth",0o600);write(&roots.app.join("secrets/db_password"),b"nginx",0o644);
-        let key=rcgen::KeyPair::generate().unwrap();let cert=rcgen::CertificateParams::new(vec!["unconfigured.invalid".into()]).unwrap().self_signed(&key).unwrap();
-        write(&roots.app.join("tls/default.crt"),cert.pem().as_bytes(),0o644);write(&roots.app.join("tls/default.key"),key.serialize_pem().as_bytes(),0o600);
-        let l=if nested {let p=roots.db.join("pgdata");dir(&p,0o700);p}else{roots.db.clone()};
-        for d in ["global","base","base/1","pg_wal","pg_xact"] {dir(&l.join(d),0o700);}
-        write(&l.join("PG_VERSION"),b"15\n",0o600);write(&l.join("global/pg_control"),b"fixture control",0o600);
-        write(&l.join("base/1/1259"),b"relation",0o600);write(&l.join("pg_xact/0000"),b"xact",0o600);write(&l.join("postgresql.conf"),b"# conf\n",0o600);
-        let outside=t.path().join("outside");dir(&outside,0o755);
-        let locks=StorageLocks::acquire(&roots.db,&roots.app).unwrap();
-        Fixture{_t:t,roots,locks,outside}
-    }
-    fn l(f:&Fixture,nested:bool)->PathBuf {if nested{f.roots.db.join("pgdata")}else{f.roots.db.clone()}}
     /// The field modes: app root 0775, auth_secret 0674, PG dirs 0770 and files 0670 (root kept).
-    fn damage(f:&Fixture,nested:bool) {
-        set(&f.roots.app,0o775);set(&f.roots.app.join("secrets/auth_secret"),0o674);
-        let l=l(f,nested);
-        for d in ["global","base","base/1","pg_wal","pg_xact"] {set(&l.join(d),0o770);}
-        for p in ["PG_VERSION","global/pg_control","base/1/1259","pg_xact/0000","postgresql.conf"] {set(&l.join(p),0o670);}
-    }
+fn damage(f:&Fixture,_nested:bool){set(&f.roots.app,0o775);set(&f.roots.app.join("secrets/auth_secret"),0o674);}
     fn contents(root:&Path)->BTreeMap<PathBuf,Vec<u8>> {
         fn walk(p:&Path,out:&mut BTreeMap<PathBuf,Vec<u8>>){let m=fs::symlink_metadata(p).unwrap();if m.is_file(){out.insert(p.into(),fs::read(p).unwrap());}else if m.is_dir(){for e in fs::read_dir(p).unwrap(){walk(&e.unwrap().path(),out);}}}
         let mut out=BTreeMap::new();walk(root,&mut out);out
@@ -438,40 +361,7 @@ mod tests {
         fn walk(p:&Path,out:&mut BTreeMap<PathBuf,u32>){let m=fs::symlink_metadata(p).unwrap();out.insert(p.into(),m.mode());if m.is_dir(){for e in fs::read_dir(p).unwrap(){walk(&e.unwrap().path(),out);}}}
         let mut out=BTreeMap::new();walk(root,&mut out);out
     }
-    fn idle_ok(_:&Path)->Result<(),StepError> {Ok(())}
-    fn run(f:&Fixture,journal:bool)->Result<Report,StepError> {normalize_with(&f.roots,&f.locks,journal,&proc_chmod,&idle_ok)}
-    fn control()->crate::db_upgrade::control::Control {
-        crate::db_upgrade::control::Control::parse(&format!("Database system identifier: 123\nDatabase cluster state: shut down\n{}",crate::db_upgrade::control::COMPATIBILITY_FIELDS.iter().map(|f|format!("{f}: 1\n")).collect::<String>()),"").unwrap()
-    }
-
-    #[test]
-    fn u1_field_modes_are_narrowed_without_content_change_and_p0_then_passes() {
-        let f=fixture(false);damage(&f,false);let before=contents(f._t.path());
-        assert_eq!(super::super::preflight::legacy15_with(&f.roots,&f.locks,&|_|Ok(control())).err().map(|e|e.code),Some("unsupported_layout"),"2.0.0 calibration");
-        let report=run(&f,false).unwrap();
-        assert_eq!(mode(&f.roots.app),0o755);assert_eq!(mode(&f.roots.app.join("secrets/auth_secret")),0o600);assert_eq!(mode(&f.roots.db),0o700);
-        for d in ["global","base","base/1","pg_wal","pg_xact"] {assert_eq!(mode(&f.roots.db.join(d)),0o750,"{d}");}
-        for p in ["PG_VERSION","global/pg_control","base/1/1259","pg_xact/0000","postgresql.conf"] {assert_eq!(mode(&f.roots.db.join(p)),0o650,"{p}");}
-        assert_eq!(mode(&f.roots.app.join("secrets/db_password")),0o644,"legacy 0644 is accepted, never touched");
-        assert_eq!(contents(f._t.path()),before);
-        assert_eq!(report.changed(),2+10);assert_eq!(report.fixed.len(),2);assert_eq!(report.deep.len(),2);
-        super::super::preflight::legacy15_with(&f.roots,&f.locks,&|_|Ok(control())).unwrap().unwrap();
-    }
-    #[test]
-    fn u2_second_run_changes_nothing() {
-        let f=fixture(false);damage(&f,false);run(&f,false).unwrap();
-        let snapshot=crate::db_upgrade::files::snapshot(f._t.path()).unwrap();
-        assert_eq!(run(&f,false).unwrap().changed(),0);assert_eq!(crate::db_upgrade::files::snapshot(f._t.path()).unwrap(),snapshot);
-    }
-    #[test]
-    fn u3_r4_3_a_symlink_in_the_scanned_set_refuses_before_any_change_and_is_never_followed() {
-        let f=fixture(false);damage(&f,false);let target=f.outside.join("target");write(&target,b"outside",0o666);
-        symlink(&target,f.roots.db.join("base/1/link")).unwrap();let snapshot=modes(f._t.path());
-        let detail=run(&f,false).unwrap_err().detail.unwrap();assert!(detail.contains("base/1/link")&&detail.contains("심볼릭 링크"),"{detail}");
-        assert_eq!(modes(f._t.path()),snapshot,"no change, then refusal (M3)");assert_eq!(mode(&target),0o666);
-        fs::remove_file(f.roots.db.join("base/1/link")).unwrap();symlink(&target,f.roots.app.join("secrets/admin_password")).unwrap();
-        let detail=run(&f,false).unwrap_err().detail.unwrap();assert!(detail.contains("secrets/admin_password")&&detail.contains("일반 파일이 아니라"),"{detail}");assert_eq!(mode(&target),0o666);
-    }
+    fn run(f:&Fixture,journal:bool)->Result<Report,StepError> {normalize_seams(&f.roots,&f.locks,journal,&Seams{chmod:&proc_chmod,cancelled:&||false,readonly:None})}
     #[test]
     fn r4_1_owner_mismatch_refuses_with_a_command_even_without_a_mode_change() {
         let f=fixture(false);chown(&f.roots.app,Some(1000),None).unwrap();
@@ -482,9 +372,8 @@ mod tests {
     #[test]
     fn r4_1_p0_keeps_the_root_detail_and_a_read_only_root_refuses_first() {
         let f=fixture(false);set(&f.roots.app,0o775);
-        assert_eq!(super::super::preflight::legacy15_with(&f.roots,&f.locks,&|_|Ok(control())).err().and_then(|e|e.detail).as_deref(),Some("app_root_mode"));
         set(&f.roots.app,0o755);let snapshot=crate::db_upgrade::files::snapshot(f._t.path()).unwrap();
-        let detail=normalize_seams(&f.roots,&f.locks,false,&Seams{chmod:&proc_chmod,idle:&idle_ok,cancelled:&||false,readonly:Some(true)}).unwrap_err().detail.unwrap();
+        let detail=normalize_seams(&f.roots,&f.locks,false,&Seams{chmod:&proc_chmod,cancelled:&||false,readonly:Some(true)}).unwrap_err().detail.unwrap();
         assert!(detail.contains("읽기 전용으로 연결돼")&&detail.contains(&f.roots.app.display().to_string()),"{detail}");
         assert_eq!(crate::db_upgrade::files::snapshot(f._t.path()).unwrap(),snapshot);
     }
@@ -512,37 +401,28 @@ mod tests {
         let f=fixture(false);set(&f.roots.app.join("secrets/auth_secret"),0o674);
         // Replace the entry right after its chmod, so the reopen-and-fsync step sees another inode.
         let replace=|fd:RawFd,m:u32|{proc_chmod(fd,m)?;let p=fs::read_link(format!("/proc/self/fd/{fd}"))?;if p.ends_with("auth_secret"){fs::rename(&p,p.with_extension("moved"))?;fs::write(&p,b"other")?;}Ok(())};
-        let detail=normalize_with(&f.roots,&f.locks,false,&replace,&idle_ok).unwrap_err().detail.unwrap();
+        let detail=normalize_seams(&f.roots,&f.locks,false,&Seams{chmod:&replace,cancelled:&||false,readonly:None}).unwrap_err().detail.unwrap();
         assert!(detail.contains("디스크에 기록하지 못했습니다")&&detail.contains("이미 정리한 1개 항목"),"{detail}");
     }
     #[test]
     fn r4_6_cancellation_stops_between_entries_and_a_rerun_finishes() {
         let f=fixture(false);damage(&f,false);let calls=std::cell::Cell::new(0);let cancelled=||{calls.set(calls.get()+1);calls.get()>3};
-        let e=normalize_seams(&f.roots,&f.locks,false,&Seams{chmod:&proc_chmod,idle:&idle_ok,cancelled:&cancelled,readonly:None}).unwrap_err();assert_eq!(e.code,"interrupted");
-        run(&f,false).unwrap();assert_eq!(mode(&f.roots.db.join("base/1/1259")),0o650);assert_eq!(run(&f,false).unwrap().changed(),0);
+        let e=normalize_seams(&f.roots,&f.locks,false,&Seams{chmod:&proc_chmod,cancelled:&cancelled,readonly:None}).unwrap_err();assert_eq!(e.code,"interrupted");
+        run(&f,false).unwrap();assert_eq!(mode(&f.roots.app.join("secrets/auth_secret")),0o600);assert_eq!(run(&f,false).unwrap().changed(),0);
     }
     #[test]
-    fn r4_7_the_data_directory_changes_before_its_lost_found() {
-        let f=fixture(false);dir(&f.roots.db.join("lost+found"),0o770);set(&f.roots.db,0o770);
-        let order=std::cell::RefCell::new(Vec::new());let record=|fd:RawFd,m:u32|{order.borrow_mut().push(fs::read_link(format!("/proc/self/fd/{fd}"))?);proc_chmod(fd,m)};
-        normalize_with(&f.roots,&f.locks,false,&record,&idle_ok).unwrap();let order=order.into_inner();
-        let at=|p:&Path|order.iter().position(|x|x==p).unwrap();assert!(at(&f.roots.db)<at(&f.roots.db.join("lost+found")),"{order:?}");
-        assert_eq!((mode(&f.roots.db),mode(&f.roots.db.join("lost+found"))),(0o750,0o750));
-    }
-    #[test]
-    fn u4_hard_linked_deep_candidate_refuses_before_any_change() {
-        let f=fixture(false);damage(&f,false);fs::hard_link(f.roots.db.join("base/1/1259"),f.outside.join("alias")).unwrap();
+    fn u2_second_run_changes_nothing() {
+        let f=fixture(false);damage(&f,false);run(&f,false).unwrap();
         let snapshot=crate::db_upgrade::files::snapshot(f._t.path()).unwrap();
-        let e=run(&f,false).unwrap_err();assert_eq!(e.code,"storage_permissions");let detail=e.detail.unwrap();
-        assert!(detail.contains("base/1/1259")&&detail.contains("하드 링크"),"{detail}");
-        assert_eq!(crate::db_upgrade::files::snapshot(f._t.path()).unwrap(),snapshot,"scan refuses before apply");
+        assert_eq!(run(&f,false).unwrap().changed(),0);assert_eq!(crate::db_upgrade::files::snapshot(f._t.path()).unwrap(),snapshot);
     }
+    #[test] fn u3_r4_3_a_symlink_in_the_scanned_set_refuses_before_any_change_and_is_never_followed(){let f=fixture(false);damage(&f,false);let target=f.outside.join("target");write(&target,b"outside",0o666);let path=f.roots.app.join("secrets/admin_password");symlink(&target,&path).unwrap();let before=modes(f._t.path());let detail=run(&f,false).unwrap_err().detail.unwrap();assert!(detail.contains("secrets/admin_password")&&detail.contains("일반 파일이 아니라"),"{detail}");assert_eq!(modes(f._t.path()),before);assert_eq!(mode(&target),0o666);}
     #[test]
     fn u5_fixed_hard_link_refuses_only_when_a_change_is_needed() {
-        let f=fixture(false);fs::hard_link(f.roots.db.join("PG_VERSION"),f.outside.join("version")).unwrap();
+        let f=fixture(false);fs::hard_link(f.roots.app.join("secrets/auth_secret"),f.outside.join("version")).unwrap();
         assert_eq!(run(&f,false).unwrap().changed(),0,"accepted entries are not newly rejected");
-        set(&f.roots.db.join("PG_VERSION"),0o664);let snapshot=crate::db_upgrade::files::snapshot(f._t.path()).unwrap();
-        let e=run(&f,false).unwrap_err();assert!(e.detail.unwrap().contains("PG_VERSION"));
+        set(&f.roots.app.join("secrets/auth_secret"),0o620);let snapshot=crate::db_upgrade::files::snapshot(f._t.path()).unwrap();
+        let e=run(&f,false).unwrap_err();assert!(e.detail.unwrap().contains("auth_secret"));
         assert_eq!(crate::db_upgrade::files::snapshot(f._t.path()).unwrap(),snapshot);
     }
     #[test]
@@ -555,45 +435,25 @@ mod tests {
     #[test]
     fn u7_ignored_chmod_refuses_and_reports_nothing_changed() {
         let f=fixture(false);damage(&f,false);
-        let e=normalize_with(&f.roots,&f.locks,false,&|_,_|Ok(()),&idle_ok).unwrap_err();let detail=e.detail.unwrap();
+        let e=normalize_seams(&f.roots,&f.locks,false,&Seams{chmod:&|_,_|Ok(()),cancelled:&||false,readonly:None}).unwrap_err();let detail=e.detail.unwrap();
         assert!(detail.contains("반영되지 않았습니다")&&detail.contains("sudo chmod 755 '<앱 데이터 호스트 폴더>'")&&!detail.contains("이미 정리한"),"{detail}");
         assert_eq!(mode(&f.roots.app),0o775);
     }
     #[test]
     fn u8_read_only_error_names_the_condition() {
         let f=fixture(false);damage(&f,false);
-        let detail=normalize_with(&f.roots,&f.locks,false,&|_,_|Err(io::Error::from_raw_os_error(libc::EROFS)),&idle_ok).unwrap_err().detail.unwrap();
+        let detail=normalize_seams(&f.roots,&f.locks,false,&Seams{chmod:&|_,_|Err(io::Error::from_raw_os_error(libc::EROFS)),cancelled:&||false,readonly:None}).unwrap_err().detail.unwrap();
         assert!(detail.contains("읽기 전용"),"{detail}");
     }
     #[test]
     fn u9_entries_the_gates_accept_are_never_touched() {
-        let f=fixture(false);set(&f.roots.db,0o750);write(&f.roots.db.join("base/1/read"),b"r",0o640);
+        let f=fixture(false);set(&f.roots.db,0o750);
         let snapshot=crate::db_upgrade::files::snapshot(f._t.path()).unwrap();
         assert_eq!(run(&f,false).unwrap().changed(),0);assert_eq!(crate::db_upgrade::files::snapshot(f._t.path()).unwrap(),snapshot);
     }
     #[test]
-    fn u10_journal_keeps_the_pg_tree_and_refuses_a_changed_data_directory() {
-        let f=fixture(false);damage(&f,false);
-        let report=run(&f,true).unwrap();assert_eq!(report.changed(),2);assert_eq!(mode(&f.roots.app),0o755);
-        assert_eq!(mode(&f.roots.db.join("base/1/1259")),0o670,"manifest-recorded modes are untouched");
-        set(&f.roots.db,0o770);let detail=run(&f,true).unwrap_err().detail.unwrap();
-        assert!(detail.contains("이전 업그레이드 기록")&&detail.contains("sudo chmod 750 '<DB 호스트 폴더>'"),"{detail}");assert_eq!(mode(&f.roots.db),0o770);
-    }
-    #[test]
-    fn u11_nested_layout_narrows_roots_data_directory_and_the_whole_inventory() {
-        let f=fixture(true);damage(&f,true);set(&f.roots.db,0o775);set(&f.roots.db.join("pgdata"),0o775);
-        assert!(crate::db_upgrade::layout::validate_roots(&f.roots).is_err(),"2.0.0 calibration");
-        run(&f,false).unwrap();let l=l(&f,true);
-        assert_eq!(mode(&f.roots.db),0o755);assert_eq!(mode(&l),0o750);assert_eq!(mode(&l.join("pg_wal")),0o750);
-        assert_eq!(mode(&l.join("postgresql.conf")),0o650,"outside base/");assert_eq!(mode(&l.join("base/1/1259")),0o650);
-        super::super::preflight::legacy15_with(&f.roots,&f.locks,&|_|Ok(control())).unwrap().unwrap();
-    }
-    #[test]
     fn u12_warning_is_bounded_and_bound_to_this_container_start() {
-        let f=fixture(false);let many=f.roots.db.join("base/1");
-        let modes=(0u32..0o10000).filter(|m|m&0o022!=0).take(3000).collect::<Vec<_>>();
-        for (i,m) in modes.iter().enumerate() {write(&many.join(format!("r{i}")),b"x",*m);}
-        let mut report=run(&f,false).unwrap();assert_eq!(report.changed(),3000);assert_eq!(report.deep.len(),LOG_PAIRS);assert_eq!(report.deep_other_pairs as usize,report.changed()as usize-LOG_PAIRS);
+        let f=fixture(false);let mut report=Report::empty();for i in 0..LOG_PAIRS{report.deep.push(DeepChange{path:"historical/db".into(),old:0o770+i as u32,new:0o750,count:1});}report.deep_other=3000-LOG_PAIRS as u64;report.deep_other_pairs=report.deep_other;
         report.boot_identity=Some("a".repeat(64));let path=f.outside.join("report.json");write_report(&path,&report).unwrap();
         assert!(warning(&path,Some(&"b".repeat(64))).is_none());assert!(warning(&path,None).is_none());
         let w=warning(&path,Some(&"a".repeat(64))).unwrap();assert!(w.message.len()<=MAX_MESSAGE,"{}",w.message.len());
@@ -611,7 +471,7 @@ mod tests {
     #[test]
     fn a4_a_0644_secret_is_kept_only_where_the_gate_accepts_it() {
         // Ready layout without migration state: layout.rs:56 accepts only 0600 there.
-        let f=fixture(false);for p in ["PG_VERSION","global","base","pg_wal","pg_xact","postgresql.conf"] {let p=f.roots.db.join(p);if p.is_dir(){fs::remove_dir_all(&p).unwrap();}else{fs::remove_file(&p).unwrap();}}
+        let f=fixture(false);set(&f.roots.app.join("secrets/db_password"),0o644);
         dir(&f.roots.db.join("17"),0o700);run(&f,false).unwrap();assert_eq!(mode(&f.roots.app.join("secrets/db_password")),0o600);
         set(&f.roots.app.join("secrets/db_password"),0o644);dir(&f.roots.db.join(".nwui"),0o700);write(&f.roots.db.join(".nwui/migration-v1.json"),b"{}",0o600);
         assert_eq!(run(&f,false).unwrap().changed(),0);assert_eq!(mode(&f.roots.app.join("secrets/db_password")),0o644);
@@ -621,71 +481,5 @@ mod tests {
         let f=fixture(false);set(&f.roots.app.join("secrets/auth_secret"),0o400);
         let detail=run(&f,false).unwrap_err().detail.unwrap();assert!(detail.contains("sudo chmod 600 '<앱 데이터 호스트 폴더>/secrets/auth_secret'")&&!detail.contains('`'),"{detail}");
         assert_eq!(mode(&f.roots.app.join("secrets/auth_secret")),0o400);
-    }
-    #[test]
-    fn r1_1_a_live_postmaster_refuses_with_zero_changes_and_a_stale_pid_file_is_narrowed() {
-        let f=fixture(false);damage(&f,false);let socket_dir=f.outside.join("socket");dir(&socket_dir,0o755);
-        write(&f.roots.db.join("postmaster.pid"),format!("{}\n{}\n0\n50432\n{}\n",std::process::id(),f.roots.db.display(),socket_dir.display()).as_bytes(),0o664);
-        let listener=std::os::unix::net::UnixListener::bind(socket_dir.join(".s.PGSQL.50432")).unwrap();
-        let snapshot=crate::db_upgrade::files::snapshot(&f.roots.db).unwrap();
-        let idle=|data:&Path|super::super::source::require_idle_before_modes(&f.roots,&f.locks,data);
-        assert_eq!(normalize_with(&f.roots,&f.locks,false,&proc_chmod,&idle).unwrap_err().code,"storage_busy");
-        assert_eq!(crate::db_upgrade::files::snapshot(&f.roots.db).unwrap(),snapshot);assert_eq!(mode(&f.roots.app),0o775);
-        drop(listener);fs::remove_file(socket_dir.join(".s.PGSQL.50432")).unwrap();
-        normalize_with(&f.roots,&f.locks,false,&proc_chmod,&idle).unwrap();assert_eq!(mode(&f.roots.db.join("postmaster.pid")),0o644);
-    }
-}
-
-#[cfg(test)]
-mod native_tests {
-    use super::*;
-    use crate::db_upgrade::{files,postgres};
-    use super::super::{Branch,Journal,Outcome,Step,StorageLocks,backup,backup_format::SourceLocation,journal::Candidate};
-    use std::sync::Arc;
-    /// N1 (final.md R2-3): real PG15 cluster, real P1 backup, real pre-commit R-restore. R-restore sets
-    /// every original entry aside into W/linked and disposable_tree checks it (restore.rs:93-99,191).
-    /// (outcome, verified, a group-writable entry is still in the set-aside tree W/linked)
-    async fn n1(link:bool,normalized:bool)->(Outcome,bool,bool) {
-        let t=tempfile::tempdir().unwrap();fs::set_permissions(t.path(),fs::Permissions::from_mode(0o711)).unwrap();
-        let roots=Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:crate::db_upgrade::engine::architecture().unwrap().into()};
-        postgres::directory(&roots.db).unwrap();files::private_dir(&roots.app).unwrap();
-        let logs=t.path().join("logs");postgres::directory(&logs).unwrap();let init=logs.join("init");postgres::directory(&init).unwrap();
-        let mut cmd=postgres::command(15,"initdb").unwrap();cmd.arg("-D").arg(&roots.db).args(["--no-locale","--encoding=UTF8","--auth=trust"]);postgres::capture(cmd,&init,std::time::Duration::from_secs(300)).unwrap();
-        // Field damage: every directory 0770 and every file 0670 below the data directory (root kept 0700).
-        fn damage(p:&Path,top:bool){let m=fs::symlink_metadata(p).unwrap();if m.is_dir(){if !top{fs::set_permissions(p,fs::Permissions::from_mode(0o770)).unwrap();}for e in fs::read_dir(p).unwrap(){damage(&e.unwrap().path(),false);}}else if m.is_file(){fs::set_permissions(p,fs::Permissions::from_mode(0o670)).unwrap();}}
-        damage(&roots.db,true);
-        let locks=Arc::new(StorageLocks::acquire(&roots.db,&roots.app).unwrap());
-        if normalized {normalize_with(&roots,&locks,false,&proc_chmod,&|_|Ok(())).unwrap();}
-        let control=postgres::read_control(15,&roots.db).unwrap();
-        let mut j=Journal::begin(&roots.app,&locks,Branch::Upgrade,Candidate{revision:"0".repeat(40),pins_sha256:"1".repeat(64),migrations_sha256:"2".repeat(64)}).unwrap();j.ensure_app_pool().unwrap();
-        let names=fs::read_dir(&roots.db).unwrap().map(|e|e.unwrap().file_name().into_string().unwrap()).filter(|n|super::super::restore::set_aside_allowed(n,true)).collect();
-        let prepared=backup::prepare(&roots,&locks,&j.load().attempt_id,SourceLocation::Root,&names,&control,"2026-11-08T00:00:00Z").unwrap();backup::create_verified(&roots,&locks,&mut j,&prepared).unwrap();
-        if link {
-            // What pg_upgrade --link leaves: W/data shares the original relation inodes.
-            let data=roots.db.join(".nwui-auto-work").join(&j.load().attempt_id).join("data");fs::create_dir_all(&data).unwrap();
-            let base=roots.db.join("base");
-            for db in fs::read_dir(&base).unwrap(){let db=db.unwrap();let target=data.join("base").join(db.file_name());fs::create_dir_all(&target).unwrap();
-                for rel in fs::read_dir(db.path()).unwrap(){let rel=rel.unwrap();if rel.file_type().unwrap().is_file(){fs::hard_link(rel.path(),target.join(rel.file_name())).unwrap();}}}
-            fn private(p:&Path){let m=fs::symlink_metadata(p).unwrap();if m.is_dir(){fs::set_permissions(p,fs::Permissions::from_mode(0o700)).unwrap();for e in fs::read_dir(p).unwrap(){private(&e.unwrap().path());}}}
-            private(&roots.db.join(".nwui-auto-work"));
-        }
-        let linked=roots.db.join(".nwui-auto-work").join(&j.load().attempt_id).join("linked");
-        fn writable(p:&Path)->bool{let Ok(m)=fs::symlink_metadata(p)else{return false};m.mode()&0o022!=0 || m.is_dir()&&fs::read_dir(p).map(|d|d.flatten().any(|e|writable(&e.path()))).unwrap_or(false)}
-        let (outcome,verified)=match super::super::restore::recover(roots.clone(),locks.clone(),j,Step::P3Convert,"pg_upgrade_check_failed",super::super::boot_identity::current().ok()).await {
-            Ok(j)=>(j.load().outcome,backup::verify_restored(&roots,&j).is_ok()),
-            Err(e)=>{eprintln!("[n1] link={link} normalized={normalized} recover: {} {:?}",e.code,e.detail);(super::super::journal::read_only(&roots.app).map(|j|j.outcome).unwrap_or(Outcome::RestoreIncomplete),false)},
-        };
-        (outcome,verified,writable(&linked))
-    }
-    #[tokio::test(flavor="multi_thread",worker_threads=2)]
-    #[ignore="native PG15: field modes, P1, pre-commit R-restore with and without normalization"]
-    async fn n1_whole_inventory_normalization_lets_pre_commit_restore_dispose_the_set_aside_tree() {
-        if std::env::var("NWUI_TEST_PROFILE_NATIVE").as_deref()!=Ok("1"){return;}
-        for link in [false,true] {
-            let (outcome,_,left)=n1(link,false).await;assert_ne!(outcome,Outcome::Restored,"calibration link={link}: 2.0.0 cannot dispose group-writable set-aside entries");
-            assert!(left,"calibration link={link}: the refusal is disposable_tree's mode gate on W/linked (restore.rs:191)");
-            let (outcome,verified,left)=n1(link,true).await;assert_eq!(outcome,Outcome::Restored,"link={link}");assert!(verified&&!left,"link={link}");
-        }
-        eprintln!("[n1] executed link+copy, calibrated");
     }
 }

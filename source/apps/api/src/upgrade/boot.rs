@@ -80,6 +80,7 @@ fn notice_failed()->StepError{StepError{code:"io_error",message:"업그레이드
 pub(crate) fn notices(roots:&crate::db_upgrade::layout::Roots,j:&Journal)->Result<Vec<super::status::UpgradeNotification>,StepError>{
     let mut rows=Vec::new();let attempt=&j.load().attempt_id;
     let consumed=matches!(j.load().outcome,super::Outcome::Restored|super::Outcome::RestoreIncomplete)||j.load().records.iter().any(|r|matches!(r.step,Step::CmdRemoveBackup|Step::CmdRestorePg15)&&r.state==StepState::Done&&r.data.as_ref().and_then(|d|d.get("backupId")).and_then(|v|v.as_str())==Some(attempt.as_str()));
+    let retained=(|| ->Result<(),StepError>{
     if !consumed{if let Some(record)=j.load().records.iter().rev().find(|r|r.step==Step::P1Backup&&r.state==StepState::Done){
         let location=roots.db.join(".nwui-pg15-backup").join(attempt);
         match std::fs::symlink_metadata(&location){
@@ -88,6 +89,8 @@ pub(crate) fn notices(roots:&crate::db_upgrade::layout::Roots,j:&Journal)->Resul
             Err(e)if e.kind()==std::io::ErrorKind::NotFound=>{},Err(_)=>return Err(notice_failed()),
         }
     }}
+    Ok(())})();
+    if let Err(error)=retained{eprintln!("[upgrade] retained backup notice unavailable: {}",error.code);}
     if j.load().outcome==super::Outcome::ActivationFailed{let failure=super::journal::last_attempt_failure(&j.load().records).ok_or_else(notice_failed)?;rows.push(super::status::activation_failed_notification(attempt,&failure.code));}
     Ok(rows)
 }
@@ -157,10 +160,8 @@ mod tests {
     async fn w1_boot_native_v2_non_application_inspection_skips_app_objects_but_refuses_other_database_drift() {
         if std::env::var("NWUI_TEST_PROFILE_NATIVE").as_deref()!=Ok("1"){return;}
         use crate::db_upgrade::{fresh,files,layout::Roots,postgres,cluster,inspect};
-        let t=tempfile::tempdir().unwrap();fs::set_permissions(t.path(),fs::Permissions::from_mode(0o711)).unwrap();let roots=Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:crate::db_upgrade::engine::architecture().unwrap().into()};for path in [&roots.db,&roots.app]{files::private_dir(path).unwrap();}let env=t.path().join("env");files::private_dir(&env).unwrap();let locks=StorageLocks::acquire(&roots.db,&roots.app).unwrap();
+        let t=tempfile::tempdir().unwrap();fs::set_permissions(t.path(),fs::Permissions::from_mode(0o711)).unwrap();let roots=Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:crate::db_upgrade::paths::architecture().unwrap().into()};for path in [&roots.db,&roots.app]{files::private_dir(path).unwrap();}let env=t.path().join("env");files::private_dir(&env).unwrap();let locks=StorageLocks::acquire(&roots.db,&roots.app).unwrap();
         fresh::secrets_locked(&locks,&roots,&fresh::Inputs{auth_secret:Some("fixture-only".into()),admin_password:None},&env).unwrap();fresh::provision_locked(&locks,&roots).await.unwrap();let password=fs::read_to_string(roots.app.join("secrets/db_password")).unwrap();let work=t.path().join("observe");postgres::directory(&work).unwrap();let server=postgres::Private::start(17,&roots.db.join("17/data"),&work).unwrap();
-        let root=inspect::connect(&server.socket,"postgres","postgres",None).await.unwrap();root.client.batch_execute("SET default_transaction_read_only=off").await.unwrap();root.client.batch_execute("ALTER DATABASE nginx_web_ui RENAME TO nginx_control").await.unwrap();drop(root);
-        let legacy=cluster::inspect_cluster(&server.socket,&password,None,false).await.unwrap();assert_eq!(legacy.application().unwrap(),"nginx_control");assert!(cluster::rename_legacy_application(&server.socket,&legacy).await.unwrap());let modern=cluster::inspect_cluster(&server.socket,&password,None,false).await.unwrap();legacy.require_equivalent(&modern).unwrap();assert!(!cluster::rename_legacy_application(&server.socket,&modern).await.unwrap());
         let app=inspect::connect(&server.socket,"nginx_web_ui","postgres",None).await.unwrap();app.client.batch_execute("SET default_transaction_read_only=off").await.unwrap();app.client.batch_execute("CREATE FUNCTION public.profile_owned_probe() RETURNS integer LANGUAGE sql AS $$SELECT 1$$").await.unwrap();
         let snapshot=cluster::inspect_non_application(&server.socket,&password,None).await.unwrap();assert!(snapshot.databases.iter().any(|d|d.name=="nginx_web_ui"));assert!(!snapshot.data.contains_key("nginx_web_ui"));assert!(snapshot.data.contains_key("postgres") && snapshot.data.contains_key("template0") && snapshot.data.contains_key("template1"));
         assert_eq!(cluster::inspect_cluster(&server.socket,&password,None,false).await.unwrap_err().code,"unsupported_layout");

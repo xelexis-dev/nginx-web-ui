@@ -26,7 +26,7 @@ use serde_json::{Value, json};
 use super::routes::{manager, manager_form, redirect, to_json};
 use super::{AdminError, AdminResult, TestOutcome, field, unavailable};
 use crate::auth::audit::{self, AuditEntry};
-use crate::auth::principal::SessionPrincipal;
+use crate::auth::principal::UserPrincipal;
 use crate::auth::setup::is_valid_email;
 use crate::contracts::{FormInput, FormResult};
 use crate::crypto::js_trim;
@@ -123,9 +123,9 @@ async fn is_duplicate(tx: &tokio_postgres::Transaction<'_>, address: &str, excep
     Ok(rows.iter().any(|r| Some(r.get::<_, &str>(0)) != except && r.get::<_, &str>(1).to_lowercase() == wanted))
 }
 
-async fn audit_in(tx: &tokio_postgres::Transaction<'_>, actor: &SessionPrincipal, ctx: &RequestContext, action: &str, target: &str, before: Option<Value>, after: Option<Value>) -> AdminResult<()> {
+async fn audit_in(tx: &tokio_postgres::Transaction<'_>, actor: &UserPrincipal, ctx: &RequestContext, action: &str, target: &str, before: Option<Value>, after: Option<Value>) -> AdminResult<()> {
     let entry = AuditEntry {
-        actor_id: Some(actor.user_id.clone()),
+        actor_id: Some(actor.user_id.clone()), via: actor.actor(ctx).via,
         action: action.to_owned(),
         target: Some(target.to_owned()),
         before,
@@ -152,7 +152,7 @@ pub async fn detail(state: &AppState, id: &str) -> AdminResult<MailRecipientRow>
     Ok(row_of(&row))
 }
 
-pub async fn create(state: &AppState, actor: &SessionPrincipal, ctx: &RequestContext, form: &FormInput) -> AdminResult<String> {
+pub async fn create(state: &AppState, actor: &UserPrincipal, ctx: &RequestContext, form: &FormInput) -> AdminResult<String> {
     let parsed = parse_form(form)?;
     let id = uuid::Uuid::new_v4().to_string();
     let mut client = state.db.get().await.map_err(unavailable)?;
@@ -172,7 +172,7 @@ pub async fn create(state: &AppState, actor: &SessionPrincipal, ctx: &RequestCon
     Ok(id)
 }
 
-pub async fn update(state: &AppState, actor: &SessionPrincipal, ctx: &RequestContext, form: &FormInput) -> AdminResult<String> {
+pub async fn update(state: &AppState, actor: &UserPrincipal, ctx: &RequestContext, form: &FormInput) -> AdminResult<String> {
     let id = js_trim(form.get("id").unwrap_or("")).to_owned();
     if id.is_empty() {
         return Err(AdminError::NotFound);
@@ -205,7 +205,7 @@ pub async fn update(state: &AppState, actor: &SessionPrincipal, ctx: &RequestCon
 }
 
 /// Missing id → nothing.
-pub async fn delete(state: &AppState, actor: &SessionPrincipal, ctx: &RequestContext, id: &str) -> AdminResult<()> {
+pub async fn delete(state: &AppState, actor: &UserPrincipal, ctx: &RequestContext, id: &str) -> AdminResult<()> {
     let id = js_trim(id);
     let mut client = state.db.get().await.map_err(unavailable)?;
     let tx = client.transaction().await.map_err(unavailable)?;
@@ -223,7 +223,7 @@ pub const TEST_MAILER_UNAVAILABLE: &str = "메일을 보낼 수 없습니다 —
 /// `testMailRecipient`: the sample event, as the real notification mail, to the form's address
 /// (possibly unsaved) through the saved SMTP settings. Not recorded as the recipient's last
 /// attempt — that column shows whether real notifications are going out.
-pub async fn test_send(state: &AppState, actor: &SessionPrincipal, ctx: &RequestContext, form: &FormInput) -> AdminResult<TestOutcome> {
+pub async fn test_send(state: &AppState, actor: &UserPrincipal, ctx: &RequestContext, form: &FormInput) -> AdminResult<TestOutcome> {
     let address = js_trim(form.get("address").unwrap_or(""));
     if address.is_empty() || !is_valid_email(address) {
         return Err(field("address", TEST_ADDRESS_REQUIRED));
@@ -233,7 +233,7 @@ pub async fn test_send(state: &AppState, actor: &SessionPrincipal, ctx: &Request
         let client = state.db.get().await.map_err(unavailable)?;
         let base_url = client.query_opt("SELECT public_base_url FROM app_settings WHERE id = 'current'", &[]).await.map_err(unavailable)?.and_then(|row| row.get(0));
         let entry = AuditEntry {
-            actor_id: Some(actor.user_id.clone()),
+            actor_id: Some(actor.user_id.clone()), via: actor.actor(ctx).via,
             action: "settings:mail-recipient-test".into(),
             target: form.get("id").map(js_trim).filter(|id| !id.is_empty()).map(str::to_owned),
             after: Some(json!({"address": address})),

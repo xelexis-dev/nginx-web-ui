@@ -260,6 +260,13 @@
       "when": 1793102404000,
       "tag": "0036_user_passkeys",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1793102405000,
+      "tag": "0037_user_token_api",
+      "breakpoints": true
     }
   ]
 }

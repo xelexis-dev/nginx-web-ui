@@ -1,6 +1,5 @@
-//! Administration (`apps/web/app/admin/**`). Session-only surface: every entry point takes an
-//! already-authenticated [`SessionPrincipal`](crate::auth::principal::SessionPrincipal) that
-//! passed `require_session(…, Some(Action::UserManage), TwoFactorGate::Enforce)`.
+//! Administration requires live user:manage authority and enforced 2FA. Explicitly classified
+//! business operations accept UserPrincipal; credential services retain an actual SessionPrincipal.
 
 pub mod mail_recipients;
 pub mod oauth;
@@ -25,6 +24,8 @@ pub enum AdminError {
     Invalid(BTreeMap<String, String>),
     /// A business rule refused it (`error`), e.g. "본인 계정은 삭제할 수 없습니다."
     Refused(String),
+    /// The caller cannot delegate this authority through a user token.
+    Forbidden,
     NotFound,
     /// Database or other internal failure, already safe to send.
     Api(ApiErrorCode),
@@ -47,6 +48,7 @@ impl From<AdminError> for ApiError {
                 api
             }
             AdminError::Refused(message) => ApiError::new(StatusCode::CONFLICT, "conflict", message),
+            AdminError::Forbidden => ApiError::forbidden(),
             AdminError::NotFound => ApiError::not_found(),
             AdminError::Api(ApiErrorCode::Unavailable) => crate::auth::principal::db_unavailable(),
             AdminError::Api(ApiErrorCode::Internal) => ApiError::internal(),

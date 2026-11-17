@@ -13,7 +13,7 @@ async fn read(
     State(state): State<AppState>, Extension(ctx): Extension<RequestContext>,
     headers: HeaderMap, Query(mut query): Query<BTreeMap<String, String>>,
 ) -> Result<Json<Value>, ApiError> {
-    let session = principal::require_session(&state, &headers, &ctx, None, TwoFactorGate::Enforce).await?;
+    let session = principal::require_user(&state, &headers, &ctx, None, TwoFactorGate::Enforce, crate::auth::principal::Use::SessionOrToken).await?;
     let path = query.remove("path").filter(|p| p.starts_with('/') && !p.starts_with("//")
         && !p.contains(['\\', '?', '#']) && !p.chars().any(char::is_control))
         .ok_or_else(|| ApiError::new(StatusCode::BAD_REQUEST, "invalid_view", "올바른 화면 경로가 필요합니다."))?;

@@ -204,9 +204,9 @@ async fn auth_options_list_only_usable_enabled_providers() {
 
 // ─────────────────────────────── account tokens ───────────────────────────────
 
-fn cookie_of(id: &str, sv: i64) -> String {
+fn cookie_of(id: &str, sv: i64, mfa_verified: bool) -> String {
     let now = nwui_api::auth::principal::now_unix_ms() / 1000;
-    let claims = json!({"sub": id, "id": id, "sv": sv});
+    let claims = json!({"sub": id, "id": id, "sv": sv, "mfaVerified": mfa_verified});
     let token = session::encode(claims.as_object().unwrap(), auth_support::SECRET, session::COOKIE_NAME_PLAIN, now, 3600).unwrap();
     format!("authjs.session-token={token}")
 }
@@ -216,8 +216,8 @@ fn cookie_of(id: &str, sv: i64) -> String {
 async fn account_tokens_issue_once_list_own_and_revoke() {
     let db = test_db().await;
     let app = app(&db);
-    insert_user(&db.client, UserRow { id: "vi", email: "vi@example.test", role: "viewer", ..Default::default() }, None).await;
-    let vi = cookie_of("vi", 3);
+    insert_user(&db.client, UserRow { id: "vi", email: "vi@example.test", role: "viewer", totp_enabled: true, ..Default::default() }, None).await;
+    let vi = cookie_of("vi", 3, true);
 
     let reply = send(&app, request("GET", "/api/ui/v1/account/tokens").header("cookie", &vi).body(Body::empty()).unwrap()).await;
     assert_eq!((reply.status, reply.body.clone()), (StatusCode::OK, json!({"tokens": [], "issuableScopes": ["config:read"]})));
@@ -241,7 +241,7 @@ async fn account_tokens_issue_once_list_own_and_revoke() {
 
     // Another user's token id is indistinguishable from a missing one.
     insert_user(&db.client, UserRow { id: "ed", email: "ed@example.test", ..Default::default() }, None).await;
-    let ed = cookie_of("ed", 3);
+    let ed = cookie_of("ed", 3, false);
     let reply = send(&app, request("GET", &format!("/api/ui/v1/account/tokens/{id}")).header("cookie", &ed).body(Body::empty()).unwrap()).await;
     assert_eq!(reply.status, StatusCode::NOT_FOUND);
     let reply = post_form(&app, "/api/ui/v1/forms/account.tokens.revoke", &format!("id={id}"), Some(&ed)).await;
@@ -575,4 +575,35 @@ async fn q3r1_legacy_session_starts_its_age_at_first_refresh_not_old_iat() {
     let cookie=stored_cookie(&reply.set_cookies);
     let claims=session::decode(cookie.strip_prefix("authjs.session-token=").unwrap(),&[auth_support::SECRET],session::COOKIE_NAME_PLAIN,now).unwrap();
     assert!((claims["authTime"].as_i64().unwrap()-now).abs()<=2);
+}
+
+
+#[tokio::test]
+#[ignore = "real DB: set NWUI_TEST_DATABASE_URL"]
+async fn account_token_issue_requires_enrolled_totp() {
+    let db = test_db().await;
+    insert_user(&db.client, UserRow::default(), None).await;
+    let reply = post_form(&app(&db), "/api/ui/v1/forms/account.tokens.issue", "name=CI&scopes=config%3Aread&expiry=never", Some(&cookie_of("u1", 3, false))).await;
+    assert_eq!((reply.status, reply.body["error"]["code"].as_str()), (StatusCode::FORBIDDEN, Some("two_factor_required")));
+    assert_eq!(db.client.query_one("SELECT count(*) FROM access_tokens", &[]).await.unwrap().get::<_, i64>(0), 0);
+    assert!(audit_rows(&db.client, "token:issue").await.is_empty());
+}
+
+#[tokio::test]
+#[ignore = "real DB: set NWUI_TEST_DATABASE_URL"]
+async fn account_token_names_reject_controls_without_changing_existing_rows() {
+    let db = test_db().await;
+    insert_user(&db.client, UserRow { totp_enabled: true, ..Default::default() }, None).await;
+    let legacy = "legacy\u{7}name";
+    db.client.execute("INSERT INTO access_tokens(id,kind,owner_user_id,name,token_hash,token_suffix,scopes) VALUES('legacy','user','u1',$1,'fixture-hash','test','[]')", &[&legacy]).await.unwrap();
+    let app = app(&db);
+    let cookie = cookie_of("u1", 3, true);
+    for name in ["bell\u{7}", "\u{1b}[31mescape", "back\u{8}space", "\ntrimmed", "next\u{85}line"] {
+        let body = url::form_urlencoded::Serializer::new(String::new()).append_pair("name", name).append_pair("scopes", "config:read").append_pair("expiry", "never").finish();
+        let reply = post_form(&app, "/api/ui/v1/forms/account.tokens.issue", &body, Some(&cookie)).await;
+        assert_eq!((reply.status, reply.body["error"]["fieldErrors"]["name"].as_str()), (StatusCode::BAD_REQUEST, Some("이름에 제어 문자를 쓸 수 없습니다.")));
+    }
+    assert_eq!(db.client.query_one("SELECT name FROM access_tokens WHERE id='legacy'", &[]).await.unwrap().get::<_, String>(0), legacy);
+    assert_eq!(db.client.query_one("SELECT count(*) FROM access_tokens", &[]).await.unwrap().get::<_, i64>(0), 1);
+    assert!(audit_rows(&db.client, "token:issue").await.is_empty());
 }

@@ -245,29 +245,29 @@ async fn browser_views_resolve_saved_email_dns_phase_link_count_and_read_authori
     let query = std::collections::BTreeMap::new();
     let editor = principal(Role::Editor);
     let viewer = principal(Role::Viewer);
-    let listing = views::view(&db.state, &viewer, "/certificates", &query)
+    let listing = views::view(&db.state, &(viewer).clone().into(), "/certificates", &query)
         .await
         .unwrap()
         .unwrap();
     assert_eq!(listing["data"]["items"][0]["linkedCount"], 1);
     assert_eq!(listing["canWrite"], false);
-    let detail = views::view(&db.state, &viewer, "/certificates/c", &query)
+    let detail = views::view(&db.state, &(viewer).clone().into(), "/certificates/c", &query)
         .await
         .unwrap()
         .unwrap();
     assert_eq!(detail["data"]["dnsOrder"]["phase"], "verifying");
     assert!(!detail.to_string().contains("secret"));
     assert!(
-        views::view(&db.state, &viewer, "/certificates/new", &query)
+        views::view(&db.state, &(viewer).clone().into(), "/certificates/new", &query)
             .await
             .is_err()
     );
-    let new = views::view(&db.state, &editor, "/certificates/new", &query)
+    let new = views::view(&db.state, &(editor).clone().into(), "/certificates/new", &query)
         .await
         .unwrap()
         .unwrap();
     assert_eq!(new["defaultEmail"], "me@example.test");
-    let edit = views::view(&db.state, &editor, "/certificates/c/edit", &query)
+    let edit = views::view(&db.state, &(editor).clone().into(), "/certificates/c/edit", &query)
         .await
         .unwrap()
         .unwrap();
@@ -278,14 +278,14 @@ async fn browser_views_resolve_saved_email_dns_phase_link_count_and_read_authori
         .await
         .unwrap();
     assert_eq!(
-        views::view(&db.state, &editor, "/certificates/c/edit", &query)
+        views::view(&db.state, &(editor).clone().into(), "/certificates/c/edit", &query)
             .await
             .unwrap()
             .unwrap()["redirectTo"],
         "/certificates/c/replace"
     );
     assert_eq!(
-        views::view(&db.state, &editor, "/certificates/c/replace", &query)
+        views::view(&db.state, &(editor).clone().into(), "/certificates/c/replace", &query)
             .await
             .unwrap()
             .unwrap(),
@@ -467,7 +467,7 @@ async fn certificate_view_projection_matches_full_row_bytes() {
         let names = c["domains"].as_array().unwrap().iter().map(|v|v.as_str().unwrap()).collect::<Vec<_>>();
         json!({"id":c["id"],"domains":{"primary":names.first(),"all":names.join(", "),"extra":names.len().saturating_sub(1)},"alias":c["alias"],"status":c["status"],"source":c["source"],"staging":c["staging"],"expiresAt":c["expiresAt"],"linkedCount":0})
     }).collect::<Vec<_>>();
-    assert_eq!(serde_json::to_vec(&views::view(&db.state,&viewer,"/certificates",&query).await.unwrap().unwrap()).unwrap(), serde_json::to_vec(&json!({"data":{"items":items},"canWrite":false})).unwrap());
+    assert_eq!(serde_json::to_vec(&views::view(&db.state, &(viewer).clone().into(),"/certificates",&query).await.unwrap().unwrap()).unwrap(), serde_json::to_vec(&json!({"data":{"items":items},"canWrite":false})).unwrap());
     for expected in &reference {
         let id = expected["id"].as_str().unwrap();
         let raw: Value = db.client.query_one("SELECT to_jsonb(c) FROM certificates c WHERE id=$1", &[&id]).await.unwrap().get(0);
@@ -479,7 +479,7 @@ async fn certificate_view_projection_matches_full_row_bytes() {
         data["linkedServers"] = json!([]);
         data["dnsOrder"] = if id == "populated" { json!({"phase":"verifying"}) } else { Value::Null };
         data["issueLog"] = json!(old_detail["issueLog"].as_array().unwrap().iter().map(|r|json!({"at":r["at"].as_str().unwrap().replace('T'," ").chars().take(19).collect::<String>(),"level":r["level"],"msg":r["msg"]})).collect::<Vec<_>>());
-        let actual = views::view(&db.state,&viewer,&format!("/certificates/{id}"),&query).await.unwrap().unwrap();
+        let actual = views::view(&db.state, &(viewer).clone().into(),&format!("/certificates/{id}"),&query).await.unwrap().unwrap();
         assert_eq!(serde_json::to_vec(&actual).unwrap(), serde_json::to_vec(&json!({"data":data,"canWrite":false,"uncovered":[]})).unwrap());
     }
 }
@@ -501,8 +501,8 @@ async fn certificate_views_need_no_pem_column_privileges() {
     let query = std::collections::BTreeMap::new();
     let list = views::list(&db.state).await;
     let detail = views::detail(&db.state,"c").await;
-    let browser_list = views::view(&db.state,&viewer,"/certificates",&query).await;
-    let browser_detail = views::view(&db.state,&viewer,"/certificates/c",&query).await;
+    let browser_list = views::view(&db.state, &(viewer).clone().into(),"/certificates",&query).await;
+    let browser_detail = views::view(&db.state, &(viewer).clone().into(),"/certificates/c",&query).await;
     let (full_row_error, store_error) = {
         let client = db.state.db.get().await.unwrap();
         let full_row_error = client.query("SELECT to_jsonb(c) FROM certificates c",&[]).await.unwrap_err();

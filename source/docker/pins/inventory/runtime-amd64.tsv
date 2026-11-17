@@ -108,9 +108,7 @@ perl	amd64	5.40.1-6+deb13u1	perl	5.40.1-6+deb13u1	debian
 perl-base	amd64	5.40.1-6+deb13u1	perl	5.40.1-6+deb13u1	base
 perl-modules-5.40	all	5.40.1-6+deb13u1	perl	5.40.1-6+deb13u1	debian
 postgresql	all	17+278	postgresql-common	278	debian
-postgresql-15	amd64	15.20-1.pgdg13+1	postgresql-15	15.20-1.pgdg13+1	pgdg
 postgresql-17	amd64	17.12-0+deb13u1	postgresql-17	17.12-0+deb13u1	debian-security
-postgresql-client-15	amd64	15.20-1.pgdg13+1	postgresql-15	15.20-1.pgdg13+1	pgdg
 postgresql-client-17	amd64	17.12-0+deb13u1	postgresql-17	17.12-0+deb13u1	debian-security
 postgresql-client-common	all	278	postgresql-common	278	debian
 postgresql-common	all	278	postgresql-common	278	debian

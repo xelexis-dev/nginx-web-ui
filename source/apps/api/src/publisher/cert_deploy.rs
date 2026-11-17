@@ -190,7 +190,7 @@ mod tests {
     use std::{collections::BTreeMap,path::Path,time::{Duration,Instant}};
     use serde_json::json;
 
-    fn actor()->contracts::Actor {contracts::Actor{id:None,label:Some("certificate-fixture".into()),ip:None}}
+    fn actor()->contracts::Actor {contracts::Actor{via: None,id:None,label:Some("certificate-fixture".into()),ip:None}}
     fn pair()->(String,String) {
         let pair=rcgen::generate_simple_self_signed(vec!["example.test".into()]).unwrap();
         (pair.cert.pem(),pair.signing_key.serialize_pem())

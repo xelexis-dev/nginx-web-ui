@@ -10,7 +10,7 @@ use crate::{
     },
     contracts::{FormInput, FormResult},
     error::ApiError,
-    http_policy::{check_browser_origin, read_form},
+    http_policy::read_form,
     request_context::RequestContext,
     state::AppState,
 };
@@ -103,7 +103,8 @@ async fn relay_access(
     audit_target: &str,
 ) -> Result<(service::NodeAccess, crate::contracts::Actor), ApiError> {
     let session =
-        principal::require_session(state, headers, ctx, None, TwoFactorGate::Enforce).await?;
+        principal::require_user(state, headers, ctx, None, TwoFactorGate::Enforce, crate::auth::principal::Use::SessionOrToken).await?;
+    if action != Action::ConfigRead { session.check_origin(headers, ctx)?; }
     let actor = session.actor(ctx);
     match service::resolve(state, &session, id, action).await {
         Ok(a) => Ok((a, actor)),
@@ -114,10 +115,11 @@ async fn relay_access(
                         &**client,
                         &crate::auth::audit::AuditEntry {
                             actor_id: actor.id,
+                            via: actor.via,
                             action: "rbac:denied".into(),
                             target: Some(audit_target.into()),
                             before: Some(
-                                json!({"role":session.role,"nodeId":id,"requiredAction":action}),
+                                json!({"role":session.role_label(),"nodeId":id,"requiredAction":action}),
                             ),
                             ip: actor.ip,
                             ..Default::default()
@@ -246,8 +248,12 @@ async fn logs(
             let ctx = checked_ctx.clone();
             let id = id.clone();
             async move {
-                let session = principal::require_session(&state, &headers, &ctx, Some(Action::ConfigRead), TwoFactorGate::Enforce).await?;
-                service::resolve(&state, &session, &id, Action::ConfigRead).await.map(|_| ())
+                let checked = async {
+                    let session = principal::require_user(&state, &headers, &ctx, Some(Action::ConfigRead), TwoFactorGate::Enforce, crate::auth::principal::Use::SessionOrToken).await?;
+                    service::resolve(&state, &session, &id, Action::ConfigRead).await.map(|_| ())
+                }.await;
+                // Token streams fail closed on node lookup errors too; session outage behaviour stays intact.
+                if crate::auth::user_token::is_user_token_request(&headers) { checked.map_err(|_| ApiError::forbidden()) } else { checked }
             }
         },
     );
@@ -275,7 +281,6 @@ async fn cancel(
     Path((id, cid)): Path<(String, String)>,
     request: Request,
 ) -> Result<Response, ApiError> {
-    check_browser_origin(request.headers(), &ctx)?;
     let (mut access, actor) = relay_access(
         &state,
         &ctx,
@@ -542,6 +547,14 @@ pub fn command(name: &str, node_id: &str, form: &FormInput) -> Result<Command, A
                 .as_str()
                 .is_none_or(|s| s.trim().is_empty())
             {
+                if let Some(value) = body["tls"]["tlsOptions"].get("http2") {
+                    if !value.is_boolean() {
+                        return Err(crate::control::resources::field_error("http2", "HTTP/2 설정은 true 또는 false여야 합니다."));
+                    }
+                    if value == true {
+                        return Err(crate::control::resources::field_error("http2", "HTTP/2를 사용하려면 인증서를 선택하세요."));
+                    }
+                }
                 body["certificateId"] = Value::Null;
                 body["tls"] = Value::Null;
             }
@@ -634,11 +647,12 @@ async fn bookkeeping(
 }
 fn form_failure(node: &str, c: &Command, failure: NodeResult) -> Value {
     if let NodeResult::Failure {
-        kind: FailureKind::Validation,
+        kind,
         message,
         field_errors,
         ..
     } = &failure
+        && (matches!(kind, FailureKind::Validation) || field_errors.is_some())
     {
         if c.audit == "apply" {
             return form_failure(
@@ -673,20 +687,47 @@ pub fn check_form_version(name: &str, input: &FormInput, previous: Option<&str>,
     Ok(())
 }
 
+pub fn supports_http2(version: Option<&str>) -> bool {
+    version.and_then(crate::auth::node_version::parse_semver)
+        .is_some_and(|v| v.major >= 2 && (v.major > 2 || v.minor >= 1))
+}
+fn http2_requested(name: &str, body: Option<&Value>) -> bool {
+    matches!(name, "node.createNodeServer" | "node.updateNodeServer")
+        && body.is_some_and(|b| b["tls"]["tlsOptions"]["http2"] == true)
+}
+pub fn check_http2_capability(name: &str, body: Option<&mut Value>, version: Option<&str>) -> Result<(), NodeResult> {
+    if !matches!(name, "node.createNodeServer" | "node.updateNodeServer") { return Ok(()); }
+    let Some(body) = body else { return Ok(()); };
+    if body["tls"]["tlsOptions"].get("http2").is_some_and(|value| !value.is_boolean()) {
+        let message = "HTTP/2 설정은 true 또는 false여야 합니다.";
+        return Err(NodeResult::Failure { ok:false, kind:FailureKind::Validation, message:message.into(), node_version:version.map(str::to_owned), field_errors:Some(BTreeMap::from([("http2".into(), message.into())])) });
+    }
+    if !supports_http2(version) {
+        if body["tls"]["tlsOptions"]["http2"] == true {
+            let message = "이 노드는 HTTP/2 설정을 지원하지 않습니다. 노드를 2.1 이상으로 업데이트하세요.";
+            return Err(NodeResult::Failure { ok:false, kind:FailureKind::Conflict, message:message.into(), node_version:version.map(str::to_owned), field_errors:Some(BTreeMap::from([("http2".into(), message.into())])) });
+        }
+    }
+    // Canonical off also stays safe if a cached node version is stale.
+    if body["tls"]["tlsOptions"]["http2"] == false {
+        if let Some(options) = body["tls"].get_mut("tlsOptions").and_then(Value::as_object_mut) { options.remove("http2"); }
+    }
+    Ok(())
+}
+
 async fn form(
     State(state): State<AppState>,
     Extension(ctx): Extension<RequestContext>,
     request: Request,
 ) -> Result<Json<FormResult>, ApiError> {
-    check_browser_origin(request.headers(), &ctx)?;
-    let session = principal::require_session(
+    let session = principal::require_user(
         &state,
         request.headers(),
         &ctx,
         None,
-        TwoFactorGate::Enforce,
-    )
+        TwoFactorGate::Enforce, crate::auth::principal::Use::SessionOrToken)
     .await?;
+    session.check_origin(request.headers(), &ctx)?;
     let name = request
         .uri()
         .path()
@@ -710,7 +751,7 @@ async fn form(
     if node.is_empty() {
         return Err(bad());
     }
-    let c = match command(&name, node, &input) {
+    let mut c = match command(&name, node, &input) {
         Ok(c) => c,
         Err(e) if e.status == StatusCode::BAD_REQUEST => {
             return Ok(Json(FormResult {
@@ -722,7 +763,7 @@ async fn form(
     };
     let mut access = match service::resolve(&state, &session, node, c.action).await {
         Ok(a) => a,
-        Err(e) if e.status == StatusCode::FORBIDDEN => {
+        Err(e) if e.status == StatusCode::FORBIDDEN && !session.is_token() => {
             let failure = NodeResult::failure(
                 FailureKind::Forbidden,
                 "이 작업을 수행할 권한이 없습니다.",
@@ -739,18 +780,41 @@ async fn form(
         }
         Err(e) => return Err(e),
     };
+    if matches!(name.as_str(), "node.rollbackNodeSnapshot" | "node.replaceNodeCertificate") { service::resolve(&state, &session, node, Action::ConfigWrite).await?; }
     let started = std::time::Instant::now();
     let previous_version = access.target.node_version.clone();
-    let prepared = service::prepare_access(&state, &mut access, true).await;
-    let prepared = prepared.and_then(|_| check_form_version(&name, &input, previous_version.as_deref(), access.target.node_version.as_deref()));
+    let requested_http2 = http2_requested(&name, c.body.as_ref());
+    let prepared = if requested_http2 { service::probe_access(&state, &mut access).await }
+        else { service::prepare_access(&state, &mut access, true).await };
+    let prepared = prepared.map_err(|mut failure| {
+        if requested_http2 {
+            if let NodeResult::Failure { kind, node_version, field_errors, message, .. } = &mut failure {
+                if matches!(kind, FailureKind::NodeError | FailureKind::TooOld | FailureKind::VersionMismatch)
+                    && !supports_http2(node_version.as_deref()) {
+                    *field_errors = Some(BTreeMap::from([("http2".into(), message.clone())]));
+                }
+            }
+        }
+        failure
+    });
+    let prepared = prepared.and_then(|_| check_form_version(&name, &input, previous_version.as_deref(), access.target.node_version.as_deref()))
+        .and_then(|_| check_http2_capability(&name, c.body.as_mut(), access.target.node_version.as_deref()));
     let sent = prepared.is_ok();
-    let result = match prepared {
+    let mut result = match prepared {
         Err(failure) => failure,
         Ok(()) => state.node_http.call(
             &state.secrets, &access.target, c.method.clone(), &c.path, c.body.as_ref(),
             c.timeout.saturating_sub(started.elapsed()),
         ).await,
     };
+    if requested_http2 {
+        if let NodeResult::Success { value, node_version, .. } = &result {
+            if !supports_http2(node_version.as_deref()) || value["server"]["config"]["tlsOptions"]["http2"] != true {
+                result = NodeResult::failure(FailureKind::Conflict,
+                    "노드가 저장 중 변경되었거나 HTTP/2 설정을 확인하지 못했습니다. 다른 설정이 저장되었을 수 있으니 화면을 새로 고친 뒤 확인하세요.", node_version.clone());
+            }
+        }
+    }
     if sent {
         bookkeeping(
             &state,

@@ -101,7 +101,7 @@ impl Dispatcher {
 mod tests {
     use super::*;
     use serde_json::json;
-    fn request(id:&str,op:Op)->Request {Request{v:1,id:id.into(),op,deadline_ms:280000,actor:super::super::protocol::Actor{user_id:None,label:Some("fixture".into()),ip:None}}}
+    fn request(id:&str,op:Op)->Request {Request{v:1,id:id.into(),op,deadline_ms:280000,actor:super::super::protocol::Actor{via: None,user_id:None,label:Some("fixture".into()),ip:None}}}
     fn fixture()->(tempfile::TempDir,Arc<Dispatcher>) {
         let (temp,config,store,_,_)=super::super::recovery::tests::durable_fixture();
         (temp,Dispatcher::new(config,store))

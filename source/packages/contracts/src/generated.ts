@@ -139,6 +139,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         get: operations["readUsers"];
         put?: never;
         post?: never;
@@ -155,6 +156,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         get: operations["readUser"];
         put?: never;
         post?: never;
@@ -171,6 +173,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         get: operations["readPendingUsers"];
         put?: never;
         post?: never;
@@ -187,6 +190,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         get: operations["readSecurity"];
         put?: never;
         post?: never;
@@ -203,6 +207,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         get: operations["readOAuthProviders"];
         put?: never;
         post?: never;
@@ -219,6 +224,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         get: operations["readOAuthProvider"];
         put?: never;
         post?: never;
@@ -235,6 +241,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         get: operations["readGeneralSettings"];
         put?: never;
         post?: never;
@@ -251,6 +258,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         get: operations["readSecretsHealth"];
         put?: never;
         post?: never;
@@ -267,6 +275,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         get: operations["readNotifications"];
         put?: never;
         post?: never;
@@ -302,7 +311,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Origin checked. Updates only the authenticated session user notification read marker. */
+        /** @description Origin checked. Updates only the authenticated session user notification read marker. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         post: operations["markNotificationsSeen"];
         delete?: never;
         options?: never;
@@ -317,6 +326,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         get: operations["readSmtp"];
         put?: never;
         post?: never;
@@ -333,6 +343,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         get: operations["readMailRecipients"];
         put?: never;
         post?: never;
@@ -349,6 +360,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         get: operations["readMailRecipient"];
         put?: never;
         post?: never;
@@ -365,6 +377,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         get: operations["readWebhooks"];
         put?: never;
         post?: never;
@@ -381,6 +394,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         get: operations["readWebhook"];
         put?: never;
         post?: never;
@@ -561,7 +575,7 @@ export interface paths {
         put?: never;
         /**
          * admin.mailRecipients.create
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_admin_mailRecipients_create"];
         delete?: never;
@@ -581,7 +595,7 @@ export interface paths {
         put?: never;
         /**
          * admin.mailRecipients.delete
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_admin_mailRecipients_delete"];
         delete?: never;
@@ -601,7 +615,7 @@ export interface paths {
         put?: never;
         /**
          * admin.mailRecipients.test
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_admin_mailRecipients_test"];
         delete?: never;
@@ -621,7 +635,7 @@ export interface paths {
         put?: never;
         /**
          * admin.mailRecipients.update
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_admin_mailRecipients_update"];
         delete?: never;
@@ -721,7 +735,7 @@ export interface paths {
         put?: never;
         /**
          * admin.pending.approve
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. User tokens cannot change an admin target or grant admin. Role changes, approval and enabling require every resulting role action to be allowed by the token. Disabling and rejecting non-admin targets remain permitted. Browser sessions retain their existing authority.
          */
         post: operations["form_admin_pending_approve"];
         delete?: never;
@@ -741,7 +755,7 @@ export interface paths {
         put?: never;
         /**
          * admin.pending.reject
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. User tokens cannot change an admin target or grant admin. Role changes, approval and enabling require every resulting role action to be allowed by the token. Disabling and rejecting non-admin targets remain permitted. Browser sessions retain their existing authority.
          */
         post: operations["form_admin_pending_reject"];
         delete?: never;
@@ -801,7 +815,7 @@ export interface paths {
         put?: never;
         /**
          * admin.settings.updateMetrics
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_admin_settings_updateMetrics"];
         delete?: never;
@@ -841,7 +855,7 @@ export interface paths {
         put?: never;
         /**
          * admin.smtp.test
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. Session-only: testing sends secrets with submitted connection parameters.
          */
         post: operations["form_admin_smtp_test"];
         delete?: never;
@@ -981,7 +995,7 @@ export interface paths {
         put?: never;
         /**
          * admin.users.toggle
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. User tokens cannot change an admin target or grant admin. Role changes, approval and enabling require every resulting role action to be allowed by the token. Disabling and rejecting non-admin targets remain permitted. Browser sessions retain their existing authority.
          */
         post: operations["form_admin_users_toggle"];
         delete?: never;
@@ -1001,7 +1015,7 @@ export interface paths {
         put?: never;
         /**
          * admin.users.updateRole
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. User tokens cannot change an admin target or grant admin. Role changes, approval and enabling require every resulting role action to be allowed by the token. Disabling and rejecting non-admin targets remain permitted. Browser sessions retain their existing authority.
          */
         post: operations["form_admin_users_updateRole"];
         delete?: never;
@@ -1061,7 +1075,7 @@ export interface paths {
         put?: never;
         /**
          * admin.webhooks.test
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. Session-only: testing sends secrets with submitted connection parameters.
          */
         post: operations["form_admin_webhooks_test"];
         delete?: never;
@@ -1101,7 +1115,7 @@ export interface paths {
         put?: never;
         /**
          * apply.applyConfig
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_apply_applyConfig"];
         delete?: never;
@@ -1121,7 +1135,7 @@ export interface paths {
         put?: never;
         /**
          * certificates.createCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_certificates_createCertificate"];
         delete?: never;
@@ -1141,7 +1155,7 @@ export interface paths {
         put?: never;
         /**
          * certificates.deleteCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_certificates_deleteCertificate"];
         delete?: never;
@@ -1161,7 +1175,7 @@ export interface paths {
         put?: never;
         /**
          * certificates.importCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_certificates_importCertificate"];
         delete?: never;
@@ -1181,7 +1195,7 @@ export interface paths {
         put?: never;
         /**
          * certificates.renewCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_certificates_renewCertificate"];
         delete?: never;
@@ -1201,7 +1215,7 @@ export interface paths {
         put?: never;
         /**
          * certificates.renewDnsCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_certificates_renewDnsCertificate"];
         delete?: never;
@@ -1221,7 +1235,7 @@ export interface paths {
         put?: never;
         /**
          * certificates.replaceCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_certificates_replaceCertificate"];
         delete?: never;
@@ -1241,7 +1255,7 @@ export interface paths {
         put?: never;
         /**
          * certificates.retryCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_certificates_retryCertificate"];
         delete?: never;
@@ -1261,7 +1275,7 @@ export interface paths {
         put?: never;
         /**
          * certificates.submitDnsChallengeAction
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_certificates_submitDnsChallengeAction"];
         delete?: never;
@@ -1281,7 +1295,7 @@ export interface paths {
         put?: never;
         /**
          * certificates.updateCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_certificates_updateCertificate"];
         delete?: never;
@@ -1301,7 +1315,7 @@ export interface paths {
         put?: never;
         /**
          * history.rollback
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_history_rollback"];
         delete?: never;
@@ -1361,7 +1375,7 @@ export interface paths {
         put?: never;
         /**
          * node.applyNodeConfig
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_applyNodeConfig"];
         delete?: never;
@@ -1381,7 +1395,7 @@ export interface paths {
         put?: never;
         /**
          * node.createNodeCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_createNodeCertificate"];
         delete?: never;
@@ -1401,7 +1415,7 @@ export interface paths {
         put?: never;
         /**
          * node.createNodeServer
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_createNodeServer"];
         delete?: never;
@@ -1421,7 +1435,7 @@ export interface paths {
         put?: never;
         /**
          * node.createNodeStream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_createNodeStream"];
         delete?: never;
@@ -1441,7 +1455,7 @@ export interface paths {
         put?: never;
         /**
          * node.createNodeUpstream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_createNodeUpstream"];
         delete?: never;
@@ -1461,7 +1475,7 @@ export interface paths {
         put?: never;
         /**
          * node.deleteNodeCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_deleteNodeCertificate"];
         delete?: never;
@@ -1481,7 +1495,7 @@ export interface paths {
         put?: never;
         /**
          * node.deleteNodeServer
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_deleteNodeServer"];
         delete?: never;
@@ -1501,7 +1515,7 @@ export interface paths {
         put?: never;
         /**
          * node.deleteNodeStream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_deleteNodeStream"];
         delete?: never;
@@ -1521,7 +1535,7 @@ export interface paths {
         put?: never;
         /**
          * node.deleteNodeUpstream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_deleteNodeUpstream"];
         delete?: never;
@@ -1541,7 +1555,7 @@ export interface paths {
         put?: never;
         /**
          * node.importNodeCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_importNodeCertificate"];
         delete?: never;
@@ -1561,7 +1575,7 @@ export interface paths {
         put?: never;
         /**
          * node.renewDnsNodeCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_renewDnsNodeCertificate"];
         delete?: never;
@@ -1581,7 +1595,7 @@ export interface paths {
         put?: never;
         /**
          * node.renewNodeCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_renewNodeCertificate"];
         delete?: never;
@@ -1601,7 +1615,7 @@ export interface paths {
         put?: never;
         /**
          * node.replaceNodeCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_replaceNodeCertificate"];
         delete?: never;
@@ -1621,7 +1635,7 @@ export interface paths {
         put?: never;
         /**
          * node.retryNodeCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_retryNodeCertificate"];
         delete?: never;
@@ -1641,7 +1655,7 @@ export interface paths {
         put?: never;
         /**
          * node.rollbackNodeSnapshot
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_rollbackNodeSnapshot"];
         delete?: never;
@@ -1661,7 +1675,7 @@ export interface paths {
         put?: never;
         /**
          * node.submitNodeDnsChallenge
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_submitNodeDnsChallenge"];
         delete?: never;
@@ -1681,7 +1695,7 @@ export interface paths {
         put?: never;
         /**
          * node.toggleNodeServer
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_toggleNodeServer"];
         delete?: never;
@@ -1701,7 +1715,7 @@ export interface paths {
         put?: never;
         /**
          * node.toggleNodeStream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_toggleNodeStream"];
         delete?: never;
@@ -1721,7 +1735,7 @@ export interface paths {
         put?: never;
         /**
          * node.updateNodeCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_updateNodeCertificate"];
         delete?: never;
@@ -1741,7 +1755,7 @@ export interface paths {
         put?: never;
         /**
          * node.updateNodeServer
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_updateNodeServer"];
         delete?: never;
@@ -1761,7 +1775,7 @@ export interface paths {
         put?: never;
         /**
          * node.updateNodeStream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_updateNodeStream"];
         delete?: never;
@@ -1781,7 +1795,7 @@ export interface paths {
         put?: never;
         /**
          * node.updateNodeUpstream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_node_updateNodeUpstream"];
         delete?: never;
@@ -1821,7 +1835,7 @@ export interface paths {
         put?: never;
         /**
          * nodes.refreshStatuses
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_nodes_refreshStatuses"];
         delete?: never;
@@ -1881,7 +1895,7 @@ export interface paths {
         put?: never;
         /**
          * notifications.markSeen
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_notifications_markSeen"];
         delete?: never;
@@ -1901,7 +1915,7 @@ export interface paths {
         put?: never;
         /**
          * reverse-proxy.createServer
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_reverse_proxy_createServer"];
         delete?: never;
@@ -1921,7 +1935,7 @@ export interface paths {
         put?: never;
         /**
          * reverse-proxy.deleteServer
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_reverse_proxy_deleteServer"];
         delete?: never;
@@ -1941,7 +1955,7 @@ export interface paths {
         put?: never;
         /**
          * reverse-proxy.toggleServer
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_reverse_proxy_toggleServer"];
         delete?: never;
@@ -1961,7 +1975,7 @@ export interface paths {
         put?: never;
         /**
          * reverse-proxy.updateServer
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_reverse_proxy_updateServer"];
         delete?: never;
@@ -2021,7 +2035,7 @@ export interface paths {
         put?: never;
         /**
          * stream.createStream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_stream_createStream"];
         delete?: never;
@@ -2041,7 +2055,7 @@ export interface paths {
         put?: never;
         /**
          * stream.deleteStream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_stream_deleteStream"];
         delete?: never;
@@ -2061,7 +2075,7 @@ export interface paths {
         put?: never;
         /**
          * stream.toggleStream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_stream_toggleStream"];
         delete?: never;
@@ -2081,7 +2095,7 @@ export interface paths {
         put?: never;
         /**
          * stream.updateStream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_stream_updateStream"];
         delete?: never;
@@ -2101,7 +2115,7 @@ export interface paths {
         put?: never;
         /**
          * upstreams.createUpstream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_upstreams_createUpstream"];
         delete?: never;
@@ -2121,7 +2135,7 @@ export interface paths {
         put?: never;
         /**
          * upstreams.deleteUpstream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_upstreams_deleteUpstream"];
         delete?: never;
@@ -2141,7 +2155,7 @@ export interface paths {
         put?: never;
         /**
          * upstreams.updateUpstream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         post: operations["form_upstreams_updateUpstream"];
         delete?: never;
@@ -2654,7 +2668,7 @@ export interface paths {
         };
         /**
          * Read an authorized browser page projection
-         * @description Fresh database-validated browser session with MFA enforcement. Each static view applies its own role gate. Response shape is selected by the path query parameter using x-view-registry; no credentials, PEM keys, sealed values or token hashes are returned. Local views have fixed schemas; remote data remains untrusted JSON.
+         * @description Fresh database-validated browser session with MFA enforcement. Each static view applies its own role gate. Response shape is selected by the path query parameter using x-view-registry; no credentials, PEM keys, sealed values or token hashes are returned. Local views have fixed schemas; remote data remains untrusted JSON. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
          */
         get: operations["readBrowserView"];
         put?: never;
@@ -2769,7 +2783,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Authenticated browser read; requires config:read and the current MFA policy. */
+        /** @description Authenticated browser read; requires config:read and the current MFA policy. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         get: operations["readBrowserMetrics"];
         put?: never;
         post?: never;
@@ -2786,7 +2800,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Authenticated browser read; requires config:read and the current MFA policy. */
+        /** @description Authenticated browser read; requires config:read and the current MFA policy. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. Token streams revalidate every 30 seconds and at expiry. */
         get: operations["readBrowserLogStream"];
         put?: never;
         post?: never;
@@ -2803,7 +2817,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Authenticated browser read; requires config:read and the current MFA policy. The gateway relays the selected node; failures remain safe API errors. */
+        /** @description Authenticated browser read; requires config:read and the current MFA policy. The gateway relays the selected node; failures remain safe API errors. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         get: operations["readRemoteBrowserMetrics"];
         put?: never;
         post?: never;
@@ -2820,7 +2834,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Authenticated browser read; requires config:read and the current MFA policy. The gateway relays the selected node; failures remain safe API errors. */
+        /** @description Authenticated browser read; requires config:read and the current MFA policy. The gateway relays the selected node; failures remain safe API errors. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. Token streams revalidate every 30 seconds and at expiry. */
         get: operations["readRemoteBrowserLogStream"];
         put?: never;
         post?: never;
@@ -2839,7 +2853,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Cancel certificate issuance. Requires browser session, config:write, the current MFA policy and a matching Origin. The UI alias has the same behavior; remote failures may include a safe node failure code. */
+        /** @description Cancel certificate issuance. Requires browser session, config:write, the current MFA policy and a matching Origin. The UI alias has the same behavior; remote failures may include a safe node failure code. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         post: operations["cancelBrowserCertificate"];
         delete?: never;
         options?: never;
@@ -2856,7 +2870,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Cancel certificate issuance. Requires browser session, config:write, the current MFA policy and a matching Origin. The UI alias has the same behavior; remote failures may include a safe node failure code. */
+        /** @description Cancel certificate issuance. Requires browser session, config:write, the current MFA policy and a matching Origin. The UI alias has the same behavior; remote failures may include a safe node failure code. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         post: operations["cancelBrowserCertificateAlias"];
         delete?: never;
         options?: never;
@@ -2873,7 +2887,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Cancel certificate issuance. Requires browser session, config:write, the current MFA policy and a matching Origin. The UI alias has the same behavior; remote failures may include a safe node failure code. */
+        /** @description Cancel certificate issuance. Requires browser session, config:write, the current MFA policy and a matching Origin. The UI alias has the same behavior; remote failures may include a safe node failure code. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. */
         post: operations["cancelRemoteBrowserCertificate"];
         delete?: never;
         options?: never;
@@ -3506,6 +3520,8 @@ export interface components {
             [key: string]: unknown;
         };
         NodeTlsOptions: {
+            /** @description Enable HTTP/2 for this TLS server. Omission means off; requires a certificate and a node at version 2.1 or later. */
+            http2?: boolean;
             /** @enum {string} */
             sslProtocols?: "modern" | "intermediate";
             /** @enum {string} */
@@ -3653,7 +3669,7 @@ export interface components {
             /** @description Use locations. The legacy single value (or omission) remains accepted, is deprecated, and normalizes to one / location. */
             targetMode?: "single" | "locations";
             locations?: components["schemas"]["NodeLocationInput"][];
-            tls?: {
+            tls?: ({
                 /** @default 443 */
                 tlsPort: number;
                 /** @default true */
@@ -3661,7 +3677,7 @@ export interface components {
                 tlsOptions?: components["schemas"]["NodeTlsOptions"];
             } & {
                 [key: string]: unknown;
-            };
+            }) | null;
             /**
              * @deprecated
              * @description Deprecated single-target input, normalized to locations on save. Opt-in runtime DNS for fixed direct DNS targets; named upstream references use the group setting. Omission keeps static resolution.
@@ -3879,6 +3895,8 @@ export interface components {
             actorEmail: string | null;
             actorLabel: string | null;
             ip: string | null;
+            /** @description Token provenance at the time of the action; absent or null for a browser session. */
+            via?: components["schemas"]["AuditVia"] | null;
         };
         NodeAuditDetail: {
             id: string;
@@ -3891,6 +3909,8 @@ export interface components {
             ip: string | null;
             before: components["schemas"]["NodeJsonValue"];
             after: components["schemas"]["NodeJsonValue"];
+            /** @description Token provenance at the time of the action; absent or null for a browser session. */
+            via?: components["schemas"]["AuditVia"] | null;
         };
         NodeAuditResponse: {
             items: components["schemas"]["NodeAuditRow"][];
@@ -4079,6 +4099,8 @@ export interface components {
             actorEmail: string | null;
             actorLabel: string | null;
             ip: string | null;
+            /** @description Token provenance at the time of the action; absent or null for a browser session. */
+            via?: components["schemas"]["AuditVia"] | null;
         };
         AuditRecordView: {
             id: string;
@@ -4093,6 +4115,8 @@ export interface components {
             before: unknown;
             /** @description Audited action-specific JSON or null; historical payload schema depends on action. */
             after: unknown;
+            /** @description Token provenance at the time of the action; absent or null for a browser session. */
+            via?: components["schemas"]["AuditVia"] | null;
         };
         AuditListView: {
             items: components["schemas"]["AuditRowView"][];
@@ -4293,11 +4317,14 @@ export interface components {
             /** @constant */
             ok: true;
             node: components["schemas"]["NodeView"];
+            /** @description Display only. canWrite and canApply include the current user token scopes and node role. */
             effectiveRole: components["schemas"]["Role"];
             /** @description Untrusted remote node JSON, null for pages with no remote request, or an object of untrusted responses for fanout pages. The browser defensively decodes each expected payload before use. */
             data: unknown;
             canManage: boolean;
             runtimeDns?: components["schemas"]["RuntimeDnsStatus"];
+            canWrite?: boolean;
+            canApply?: boolean;
         };
         RemoteNodeViewFailure: {
             /** @constant */
@@ -4373,6 +4400,12 @@ export interface components {
                     [key: string]: unknown;
                 };
             };
+        };
+        AuditVia: {
+            /** @constant */
+            kind: "token";
+            id: string;
+            name: string;
         };
     };
     responses: {
@@ -4605,6 +4638,7 @@ export interface operations {
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             503: components["responses"]["ApiError"];
         };
     };
@@ -4631,6 +4665,7 @@ export interface operations {
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             503: components["responses"]["ApiError"];
         };
     };
@@ -4655,6 +4690,7 @@ export interface operations {
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             503: components["responses"]["ApiError"];
         };
     };
@@ -4679,6 +4715,7 @@ export interface operations {
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             503: components["responses"]["ApiError"];
         };
     };
@@ -4703,6 +4740,7 @@ export interface operations {
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             503: components["responses"]["ApiError"];
         };
     };
@@ -4729,6 +4767,7 @@ export interface operations {
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             503: components["responses"]["ApiError"];
         };
     };
@@ -4753,6 +4792,7 @@ export interface operations {
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             503: components["responses"]["ApiError"];
         };
     };
@@ -4777,6 +4817,7 @@ export interface operations {
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             503: components["responses"]["ApiError"];
         };
     };
@@ -4801,6 +4842,7 @@ export interface operations {
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             503: components["responses"]["ApiError"];
         };
     };
@@ -4850,6 +4892,7 @@ export interface operations {
             };
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             503: components["responses"]["ApiError"];
         };
     };
@@ -4874,6 +4917,7 @@ export interface operations {
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             503: components["responses"]["ApiError"];
         };
     };
@@ -4898,6 +4942,7 @@ export interface operations {
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             503: components["responses"]["ApiError"];
         };
     };
@@ -4924,6 +4969,7 @@ export interface operations {
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             503: components["responses"]["ApiError"];
         };
     };
@@ -4948,6 +4994,7 @@ export interface operations {
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             503: components["responses"]["ApiError"];
         };
     };
@@ -4974,6 +5021,7 @@ export interface operations {
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             503: components["responses"]["ApiError"];
         };
     };
@@ -16748,6 +16796,7 @@ export interface operations {
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             500: components["responses"]["ApiError"];
             503: components["responses"]["ApiError"];
         };
@@ -17095,6 +17144,9 @@ export interface operations {
                     "application/json": components["schemas"]["MetricsResponse"];
                 };
             };
+            401: components["responses"]["ApiError"];
+            403: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             default: components["responses"]["ApiError"];
         };
     };
@@ -17121,6 +17173,9 @@ export interface operations {
                     "text/event-stream": string;
                 };
             };
+            401: components["responses"]["ApiError"];
+            403: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             default: components["responses"]["ApiError"];
         };
     };
@@ -17148,6 +17203,9 @@ export interface operations {
                     "application/json": components["schemas"]["MetricsResponse"];
                 };
             };
+            401: components["responses"]["ApiError"];
+            403: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             default: components["responses"]["ApiError"];
         };
     };
@@ -17176,6 +17234,9 @@ export interface operations {
                     "text/event-stream": string;
                 };
             };
+            401: components["responses"]["ApiError"];
+            403: components["responses"]["ApiError"];
+            429: components["responses"]["ApiError"];
             default: components["responses"]["ApiError"];
         };
     };
@@ -17197,6 +17258,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BrowserCertificateCancelSuccess"];
+                };
+            };
+            /** @description Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserCertificateCancelError"];
+                };
+            };
+            /** @description Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserCertificateCancelError"];
+                };
+            };
+            /** @description Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserCertificateCancelError"];
                 };
             };
             /** @description Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope. */
@@ -17231,6 +17319,33 @@ export interface operations {
                 };
             };
             /** @description Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserCertificateCancelError"];
+                };
+            };
+            /** @description Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserCertificateCancelError"];
+                };
+            };
+            /** @description Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserCertificateCancelError"];
+                };
+            };
+            /** @description Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope. */
             default: {
                 headers: {
                     [name: string]: unknown;
@@ -17260,6 +17375,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BrowserCertificateCancelSuccess"];
+                };
+            };
+            /** @description Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserCertificateCancelError"];
+                };
+            };
+            /** @description Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserCertificateCancelError"];
+                };
+            };
+            /** @description Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserCertificateCancelError"];
                 };
             };
             /** @description Authentication/authorization errors use ApiErrorBody; cancellation failures use the existing ok:false envelope. */

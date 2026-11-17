@@ -16,7 +16,9 @@ impl Fixture{
  async fn new()->Self{
   assert_eq!(std::env::var("NWUI_TEST_PROFILE_NATIVE").as_deref(),Ok("1"));
   let root=PathBuf::from(std::env::var_os("NWUI_G18_ROOT").expect("isolated native fixture root"));
-  let roots=Roots{db:root.join("db"),app:root.join("app"),architecture:crate::db_upgrade::engine::architecture().unwrap().into()};private(&roots.app);
+  let roots=Roots{db:root.join("db"),app:root.join("app"),architecture:crate::db_upgrade::paths::architecture().unwrap().into()};private(&roots.app);
+  // Each native row is an isolated process; the test-support store uses this fixture root.
+  unsafe{std::env::set_var("NWUI_TEST_PUBLISHER_ROOT",&roots.app);std::env::set_var("DATA_KEY_FILE",roots.app.join("data_key"));}
   let l=roots.db.join("pgdata");private(&l);private(&l.join("base"));private(&l.join("global"));write(&l.join("PG_VERSION"),b"15\n");write(&l.join("base/owned"),b"synthetic old PG15 entry");write(&l.join("global/pg_control"),b"synthetic cold control");
   let mut locks=StorageLocks::acquire(&roots.db,&roots.app).unwrap();let mut j=Journal::begin(&roots.app,&locks,Branch::Upgrade,Candidate{revision:"0".repeat(40),pins_sha256:"1".repeat(64),migrations_sha256:"2".repeat(64)}).unwrap();j.ensure_app_pool().unwrap();
   let text=format!("Database system identifier: 123456\nDatabase cluster state: shut down\n{}",COMPATIBILITY_FIELDS.iter().map(|f|format!("{f}: 1\n")).collect::<String>());let control=Control::parse(&text,"").unwrap();
@@ -25,7 +27,7 @@ impl Fixture{
   let generation=uuid::Uuid::new_v4().to_string();let pair=crate::db_upgrade::pair::Pair{schema_version:1,pair_id:uuid::Uuid::new_v4().to_string(),mode:"migration".into(),ready:true,major:17,architecture:roots.architecture.clone(),system_identifier:Some(id.clone()),encryption_key_required:true,fresh_step:None};
   write(&roots.app.join("data_key"),"A5".repeat(32));
   let key=KeyRecord{version:1,key_binding:KeyBinding::Verified{pair_id:pair.pair_id.clone()},key_source:StoredKeySource::Canonical,key_sha256:selector::digest("A5".repeat(32).as_bytes())};let pair_bytes=serde_json::to_vec(&pair).unwrap();let key_bytes=serde_json::to_vec(&key).unwrap();
-  let identity=profile::packaged_identity().unwrap();let manifest=GenerationManifest{version:1,generation:generation.clone(),system_identifier:id.clone(),origin:Origin::Auto,profile_id:Some(identity.profile_id),profile_sha256:Some(identity.profile_sha256),db_pair_sha256:selector::digest(&pair_bytes),app_pair_sha256:selector::digest(&pair_bytes),key_binding_sha256:selector::digest(&key_bytes),created_at:"2026-10-30T00:00:00Z".into()};let manifest_bytes=serde_json::to_vec(&manifest).unwrap();
+  let identity=profile::historical_identity().unwrap();let manifest=GenerationManifest{version:1,generation:generation.clone(),system_identifier:id.clone(),origin:Origin::Auto,profile_id:Some(identity.profile_id),profile_sha256:Some(identity.profile_sha256),db_pair_sha256:selector::digest(&pair_bytes),app_pair_sha256:selector::digest(&pair_bytes),key_binding_sha256:selector::digest(&key_bytes),created_at:"2026-10-30T00:00:00Z".into()};let manifest_bytes=serde_json::to_vec(&manifest).unwrap();
   let generation_root=roots.app.join(".nwui-auto/gen").join(&generation);private(&generation_root);for(name,bytes)in[("manifest.json",&manifest_bytes),("db-pair.json",&pair_bytes),("app-pair.json",&pair_bytes),("key-binding.json",&key_bytes)]{write(&generation_root.join(name),bytes);}
   let selected=Selector{version:1,active_major:17,generation:Some(generation.clone()),system_identifier:id,origin:Origin::Auto,backup_id:Some(j.load().attempt_id.clone()),profile_id:manifest.profile_id.clone(),profile_sha256:manifest.profile_sha256.clone(),manifest_sha256:Some(selector::digest(&manifest_bytes)),operator_reason:None};write(&roots.app.join(".nwui-auto/active-v1.json"),serde_json::to_vec(&selected).unwrap());private(&roots.app.join(".nwui"));write(&roots.app.join(".nwui/pair-v1.json"),&pair_bytes);
   j.record(Step::P5Commit,StepState::Intent,Some(json!({"authorityEvent":"selector-intent","generation":generation,"selectorSha256":selector::digest(&serde_json::to_vec(&selected).unwrap())}))).unwrap();j.record(Step::P5Commit,StepState::Done,None).unwrap();
@@ -80,7 +82,7 @@ async fn native_g18_kept_a8_defers_p6_without_activation_failure(){
 impl Fixture{
  async fn apply_saved(&self){
   use crate::publisher::protocol::{Request,Actor,Op,OpResult};
-  let result=test_support::dispatch(&self.db.state,Request{v:1,id:uuid::Uuid::new_v4().to_string(),op:Op::ApplySaved{label:Some("G18 confirmed saved configuration".into()),expected_saved_digest:None},deadline_ms:280000,actor:Actor{user_id:None,label:Some("G18 native fixture".into()),ip:None}}).await;
+  let result=test_support::dispatch(&self.db.state,Request{v:1,id:uuid::Uuid::new_v4().to_string(),op:Op::ApplySaved{label:Some("G18 confirmed saved configuration".into()),expected_saved_digest:None},deadline_ms:280000,actor:Actor{via: None,user_id:None,label:Some("G18 native fixture".into()),ip:None}}).await;
   assert!(matches!(result,OpResult::Ok{apply:Some(ref result),uncertain:false,..}if result.ok),"ApplySaved={}",serde_json::to_string(&result).unwrap());
   assert!(!crate::control::confirmation::uncertain(&self.db.state.config).await);assert!(crate::control::pending::status(&self.db.state).await.unwrap().has_baseline);
  }

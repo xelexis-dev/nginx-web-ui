@@ -1121,6 +1121,7 @@ async fn announce_abandoned(
     )
     .await?;
     let system = Actor {
+        via: None,
         id: None,
         label: Some("system:certificate-cleanup".into()),
         ip: None,
@@ -1191,6 +1192,7 @@ async fn renew_due(state: &AppState) -> anyhow::Result<()> {
         .await?;
     drop(db);
     let actor = Actor {
+        via: None,
         id: None,
         label: Some("system:certificate-renewal".into()),
         ip: None,

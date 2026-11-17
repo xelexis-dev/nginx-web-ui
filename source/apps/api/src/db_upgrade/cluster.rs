@@ -41,41 +41,17 @@ async fn template0(client:&tokio_postgres::Client,enable:bool)->Result<()> {
     client.batch_execute(if enable{"ALTER DATABASE template0 ALLOW_CONNECTIONS true"}else{"ALTER DATABASE template0 ALLOW_CONNECTIONS false"}).await.map_err(|_|failed())
 }
 pub async fn inspect_cluster(socket:&Path,password:&str,key:Option<&SecretBox>,fresh:bool)->Result<Snapshot> {
-    inspect_inner(socket,password,key,fresh,false,false,false).await
-}
-pub async fn inspect_source(socket:&Path,password:&str,key:Option<&SecretBox>)->Result<Snapshot> {
-    inspect_inner(socket,password,key,false,true,false,false).await
-}
-/// Direct P2 inspects template0 separately on the stopped source; this map is incomplete until merged.
-pub(crate) async fn inspect_source_without_template0(socket:&Path,password:&str,key:Option<&SecretBox>)->Result<Snapshot>{
-    inspect_inner(socket,password,key,false,true,false,true).await
+    inspect_inner(socket,password,key,fresh,false,false).await
 }
 /// V2 inspects the application through its profile allowances, never strict NONE.
 /// Keep the complete catalog/roles and all non-application snapshots for independent comparison.
 pub(crate) async fn inspect_non_application(socket:&Path,password:&str,key:Option<&SecretBox>)->Result<Snapshot> {
-    inspect_inner(socket,password,key,false,false,true,false).await
+    inspect_inner(socket,password,key,false,true,false).await
 }
-/// Auto admission collects every collation before the stricter application/catalog checks.
-/// Source callers supply template0 from the stopped single-user backend instead.
-pub(crate) async fn collect_auto_collations(socket:&Path,skip_template0:bool)->Result<Snapshot>{
-    let root=inspect::connect(socket,"postgres","postgres",None).await?;
-    let (databases,roles)=inspect::read_catalog(&root.client).await?;let mut collations=BTreeMap::new();
-    for db in &databases{
-        if db.name=="template0"&&skip_template0{continue;}
-        if db.name=="template0"{template0(&root.client,true).await?;}
-        let result=async{let connection=inspect::connect(socket,&db.name,"postgres",None).await?;inspect::auto_collations(&connection.client).await}.await;
-        if db.name=="template0"{template0(&root.client,false).await?;}collations.insert(db.name.clone(),result?);
-    }
-    Ok(Snapshot{databases,roles,data:BTreeMap::new(),collations,largest_index_bytes:0})
-}
-async fn inspect_inner(socket:&Path,password:&str,key:Option<&SecretBox>,fresh:bool,legacy:bool,skip_application:bool,skip_template0:bool)->Result<Snapshot> {
+async fn inspect_inner(socket:&Path,password:&str,key:Option<&SecretBox>,fresh:bool,skip_application:bool,skip_template0:bool)->Result<Snapshot> {
     let root=inspect::connect(socket,"postgres","postgres",None).await?;
     let (databases,roles)=inspect::read_catalog(&root.client).await?;
     let application=catalog::validate(&databases,&roles,fresh)?;
-    if legacy {
-        let connection=inspect::connect(socket,application.as_deref().ok_or_else(unsupported)?,"postgres",None).await?;
-        inspect::require_legacy_ledger(&connection.client).await?;
-    }
     let invalid:bool=root.client.query_one("SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_prepared_xacts) OR EXISTS(SELECT 1 FROM pg_catalog.pg_replication_slots) OR EXISTS(SELECT 1 FROM ONLY pg_catalog.pg_tablespace WHERE spcname NOT IN('pg_default','pg_global') OR spcowner<>10 OR pg_tablespace_location(oid)<>'') OR EXISTS(SELECT 1 FROM ONLY pg_catalog.pg_db_role_setting WHERE setconfig IS NOT NULL) OR EXISTS(SELECT 1 FROM ONLY pg_catalog.pg_auth_members a JOIN ONLY pg_catalog.pg_authid m ON m.oid=a.member JOIN ONLY pg_catalog.pg_authid r ON r.oid=a.roleid WHERE m.rolname='nginx' OR r.rolname='nginx') OR EXISTS(SELECT 1 FROM ONLY pg_catalog.pg_authid WHERE left(rolname,3)='pg_' AND (oid>=16384 OR rolcanlogin OR rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls))",&[]).await.map_err(|_|failed())?.get(0);
     if invalid{return Err(unsupported());}
     if roles.iter().any(|role|role.name=="nginx") {
@@ -102,14 +78,6 @@ async fn inspect_inner(socket:&Path,password:&str,key:Option<&SecretBox>,fresh:b
         let (snapshot,bytes,used)=result?;largest_index_bytes=largest_index_bytes.max(bytes);data.insert(db.name.clone(),snapshot);collations.insert(db.name.clone(),used);
     }
     Ok(Snapshot{databases,roles,data,collations,largest_index_bytes})
-}
-/// Converted private target only, after V1. Keep the old source database name untouched.
-pub(crate) async fn rename_legacy_application(socket:&Path,baseline:&Snapshot)->Result<bool> {
-    if baseline.application()?!="nginx_control"{return Ok(false);}
-    let connection=inspect::connect(socket,"postgres","postgres",None).await?;
-    connection.client.batch_execute("SET default_transaction_read_only=off").await.map_err(|_|failed())?;
-    connection.client.batch_execute("ALTER DATABASE nginx_control RENAME TO nginx_web_ui").await.map_err(|_|failed())?;
-    Ok(true)
 }
 pub async fn postprocess(socket:&Path,baseline:&Snapshot)->Result<()> {
     let root=inspect::connect(socket,"postgres","postgres",None).await?;

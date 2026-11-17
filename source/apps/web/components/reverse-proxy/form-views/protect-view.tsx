@@ -30,6 +30,9 @@ export interface TlsSectionState {
   setCertificateId: (value: string) => void;
   tlsPort: string;
   setTlsPort: (value: string) => void;
+  http2: boolean;
+  setHttp2: (value: boolean) => void;
+  http2Supported: boolean;
   redirectHttp: boolean;
   setRedirectHttp: (value: boolean) => void;
   sslProtocols: string;
@@ -114,6 +117,22 @@ function TlsFields({
           </Field>
         ) : null}
       </div>
+      <FieldGroup id="server-http2" legend="HTTP/2">
+        <SegmentedControl
+          label="HTTP/2"
+          value={tls.certificateId && tls.http2 ? "on" : "off"}
+          onChange={(value) => tls.setHttp2(value === "on")}
+          disabled={!tls.certificateId || !tls.http2Supported}
+          options={[{ value: "on", label: "사용" }, { value: "off", label: "사용 안 함" }]}
+        />
+        <p className={formStyles.directiveGroupNote}>
+          {!tls.http2Supported
+            ? "이 노드는 HTTP/2 설정을 지원하지 않습니다. 노드를 2.1 이상으로 업데이트하세요."
+            : !tls.certificateId ? "HTTP/2를 사용하려면 인증서를 선택하세요."
+            : "HTTPS 연결에서 HTTP/2를 허용합니다. 저장한 뒤 설정을 적용하세요."}
+        </p>
+        {fieldErrors?.http2 ? <Banner tone="error" role="alert" title={fieldErrors.http2} /> : null}
+      </FieldGroup>
       {tls.certificateId ? (
         <>
           <FieldGroup id="tls-redirect" legend="HTTP→HTTPS 리다이렉트">
@@ -488,7 +507,7 @@ export function ProtectView({
         info="발급 완료된 인증서를 연결하면 이 서버는 HTTPS로 서빙됩니다. 인증서는 Certificates 메뉴에서 발급합니다."
         errorCount={
           Object.keys(fieldErrors ?? {}).filter((key) =>
-            /^(certificateId|tlsPort|tlsOptions)/.test(key),
+            /^(certificateId|tlsPort|tlsOptions|http2)/.test(key),
           ).length
         }
         actions={

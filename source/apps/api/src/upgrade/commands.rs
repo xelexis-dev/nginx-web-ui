@@ -83,6 +83,7 @@ fn render_at(status_path:&Path,app_root:&Path)->Result<String,StepError> {
 }
 fn render(value:Result<UpgradeStatus,StepError>,roots:&crate::db_upgrade::layout::Roots,candidate:&journal::Candidate,now:chrono::DateTime<chrono::Utc>)->Result<String,StepError> {
     let live=match value {Ok(v)=>Some(v),Err(e)if e.code=="status_missing"=>None,Err(e)=>return Err(e)};
+    if let Some(value)=live.as_ref().filter(|v|v.failure.as_ref().is_some_and(|f|f.code=="requires_2_0_first")) {return Ok(status::format_human(value));}
     let running=live.is_some();
     let durable=offline_status(roots,candidate,now)?;
     let mut status=match (durable,live) {
@@ -118,14 +119,16 @@ fn render(value:Result<UpgradeStatus,StepError>,roots:&crate::db_upgrade::layout
 /// Runtime refusal is diagnostic only: never accept PG17 or bypass an existing journal.
 fn unrecorded_status_at(app:&Path,status_path:&Path,descriptor:&Path)->Result<Option<String>,StepError>{
     use super::{Branch,Outcome,Step,KeyBinding};
-    if present(&app.join(".nwui-auto/journal-v1.json"))?{return Ok(None);}
     let value=match status::read_at(status_path){Ok(v)=>v,Err(e)if e.code=="status_missing"=>return Ok(None),Err(e)=>return Err(e)};
+    let live_legacy=value.outcome==Outcome::RefusedPreflight && value.step.id==Step::P0;
+    if !live_legacy && present(&app.join(".nwui-auto/journal-v1.json"))?{return Ok(None);}
     let refused=matches!((value.branch,value.outcome),(Branch::Upgrade,Outcome::RefusedPreflight)|(Branch::Fresh,Outcome::RefusedFresh)|(Branch::Ready,Outcome::RefusedPrivilege));
     if !refused || value.step.id!=Step::P0 || value.failure.is_none() || value.backup.is_some() || !value.discarded.is_empty() || !value.locations.is_empty() || value.cleanup_pending || value.retry.next_eligible_at.is_some() || value.retry.reason.is_some(){return Ok(None);}
     let selection=super::types::read_selection_at(descriptor)?;
     if selection.epoch!=1 || selection.outcome!=value.outcome || selection.branch!=value.branch || selection.pgdata!=Path::new(crate::db_upgrade::paths::PGDATA) || selection.backup_id.is_some() || selection.schema_profile!="none" || !matches!(selection.key_binding,KeyBinding::Unverified){return Err(mismatch());}
     // Recheck absence after reading the live projection; it never substitutes for recovery authority.
-    if present(&app.join(".nwui-auto/journal-v1.json"))?{return Ok(None);}
+    if !live_legacy && present(&app.join(".nwui-auto/journal-v1.json"))?{return Ok(None);}
+    if live_legacy{return Ok(Some(status::format_human(&value)));}
     Ok(Some(status::format_human(&value).lines().map(|line|line.chars().filter(|c|!c.is_control()).collect::<String>()).collect::<Vec<_>>().join("\n")+"\n복구 기록: 아직 없음\n"))
 }
 pub(crate) async fn auto_status(args:&[String])->i32 {
@@ -301,14 +304,14 @@ mod tests {
         assert!(locks.holds_a() && locks.holds_d());
     }
     #[test]
-    fn g22_offline_restored_action_uses_same_candidate_and_backoff_admission() {
+    fn g22_offline_restored_action_requires_20_for_same_or_changed_candidate() {
         let t=tempfile::tempdir().unwrap();let roots=crate::db_upgrade::layout::Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:"arm64".into()};
         for p in [&roots.db,&roots.app] {fs::create_dir(p).unwrap();fs::set_permissions(p,fs::Permissions::from_mode(0o700)).unwrap();}
         let locks=StorageLocks::acquire(&roots.db,&roots.app).unwrap();let mut j=Journal::begin(&roots.app,&locks,Branch::Upgrade,Candidate{revision:"0".repeat(40),pins_sha256:"1".repeat(64),migrations_sha256:"2".repeat(64)}).unwrap();j.ensure_app_pool().unwrap();
         let now=chrono::Utc::now();for _ in 0..2 {j.record_retry_failure(Step::P3Convert,"interrupted",now).unwrap();}j.set_outcome(super::super::Outcome::Restored).unwrap();
         let before=fs::read(roots.app.join(".nwui-auto/journal-v1.json")).unwrap();
-        let value=offline_status(&roots,&j.load().candidate,now).unwrap().unwrap();assert!(value.retry.next_eligible_at.is_some());assert!(value.retry.reason.is_none());assert!(value.failure.as_ref().unwrap().next_action.contains("표시된 다음 재시도 가능 시각 이후"));assert!(value.backup.is_none());
-        let mut next=j.load().candidate.clone();next.revision="f".repeat(40);let value=offline_status(&roots,&next,now).unwrap().unwrap();assert!(value.retry.next_eligible_at.is_none());assert!(value.retry.reason.is_none());assert!(value.failure.unwrap().next_action.starts_with("원인을 해결한 뒤 컨테이너를 다시 시작하면 자동으로 다시 시도합니다."));
+        let value=offline_status(&roots,&j.load().candidate,now).unwrap().unwrap();assert!(value.retry.next_eligible_at.is_none());assert!(value.retry.reason.is_none());assert!(value.failure.as_ref().unwrap().next_action.contains("2.0.x 최신(2.0.3 이상)"));assert!(value.backup.is_none());
+        let mut next=j.load().candidate.clone();next.revision="f".repeat(40);let value=offline_status(&roots,&next,now).unwrap().unwrap();assert!(value.retry.next_eligible_at.is_none());assert!(value.retry.reason.is_none());assert!(value.failure.unwrap().next_action.contains("2.0.x 최신(2.0.3 이상)"));
         assert_eq!(fs::read(roots.app.join(".nwui-auto/journal-v1.json")).unwrap(),before);
     }
     #[test]
@@ -316,5 +319,25 @@ mod tests {
         let before=sample();let original=serde_json::to_value(&before).unwrap();let mut logged=None;
         publish_with(&before,|_|Err(StepError {code:"insufficient_space",message:"injected ENOSPC",detail:None}),|error|logged=Some(error.code));
         assert_eq!(logged,Some("insufficient_space"));assert_eq!(serde_json::to_value(before).unwrap(),original);
+    }
+}
+
+#[cfg(test)]
+mod legacy_refusal_tests {
+    use super::*;
+    #[test]
+    fn live_legacy_refusal_overrides_an_existing_durable_journal_without_writes(){
+        use std::{fs,os::unix::fs::PermissionsExt};
+        let t=tempfile::tempdir().unwrap();let db=t.path().join("db");let app=t.path().join("app");
+        for p in [&db,&app]{fs::create_dir(p).unwrap();fs::set_permissions(p,fs::Permissions::from_mode(0o700)).unwrap();}
+        let locks=crate::upgrade::StorageLocks::acquire(&db,&app).unwrap();
+        let candidate=journal::Candidate{revision:"a".repeat(40),pins_sha256:"b".repeat(64),migrations_sha256:"c".repeat(64)};
+        let _j=crate::upgrade::Journal::begin(&app,&locks,crate::upgrade::Branch::Upgrade,candidate).unwrap();
+        let before=fs::read(app.join(".nwui-auto/journal-v1.json")).unwrap();let descriptor=t.path().join("selection.json");let status=t.path().join("status.json");
+        crate::upgrade::refusal::publish_unrecorded_at(&crate::upgrade::legacy::required(),&db,&descriptor,&status,||Ok(())).unwrap();
+        let text=unrecorded_status_at(&app,&status,&descriptor).unwrap().unwrap();
+        assert!(text.contains("requires_2_0_first"));assert!(text.contains("2.0.x 최신(2.0.3 이상)"));assert!(text.contains("변경하지 않았습니다"));
+        assert_eq!(fs::read(app.join(".nwui-auto/journal-v1.json")).unwrap(),before);
+        assert_eq!(crate::upgrade::status::read_at(&status).unwrap().outcome,crate::upgrade::Outcome::RefusedPreflight);
     }
 }

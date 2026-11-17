@@ -108,9 +108,9 @@ pub(crate) fn write_selection_at(path: &std::path::Path, sel: &StorageSelection)
 pub struct StorageLocks { lock_a: OwnedFd, lock_d: Option<OwnedFd> }
 impl StorageLocks {
     pub fn acquire(db: &std::path::Path, app: &std::path::Path) -> Result<Self, StepError> {
-        use crate::db_upgrade::{engine, layout};
+        use crate::db_upgrade::{paths, layout};
         let map = |error: crate::db_upgrade::error::Error| StepError { code: error.code, message: error.message, detail: error.detail.map(str::to_owned) };
-        let roots = layout::Roots { db: db.into(), app: app.into(), architecture: engine::architecture().map_err(map)?.into() };
+        let roots = layout::Roots { db: db.into(), app: app.into(), architecture: paths::architecture().map_err(map)?.into() };
         layout::validate_roots(&roots).map_err(map)?;
         let held = layout::lock_roots(&roots).map_err(map)?;
         layout::validate_roots(&roots).map_err(map)?;
@@ -279,7 +279,7 @@ mod lock_tests {
     fn fixture() -> (tempfile::TempDir, layout::Roots, PathBuf) {
         let t = tempfile::tempdir().unwrap();
         let roots = layout::Roots { db:t.path().join("db"), app:t.path().join("app"),
-            architecture:crate::db_upgrade::engine::architecture().unwrap().into() };
+            architecture:crate::db_upgrade::paths::architecture().unwrap().into() };
         let env = t.path().join("env");
         for p in [&roots.db, &roots.app, &env] {
             fs::create_dir(p).unwrap(); fs::set_permissions(p, fs::Permissions::from_mode(0o700)).unwrap();
@@ -419,7 +419,7 @@ mod selection_tests {
 #[cfg(test)]
 mod key_override_tests {
     use super::*;
-    use crate::{crypto::SecretBox, db_upgrade::{files, fresh, key_binding, layout, migration, pair::Pair}};
+    use crate::{crypto::SecretBox, db_upgrade::{files, fresh, key_binding, layout, pair::Pair}};
     use std::{fs, os::unix::fs::PermissionsExt};
     #[test]
     fn w1_empty_raw_key_override_refuses_before_storage_mutation() {
@@ -430,7 +430,6 @@ mod key_override_tests {
             assert_eq!(crate::nonroot::startup_value("DATA_KEY_FILE").as_deref(),Some(""));
             assert_eq!(crate::db_upgrade::paths::startup_data_key_file(&roots.app).unwrap_err().code,"key_path_invalid");
             assert_eq!(fresh::secrets(&roots,&fresh::Inputs::default(),&root.join("env")).unwrap_err().code,"key_path_invalid");
-            assert_eq!(migration::key(&roots.app).err().unwrap().code,"key_path_invalid");
             for path in [&roots.db,&roots.app,&root.join("env")] {assert_eq!(fs::read_dir(path).unwrap().count(),0);}
             return;
         }
@@ -446,7 +445,7 @@ mod key_override_tests {
         const CHILD:&str="NWUI_W1_KEY_OVERRIDE_FIXTURE";
         if let Some(root)=std::env::var_os(CHILD) {
             let root=PathBuf::from(root);
-            let roots=layout::Roots { db:root.join("db"), app:root.join("app"), architecture:crate::db_upgrade::engine::architecture().unwrap().into() };
+            let roots=layout::Roots { db:root.join("db"), app:root.join("app"), architecture:crate::db_upgrade::paths::architecture().unwrap().into() };
             fresh::secrets(&roots,&fresh::Inputs::default(),&root.join("env")).unwrap();
             fs::create_dir_all(roots.db.join("17/data/global")).unwrap();
             fs::write(roots.db.join("17/data/PG_VERSION"),"17").unwrap();
@@ -454,7 +453,7 @@ mod key_override_tests {
             let mut pair:Pair=files::read_json(&roots.app.join(".nwui/pair-v1.json")).unwrap();
             pair.ready=true;pair.fresh_step=None;pair.system_identifier=Some("123456".into());
             for p in [&roots.db,&roots.app] { files::atomic_json(&p.join(".nwui/pair-v1.json"),&pair).unwrap(); }
-            let key=migration::key(&roots.app).unwrap().expect("the configured key must not be treated as absent");
+            let key=SecretBox::load_existing(&crate::db_upgrade::paths::startup_data_key_file(&roots.app).unwrap()).unwrap();
             key_binding::mark_key_required(&roots,&|_|Ok("123456".into()),&key).unwrap();
             let mut interrupted:Pair=files::read_json(&roots.app.join(".nwui/pair-v1.json")).unwrap();
             interrupted.encryption_key_required=false;
