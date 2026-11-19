@@ -177,7 +177,7 @@ function AdminPage({ kind }: { kind: keyof typeof pages }) {
         <UserDetailView
           user={user}
           isSelf
-          detailActions={<UserDetailActions id={user.id} isSelf enabled />}
+          detailActions={<UserDetailActions targetName={user.email} id={user.id} isSelf enabled />}
         />
       );
     case "pending":
@@ -239,7 +239,7 @@ function AdminPage({ kind }: { kind: keyof typeof pages }) {
       return (
         <ProviderDetailView
           provider={provider}
-          deleteForm={<ProviderDetailActions id={provider.id} />}
+          deleteForm={<ProviderDetailActions id={provider.id} targetName={provider.name} />}
         />
       );
     case "secrets":
@@ -281,6 +281,7 @@ function AdminPage({ kind }: { kind: keyof typeof pages }) {
           events={webhook.events}
           detailActions={
             <WebhookDetailActions
+              targetName={webhook.name}
               id={webhook.id}
               format={webhook.format}
               bodyTemplate={webhook.bodyTemplate}

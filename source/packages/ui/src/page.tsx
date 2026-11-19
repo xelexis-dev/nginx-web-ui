@@ -10,6 +10,7 @@ export interface PageHeaderProps {
   title: ReactNode;
   status?: ReactNode;
   description?: ReactNode;
+  descriptionVariant?: "text" | "meta";
   info?: ReactNode;
   /** Buttons or button-styled links; they wrap under the title on narrow screens. */
   actions?: ReactNode;
@@ -20,6 +21,7 @@ export function PageHeader({
   title,
   status,
   description,
+  descriptionVariant = "text",
   info,
   actions,
 }: PageHeaderProps) {
@@ -33,7 +35,9 @@ export function PageHeader({
           {info ? <InfoTip label="페이지 설명">{info}</InfoTip> : null}
         </div>
         {description ? (
-          <div className={styles.description}>{description}</div>
+          <div className={styles.description} data-layout={descriptionVariant}>
+            {description}
+          </div>
         ) : null}
       </div>
       {actions ? <div className={styles.actions}>{actions}</div> : null}

@@ -55,6 +55,7 @@ export function Card({
     <section
       id={id}
       className={styles.card}
+      data-card=""
       aria-labelledby={`${id}-heading`}
       aria-busy={loading || undefined}
       data-error={errorCount > 0 ? "" : undefined}

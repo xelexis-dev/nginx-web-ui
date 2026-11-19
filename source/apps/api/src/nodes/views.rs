@@ -148,6 +148,10 @@ pub async fn view(
         read_runtime_dns(state, &access.target, plan.runtime_dns),
     );
     let results = results?;
+    let observed_version = results.iter().rev().flatten().find_map(|result| match result {
+        super::client::NodeResult::Success { node_version: Some(version), .. } if !version.is_empty() => Some(version.clone()),
+        _ => None,
+    });
     let mut data = serde_json::Map::new();
     let mut single = Value::Null;
     for (request, result) in plan.requests.iter().zip(results) {
@@ -176,6 +180,13 @@ pub async fn view(
                 return Ok(Some(error));
             }
         }
+    }
+    if let Some(version) = observed_version {
+        // A page response carries version/status evidence, never pairing authority.
+        let observation = super::client::NodeResult::Success { ok: true, value: Value::Null, node_version: Some(version.clone()) };
+        // Metadata refresh must not fail an otherwise successful node read.
+        let _ = service::record_probe(state, node_id, &observation).await;
+        access.node.last_version = Some(version);
     }
     let mut result = json!({"ok":true,"node":access.node,"effectiveRole":access.effective_role,"data":if plan.aggregate{Value::Object(data)}else{single},"canManage":can_write,"canWrite":session.can(Action::ConfigWrite)&&crate::auth::rbac::can(access.node.token_role,Action::ConfigWrite),"canApply":session.can(Action::NginxReload)&&crate::auth::rbac::can(access.node.token_role,Action::NginxReload)});
     if let Some(status) = runtime_dns {

@@ -5,6 +5,7 @@
      inside the scroll box instead of widening the page when the table scrolls. */
   position: relative;
   margin-inline: calc(-1 * var(--table-bleed, var(--cell-x)));
+  padding-inline: var(--table-bleed, var(--cell-x));
   overflow-x: auto;
   border-radius: 0 0 var(--table-corner-radius, 0) var(--table-corner-radius, 0);
   overscroll-behavior-x: contain;
@@ -164,6 +165,55 @@
   border-radius: 2px;
 }
 
+/* Row fills and the current mark share the bleed; rules stay at the content edges. */
+.table tbody tr:hover {
+  --table-row-background: var(--bg-hover);
+}
+.table tbody tr[data-state="pending"] {
+  --table-row-background: var(--bg-selected);
+}
+.table tbody tr[data-current] {
+  --table-current-mark: var(--accent);
+}
+@media (min-width: 769px) {
+  .table tbody td:first-child,
+  .table tbody td:last-child {
+    position: relative;
+  }
+  .table tbody tr:is(:hover, [data-state="pending"], [data-current]) td:first-child:not([colspan])::before,
+  .table tbody tr:is(:hover, [data-state="pending"], [data-current]) td:last-child:not([colspan])::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: var(--table-bleed, var(--cell-x));
+    background: var(--table-row-background, transparent);
+    pointer-events: none;
+  }
+  .table tbody tr td:first-child::before {
+    box-shadow: inset var(--bw-2) 0 var(--table-current-mark, transparent);
+    right: 100%;
+  }
+  .table tbody tr td:last-child::after {
+    left: 100%;
+  }
+}
+@media (max-width: 768px) {
+  .table tbody tr {
+    position: relative;
+    isolation: isolate;
+  }
+  .table tbody tr:is(:hover, [data-state="pending"], [data-current]):not(:has(> td[colspan]))::before {
+    content: "";
+    position: absolute;
+    inset: 0 calc(-1 * var(--table-bleed, var(--cell-x)));
+    z-index: -1;
+    box-shadow: inset var(--bw-2) 0 var(--table-current-mark, transparent);
+    background: var(--table-row-background, transparent);
+    pointer-events: none;
+  }
+}
+
 .table tbody tr:hover td {
   background: var(--bg-hover);
 }
@@ -297,19 +347,10 @@
   }
 }
 
-.table tbody tr[data-current] > td:first-child {
-  box-shadow: inset 2px 0 var(--accent);
-}
 @media (max-width: 768px) {
   .table tbody tr {
     border-top: 0;
     border-bottom: var(--bw) solid var(--line);
-  }
-  .table tbody tr[data-current] {
-    box-shadow: inset 2px 0 var(--accent);
-  }
-  .table tbody tr[data-current] > td:first-child {
-    box-shadow: none;
   }
 }
 
@@ -324,11 +365,6 @@
     /* An inset rule preserves the 44px row with 20px text and 12px vertical padding. */
     box-shadow: inset 0 calc(-1 * var(--bw)) var(--table-row-rule, var(--line));
   }
-  .table[data-density="comfortable"] tr[data-current] > td:first-child {
-    box-shadow:
-      inset var(--bw-2) 0 var(--accent),
-      inset 0 calc(-1 * var(--bw)) var(--table-row-rule, var(--line));
-  }
 }
 
 @media (min-width: 769px) {
@@ -337,11 +373,6 @@
   }
   .table td:has(:is(button, input, select, [data-size], :global(.nwui-btn))) {
     padding-block: calc((var(--table-row-size) - var(--size-ctl-sm)) / 2);
-  }
-  .table tr[data-current] > td:first-child {
-    box-shadow:
-      inset var(--bw-2) 0 var(--accent),
-      inset 0 calc(-1 * var(--bw)) var(--table-row-rule, var(--line));
   }
 }
 .table tbody tr:has(> td[colspan]):hover td {
@@ -405,6 +436,11 @@
     color: var(--text-2);
     font-size: var(--fs-xs);
     font-weight: 400;
+    word-break: keep-all;
+    overflow-wrap: normal;
+  }
+  .table[data-narrow="stacked"] td > [data-tag] {
+    justify-self: start;
   }
   .table[data-narrow="stacked"] td:not([data-label])::before {
     content: none;
@@ -419,26 +455,26 @@
   .table td[data-numeric] .cellContent { justify-content: flex-end; }
 }
 
-/* Flush boxed surfaces own their edge padding; ordinary tables keep their bleed. */
+/* Flush surfaces retain their padding; ordinary text follows the content edges. */
 @media (min-width: 769px) {
   .table :is(th, td):first-child {
-    padding-left: var(--table-edge-pad, var(--cell-x));
+    padding-left: var(--table-edge-pad, 0px);
   }
   .table :is(th, td):last-child {
-    padding-right: var(--table-edge-pad, var(--cell-x));
+    padding-right: var(--table-edge-pad, 0px);
   }
 }
 @media (max-width: 768px) {
   .table tbody tr {
-    padding-inline: var(--table-edge-pad, var(--cell-x));
+    padding-inline: var(--table-edge-pad, 0px);
   }
 }
 
 .table tbody tr:last-child {
-  --table-row-rule: var(--table-last-line, var(--line));
+  --table-row-rule: var(--table-last-line, transparent);
 }
 @media (max-width: 768px) {
   .table tbody tr:last-child {
-    border-bottom-color: var(--table-last-line, var(--line));
+    border-bottom-color: var(--table-last-line, transparent);
   }
 }

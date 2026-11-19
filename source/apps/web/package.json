@@ -2,7 +2,7 @@
   "name": "web",
   "license": "MIT",
   "private": true,
-  "version": "2.1.1",
+  "version": "2.1.2",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -26,7 +26,7 @@
     "@repo/contracts": "workspace:*",
     "@repo/presentation": "workspace:*",
     "@repo/ui": "workspace:*",
-    "next": "16.4.3",
+    "next": "16.4.5",
     "qrcode": "^1.5.4",
     "react": "^19",
     "react-dom": "^19"

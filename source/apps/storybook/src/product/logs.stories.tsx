@@ -47,6 +47,7 @@ function LogsPreview({ nodeName, offline = false, longTable = false }: { nodeNam
           );
         }, 0);
       }
+      addEventListener() {}
       close() {
         clearTimeout(this.timer);
       }

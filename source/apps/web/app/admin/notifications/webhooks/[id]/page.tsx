@@ -29,6 +29,7 @@ export default async function WebhookDetailPage({
       detailActions={
         <WebhookDetailActions
           id={target.id}
+          targetName={target.name}
           format={target.format as WebhookFormat}
           bodyTemplate={target.bodyTemplate}
         />

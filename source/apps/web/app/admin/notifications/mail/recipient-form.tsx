@@ -7,7 +7,7 @@ import { FormErrors } from "@/components/form-errors";
 import { useActionState, useState } from "react";
 import {
   Banner,
-  SegmentedControl,
+  Switch,
   TextInput,
   Button,
   buttonClassName,
@@ -35,32 +35,6 @@ export interface MailRecipientFormProps {
   /** SMTP 가 준비돼 있는가 — 안 되어 있으면 저장은 되지만 메일이 나가지 않는다. */
   smtpReady: boolean;
   smtpProblem?: string | null;
-}
-
-function Toggle({
-  value,
-  onChange,
-  ariaLabel,
-  offLabel,
-  onLabel,
-}: {
-  value: boolean;
-  onChange: (v: boolean) => void;
-  ariaLabel: string;
-  offLabel: string;
-  onLabel: string;
-}) {
-  return (
-    <SegmentedControl
-      label={ariaLabel}
-      value={value}
-      onChange={onChange}
-      options={[
-        { value: false, label: offLabel },
-        { value: true, label: onLabel },
-      ]}
-    />
-  );
 }
 
 /** 저장과 테스트가 각자의 배너를 갖는다 — 하나로 합치면 앞선 성공이 뒤의 실패를 가린다. */
@@ -153,12 +127,11 @@ export function MailRecipientForm({
           title={<>이 주소로 보내기</>}
           description={<>꺼두면 설정은 남기고 보내지 않습니다.</>}
           actions={
-            <Toggle
-              value={enabled}
-              onChange={setEnabled}
-              ariaLabel="사용 여부"
-              offLabel="사용 안 함"
-              onLabel="사용"
+            <Switch
+              checked={enabled}
+              onCheckedChange={setEnabled}
+              label="사용 여부"
+              visibleLabel="사용"
             />
           }
           errorCount={Object.values(fieldErrors ?? {}).filter(Boolean).length}
@@ -181,7 +154,7 @@ export function MailRecipientForm({
                     {smtpProblem ? ` — ${smtpProblem}` : ""}
                   </>
                 }
-                role="status"
+                role="alert"
               >
                 <p className={styles.hint}>
                   사이트 설정 → SMTP 설정을 마치면 그대로 동작합니다.
@@ -229,12 +202,8 @@ export function MailRecipientForm({
                     {group.events.map((event) => (
                       <Checkbox
                         key={event.type}
-                        className={styles.eventItem}
-                        label={
-                          <span className={styles.eventLabel}>
-                            {group.label} · {event.label}
-                          </span>
-                        }
+                        tile
+                        label={`${group.label} · ${event.label}`}
                         description={event.hint || undefined}
                         checked={events.includes(event.type)}
                         onChange={(e) =>

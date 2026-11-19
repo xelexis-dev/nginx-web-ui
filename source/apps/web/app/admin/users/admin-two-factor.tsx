@@ -6,6 +6,7 @@ import {
   Banner,
   Button,
   Facts,
+  EmptyState,
   Field,
   Modal,
   StatusBadge,
@@ -16,6 +17,7 @@ import {
 import type { BasicFormState } from "@repo/contracts";
 import type { AdminUserView } from "@/lib/admin-api";
 import { useApiAction } from "@/lib/use-api-action";
+import styles from "./users.module.css";
 
 export function AdminUserResultNotice({ message }: { message: string }) {
   const notice = useRef<HTMLDivElement>(null);
@@ -79,7 +81,7 @@ export function AdminTwoFactor({
           비밀번호를 사용하는 관리자에게 요청하세요.
         </Banner>
       ) : !user.totpEnabled ? (
-        <p>설정된 2FA가 없어 초기화할 항목이 없습니다.</p>
+        <div className={styles.twoFactorEmpty}><EmptyState description="설정된 2FA가 없어 초기화할 항목이 없습니다." /></div>
       ) : null}
       {open && user.totpEnabled && !isSelf && canReset ? (
         <ResetDialog

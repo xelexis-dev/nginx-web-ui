@@ -59,6 +59,7 @@
   white-space: nowrap;
 }
 .pendingLink {
+  font-size: var(--fs-sm);
   color: var(--warning-text);
 }
 .headerDivider {

@@ -88,6 +88,8 @@ export const NodeStreamEdit: Story = { args: { node: true, kind: "stream", mode:
 async function failDelete({ canvasElement }: { canvasElement: HTMLElement }) {
   const canvas = within(canvasElement);
   await userEvent.click(canvas.getByRole("button", { name: "삭제" }));
+  const dialog = await canvas.findByRole("dialog");
+  await userEvent.click(within(dialog).getByRole("button", { name: "삭제" }));
   await waitFor(() => expect(canvas.getByText(FAILURE)).toBeVisible());
 }
 export const UpstreamFailure: Story = { args: { kind: "upstream", mode: "detail", failure: true }, play: failDelete };

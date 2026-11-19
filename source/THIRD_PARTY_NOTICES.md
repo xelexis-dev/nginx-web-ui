@@ -10,18 +10,18 @@ are available from https://snapshot.debian.org/ at the source versions listed be
 
 ## Input SHA-256
 
-- apps/api/Cargo.lock: 606401bb36ddc2714ec2a8be4a23ca52c5f06e228df2563343bccea67f280c40
+- apps/api/Cargo.lock: b3aa3ed520abb767cd1367fc5c7875d77b09b9c318ec4e6e47345d5f48a58304
 - docker/licenses/spdx-lock.json: bb7bc66d0b482f11e0d66ea76f3967ffc47995c48803536d70c2f2e23bfb28ed
 - docker/pins/inventory/api-builder-amd64.tsv: 8665bd26ce32eda3cd9090c114b36571409f54a50c1d42d21a397bdc86a69892
 - docker/pins/inventory/api-builder-arm64.tsv: eb6903409a7bec9666b1b939c7989383245a42bfbdc8c5ef74660fa6d8eadcbc
 - docker/pins/inventory/keyring-amd64.tsv: 1b2241077aae1e976c9571c93b6183baf890c195d4ee6f888cdec3402cd71ab1
 - docker/pins/inventory/keyring-arm64.tsv: 2ff60de001f6b2f4c25bfa0b12269a626e893af3c8257ade30a785c1764822bd
-- docker/pins/inventory/runtime-amd64.tsv: 76afdd5bb2ffb9c2964dffc66bb327f02d59b82a8db9c44d2978cbf4402f360b
-- docker/pins/inventory/runtime-arm64.tsv: c82fe64ed02c4bf8c52076732968e586d5e93812f77ec1853011fc4a90405b0f
+- docker/pins/inventory/runtime-amd64.tsv: a212b79b6c2d01d44242a04b6a1cf2e09918c2ae495ee737cb98450574dc177e
+- docker/pins/inventory/runtime-arm64.tsv: 09c450600575ea1fc8571bb08ebd16bab48c29b22133e9a3ec9c39867fe83c47
 - docker/turbo/package-lock.json: 90541d8aac02c8edc1506278f64156743e6bc4f4278be7bb0ecb28a7b3e82254
 - package.json: 91af8c58d9fa0674485207703d6ddc2e31aa5b95192e5295da22f1ad9cfe7731
-- yarn.lock: 74210442b1d67c120df33431ae3a8928cdee817206bd9d044b18ae8d7ef527ed
-- Dockerfile:ARG: 1018d95d958111b9851002da1777432d5c53199209abd491a45a5bc4a8d9ca59
+- yarn.lock: 52e904d286c71d11a978d7c41d712fd594824517e16cda67dcf0ed7fd7da113d
+- Dockerfile:ARG: f4d74197bc5fd3bbf3c2767c43c9f8e9a3ee5468844558a7d4f707f9ba530823
 
 ## Text 000cbb5bea6f21829c8f0d9e1fe87410bd5ef0453412ffc017845982a3e19824
 
@@ -1037,16 +1037,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 <!-- /nwui-text:03cc9a630489a2544b799548a0e8b134f382fe09fa06dc22b339091b28b8f4a8 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/zod-validation-error/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/zod-validation-error/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/zod-validation-error/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/zod-validation-error/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/zod-validation-error/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/zod-validation-error/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/zod-validation-error/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/zod-validation-error/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/zod-validation-error/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/zod-validation-error/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/zod-validation-error/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/zod-validation-error/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/zod-validation-error/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/zod-validation-error/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/zod-validation-error/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/zod-validation-error/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/zod-validation-error/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/zod-validation-error/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/zod-validation-error/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/zod-validation-error/LICENSE
 
 ## Text 03e920480a7017592f65ee8a248a6df8537bd086d77703ecf0ba52d8dc1842c6
 
@@ -1198,16 +1198,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:04512a63dce4d2d506ad612dc0bd7681ccf6e3655f7b6eaef7dfac8323d1ec0b -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/commander/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/commander/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/commander/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/commander/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/commander/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/commander/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/commander/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/commander/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/commander/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/commander/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/commander/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/commander/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/commander/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/commander/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/commander/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/commander/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/commander/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/commander/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/commander/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/commander/LICENSE
 
 ## Text 04575fc5bfae19a9b63100f8691f901a2e15a399011ac02db435a9ef27295551
 
@@ -4821,16 +4821,16 @@ THE SOFTWARE.
 <!-- /nwui-text:06bafa45fdad2579ba0e43b0c9b2c6290287c99c4203c300254a462b38a307f6 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/buffer/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/buffer/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/buffer/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/buffer/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/buffer/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/buffer/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/buffer/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/buffer/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/buffer/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/buffer/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/buffer/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/buffer/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/buffer/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/buffer/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/buffer/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/buffer/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/buffer/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/buffer/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/buffer/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/buffer/LICENSE
 
 ## Text 06f21c5eb72f67a6be290f1e45fdbdc6684cb656a37cea8625451d7f22258599
 
@@ -9912,16 +9912,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 <!-- /nwui-text:0ead0447803ff6309295e79c4068d21917d476e856e7e368c44885d9d3af17dd -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/node-html-parser/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/node-html-parser/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/node-html-parser/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/node-html-parser/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/node-html-parser/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/node-html-parser/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/node-html-parser/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/node-html-parser/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/node-html-parser/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/node-html-parser/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/node-html-parser/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/node-html-parser/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/node-html-parser/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/node-html-parser/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/node-html-parser/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/node-html-parser/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/node-html-parser/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/node-html-parser/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/node-html-parser/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/node-html-parser/LICENSE
 
 ## Text 0ef4860fbb55a230183330dbdd133393959145c7c363ef15aa4e1ffa131d2cda
 
@@ -10036,16 +10036,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 <!-- /nwui-text:0f644bc01d85e4b1958bdfe5a851704bd886404c78188d4d6fba43dc8293bc91 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/superstruct/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/superstruct/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/superstruct/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/superstruct/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/superstruct/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/superstruct/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/superstruct/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/superstruct/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/superstruct/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/superstruct/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/superstruct/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/superstruct/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/superstruct/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/superstruct/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/superstruct/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/superstruct/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/superstruct/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/superstruct/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/superstruct/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/superstruct/LICENSE
 
 ## Text 0f6c33180140c67ff9b4940963e208c3fa39ca8cda7ec1a9ac0e231dfe3859b8
 
@@ -11457,26 +11457,26 @@ Applies to:
 - npm:@babel/template=7.29.7 — package/LICENSE
 - npm:@babel/traverse=7.29.8 — package/LICENSE
 - npm:@babel/types=7.29.8 — package/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/@babel/runtime/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/babel/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/@babel/runtime/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/babel/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/@babel/runtime/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/babel/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/@babel/runtime/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/babel/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/@babel/runtime/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/babel/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/@babel/runtime/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/babel/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/@babel/runtime/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/babel/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/@babel/runtime/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/babel/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/@babel/runtime/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/babel/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/@babel/runtime/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/babel/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/@babel/runtime/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/babel/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/@babel/runtime/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/babel/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/@babel/runtime/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/babel/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/@babel/runtime/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/babel/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/@babel/runtime/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/babel/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/@babel/runtime/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/babel/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/@babel/runtime/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/babel/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/@babel/runtime/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/babel/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/@babel/runtime/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/babel/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/@babel/runtime/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/babel/LICENSE
 
 ## Text 117eaaffe3d677a487cd131fe29bab88a1eed98252138a700f292352cfc8d822
 
@@ -17393,26 +17393,26 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
 
 Applies to:
 - component:RUST_IMAGE=rust:1.98.1-slim-trixie@sha256:4cd829461bd5c4d511c32e269da9cb8929223b666519d8004e35fc8d1d771ab7 — usr/local/rustup/toolchains/1.98.1-aarch64-unknown-linux-gnu/share/doc/rust/COPYRIGHT.html
-- npm:@next/env=16.4.3 — package/dist/compiled/@vercel/og/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/@vercel/og/satori/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/@vercel/og/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/@vercel/og/satori/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/@vercel/og/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/@vercel/og/satori/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/@vercel/og/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/@vercel/og/satori/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/@vercel/og/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/@vercel/og/satori/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/@vercel/og/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/@vercel/og/satori/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/@vercel/og/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/@vercel/og/satori/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/@vercel/og/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/@vercel/og/satori/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/@vercel/og/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/@vercel/og/satori/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/@vercel/og/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/@vercel/og/satori/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/@vercel/og/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/@vercel/og/satori/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/@vercel/og/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/@vercel/og/satori/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/@vercel/og/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/@vercel/og/satori/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/@vercel/og/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/@vercel/og/satori/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/@vercel/og/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/@vercel/og/satori/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/@vercel/og/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/@vercel/og/satori/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/@vercel/og/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/@vercel/og/satori/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/@vercel/og/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/@vercel/og/satori/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/@vercel/og/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/@vercel/og/satori/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/@vercel/og/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/@vercel/og/satori/LICENSE
 
 ## Text 1f793f273c4ded7ec1f1e5ceca689de058d0a26561ba1d972671ad7743de9266
 
@@ -18210,16 +18210,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:20967ab4adf3bb93d8190c19b4f5b37433480965a261092a642c9234b63927cc -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/shell-quote/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/shell-quote/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/shell-quote/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/shell-quote/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/shell-quote/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/shell-quote/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/shell-quote/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/shell-quote/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/shell-quote/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/shell-quote/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/shell-quote/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/shell-quote/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/shell-quote/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/shell-quote/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/shell-quote/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/shell-quote/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/shell-quote/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/shell-quote/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/shell-quote/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/shell-quote/LICENSE
 
 ## Text 20989de0e74c2d07a3f2c071f52db489f07e306d83aa561bb1a2bf542fe92e1e
 
@@ -18483,46 +18483,6 @@ SOFTWARE.
 Applies to:
 - npm:assertion-error=2.0.1 — package/LICENSE
 
-## Text 2144eb6894cb440fde6b2b3aaae3b617c8f1dc9bb19813079dcf62ec6c517042
-
-<!-- nwui-text:2144eb6894cb440fde6b2b3aaae3b617c8f1dc9bb19813079dcf62ec6c517042 -->
-```text
-The MIT License (MIT)
- 
-Copyright (c) 2015 Auth0, Inc. <support@auth0.com> (http://auth0.com)
- 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
- 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
- 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-<!-- /nwui-text:2144eb6894cb440fde6b2b3aaae3b617c8f1dc9bb19813079dcf62ec6c517042 -->
-
-Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/jsonwebtoken/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/jsonwebtoken/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/jsonwebtoken/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/jsonwebtoken/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/jsonwebtoken/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/jsonwebtoken/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/jsonwebtoken/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/jsonwebtoken/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/jsonwebtoken/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/jsonwebtoken/LICENSE
-
 ## Text 214d0ac13edb475ec426df1979d96fd46b443debc466c0fb592e32152ae5a940
 
 <!-- nwui-text:214d0ac13edb475ec426df1979d96fd46b443debc466c0fb592e32152ae5a940 -->
@@ -18552,26 +18512,26 @@ SOFTWARE.
 <!-- /nwui-text:214d0ac13edb475ec426df1979d96fd46b443debc466c0fb592e32152ae5a940 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/webpack-sources1/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/webpack-sources3/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/webpack-sources1/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/webpack-sources3/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/webpack-sources1/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/webpack-sources3/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/webpack-sources1/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/webpack-sources3/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/webpack-sources1/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/webpack-sources3/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/webpack-sources1/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/webpack-sources3/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/webpack-sources1/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/webpack-sources3/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/webpack-sources1/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/webpack-sources3/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/webpack-sources1/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/webpack-sources3/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/webpack-sources1/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/webpack-sources3/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/webpack-sources1/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/webpack-sources3/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/webpack-sources1/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/webpack-sources3/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/webpack-sources1/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/webpack-sources3/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/webpack-sources1/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/webpack-sources3/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/webpack-sources1/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/webpack-sources3/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/webpack-sources1/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/webpack-sources3/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/webpack-sources1/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/webpack-sources3/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/webpack-sources1/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/webpack-sources3/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/webpack-sources1/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/webpack-sources3/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/webpack-sources1/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/webpack-sources3/LICENSE
 
 ## Text 21511ee2383f5863660184d7feed046d32ed735a27330adfd1f29a3db940d96d
 
@@ -20170,16 +20130,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:23d466b1b134b415b66fa50c6526b4cf3e7b9258554da88d3abb371721e7ce68 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/compression/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/compression/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/compression/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/compression/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/compression/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/compression/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/compression/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/compression/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/compression/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/compression/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/compression/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/compression/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/compression/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/compression/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/compression/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/compression/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/compression/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/compression/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/compression/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/compression/LICENSE
 
 ## Text 23d608079a47693a26dfc8a5cb01894ad0136a50714d46221d9380aa4a4b4423
 
@@ -21343,16 +21303,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:257aed98914108e91a337912727b6a802eef218248507f74b76faffaff517a38 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/content-type/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/content-type/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/content-type/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/content-type/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/content-type/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/content-type/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/content-type/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/content-type/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/content-type/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/content-type/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/content-type/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/content-type/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/content-type/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/content-type/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/content-type/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/content-type/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/content-type/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/content-type/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/content-type/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/content-type/LICENSE
 
 ## Text 2595b55403c2e344f168d6e621db1a3e9e735c4bacce76192e77227be2e93fd8
 
@@ -21659,16 +21619,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:25a328069fe771f8ed5b6f983ed4b0e6c84b3312ac0f69b28c3d52dc277962c9 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/send/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/send/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/send/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/send/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/send/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/send/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/send/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/send/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/send/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/send/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/send/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/send/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/send/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/send/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/send/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/send/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/send/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/send/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/send/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/send/LICENSE
 
 ## Text 25ba5c59dad3e0dd8f9540beaa0f0a86a10e3aec35af5fdc8e88c5f6a5c0d8c6
 
@@ -21714,16 +21674,16 @@ SOFTWARE.
 <!-- /nwui-text:25bd22427e27b0d3f1c3da2670bb44b622bcced22ebdf4777d5488ac129370a1 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/ci-info/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/ci-info/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/ci-info/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/ci-info/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/ci-info/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/ci-info/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/ci-info/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/ci-info/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/ci-info/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/ci-info/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/ci-info/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/ci-info/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/ci-info/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/ci-info/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/ci-info/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/ci-info/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/ci-info/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/ci-info/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/ci-info/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/ci-info/LICENSE
 
 ## Text 25c009ee84862a919d885123716c59fc1cd98f581609323b79b20a82e2ef3bca
 
@@ -25542,16 +25502,16 @@ SOFTWARE.
 <!-- /nwui-text:291ff3e2bd22891edef553930da53ba64adf79d83f0bd1c5b7f6fe9727526b37 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/async-sema/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/async-sema/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/async-sema/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/async-sema/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/async-sema/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/async-sema/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/async-sema/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/async-sema/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/async-sema/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/async-sema/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/async-sema/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/async-sema/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/async-sema/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/async-sema/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/async-sema/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/async-sema/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/async-sema/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/async-sema/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/async-sema/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/async-sema/LICENSE
 
 ## Text 29347e2528ab31d20e8582b09aa89cd878d306c59a273541141c9aede1903cb8
 
@@ -29257,26 +29217,26 @@ Apache License
 <!-- /nwui-text:2f35ff231cb39996c76897fa27cc31be92aa7b20aab7c08e85bd178c8ddc3bf3 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/@vercel/detect-agent/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/@vercel/routing-utils/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/@vercel/detect-agent/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/@vercel/routing-utils/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/@vercel/detect-agent/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/@vercel/routing-utils/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/@vercel/detect-agent/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/@vercel/routing-utils/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/@vercel/detect-agent/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/@vercel/routing-utils/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/@vercel/detect-agent/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/@vercel/routing-utils/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/@vercel/detect-agent/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/@vercel/routing-utils/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/@vercel/detect-agent/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/@vercel/routing-utils/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/@vercel/detect-agent/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/@vercel/routing-utils/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/@vercel/detect-agent/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/@vercel/routing-utils/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/@vercel/detect-agent/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/@vercel/routing-utils/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/@vercel/detect-agent/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/@vercel/routing-utils/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/@vercel/detect-agent/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/@vercel/routing-utils/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/@vercel/detect-agent/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/@vercel/routing-utils/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/@vercel/detect-agent/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/@vercel/routing-utils/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/@vercel/detect-agent/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/@vercel/routing-utils/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/@vercel/detect-agent/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/@vercel/routing-utils/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/@vercel/detect-agent/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/@vercel/routing-utils/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/@vercel/detect-agent/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/@vercel/routing-utils/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/@vercel/detect-agent/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/@vercel/routing-utils/LICENSE
 
 ## Text 2f5229fb8c14318983232cbaf86454bcce006289d1472dc10e715f9e6c2be4ff
 
@@ -29880,16 +29840,16 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 <!-- /nwui-text:3109783dad7527b490aabc49c3cb148573c19b41b843e70cf9388a93f3d7fccd -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/image-size/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/image-size/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/image-size/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/image-size/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/image-size/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/image-size/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/image-size/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/image-size/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/image-size/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/image-size/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/image-size/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/image-size/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/image-size/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/image-size/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/image-size/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/image-size/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/image-size/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/image-size/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/image-size/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/image-size/LICENSE
 
 ## Text 31255377515b240fafc5070bcd19290469b9a27888535a0adff07be709076504
 
@@ -31649,16 +31609,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:3687447039151857a6ba378db062172c7f33d4aa70a615c87a43a9c50e990485 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/postcss-value-parser/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/postcss-value-parser/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/postcss-value-parser/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/postcss-value-parser/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/postcss-value-parser/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/postcss-value-parser/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/postcss-value-parser/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/postcss-value-parser/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/postcss-value-parser/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/postcss-value-parser/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/postcss-value-parser/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/postcss-value-parser/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/postcss-value-parser/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/postcss-value-parser/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/postcss-value-parser/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/postcss-value-parser/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/postcss-value-parser/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/postcss-value-parser/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/postcss-value-parser/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/postcss-value-parser/LICENSE
 
 ## Text 36bb253818ac13761081556ff5c457d626da9df1eb4f56194d9ad3926c418a68
 
@@ -32742,16 +32702,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:3a62887f73cd035ac1068bc0127ce94291f7a03843391f56df3520e2ca2037f8 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/vm-browserify/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/vm-browserify/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/vm-browserify/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/vm-browserify/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/vm-browserify/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/vm-browserify/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/vm-browserify/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/vm-browserify/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/vm-browserify/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/vm-browserify/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/vm-browserify/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/vm-browserify/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/vm-browserify/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/vm-browserify/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/vm-browserify/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/vm-browserify/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/vm-browserify/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/vm-browserify/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/vm-browserify/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/vm-browserify/LICENSE
 
 ## Text 3a6d6de49d284a36c5d271ef0e62eca1838cc460dd7630e3f2c347c8f5b2232a
 
@@ -32782,16 +32742,16 @@ SOFTWARE.
 <!-- /nwui-text:3a6d6de49d284a36c5d271ef0e62eca1838cc460dd7630e3f2c347c8f5b2232a -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/safe-stable-stringify/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/safe-stable-stringify/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/safe-stable-stringify/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/safe-stable-stringify/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/safe-stable-stringify/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/safe-stable-stringify/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/safe-stable-stringify/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/safe-stable-stringify/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/safe-stable-stringify/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/safe-stable-stringify/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/safe-stable-stringify/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/safe-stable-stringify/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/safe-stable-stringify/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/safe-stable-stringify/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/safe-stable-stringify/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/safe-stable-stringify/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/safe-stable-stringify/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/safe-stable-stringify/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/safe-stable-stringify/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/safe-stable-stringify/LICENSE
 
 ## Text 3a7da2b65462a9f5c34af94b1ca71eb4f3a5394bcbbcf6b56c3c1a15fddcf321
 
@@ -35458,16 +35418,16 @@ SOFTWARE.
 <!-- /nwui-text:3f1189b28e3866e0d979968d466b78f813f76827cfdca1fbb124cc0a5c8841f8 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/zod/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/zod/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/zod/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/zod/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/zod/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/zod/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/zod/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/zod/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/zod/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/zod/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/zod/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/zod/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/zod/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/zod/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/zod/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/zod/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/zod/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/zod/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/zod/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/zod/LICENSE
 
 ## Text 3f1ce66533302df3a32edbfdfc0b78f0dd34659e4c1f5817162e5ea3c2297215
 
@@ -37106,16 +37066,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:4249bd020d1b5c503d20a196c1b686b3bdebcd1c7ac06909c546d9624c64f79b -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/httpxy/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/httpxy/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/httpxy/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/httpxy/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/httpxy/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/httpxy/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/httpxy/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/httpxy/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/httpxy/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/httpxy/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/httpxy/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/httpxy/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/httpxy/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/httpxy/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/httpxy/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/httpxy/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/httpxy/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/httpxy/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/httpxy/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/httpxy/LICENSE
 
 ## Text 4249c8e6c5ebb85f97c77e6457c6fafc1066406eb8f1ef61e796fbdc5ff18482
 
@@ -37359,29 +37319,29 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:435a6722c786b0a56fbe7387028f1d9d3f3a2d0fb615bb8fee118727c3f59b7b -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/text-table/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/tty-browserify/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/text-table/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/tty-browserify/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/text-table/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/tty-browserify/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/text-table/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/tty-browserify/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/text-table/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/tty-browserify/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/text-table/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/tty-browserify/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/text-table/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/tty-browserify/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/text-table/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/tty-browserify/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/text-table/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/tty-browserify/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/text-table/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/tty-browserify/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/text-table/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/tty-browserify/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/text-table/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/tty-browserify/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/text-table/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/tty-browserify/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/text-table/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/tty-browserify/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/text-table/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/tty-browserify/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/text-table/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/tty-browserify/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/text-table/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/tty-browserify/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/text-table/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/tty-browserify/LICENSE
 - npm:concat-map=0.0.1 — package/LICENSE
 - npm:json-stable-stringify-without-jsonify=1.0.1 — package/LICENSE
 - npm:minimist=1.2.8 — package/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/text-table/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/tty-browserify/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/text-table/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/tty-browserify/LICENSE
 
 ## Text 4360229654eb9b57616cb77ead3b050b8705d682071b647c0cd6b8ff611cf4b6
 
@@ -38147,16 +38107,16 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 <!-- /nwui-text:451ec07eeb9c4e1b86de9abdaa426462a8be48f887ec7421cf0bbb9c769555ab -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/lru-cache/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/lru-cache/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/lru-cache/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/lru-cache/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/lru-cache/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/lru-cache/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/lru-cache/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/lru-cache/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/lru-cache/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/lru-cache/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/lru-cache/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/lru-cache/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/lru-cache/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/lru-cache/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/lru-cache/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/lru-cache/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/lru-cache/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/lru-cache/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/lru-cache/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/lru-cache/LICENSE
 
 ## Text 452fe5f9702ce7d424771abe3571acc1bb809cb65ed55d8ebc468817588cefe5
 
@@ -38207,16 +38167,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:454813625b1308ec9a1a5c37f496436c4a9cba31ef4091689f49db5bc66d58fe -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/stream-http/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/stream-http/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/stream-http/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/stream-http/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/stream-http/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/stream-http/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/stream-http/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/stream-http/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/stream-http/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/stream-http/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/stream-http/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/stream-http/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/stream-http/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/stream-http/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/stream-http/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/stream-http/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/stream-http/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/stream-http/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/stream-http/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/stream-http/LICENSE
 
 ## Text 4555c08af04245f2bfe804707e71606cf66ed51fc923c6f303cb889001572322
 
@@ -39951,60 +39911,60 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 <!-- /nwui-text:48da2f39e100d4085767e94966b43f4fa95ff6a0698fba57ed460914e35f94a0 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/conf/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/find-up/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/gzip-size/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/is-docker/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/is-wsl/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/strip-ansi/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/conf/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/find-up/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/gzip-size/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/is-docker/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/is-wsl/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/strip-ansi/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/conf/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/find-up/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/gzip-size/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/is-docker/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/is-wsl/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/strip-ansi/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/conf/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/find-up/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/gzip-size/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/is-docker/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/is-wsl/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/strip-ansi/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/conf/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/find-up/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/gzip-size/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/is-docker/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/is-wsl/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/strip-ansi/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/conf/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/find-up/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/gzip-size/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/is-docker/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/is-wsl/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/strip-ansi/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/conf/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/find-up/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/gzip-size/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/is-docker/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/is-wsl/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/strip-ansi/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/conf/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/find-up/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/gzip-size/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/is-docker/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/is-wsl/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/strip-ansi/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/conf/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/find-up/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/gzip-size/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/is-docker/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/is-wsl/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/strip-ansi/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/conf/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/find-up/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/gzip-size/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/is-docker/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/is-wsl/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/strip-ansi/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/conf/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/find-up/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/gzip-size/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/is-docker/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/is-wsl/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/strip-ansi/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/conf/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/find-up/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/gzip-size/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/is-docker/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/is-wsl/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/strip-ansi/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/conf/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/find-up/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/gzip-size/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/is-docker/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/is-wsl/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/strip-ansi/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/conf/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/find-up/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/gzip-size/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/is-docker/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/is-wsl/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/strip-ansi/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/conf/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/find-up/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/gzip-size/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/is-docker/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/is-wsl/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/strip-ansi/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/conf/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/find-up/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/gzip-size/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/is-docker/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/is-wsl/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/strip-ansi/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/conf/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/find-up/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/gzip-size/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/is-docker/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/is-wsl/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/strip-ansi/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/conf/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/find-up/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/gzip-size/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/is-docker/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/is-wsl/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/strip-ansi/LICENSE
 - npm:ansi-regex=5.0.1 — package/license
 - npm:ansi-styles=4.3.0 — package/license
 - npm:ansi-styles=5.2.0 — package/license
@@ -40017,12 +39977,12 @@ Applies to:
 - npm:indent-string=4.0.0 — package/license
 - npm:is-fullwidth-code-point=3.0.0 — package/license
 - npm:locate-path=5.0.0 — package/license
-- npm:next=16.4.3 — package/dist/compiled/conf/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/find-up/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/gzip-size/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/is-docker/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/is-wsl/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/strip-ansi/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/conf/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/find-up/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/gzip-size/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/is-docker/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/is-wsl/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/strip-ansi/LICENSE
 - npm:p-limit=2.3.0 — package/license
 - npm:p-locate=4.1.0 — package/license
 - npm:p-try=2.2.0 — package/license
@@ -40135,16 +40095,16 @@ THE SOFTWARE.
 <!-- /nwui-text:498d39c83164cf8de195090f5564fc0308ab271344ca2f95484a7f1020952d00 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/loader-runner/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/loader-runner/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/loader-runner/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/loader-runner/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/loader-runner/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/loader-runner/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/loader-runner/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/loader-runner/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/loader-runner/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/loader-runner/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/loader-runner/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/loader-runner/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/loader-runner/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/loader-runner/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/loader-runner/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/loader-runner/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/loader-runner/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/loader-runner/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/loader-runner/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/loader-runner/LICENSE
 
 ## Text 49ad3fe9bc9d4f0798a481e1c73ac833c52b4525c72fb2c4b0cd1a510e88a177
 
@@ -41652,19 +41612,19 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 Applies to:
 - npm:@isaacs/fs-minipass=4.0.1 — package/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/semver/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/semver/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/semver/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/semver/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/semver/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/semver/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/semver/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/semver/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/semver/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/semver/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/semver/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/semver/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/semver/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/semver/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/semver/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/semver/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/semver/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/semver/LICENSE
 - npm:isexe=2.0.0 — package/LICENSE
 - npm:lru-cache=5.1.1 — package/LICENSE
 - npm:minimatch=3.1.5 — package/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/semver/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/semver/LICENSE
 - npm:nopt=10.0.1 — package/LICENSE
 - npm:semver=6.3.1 — package/LICENSE
 - npm:semver=7.8.5 — package/LICENSE
@@ -41701,17 +41661,17 @@ THE SOFTWARE.
 <!-- /nwui-text:4eeb3271453a891df609e5a9f4ee79a68307f730c13417a3bfeffa604ac8cf25 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/path-to-regexp/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/path-to-regexp/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/path-to-regexp/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/path-to-regexp/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/path-to-regexp/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/path-to-regexp/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/path-to-regexp/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/path-to-regexp/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/path-to-regexp/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/path-to-regexp/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/path-to-regexp/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/path-to-regexp/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/path-to-regexp/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/path-to-regexp/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/path-to-regexp/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/path-to-regexp/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/path-to-regexp/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/path-to-regexp/LICENSE
 - npm:change-case=5.4.4 — change-case-8aaff31471c918d3eac2b40939c601bee37375dd/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/path-to-regexp/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/path-to-regexp/LICENSE
 
 ## Text 4f0eec3f6d7eeaa1c363b6a87d7721671bcd49beedad80a4258db8057f4dd4e3
 
@@ -42325,7 +42285,7 @@ Apache License
 Applies to:
 - cargo:cmov=0.5.4 — cmov-0.5.4/LICENSE-APACHE
 - cargo:ctutils=0.4.4 — ctutils-0.4.4/LICENSE-APACHE
-- cargo:email-encoding=0.4.2 — email-encoding-0.4.2/LICENSE-APACHE
+- cargo:email-encoding=0.4.3 — email-encoding-0.4.3/LICENSE-APACHE
 - cargo:encoding_rs=0.8.41 — encoding_rs-0.8.41/LICENSE-APACHE
 - cargo:instant-acme=0.8.5 — instant-acme-0.8.5/LICENSE
 - cargo:josekit=0.10.3 — josekit-0.10.3/LICENSE-APACHE
@@ -42363,28 +42323,28 @@ Applies to:
 - npm:@humanfs/types=0.15.0 — humanfs-85069f193cbacc371c3beb649ce746f8c5a493be/packages/web/LICENSE
 - npm:@humanwhocodes/module-importer=1.0.1 — package/LICENSE
 - npm:@humanwhocodes/retry=0.4.3 — package/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/@opentelemetry/api/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/native-url/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/@opentelemetry/api/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/native-url/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/@opentelemetry/api/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/native-url/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/@opentelemetry/api/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/native-url/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/@opentelemetry/api/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/native-url/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/@opentelemetry/api/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/native-url/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/@opentelemetry/api/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/native-url/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/@opentelemetry/api/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/native-url/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/@opentelemetry/api/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/native-url/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/@opentelemetry/api/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/native-url/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/@opentelemetry/api/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/native-url/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/@opentelemetry/api/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/native-url/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/@opentelemetry/api/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/native-url/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/@opentelemetry/api/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/native-url/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/@opentelemetry/api/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/native-url/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/@opentelemetry/api/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/native-url/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/@opentelemetry/api/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/native-url/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/@opentelemetry/api/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/native-url/LICENSE
 - npm:baseline-browser-mapping=2.11.25 — package/LICENSE.txt
 - npm:doctrine=3.0.0 — package/LICENSE.closure-compiler
-- npm:next=16.4.3 — package/dist/compiled/@opentelemetry/api/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/native-url/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/@opentelemetry/api/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/native-url/LICENSE
 
 ## Text 5102d323a5e46a28619aae5b38679f8e82c171202dce60cca86b9b141cda1424
 
@@ -42551,16 +42511,16 @@ SOFTWARE.
 <!-- /nwui-text:51887a3d47051ac2fce1210562e5b9fe0830a8a8fabeb272c2d586eeb18a05fd -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/regenerator-runtime/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/regenerator-runtime/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/regenerator-runtime/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/regenerator-runtime/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/regenerator-runtime/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/regenerator-runtime/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/regenerator-runtime/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/regenerator-runtime/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/regenerator-runtime/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/regenerator-runtime/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/regenerator-runtime/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/regenerator-runtime/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/regenerator-runtime/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/regenerator-runtime/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/regenerator-runtime/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/regenerator-runtime/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/regenerator-runtime/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/regenerator-runtime/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/regenerator-runtime/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/regenerator-runtime/LICENSE
 
 ## Text 519496efb3118306293263e8a12a4435f1a0da3e2755985679ec6546930486e6
 
@@ -42956,26 +42916,26 @@ SOFTWARE.
 <!-- /nwui-text:52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/jest-worker/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/react-refresh/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/jest-worker/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/react-refresh/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/jest-worker/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/react-refresh/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/jest-worker/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/react-refresh/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/jest-worker/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/react-refresh/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/jest-worker/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/react-refresh/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/jest-worker/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/react-refresh/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/jest-worker/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/react-refresh/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/jest-worker/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/react-refresh/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/jest-worker/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/react-refresh/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/jest-worker/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/react-refresh/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/jest-worker/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/react-refresh/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/jest-worker/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/react-refresh/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/jest-worker/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/react-refresh/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/jest-worker/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/react-refresh/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/jest-worker/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/react-refresh/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/jest-worker/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/react-refresh/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/jest-worker/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/react-refresh/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/jest-worker/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/react-refresh/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/jest-worker/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/react-refresh/LICENSE
 - npm:pretty-format=27.5.1 — package/LICENSE
 - npm:react-docgen=8.0.4 — package/LICENSE
 - npm:react-is=17.0.2 — package/LICENSE
@@ -43243,17 +43203,17 @@ SOFTWARE.
 <!-- /nwui-text:53e59feb13058722d977c699eb0407c7bce2f93c949b681bbd2ff31698535927 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/json5/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/json5/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/json5/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/json5/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/json5/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/json5/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/json5/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/json5/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/json5/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/json5/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/json5/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/json5/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/json5/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/json5/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/json5/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/json5/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/json5/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/json5/LICENSE
 - npm:json5=2.2.3 — package/LICENSE.md
-- npm:next=16.4.3 — package/dist/compiled/json5/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/json5/LICENSE
 
 ## Text 542e7521fab287d3d2ea83e0145692c7d82ea81b28f141be6686364929d33079
 
@@ -47718,16 +47678,16 @@ http://creativecommons.org/publicdomain/zero/1.0/.
 <!-- /nwui-text:597756adcb51f243ef4fb386920377f61d012ace0904364e1a8ee9aaec6afc84 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/postcss-preset-env/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/postcss-preset-env/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/postcss-preset-env/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/postcss-preset-env/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/postcss-preset-env/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/postcss-preset-env/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/postcss-preset-env/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/postcss-preset-env/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/postcss-preset-env/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/postcss-preset-env/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/postcss-preset-env/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/postcss-preset-env/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/postcss-preset-env/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/postcss-preset-env/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/postcss-preset-env/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/postcss-preset-env/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/postcss-preset-env/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/postcss-preset-env/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/postcss-preset-env/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/postcss-preset-env/LICENSE
 
 ## Text 598438d4b9bd52cd9a3cd7764932669b78b4922a705c80ac91f59164a5e2e19d
 
@@ -47888,16 +47848,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:59a400d04c5078579acc27ddd6452c1bdf763f9506e01364700935fbb1a7c91b -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/process/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/process/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/process/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/process/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/process/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/process/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/process/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/process/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/process/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/process/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/process/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/process/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/process/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/process/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/process/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/process/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/process/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/process/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/process/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/process/LICENSE
 
 ## Text 59abfdd7d9b555a34e33dfd9c75245d4d55518cc861018e632d2f017459bbb31
 
@@ -48257,16 +48217,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:5b2d4941aeef7e28e76e4fe5a939c0c7f4c8b376bdc808fb30e31daa1ca52994 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/crypto-browserify/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/crypto-browserify/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/crypto-browserify/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/crypto-browserify/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/crypto-browserify/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/crypto-browserify/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/crypto-browserify/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/crypto-browserify/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/crypto-browserify/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/crypto-browserify/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/crypto-browserify/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/crypto-browserify/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/crypto-browserify/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/crypto-browserify/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/crypto-browserify/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/crypto-browserify/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/crypto-browserify/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/crypto-browserify/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/crypto-browserify/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/crypto-browserify/LICENSE
 
 ## Text 5b2f777f76b16ed036da2f5c5528de12684e6f22296543098656f598155368cc
 
@@ -48703,33 +48663,33 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 <!-- /nwui-text:5c932d88256b4ab958f64a856fa48e8bd1f55bc1d96b8149c65689e0c61789d3 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/ora/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/p-limit/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/p-queue/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/ora/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/p-limit/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/p-queue/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/ora/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/p-limit/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/p-queue/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/ora/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/p-limit/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/p-queue/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/ora/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/p-limit/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/p-queue/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/ora/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/p-limit/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/p-queue/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/ora/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/p-limit/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/p-queue/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/ora/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/p-limit/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/p-queue/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/ora/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/p-limit/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/p-queue/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/ora/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/p-limit/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/p-queue/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/ora/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/p-limit/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/p-queue/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/ora/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/p-limit/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/p-queue/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/ora/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/p-limit/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/p-queue/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/ora/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/p-limit/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/p-queue/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/ora/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/p-limit/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/p-queue/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/ora/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/p-limit/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/p-queue/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/ora/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/p-limit/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/p-queue/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/ora/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/p-limit/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/p-queue/LICENSE
 - npm:@rolldown/binding-android-arm64=1.1.5 — rolldown-f09947ab017d6df74299f691853dcfc4f4f0f86e/crates/rolldown/tests/rolldown/function/resolve/node_modules_as_entries/node_modules/is-plain-obj/license
 - npm:@rolldown/binding-android-arm64=1.1.5 — rolldown-f09947ab017d6df74299f691853dcfc4f4f0f86e/crates/rolldown/tests/rolldown/function/resolve/resolve_node_modules_by_default/node_modules/is-plain-obj/license
 - npm:@rolldown/binding-darwin-arm64=1.1.5 — rolldown-f09947ab017d6df74299f691853dcfc4f4f0f86e/crates/rolldown/tests/rolldown/function/resolve/node_modules_as_entries/node_modules/is-plain-obj/license
@@ -48773,9 +48733,9 @@ Applies to:
 - npm:is-inside-container=1.0.0 — package/license
 - npm:is-wsl=3.1.1 — package/license
 - npm:locate-path=6.0.0 — package/license
-- npm:next=16.4.3 — package/dist/compiled/ora/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/p-limit/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/p-queue/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/ora/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/p-limit/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/p-queue/LICENSE
 - npm:open=10.2.0 — package/license
 - npm:p-limit=3.1.0 — package/license
 - npm:p-locate=5.0.0 — package/license
@@ -52232,16 +52192,16 @@ https://creativecommons.org/licenses/by-sa/4.0/
 <!-- /nwui-text:6236fa0b88a4a0cce3dda0367979491b2052b3c8d6b1c10b3668de083e86a7f0 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/glob/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/glob/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/glob/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/glob/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/glob/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/glob/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/glob/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/glob/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/glob/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/glob/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/glob/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/glob/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/glob/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/glob/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/glob/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/glob/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/glob/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/glob/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/glob/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/glob/LICENSE
 
 ## Text 6239c6144c31e58cf925c34483606969c555574d64ffa96518ab5d7f45c75d43
 
@@ -52269,26 +52229,26 @@ IN THE SOFTWARE.
 <!-- /nwui-text:6239c6144c31e58cf925c34483606969c555574d64ffa96518ab5d7f45c75d43 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/assert/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/util/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/assert/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/util/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/assert/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/util/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/assert/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/util/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/assert/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/util/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/assert/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/util/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/assert/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/util/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/assert/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/util/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/assert/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/util/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/assert/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/util/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/assert/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/util/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/assert/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/util/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/assert/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/util/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/assert/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/util/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/assert/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/util/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/assert/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/util/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/assert/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/util/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/assert/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/util/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/assert/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/util/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/assert/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/util/LICENSE
 
 ## Text 62568a2d1337b77171ecca9db10579163446de1ba6151678e81f06cdc199971b
 
@@ -52317,16 +52277,16 @@ THE SOFTWARE.
 <!-- /nwui-text:62568a2d1337b77171ecca9db10579163446de1ba6151678e81f06cdc199971b -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/ipaddr.js/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/ipaddr.js/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/ipaddr.js/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/ipaddr.js/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/ipaddr.js/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/ipaddr.js/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/ipaddr.js/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/ipaddr.js/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/ipaddr.js/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/ipaddr.js/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/ipaddr.js/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/ipaddr.js/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/ipaddr.js/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/ipaddr.js/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/ipaddr.js/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/ipaddr.js/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/ipaddr.js/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/ipaddr.js/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/ipaddr.js/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/ipaddr.js/LICENSE
 
 ## Text 626476d25e67f0eb3d362fe9cb2985ef67f8de6819870b154f9a405f0b6fc320
 
@@ -52424,16 +52384,16 @@ SOFTWARE.
 <!-- /nwui-text:62ba766e9b50f9b175b0229f4ea03e93730c9180408acec50dd617e9ae1fa059 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/ignore-loader/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/ignore-loader/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/ignore-loader/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/ignore-loader/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/ignore-loader/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/ignore-loader/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/ignore-loader/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/ignore-loader/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/ignore-loader/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/ignore-loader/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/ignore-loader/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/ignore-loader/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/ignore-loader/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/ignore-loader/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/ignore-loader/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/ignore-loader/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/ignore-loader/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/ignore-loader/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/ignore-loader/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/ignore-loader/LICENSE
 
 ## Text 62bd804cf6951144d4edaebfd57e3ac47e057b7c2c6dd782dfaa52f01f8f7113
 
@@ -52564,16 +52524,16 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:631987b7616a325a5b97566c232418481ddf7dbb5ecadefb991e791876cc2599 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/events/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/events/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/events/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/events/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/events/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/events/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/events/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/events/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/events/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/events/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/events/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/events/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/events/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/events/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/events/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/events/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/events/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/events/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/events/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/events/LICENSE
 
 ## Text 632b80c2a807376bd57cf376ce1127b725fb20cbb27f4a7f640a70ed1da63574
 
@@ -57119,16 +57079,16 @@ SOFTWARE.
 <!-- /nwui-text:6d2abc90a426cf65bbf84f7cedf9487f7ff86a3daf0e130b335a45c112f040d0 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/anser/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/anser/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/anser/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/anser/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/anser/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/anser/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/anser/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/anser/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/anser/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/anser/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/anser/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/anser/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/anser/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/anser/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/anser/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/anser/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/anser/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/anser/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/anser/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/anser/LICENSE
 
 ## Text 6d396bcbd2e36f60db93e3ed38537303b2068b98b60c95e5f9a83eae5304bddc
 
@@ -58638,16 +58598,16 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:7261b3ab93df04c6d8f3398f87275d28f0e87d88cbd0033b788fb50402de03c5 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/hash.js/sha256/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/hash.js/sha256/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/hash.js/sha256/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/hash.js/sha256/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/hash.js/sha256/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/hash.js/sha256/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/hash.js/sha256/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/hash.js/sha256/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/hash.js/sha256/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/hash.js/sha256/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/hash.js/sha256/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/hash.js/sha256/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/hash.js/sha256/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/hash.js/sha256/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/hash.js/sha256/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/hash.js/sha256/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/hash.js/sha256/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/hash.js/sha256/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/hash.js/sha256/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/hash.js/sha256/LICENSE
 
 ## Text 728536b4160e051f86d7c9c388f704866b3d512cd7df97ac3516c65279523c4e
 
@@ -60656,17 +60616,17 @@ THE SOFTWARE.
 <!-- /nwui-text:76a876cf886ff9be2a8b5e2e86514fed06223c8c9f0c1e9ee9606e93841e00b7 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/acorn/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/acorn/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/acorn/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/acorn/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/acorn/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/acorn/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/acorn/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/acorn/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/acorn/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/acorn/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/acorn/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/acorn/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/acorn/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/acorn/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/acorn/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/acorn/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/acorn/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/acorn/LICENSE
 - npm:acorn=8.17.0 — package/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/acorn/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/acorn/LICENSE
 
 ## Text 76c45bd235fe4c996dd612bcd723cd4dc2b02a2c34086a96e1572f7ed6330268
 
@@ -60881,26 +60841,26 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 <!-- /nwui-text:7774c8c4a3f750b294b416818062201a404fc2d6c8756d8b89a1688e24b5d5a7 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/postcss-modules-scope/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/postcss-modules-values/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/postcss-modules-scope/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/postcss-modules-values/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/postcss-modules-scope/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/postcss-modules-values/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/postcss-modules-scope/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/postcss-modules-values/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/postcss-modules-scope/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/postcss-modules-values/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/postcss-modules-scope/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/postcss-modules-values/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/postcss-modules-scope/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/postcss-modules-values/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/postcss-modules-scope/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/postcss-modules-values/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/postcss-modules-scope/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/postcss-modules-values/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/postcss-modules-scope/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/postcss-modules-values/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/postcss-modules-scope/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/postcss-modules-values/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/postcss-modules-scope/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/postcss-modules-values/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/postcss-modules-scope/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/postcss-modules-values/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/postcss-modules-scope/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/postcss-modules-values/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/postcss-modules-scope/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/postcss-modules-values/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/postcss-modules-scope/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/postcss-modules-values/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/postcss-modules-scope/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/postcss-modules-values/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/postcss-modules-scope/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/postcss-modules-values/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/postcss-modules-scope/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/postcss-modules-values/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/postcss-modules-scope/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/postcss-modules-values/LICENSE
 
 ## Text 77a582430b1a735dde741c3b188cd062e0104227ab7fc263ef48007647dffcb8
 
@@ -61205,16 +61165,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 <!-- /nwui-text:795bc7e48204c9c50d6c3f03484bb9ce6472164ba86ee6342d4c88e4591970ce -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/@vercel/nft/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/@vercel/nft/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/@vercel/nft/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/@vercel/nft/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/@vercel/nft/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/@vercel/nft/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/@vercel/nft/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/@vercel/nft/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/@vercel/nft/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/@vercel/nft/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/@vercel/nft/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/@vercel/nft/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/@vercel/nft/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/@vercel/nft/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/@vercel/nft/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/@vercel/nft/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/@vercel/nft/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/@vercel/nft/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/@vercel/nft/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/@vercel/nft/LICENSE
 
 ## Text 79772a6a3a2c08a10e3a60f5667af99372d3fc372acd3b4333a6bee6dc13dc64
 
@@ -62190,16 +62150,16 @@ Applies to:
 - npm:@napi-rs/wasm-runtime=1.1.6 — napi-rs-b77119e711704cc453949e056b45a4996ea0386c/triples/LICENSE
 - npm:@napi-rs/wasm-runtime=1.2.4 — napi-rs-7e3f293e2d6a3032eabfe51ff38bcaa82d342a2f/cli/LICENSE
 - npm:@napi-rs/wasm-runtime=1.2.4 — napi-rs-7e3f293e2d6a3032eabfe51ff38bcaa82d342a2f/triples/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/@napi-rs/triples/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/@napi-rs/triples/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/@napi-rs/triples/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/@napi-rs/triples/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/@napi-rs/triples/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/@napi-rs/triples/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/@napi-rs/triples/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/@napi-rs/triples/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/@napi-rs/triples/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/@napi-rs/triples/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/@napi-rs/triples/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/@napi-rs/triples/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/@napi-rs/triples/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/@napi-rs/triples/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/@napi-rs/triples/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/@napi-rs/triples/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/@napi-rs/triples/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/@napi-rs/triples/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/@napi-rs/triples/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/@napi-rs/triples/LICENSE
 
 ## Text 7b3a519164f358990967d60122863733b8a108f276648162727cea01e0352a6c
 
@@ -64111,16 +64071,16 @@ SOFTWARE.
 <!-- /nwui-text:811238ba7d85f6fe6b820703a32f92705bcf77bc352ddc3476783491c64a129a -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/neo-async/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/neo-async/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/neo-async/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/neo-async/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/neo-async/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/neo-async/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/neo-async/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/neo-async/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/neo-async/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/neo-async/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/neo-async/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/neo-async/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/neo-async/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/neo-async/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/neo-async/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/neo-async/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/neo-async/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/neo-async/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/neo-async/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/neo-async/LICENSE
 
 ## Text 8158ebe896a9deb5d919bc965621164b53081cbedceb363de37f8c586fdb6328
 
@@ -68012,19 +67972,19 @@ software or this license, under any kind of legal claim.***
 
 Applies to:
 - npm:@isaacs/nonrecursive-glob-match=1.1.0 — package/LICENSE.md
-- npm:@next/env=16.4.3 — package/dist/compiled/tar/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/tar/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/tar/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/tar/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/tar/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/tar/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/tar/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/tar/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/tar/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/tar/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/tar/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/tar/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/tar/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/tar/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/tar/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/tar/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/tar/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/tar/LICENSE
 - npm:isexe=4.0.0 — package/LICENSE.md
 - npm:lru-cache=11.5.3 — package/LICENSE.md
 - npm:minipass=7.1.3 — package/LICENSE.md
-- npm:next=16.4.3 — package/dist/compiled/tar/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/tar/LICENSE
 - npm:path-scurry=3.0.0 — package/LICENSE.md
 - npm:tar=7.5.21 — package/LICENSE.md
 
@@ -69599,16 +69559,16 @@ IN THE SOFTWARE.
 <!-- /nwui-text:8bccac00722ed79953b65cd20432e8a5ce69bda80d099e7b785f7f26c82e3367 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/querystring-es3/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/querystring-es3/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/querystring-es3/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/querystring-es3/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/querystring-es3/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/querystring-es3/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/querystring-es3/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/querystring-es3/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/querystring-es3/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/querystring-es3/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/querystring-es3/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/querystring-es3/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/querystring-es3/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/querystring-es3/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/querystring-es3/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/querystring-es3/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/querystring-es3/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/querystring-es3/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/querystring-es3/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/querystring-es3/LICENSE
 
 ## Text 8bce3b45e49ecd1461f223b46de133d8f62cd39f745cfdaf81bee554b908bd42
 
@@ -70249,16 +70209,16 @@ SOFTWARE.
 <!-- /nwui-text:8cec82f7beeab8459fa6165c973f5cd6f89aceea7a07de0aa8fc30a9dd339a05 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/async-retry/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/async-retry/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/async-retry/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/async-retry/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/async-retry/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/async-retry/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/async-retry/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/async-retry/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/async-retry/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/async-retry/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/async-retry/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/async-retry/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/async-retry/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/async-retry/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/async-retry/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/async-retry/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/async-retry/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/async-retry/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/async-retry/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/async-retry/LICENSE
 
 ## Text 8d073a6a80d1ef2d2fc2bc6c809aa221161bf1906c76d4aeef55fd2b999d9413
 
@@ -70756,8 +70716,8 @@ Referenced common licence texts are reproduced in the DEBIAN_COMMON_LICENSES blo
 <!-- /nwui-text:8e571b551fb2939542af97b00cb96b8b044734e8e9f42458a1485c66b3d5e6f3 -->
 
 Applies to:
-- deb:runtime-amd64.tsv:nginx=1.30.6-1~trixie — ./usr/share/doc/nginx/copyright
-- deb:runtime-arm64.tsv:nginx=1.30.6-1~trixie — ./usr/share/doc/nginx/copyright
+- deb:runtime-amd64.tsv:nginx=1.30.7-1~trixie — ./usr/share/doc/nginx/copyright
+- deb:runtime-arm64.tsv:nginx=1.30.7-1~trixie — ./usr/share/doc/nginx/copyright
 
 ## Text 8e84b6cfa932e06844118b51da9d1bacdb537e176a4231e1f29a40a23ac9f258
 
@@ -71106,16 +71066,16 @@ SUCH DAMAGE.
 <!-- /nwui-text:901d0a7fcaccaae9917d165039c0473c354e5da2e0e94140dde67aad9ffb19da -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/terser/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/terser/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/terser/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/terser/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/terser/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/terser/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/terser/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/terser/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/terser/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/terser/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/terser/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/terser/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/terser/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/terser/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/terser/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/terser/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/terser/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/terser/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/terser/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/terser/LICENSE
 
 ## Text 902dbb4154679fb2b8d7c33878183f45b268d01eae5e5033dddaa8852d45f213
 
@@ -71231,86 +71191,86 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:9068a8782d2fb4c6e432cfa25334efa56f722822180570802bf86e71b6003b1e -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/loader-utils2/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/loader-utils3/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/mini-css-extract-plugin/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/sass-loader/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/schema-utils2/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/schema-utils3/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/watchpack/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/webpack/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/loader-utils2/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/loader-utils3/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/mini-css-extract-plugin/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/sass-loader/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/schema-utils2/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/schema-utils3/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/watchpack/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/webpack/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/loader-utils2/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/loader-utils3/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/mini-css-extract-plugin/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/sass-loader/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/schema-utils2/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/schema-utils3/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/watchpack/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/webpack/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/loader-utils2/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/loader-utils3/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/mini-css-extract-plugin/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/sass-loader/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/schema-utils2/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/schema-utils3/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/watchpack/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/webpack/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/loader-utils2/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/loader-utils3/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/mini-css-extract-plugin/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/sass-loader/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/schema-utils2/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/schema-utils3/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/watchpack/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/webpack/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/loader-utils2/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/loader-utils3/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/mini-css-extract-plugin/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/sass-loader/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/schema-utils2/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/schema-utils3/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/watchpack/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/webpack/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/loader-utils2/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/loader-utils3/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/mini-css-extract-plugin/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/sass-loader/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/schema-utils2/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/schema-utils3/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/watchpack/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/webpack/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/loader-utils2/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/loader-utils3/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/mini-css-extract-plugin/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/sass-loader/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/schema-utils2/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/schema-utils3/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/watchpack/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/webpack/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/loader-utils2/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/loader-utils3/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/mini-css-extract-plugin/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/sass-loader/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/schema-utils2/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/schema-utils3/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/watchpack/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/webpack/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/loader-utils2/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/loader-utils3/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/mini-css-extract-plugin/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/sass-loader/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/schema-utils2/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/schema-utils3/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/watchpack/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/webpack/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/loader-utils2/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/loader-utils3/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/mini-css-extract-plugin/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/sass-loader/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/schema-utils2/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/schema-utils3/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/watchpack/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/webpack/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/loader-utils2/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/loader-utils3/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/mini-css-extract-plugin/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/sass-loader/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/schema-utils2/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/schema-utils3/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/watchpack/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/webpack/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/loader-utils2/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/loader-utils3/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/mini-css-extract-plugin/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/sass-loader/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/schema-utils2/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/schema-utils3/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/watchpack/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/webpack/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/loader-utils2/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/loader-utils3/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/mini-css-extract-plugin/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/sass-loader/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/schema-utils2/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/schema-utils3/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/watchpack/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/webpack/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/loader-utils2/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/loader-utils3/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/mini-css-extract-plugin/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/sass-loader/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/schema-utils2/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/schema-utils3/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/watchpack/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/webpack/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/loader-utils2/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/loader-utils3/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/mini-css-extract-plugin/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/sass-loader/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/schema-utils2/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/schema-utils3/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/watchpack/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/webpack/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/loader-utils2/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/loader-utils3/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/mini-css-extract-plugin/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/sass-loader/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/schema-utils2/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/schema-utils3/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/watchpack/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/webpack/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/loader-utils2/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/loader-utils3/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/mini-css-extract-plugin/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/sass-loader/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/schema-utils2/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/schema-utils3/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/watchpack/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/webpack/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/loader-utils2/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/loader-utils3/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/mini-css-extract-plugin/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/sass-loader/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/schema-utils2/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/schema-utils3/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/watchpack/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/webpack/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/loader-utils2/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/loader-utils3/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/mini-css-extract-plugin/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/sass-loader/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/schema-utils2/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/schema-utils3/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/watchpack/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/webpack/LICENSE
 
 ## Text 907529572ac5f5b0871654f41dee2129f429d9d91523f4dccdc03b60f6af581e
 
@@ -74235,6 +74195,38 @@ Apache-2.0 is elected from that declaration. Its full text is the shared common-
 Applies to:
 - cargo:r-efi=6.0.0 — Package licence election
 
+## Text 9592377807fad09c3c1d7210d2e36db54c55e1e4cf2077497063c78e0b9a218b
+
+<!-- nwui-text:9592377807fad09c3c1d7210d2e36db54c55e1e4cf2077497063c78e0b9a218b -->
+```text
+Copyright 2020-2021 nearForm
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+<!-- /nwui-text:9592377807fad09c3c1d7210d2e36db54c55e1e4cf2077497063c78e0b9a218b -->
+
+Applies to:
+- npm:@next/env=16.4.5 — package/dist/compiled/fast-jwt/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/fast-jwt/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/fast-jwt/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/fast-jwt/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/fast-jwt/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/fast-jwt/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/fast-jwt/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/fast-jwt/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/fast-jwt/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/fast-jwt/LICENSE
+
 ## Text 95b7a3611fd946d5a09aaa5f5270dc97632980e394fe749e1e5b6a5156716a3f
 
 <!-- nwui-text:95b7a3611fd946d5a09aaa5f5270dc97632980e394fe749e1e5b6a5156716a3f -->
@@ -75325,16 +75317,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:96e5193183476a03da6667d217ce14110191d26ee105338086e94339edf40d5a -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/stream-browserify/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/stream-browserify/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/stream-browserify/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/stream-browserify/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/stream-browserify/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/stream-browserify/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/stream-browserify/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/stream-browserify/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/stream-browserify/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/stream-browserify/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/stream-browserify/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/stream-browserify/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/stream-browserify/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/stream-browserify/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/stream-browserify/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/stream-browserify/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/stream-browserify/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/stream-browserify/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/stream-browserify/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/stream-browserify/LICENSE
 
 ## Text 9702976fe8a5f9dbbd97ca62d0fa22121ec198ef4f4a9cf5a46b60fa688a7f89
 
@@ -77611,7 +77603,7 @@ DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:9a51230200e4e3eacdf1dc5d09a90ca17c798fd15b4c70919135a3eebb0389b0 -->
 
 Applies to:
-- cargo:lettre=0.11.23 — lettre-0.11.23/LICENSE
+- cargo:lettre=0.11.24 — lettre-0.11.24/LICENSE
 
 ## Text 9a5173d966344c9b7e4c09e61e49f0315e37b04380c0a09615ad2fd7015fee2d
 
@@ -78498,16 +78490,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:9dbd86998d3cdafc1d8c298aea636146568d05d429b81386e60cfce11e6cedb6 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/comment-json/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/comment-json/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/comment-json/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/comment-json/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/comment-json/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/comment-json/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/comment-json/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/comment-json/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/comment-json/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/comment-json/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/comment-json/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/comment-json/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/comment-json/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/comment-json/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/comment-json/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/comment-json/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/comment-json/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/comment-json/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/comment-json/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/comment-json/LICENSE
 
 ## Text 9dc7535841863372cb757676c5acd69c010572a85df23d3467d6bb3cc2829e84
 
@@ -78759,16 +78751,16 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 <!-- /nwui-text:9e534cfb7f7ae1300e16fe1ee7d203fdfe707dc932429c37246f747c3699ee14 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/postcss-modules-extract-imports/LICENSE
 
 ## Text 9e59b900d5985ba2c82e357476449b8395134930241ada31ab971ee272c52987
 
@@ -79567,16 +79559,16 @@ IN THE SOFTWARE.
 <!-- /nwui-text:9f75981e6039d13bf2e591c59e9c89a2641ca605fde59ba78974b11553f6c148 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/busboy/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/busboy/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/busboy/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/busboy/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/busboy/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/busboy/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/busboy/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/busboy/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/busboy/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/busboy/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/busboy/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/busboy/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/busboy/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/busboy/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/busboy/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/busboy/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/busboy/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/busboy/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/busboy/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/busboy/LICENSE
 
 ## Text 9f8540c3d4c7c11d052b091eb23fc39ac1d1abad9761e02932098f3f86eaf4a2
 
@@ -79845,16 +79837,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:a0ec0dab16b3666f24950f86d257930ac2ad475557b4bfe245620e0817d8a45d -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/fresh/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/fresh/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/fresh/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/fresh/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/fresh/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/fresh/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/fresh/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/fresh/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/fresh/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/fresh/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/fresh/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/fresh/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/fresh/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/fresh/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/fresh/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/fresh/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/fresh/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/fresh/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/fresh/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/fresh/LICENSE
 
 ## Text a11bf0049831d9088db9e27630122600a4829f8d70484240367a809c91473aae
 
@@ -80721,16 +80713,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:a22b9d5763f574e5db347c30acc0b33eaf4846767c03d2e27d012e864e79a824 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/path-browserify/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/path-browserify/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/path-browserify/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/path-browserify/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/path-browserify/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/path-browserify/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/path-browserify/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/path-browserify/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/path-browserify/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/path-browserify/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/path-browserify/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/path-browserify/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/path-browserify/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/path-browserify/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/path-browserify/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/path-browserify/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/path-browserify/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/path-browserify/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/path-browserify/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/path-browserify/LICENSE
 
 ## Text a249c877c5568c35ee185600cf9d0582bf4e185e8365780d9726e896df1f5b9a
 
@@ -82951,16 +82943,16 @@ SOFTWARE.
 <!-- /nwui-text:a8e260b5b60eb27746ff2c5967489e6878c5a6ba99400cbec84c89a9b49a46ca -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/cli-select/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/cli-select/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/cli-select/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/cli-select/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/cli-select/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/cli-select/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/cli-select/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/cli-select/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/cli-select/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/cli-select/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/cli-select/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/cli-select/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/cli-select/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/cli-select/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/cli-select/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/cli-select/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/cli-select/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/cli-select/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/cli-select/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/cli-select/LICENSE
 
 ## Text a906b1780404efade983f7f8778cba3639b5db221077323f5e47c6a84d083058
 
@@ -83802,17 +83794,17 @@ THE SOFTWARE.
 <!-- /nwui-text:aaa78451b6fecd1b9c4594c796c133c0e90cad100372ff8bc6de615e9ef9adf1 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/cross-spawn/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/cross-spawn/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/cross-spawn/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/cross-spawn/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/cross-spawn/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/cross-spawn/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/cross-spawn/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/cross-spawn/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/cross-spawn/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/cross-spawn/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/cross-spawn/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/cross-spawn/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/cross-spawn/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/cross-spawn/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/cross-spawn/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/cross-spawn/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/cross-spawn/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/cross-spawn/LICENSE
 - npm:cross-spawn=7.0.6 — package/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/cross-spawn/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/cross-spawn/LICENSE
 
 ## Text aabcda2d2974edc956d45b43657e356b6fe53b436579f13512809095c1c41ddb
 
@@ -90319,16 +90311,16 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 <!-- /nwui-text:b2b54c738525e98cc42d4a1c239c9d8421507816acce98950e81d0943daae68e -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/icss-utils/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/icss-utils/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/icss-utils/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/icss-utils/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/icss-utils/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/icss-utils/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/icss-utils/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/icss-utils/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/icss-utils/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/icss-utils/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/icss-utils/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/icss-utils/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/icss-utils/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/icss-utils/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/icss-utils/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/icss-utils/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/icss-utils/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/icss-utils/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/icss-utils/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/icss-utils/LICENSE
 
 ## Text b2b57d05307f22bbcdd0b5187c66fe276e1142c266c26abc7168308e14f89567
 
@@ -93769,16 +93761,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 <!-- /nwui-text:bb3a5cb8fb224f632970e31425348f556f7a83b165d5384ea5e142575f5c412e -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/@mswjs/interceptors/ClientRequest/LICENSE
 
 ## Text bb8058de36e022a0276b4f7caea4ab74bd9343df1288e3397a8f40bbfa22deb4
 
@@ -94201,16 +94193,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:bd47ce7b88c7759630d1e2b9fcfa170a0f1fde522be09e13fb1581a79d090400 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/content-disposition/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/content-disposition/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/content-disposition/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/content-disposition/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/content-disposition/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/content-disposition/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/content-disposition/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/content-disposition/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/content-disposition/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/content-disposition/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/content-disposition/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/content-disposition/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/content-disposition/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/content-disposition/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/content-disposition/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/content-disposition/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/content-disposition/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/content-disposition/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/content-disposition/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/content-disposition/LICENSE
 
 ## Text bd934e7810eba69817fe3616e8db9dae1557427c482c8a9ca9f7485d15750477
 
@@ -94359,16 +94351,16 @@ SOFTWARE.
 <!-- /nwui-text:be8ba42db3b7c3dbb064bcdc1bbbb191c0a39c8851c2a53564e97c7eea301bca -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/serve-handler/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/serve-handler/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/serve-handler/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/serve-handler/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/serve-handler/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/serve-handler/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/serve-handler/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/serve-handler/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/serve-handler/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/serve-handler/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/serve-handler/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/serve-handler/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/serve-handler/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/serve-handler/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/serve-handler/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/serve-handler/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/serve-handler/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/serve-handler/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/serve-handler/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/serve-handler/LICENSE
 
 ## Text bead537895379e59c408be85aebb08c2f3fc269a132c49ba961aa82a102daf5c
 
@@ -98627,26 +98619,26 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:c4630ac8b89cb317ac5bdd60ac5e4e185eab9bd5151a0c7b3afa41aa83d7ec9b -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/postcss-safe-parser/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/postcss-scss/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/postcss-safe-parser/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/postcss-scss/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/postcss-safe-parser/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/postcss-scss/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/postcss-safe-parser/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/postcss-scss/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/postcss-safe-parser/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/postcss-scss/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/postcss-safe-parser/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/postcss-scss/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/postcss-safe-parser/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/postcss-scss/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/postcss-safe-parser/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/postcss-scss/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/postcss-safe-parser/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/postcss-scss/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/postcss-safe-parser/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/postcss-scss/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/postcss-safe-parser/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/postcss-scss/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/postcss-safe-parser/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/postcss-scss/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/postcss-safe-parser/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/postcss-scss/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/postcss-safe-parser/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/postcss-scss/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/postcss-safe-parser/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/postcss-scss/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/postcss-safe-parser/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/postcss-scss/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/postcss-safe-parser/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/postcss-scss/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/postcss-safe-parser/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/postcss-scss/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/postcss-safe-parser/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/postcss-scss/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/postcss-safe-parser/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/postcss-scss/LICENSE
 
 ## Text c46324e45a005413535a6fb7a97e9eacd3cc6bf30335b7d5c10b8ee3af9e60c2
 
@@ -99345,37 +99337,6 @@ LICENSE-APACHE
 
 Applies to:
 - component:RUST_IMAGE=rust:1.98.1-slim-trixie@sha256:4cd829461bd5c4d511c32e269da9cb8929223b666519d8004e35fc8d1d771ab7 — usr/local/rustup/toolchains/1.98.1-aarch64-unknown-linux-gnu/share/doc/rust/COPYRIGHT.html
-
-## Text c5d18f2569938b6d61594f799702b7a29b5c33fba64dc5669875a50d5523aee6
-
-<!-- nwui-text:c5d18f2569938b6d61594f799702b7a29b5c33fba64dc5669875a50d5523aee6 -->
-```text
-MIT License
-
-Copyright (c) 2021-2024 Paolo Barbolini <paolo@paolo565.org>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-<!-- /nwui-text:c5d18f2569938b6d61594f799702b7a29b5c33fba64dc5669875a50d5523aee6 -->
-
-Applies to:
-- cargo:email-encoding=0.4.2 — email-encoding-0.4.2/LICENSE-MIT
 
 ## Text c5de694d2f7a6084593c7280222149b683f084103f9627be3a22ed5eee4ce86c
 
@@ -100821,16 +100782,16 @@ THE SOFTWARE.
 <!-- /nwui-text:c8e6bca7230689d536a3bd7158f66e9c4f89f95d0748743a0370ac229e9023ad -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/raw-body/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/raw-body/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/raw-body/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/raw-body/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/raw-body/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/raw-body/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/raw-body/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/raw-body/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/raw-body/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/raw-body/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/raw-body/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/raw-body/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/raw-body/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/raw-body/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/raw-body/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/raw-body/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/raw-body/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/raw-body/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/raw-body/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/raw-body/LICENSE
 
 ## Text c8f5c2e31ac27e0b67a361b32883a70b5b7dbd98165e6742fe66fa106fe19c8c
 
@@ -101211,26 +101172,26 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 <!-- /nwui-text:c9d85a24226fa4dd8c0756961de362cee34f6e9b1d19938bd480239950ad9a93 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/source-map/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/source-map08/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/source-map/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/source-map08/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/source-map/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/source-map08/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/source-map/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/source-map08/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/source-map/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/source-map08/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/source-map/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/source-map08/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/source-map/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/source-map08/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/source-map/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/source-map08/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/source-map/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/source-map08/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/source-map/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/source-map08/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/source-map/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/source-map08/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/source-map/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/source-map08/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/source-map/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/source-map08/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/source-map/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/source-map08/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/source-map/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/source-map08/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/source-map/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/source-map08/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/source-map/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/source-map08/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/source-map/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/source-map08/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/source-map/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/source-map08/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/source-map/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/source-map08/LICENSE
 - npm:source-map-js=1.2.2 — package/LICENSE
 - npm:source-map=0.6.1 — package/LICENSE
 
@@ -102812,16 +102773,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:cbb2f5bc337c216a190f569303f44c33b77cbfc16687cb5b6ff0a4bfb1e73ea9 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/debug/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/debug/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/debug/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/debug/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/debug/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/debug/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/debug/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/debug/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/debug/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/debug/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/debug/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/debug/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/debug/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/debug/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/debug/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/debug/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/debug/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/debug/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/debug/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/debug/LICENSE
 
 ## Text cbb9b7a43ff9a987be2821791b8ccbca3d339ee53916c48354a374c47e40d26e
 
@@ -104305,16 +104266,16 @@ THE SOFTWARE.
 <!-- /nwui-text:d0cd141b0c322fded5dfad1d4645bb2fedfc05b7321fe1009469638190d59ef9 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/picomatch/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/picomatch/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/picomatch/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/picomatch/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/picomatch/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/picomatch/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/picomatch/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/picomatch/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/picomatch/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/picomatch/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/picomatch/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/picomatch/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/picomatch/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/picomatch/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/picomatch/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/picomatch/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/picomatch/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/picomatch/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/picomatch/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/picomatch/LICENSE
 - npm:picomatch=4.0.5 — package/LICENSE
 - npm:picomatch=4.0.7 — package/LICENSE
 
@@ -104582,16 +104543,16 @@ SOFTWARE.
 <!-- /nwui-text:d25d1d6d28c35cb6f358e2833e405c4e53fec2fa24d156323ddea5cd438d3407 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/os-browserify/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/os-browserify/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/os-browserify/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/os-browserify/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/os-browserify/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/os-browserify/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/os-browserify/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/os-browserify/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/os-browserify/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/os-browserify/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/os-browserify/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/os-browserify/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/os-browserify/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/os-browserify/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/os-browserify/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/os-browserify/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/os-browserify/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/os-browserify/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/os-browserify/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/os-browserify/LICENSE
 
 ## Text d26349cfe9cc5aa1861f959a14babc9d8b0affdbcfc35731724456ee80f712b9
 
@@ -106537,16 +106498,16 @@ The `lib/node` directory borrows files from joyent/node which uses the following
 <!-- /nwui-text:d5f14c3258420dfe5a3b641a143d6e6dd90eabb5962244d937e25699c3a45ec9 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/timers-browserify/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/timers-browserify/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/timers-browserify/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/timers-browserify/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/timers-browserify/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/timers-browserify/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/timers-browserify/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/timers-browserify/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/timers-browserify/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/timers-browserify/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/timers-browserify/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/timers-browserify/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/timers-browserify/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/timers-browserify/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/timers-browserify/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/timers-browserify/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/timers-browserify/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/timers-browserify/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/timers-browserify/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/timers-browserify/LICENSE
 
 ## Text d62b265ff520ae562d2ce91b5004eb03c2a514529e8a9ae33094e396ee447860
 
@@ -107426,17 +107387,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:da4db1480d9beea3483a2eda5c53b22238d0827d57da162b48f122e04d2d9987 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/nanoid/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/nanoid/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/nanoid/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/nanoid/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/nanoid/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/nanoid/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/nanoid/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/nanoid/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/nanoid/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/nanoid/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/nanoid/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/nanoid/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/nanoid/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/nanoid/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/nanoid/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/nanoid/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/nanoid/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/nanoid/LICENSE
 - npm:nanoid=3.3.18 — package/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/nanoid/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/nanoid/LICENSE
 
 ## Text da4e1ca482810736772f4d0d6eb7f9217060706d5c93172b81dc4b5c0f1b7d59
 
@@ -107501,116 +107462,116 @@ SOFTWARE.
 <!-- /nwui-text:da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/react-dom-experimental/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/react-dom/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/react-experimental/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/react-is/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/react-server-dom-turbopack/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/react-server-dom-webpack/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/react/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/scheduler-experimental/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/scheduler/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/react-dom-experimental/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/react-dom/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/react-experimental/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/react-is/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/react-server-dom-turbopack/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/react-server-dom-webpack/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/react/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/scheduler-experimental/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/scheduler/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/react-dom-experimental/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/react-dom/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/react-experimental/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/react-is/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/react-server-dom-turbopack/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/react-server-dom-webpack/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/react/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/scheduler-experimental/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/scheduler/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/react-dom-experimental/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/react-dom/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/react-experimental/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/react-is/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/react-server-dom-turbopack/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/react-server-dom-webpack/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/react/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/scheduler-experimental/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/scheduler/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/react-dom-experimental/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/react-dom/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/react-experimental/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/react-is/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/react-server-dom-turbopack/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/react-server-dom-webpack/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/react/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/scheduler-experimental/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/scheduler/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/react-dom-experimental/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/react-dom/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/react-experimental/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/react-is/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/react-server-dom-turbopack/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/react-server-dom-webpack/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/react/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/scheduler-experimental/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/scheduler/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/react-dom-experimental/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/react-dom/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/react-experimental/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/react-is/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/react-server-dom-turbopack/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/react-server-dom-webpack/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/react/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/scheduler-experimental/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/scheduler/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/react-dom-experimental/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/react-dom/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/react-experimental/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/react-is/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/react-server-dom-turbopack/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/react-server-dom-webpack/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/react/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/scheduler-experimental/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/scheduler/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/react-dom-experimental/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/react-dom/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/react-experimental/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/react-is/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/react-server-dom-turbopack/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/react-server-dom-webpack/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/react/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/scheduler-experimental/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/scheduler/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/react-dom-experimental/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/react-dom/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/react-experimental/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/react-is/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/react-server-dom-turbopack/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/react-server-dom-webpack/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/react/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/scheduler-experimental/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/scheduler/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/react-dom-experimental/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/react-dom/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/react-experimental/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/react-is/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/react-server-dom-turbopack/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/react-server-dom-webpack/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/react/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/scheduler-experimental/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/scheduler/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/react-dom-experimental/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/react-dom/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/react-experimental/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/react-is/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/react-server-dom-turbopack/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/react-server-dom-webpack/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/react/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/scheduler-experimental/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/scheduler/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/react-dom-experimental/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/react-dom/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/react-experimental/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/react-is/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/react-server-dom-turbopack/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/react-server-dom-webpack/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/react/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/scheduler-experimental/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/scheduler/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/react-dom-experimental/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/react-dom/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/react-experimental/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/react-is/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/react-server-dom-turbopack/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/react-server-dom-webpack/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/react/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/scheduler-experimental/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/scheduler/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/react-dom-experimental/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/react-dom/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/react-experimental/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/react-is/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/react-server-dom-turbopack/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/react-server-dom-webpack/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/react/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/scheduler-experimental/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/scheduler/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/react-dom-experimental/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/react-dom/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/react-experimental/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/react-is/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/react-server-dom-turbopack/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/react-server-dom-webpack/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/react/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/scheduler-experimental/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/scheduler/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/react-dom-experimental/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/react-dom/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/react-experimental/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/react-is/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/react-server-dom-turbopack/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/react-server-dom-webpack/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/react/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/scheduler-experimental/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/scheduler/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/react-dom-experimental/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/react-dom/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/react-experimental/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/react-is/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/react-server-dom-turbopack/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/react-server-dom-webpack/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/react/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/scheduler-experimental/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/scheduler/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/react-dom-experimental/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/react-dom/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/react-experimental/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/react-is/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/react-server-dom-turbopack/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/react-server-dom-webpack/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/react/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/scheduler-experimental/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/scheduler/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/react-dom-experimental/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/react-dom/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/react-experimental/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/react-is/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/react-server-dom-turbopack-experimental/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/react-server-dom-turbopack/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/react-server-dom-webpack-experimental/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/react-server-dom-webpack/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/react/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/scheduler-experimental/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/scheduler/LICENSE
 - npm:react-dom=19.2.8 — package/LICENSE
 - npm:react-dom=19.3.0 — package/LICENSE
 - npm:react=19.2.8 — package/LICENSE
@@ -108153,16 +108114,16 @@ SOFTWARE.
 <!-- /nwui-text:dcd0a622a3a2c94fe3aa6238b76363f87df442afe788cbad966afe943ed62281 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/ws/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/ws/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/ws/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/ws/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/ws/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/ws/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/ws/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/ws/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/ws/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/ws/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/ws/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/ws/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/ws/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/ws/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/ws/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/ws/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/ws/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/ws/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/ws/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/ws/LICENSE
 
 ## Text dcde96fb8b24e957c9a4d346f8dca3c677d46e31301ada62fc44749302d7101c
 
@@ -108294,16 +108255,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:dd40f37957ddcb6a6157f40b677d6f43697583f956144fbce25443e35630453e -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/postcss-modules-local-by-default/LICENSE
 
 ## Text dd485fb119abba2fc9166e66d284b74b123a31cffeebf93df5421b38eba418ad
 
@@ -108550,16 +108511,16 @@ IN THE SOFTWARE.
 <!-- /nwui-text:ddd770379e07bf0574dfaa4485be80a23b3248b36d09f33ec79276c09b829daf -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/browserify-zlib/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/browserify-zlib/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/browserify-zlib/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/browserify-zlib/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/browserify-zlib/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/browserify-zlib/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/browserify-zlib/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/browserify-zlib/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/browserify-zlib/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/browserify-zlib/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/browserify-zlib/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/browserify-zlib/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/browserify-zlib/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/browserify-zlib/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/browserify-zlib/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/browserify-zlib/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/browserify-zlib/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/browserify-zlib/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/browserify-zlib/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/browserify-zlib/LICENSE
 
 ## Text ddea4e94a1c35ed9826e54e13a5b50b8f81b21665a00ca07c8861f1859e56b6b
 
@@ -111312,26 +111273,26 @@ Apache License
 <!-- /nwui-text:dfd45c33c8a121d709e6a7086894f51c3f9629d39c8196b501748fa2afed51e2 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/web-vitals-attribution/LICENSE
-- npm:@next/env=16.4.3 — package/dist/compiled/web-vitals/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/web-vitals-attribution/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/web-vitals/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/web-vitals-attribution/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/web-vitals/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/web-vitals-attribution/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/web-vitals/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/web-vitals-attribution/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/web-vitals/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/web-vitals-attribution/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/web-vitals/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/web-vitals-attribution/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/web-vitals/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/web-vitals-attribution/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/web-vitals/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/web-vitals-attribution/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/web-vitals/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/web-vitals-attribution/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/web-vitals/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/web-vitals-attribution/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/web-vitals/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/web-vitals-attribution/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/web-vitals/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/web-vitals-attribution/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/web-vitals/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/web-vitals-attribution/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/web-vitals/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/web-vitals-attribution/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/web-vitals/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/web-vitals-attribution/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/web-vitals/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/web-vitals-attribution/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/web-vitals/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/web-vitals-attribution/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/web-vitals/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/web-vitals-attribution/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/web-vitals/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/web-vitals-attribution/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/web-vitals/LICENSE
 
 ## Text e00e0e00d065bfc49e61af026f47a4a2f73662c2787d642d26b586e19d576d34
 
@@ -111543,16 +111504,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 <!-- /nwui-text:e08c030e1274fadc495c71e0489612f0c74673b69ae8e41460526c233a94a728 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/is-animated/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/is-animated/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/is-animated/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/is-animated/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/is-animated/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/is-animated/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/is-animated/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/is-animated/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/is-animated/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/is-animated/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/is-animated/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/is-animated/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/is-animated/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/is-animated/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/is-animated/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/is-animated/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/is-animated/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/is-animated/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/is-animated/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/is-animated/LICENSE
 
 ## Text e0b933a051567bcb1cd8f06eb877dcc9932f69e108173e86e1eb04e54f375591
 
@@ -111782,16 +111743,16 @@ SOFTWARE.
 <!-- /nwui-text:e1898814043cb5500483d9c8517edda824b352f696d35e5043fcfb537c221531 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/stacktrace-parser/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/stacktrace-parser/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/stacktrace-parser/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/stacktrace-parser/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/stacktrace-parser/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/stacktrace-parser/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/stacktrace-parser/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/stacktrace-parser/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/stacktrace-parser/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/stacktrace-parser/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/stacktrace-parser/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/stacktrace-parser/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/stacktrace-parser/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/stacktrace-parser/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/stacktrace-parser/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/stacktrace-parser/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/stacktrace-parser/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/stacktrace-parser/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/stacktrace-parser/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/stacktrace-parser/LICENSE
 
 ## Text e18f1135930f93576b0b9c0ad09aced5ba422445011e01222595743ce410c92b
 
@@ -112002,16 +111963,16 @@ limitations under the License.
 <!-- /nwui-text:e18f1135930f93576b0b9c0ad09aced5ba422445011e01222595743ce410c92b -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/@vercel/blob/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/@vercel/blob/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/@vercel/blob/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/@vercel/blob/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/@vercel/blob/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/@vercel/blob/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/@vercel/blob/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/@vercel/blob/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/@vercel/blob/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/@vercel/blob/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/@vercel/blob/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/@vercel/blob/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/@vercel/blob/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/@vercel/blob/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/@vercel/blob/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/@vercel/blob/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/@vercel/blob/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/@vercel/blob/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/@vercel/blob/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/@vercel/blob/LICENSE
 
 ## Text e190940e8ad3cdd4fca962a6508ed6865d589d314b1cb055f86000e124b88d8d
 
@@ -114189,16 +114150,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 <!-- /nwui-text:e399db7e952e45cae84f1b53d72ba8dbad2daaa7ab8cd1f0ab72fea5ab73b225 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/devalue/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/devalue/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/devalue/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/devalue/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/devalue/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/devalue/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/devalue/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/devalue/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/devalue/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/devalue/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/devalue/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/devalue/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/devalue/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/devalue/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/devalue/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/devalue/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/devalue/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/devalue/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/devalue/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/devalue/LICENSE
 
 ## Text e3a956681ee067f971ac413994171b3d90ca801ec6324e76c9c55366cfe31cb0
 
@@ -114248,16 +114209,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:e3b44af066615de2ea48d18d852d0762f18c0b2efcea714fa48a6f729d405b85 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/bytes/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/bytes/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/bytes/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/bytes/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/bytes/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/bytes/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/bytes/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/bytes/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/bytes/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/bytes/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/bytes/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/bytes/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/bytes/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/bytes/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/bytes/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/bytes/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/bytes/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/bytes/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/bytes/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/bytes/LICENSE
 
 ## Text e3ba223bb1423f0aad8c3dfce0fe3148db48926d41e6fbc3afbbf5ff9e1c89cb
 
@@ -114561,16 +114522,16 @@ SOFTWARE.
 <!-- /nwui-text:e4f76a7a19ef2989dd79339bd3abf8afcf1d6f065e5a10c76c19415ffd727eb3 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/edge-runtime/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/edge-runtime/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/edge-runtime/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/edge-runtime/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/edge-runtime/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/edge-runtime/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/edge-runtime/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/edge-runtime/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/edge-runtime/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/edge-runtime/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/edge-runtime/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/edge-runtime/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/edge-runtime/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/edge-runtime/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/edge-runtime/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/edge-runtime/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/edge-runtime/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/edge-runtime/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/edge-runtime/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/edge-runtime/LICENSE
 
 ## Text e4fb99e19b7f1e1eb05b0fb834d6f21aae6ca9c308d8a5f63caca7c6bcd3720b
 
@@ -118197,16 +118158,16 @@ IN THE SOFTWARE.
 <!-- /nwui-text:ec62dc96da0099b87f4511736c87309335527fb7031639493e06c95728dc8c54 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/string_decoder/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/string_decoder/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/string_decoder/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/string_decoder/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/string_decoder/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/string_decoder/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/string_decoder/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/string_decoder/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/string_decoder/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/string_decoder/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/string_decoder/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/string_decoder/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/string_decoder/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/string_decoder/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/string_decoder/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/string_decoder/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/string_decoder/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/string_decoder/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/string_decoder/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/string_decoder/LICENSE
 
 ## Text ec9a041135a6ba1b8f02c28a48a93f6979c464e739ec776254d8579bc94dbdf8
 
@@ -118941,16 +118902,16 @@ SOFTWARE.
 <!-- /nwui-text:ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/license.md
-- npm:@next/swc-darwin-arm64=16.4.3 — package/license.md
-- npm:@next/swc-darwin-x64=16.4.3 — package/license.md
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/license.md
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/license.md
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/license.md
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/license.md
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/license.md
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/license.md
-- npm:next=16.4.3 — package/license.md
+- npm:@next/env=16.4.5 — package/license.md
+- npm:@next/swc-darwin-arm64=16.4.5 — package/license.md
+- npm:@next/swc-darwin-x64=16.4.5 — package/license.md
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/license.md
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/license.md
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/license.md
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/license.md
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/license.md
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/license.md
+- npm:next=16.4.5 — package/license.md
 
 ## Text ee7e880941dee91587fd23a4a51c92de71e773c93e6a33173cee0d4f2a5f5445
 
@@ -119280,6 +119241,37 @@ LICENSE-APACHE
 
 Applies to:
 - component:RUST_IMAGE=rust:1.98.1-slim-trixie@sha256:4cd829461bd5c4d511c32e269da9cb8929223b666519d8004e35fc8d1d771ab7 — usr/local/rustup/toolchains/1.98.1-aarch64-unknown-linux-gnu/share/doc/rust/COPYRIGHT.html
+
+## Text ef695e24269388f81a7a70329c6cf05dd67b78bbcf4fcf6f2c39628cec012c9d
+
+<!-- nwui-text:ef695e24269388f81a7a70329c6cf05dd67b78bbcf4fcf6f2c39628cec012c9d -->
+```text
+MIT License
+
+Copyright (c) 2021-2026 Paolo Barbolini <paolo@paolobarbolini.it>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+<!-- /nwui-text:ef695e24269388f81a7a70329c6cf05dd67b78bbcf4fcf6f2c39628cec012c9d -->
+
+Applies to:
+- cargo:email-encoding=0.4.3 — email-encoding-0.4.3/LICENSE-MIT
 
 ## Text ef7c80a539da7654cbafd5b26935ac50e4d43aa9afdb65d39abdac9c02bb066f
 
@@ -120436,16 +120428,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:f25bf9bf3ae8984bcd43bf7fb8f78e7eec8d577081fb8d0989cfa7c67ecebb8e -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/browserslist/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/browserslist/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/browserslist/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/browserslist/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/browserslist/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/browserslist/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/browserslist/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/browserslist/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/browserslist/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/browserslist/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/browserslist/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/browserslist/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/browserslist/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/browserslist/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/browserslist/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/browserslist/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/browserslist/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/browserslist/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/browserslist/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/browserslist/LICENSE
 
 ## Text f26c92c1c16e78c6b1f7474792f7195b7abc851caccb4a73dcc5b3c31efc7321
 
@@ -120475,16 +120467,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:f26c92c1c16e78c6b1f7474792f7195b7abc851caccb4a73dcc5b3c31efc7321 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/postcss-flexbugs-fixes/LICENSE
 
 ## Text f2a4238a17adb73bb023f42828560e5a908617610de47fbce5272e56018065c8
 
@@ -124577,16 +124569,16 @@ SOFTWARE.
 <!-- /nwui-text:fb9548e36708f09ae0cc1047ebd8153928bfe5bed67e4051f0ace552bdcbf0b3 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/ua-parser-js/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/ua-parser-js/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/ua-parser-js/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/ua-parser-js/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/ua-parser-js/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/ua-parser-js/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/ua-parser-js/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/ua-parser-js/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/ua-parser-js/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/ua-parser-js/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/ua-parser-js/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/ua-parser-js/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/ua-parser-js/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/ua-parser-js/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/ua-parser-js/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/ua-parser-js/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/ua-parser-js/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/ua-parser-js/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/ua-parser-js/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/ua-parser-js/LICENSE
 
 ## Text fba3318d0c600380177edf7ba4778ff6588faa8d106c679ac5dfee620011239c
 
@@ -124885,16 +124877,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 <!-- /nwui-text:fc06db8dd5e7840db84ab328d9f58bdb91a56fbbf045bb977c11fcd07e2d8e3e -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/domain-browser/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/domain-browser/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/domain-browser/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/domain-browser/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/domain-browser/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/domain-browser/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/domain-browser/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/domain-browser/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/domain-browser/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/domain-browser/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/domain-browser/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/domain-browser/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/domain-browser/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/domain-browser/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/domain-browser/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/domain-browser/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/domain-browser/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/domain-browser/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/domain-browser/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/domain-browser/LICENSE
 
 ## Text fc50d033815ed07637be21d8e6f7f0154b71dfc0b52dadc1f1632d02673d5a57
 
@@ -126425,16 +126417,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:fe9538ec27e7fb9bfbcc05c97bc5087a2a25a7caf4ad7e6bc99fbcbf1a37e6ce -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/cookie/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/cookie/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/cookie/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/cookie/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/cookie/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/cookie/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/cookie/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/cookie/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/cookie/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/cookie/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/cookie/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/cookie/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/cookie/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/cookie/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/cookie/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/cookie/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/cookie/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/cookie/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/cookie/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/cookie/LICENSE
 
 ## Text fea1d5bf3dd71605ce5d7d2ff695c1837e914c77195e523a86b5391716477960
 
@@ -126549,16 +126541,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:ff151c00207c908581639851dd8504ce4255be0650b2b236edec2aa90342b0cd -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/https-browserify/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/https-browserify/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/https-browserify/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/https-browserify/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/https-browserify/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/https-browserify/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/https-browserify/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/https-browserify/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/https-browserify/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/https-browserify/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/https-browserify/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/https-browserify/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/https-browserify/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/https-browserify/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/https-browserify/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/https-browserify/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/https-browserify/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/https-browserify/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/https-browserify/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/https-browserify/LICENSE
 
 ## Text ff23a4aa54d3eb5d95cced9d96199baff7449dd4198699a08d5690b82300e0e0
 
@@ -126847,16 +126839,16 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 <!-- /nwui-text:ff75aaa5aaf56005eeea7723b287f9df3dd45b33b310a7eb347d3ab28ea26593 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/write-file-atomic/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/write-file-atomic/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/write-file-atomic/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/write-file-atomic/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/write-file-atomic/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/write-file-atomic/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/write-file-atomic/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/write-file-atomic/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/write-file-atomic/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/write-file-atomic/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/write-file-atomic/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/write-file-atomic/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/write-file-atomic/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/write-file-atomic/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/write-file-atomic/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/write-file-atomic/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/write-file-atomic/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/write-file-atomic/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/write-file-atomic/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/write-file-atomic/LICENSE
 
 ## Text ff8dde4cef4bd90a6c5d7721e8dddaab7ea597beca6d9528913dabb95c1a6ebd
 
@@ -127016,16 +127008,16 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 <!-- /nwui-text:ff96bbd6a7408c166f16dbed7f2c87a8061e5a21289ec8f2d3069f8d3b15fc0a -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/@hapi/accept/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/@hapi/accept/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/@hapi/accept/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/@hapi/accept/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/@hapi/accept/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/@hapi/accept/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/@hapi/accept/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/@hapi/accept/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/@hapi/accept/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/@hapi/accept/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/@hapi/accept/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/@hapi/accept/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/@hapi/accept/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/@hapi/accept/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/@hapi/accept/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/@hapi/accept/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/@hapi/accept/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/@hapi/accept/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/@hapi/accept/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/@hapi/accept/LICENSE
 
 ## Text ffa7a8fd248cf58fc8953700f741bc0b70aadc433a73ff82badf1b3d9ee7b11e
 
@@ -127163,16 +127155,16 @@ terms above.
 <!-- /nwui-text:ffd8b33b354585f4ce119f19c53728281e48a97b074491eb6bf6d5c5ff305272 -->
 
 Applies to:
-- npm:@next/env=16.4.3 — package/dist/compiled/lodash.curry/LICENSE
-- npm:@next/swc-darwin-arm64=16.4.3 — package/dist/compiled/lodash.curry/LICENSE
-- npm:@next/swc-darwin-x64=16.4.3 — package/dist/compiled/lodash.curry/LICENSE
-- npm:@next/swc-linux-arm64-gnu=16.4.3 — package/dist/compiled/lodash.curry/LICENSE
-- npm:@next/swc-linux-arm64-musl=16.4.3 — package/dist/compiled/lodash.curry/LICENSE
-- npm:@next/swc-linux-x64-gnu=16.4.3 — package/dist/compiled/lodash.curry/LICENSE
-- npm:@next/swc-linux-x64-musl=16.4.3 — package/dist/compiled/lodash.curry/LICENSE
-- npm:@next/swc-win32-arm64-msvc=16.4.3 — package/dist/compiled/lodash.curry/LICENSE
-- npm:@next/swc-win32-x64-msvc=16.4.3 — package/dist/compiled/lodash.curry/LICENSE
-- npm:next=16.4.3 — package/dist/compiled/lodash.curry/LICENSE
+- npm:@next/env=16.4.5 — package/dist/compiled/lodash.curry/LICENSE
+- npm:@next/swc-darwin-arm64=16.4.5 — package/dist/compiled/lodash.curry/LICENSE
+- npm:@next/swc-darwin-x64=16.4.5 — package/dist/compiled/lodash.curry/LICENSE
+- npm:@next/swc-linux-arm64-gnu=16.4.5 — package/dist/compiled/lodash.curry/LICENSE
+- npm:@next/swc-linux-arm64-musl=16.4.5 — package/dist/compiled/lodash.curry/LICENSE
+- npm:@next/swc-linux-x64-gnu=16.4.5 — package/dist/compiled/lodash.curry/LICENSE
+- npm:@next/swc-linux-x64-musl=16.4.5 — package/dist/compiled/lodash.curry/LICENSE
+- npm:@next/swc-win32-arm64-msvc=16.4.5 — package/dist/compiled/lodash.curry/LICENSE
+- npm:@next/swc-win32-x64-msvc=16.4.5 — package/dist/compiled/lodash.curry/LICENSE
+- npm:next=16.4.5 — package/dist/compiled/lodash.curry/LICENSE
 
 ## Package inventory
 
@@ -127658,12 +127650,12 @@ Evidence: archive; source archive SHA-256: 252afb9ae5eaa683babdc6a068b3f5726eb19
 - Text 143368af9701a24ebaf89fe5310ad8116ca71e8e99f17415c0dd893f6a256ae4
 - Text 7576269ea71f767b99297934c0b2367532690f8c4badc695edf8e04ab6a1e545
 
-### cargo:email-encoding=0.4.2
+### cargo:email-encoding=0.4.3
 
 Coverage: source/build/runtime-superset; architecture: all; licence: MIT OR Apache-2.0.
-Evidence: archive; source archive SHA-256: 420b9da095f052ea597503e39073b5b3c522f7db933fbac202d91d24492693fd.
+Evidence: archive; source archive SHA-256: 9f690ae2169f2ceb3f45b28b6fcd8fa16839f2f5c8818546774b9425f5f71004.
 - Text 50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a
-- Text c5d18f2569938b6d61594f799702b7a29b5c33fba64dc5669875a50d5523aee6
+- Text ef695e24269388f81a7a70329c6cf05dd67b78bbcf4fcf6f2c39628cec012c9d
 
 ### cargo:email_address=0.2.9
 
@@ -128165,10 +128157,10 @@ Evidence: archive; source archive SHA-256: bbd2bcb4c963f2ddae06a2efc7e9f35913124
 - Text 143368af9701a24ebaf89fe5310ad8116ca71e8e99f17415c0dd893f6a256ae4
 - Text 0621878e61f0d0fda054bcbe02df75192c28bde1ecc8289cbd86aeba2dd72720
 
-### cargo:lettre=0.11.23
+### cargo:lettre=0.11.24
 
 Coverage: source/build/runtime-superset; architecture: all; licence: MIT.
-Evidence: archive; source archive SHA-256: f2c646bd5cc763b1087b15493e29a64be6147ba8f19342004fa52048ee596eae.
+Evidence: archive; source archive SHA-256: f294f3d7cdb313e578acef7d7727d4e8d897e0fcd0d6d58c19959cec95073f19.
 - Text 9a51230200e4e3eacdf1dc5d09a90ca17c798fd15b4c70919135a3eebb0389b0
 
 ### cargo:libc=0.2.189
@@ -136604,11 +136596,11 @@ Evidence: archive; source archive SHA-256: 9116047aebbaa1698934052d01c6e09b4c3ae
 Debian source: netbase 6.5.
 - Text c3865976ab91396ff72c848a7c263d4065c15a1b6e334de46f1d3a91b1bdb40b
 
-### deb:runtime-amd64.tsv:nginx=1.30.6-1~trixie
+### deb:runtime-amd64.tsv:nginx=1.30.7-1~trixie
 
 Coverage: runtime; architecture: amd64; licence: LicenseRef-e9a3a92b84c88d7cc39a9503.
-Evidence: archive; source archive SHA-256: 8dc9a5da6d62b33aaef20c047760a82c7b18c90100251290ef5f553b9de3bc3c.
-Debian source: nginx 1.30.6-1~trixie.
+Evidence: archive; source archive SHA-256: 7e9e787849bed1fbb677868fc8ee86f8b513cd9e46ad29e41c7710cec3c8825d.
+Debian source: nginx 1.30.7-1~trixie.
 - Text 8e571b551fb2939542af97b00cb96b8b044734e8e9f42458a1485c66b3d5e6f3
 
 ### deb:runtime-amd64.tsv:openssl-provider-legacy=3.5.7-1~deb13u3
@@ -137493,11 +137485,11 @@ Evidence: archive; source archive SHA-256: 9116047aebbaa1698934052d01c6e09b4c3ae
 Debian source: netbase 6.5.
 - Text c3865976ab91396ff72c848a7c263d4065c15a1b6e334de46f1d3a91b1bdb40b
 
-### deb:runtime-arm64.tsv:nginx=1.30.6-1~trixie
+### deb:runtime-arm64.tsv:nginx=1.30.7-1~trixie
 
 Coverage: runtime; architecture: arm64; licence: LicenseRef-e9a3a92b84c88d7cc39a9503.
-Evidence: archive; source archive SHA-256: 101b082dd58a7fd699e8c0eb76844bc884ce5935e8822a30f7e5dd3994c715d4.
-Debian source: nginx 1.30.6-1~trixie.
+Evidence: archive; source archive SHA-256: b32bff964b8e64e1297e6da783748b8db1117a68f3d9ad85589b41be79a38f46.
+Debian source: nginx 1.30.7-1~trixie.
 - Text 8e571b551fb2939542af97b00cb96b8b044734e8e9f42458a1485c66b3d5e6f3
 
 ### deb:runtime-arm64.tsv:openssl-provider-legacy=3.5.7-1~deb13u3
@@ -138341,10 +138333,10 @@ Evidence: archive; source archive SHA-256: e64c2013eba51ad6624ccf94f06c8a570c0d8
 - Text 7b34e99bc43641767fded49f7f03563ffd50c689b1f3b0d50700b4727bc4ae24
 - Text cb9560e9740c8ea359aa852a14ebfdffe856c0518da5917b321a3042bc805052
 
-### npm:@next/env=16.4.3
+### npm:@next/env=16.4.5
 
 Coverage: source/build/runtime-superset; architecture: all; licence: MIT.
-Evidence: archive; source archive SHA-256: eb5678b1392a76555766a8b03fb23ea7e05d095190e6d2e3517112eb42edc7c0.
+Evidence: archive; source archive SHA-256: 93854c48def336bdb29bf00ebe22855d145d5103abb87cab0d018aa2bd558bc6.
 - Text 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76
 - Text ff96bbd6a7408c166f16dbed7f2c87a8061e5a21289ec8f2d3069f8d3b15fc0a
 - Text bb3a5cb8fb224f632970e31425348f556f7a83b165d5384ea5e142575f5c412e
@@ -138380,6 +138372,7 @@ Evidence: archive; source archive SHA-256: eb5678b1392a76555766a8b03fb23ea7e05d0
 - Text fc06db8dd5e7840db84ab328d9f58bdb91a56fbbf045bb977c11fcd07e2d8e3e
 - Text e4f76a7a19ef2989dd79339bd3abf8afcf1d6f065e5a10c76c19415ffd727eb3
 - Text 631987b7616a325a5b97566c232418481ddf7dbb5ecadefb991e791876cc2599
+- Text 9592377807fad09c3c1d7210d2e36db54c55e1e4cf2077497063c78e0b9a218b
 - Text a0ec0dab16b3666f24950f86d257930ac2ad475557b4bfe245620e0817d8a45d
 - Text 6236fa0b88a4a0cce3dda0367979491b2052b3c8d6b1c10b3668de083e86a7f0
 - Text 7261b3ab93df04c6d8f3398f87275d28f0e87d88cbd0033b788fb50402de03c5
@@ -138392,7 +138385,6 @@ Evidence: archive; source archive SHA-256: eb5678b1392a76555766a8b03fb23ea7e05d0
 - Text e08c030e1274fadc495c71e0489612f0c74673b69ae8e41460526c233a94a728
 - Text 52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85
 - Text 53e59feb13058722d977c699eb0407c7bce2f93c949b681bbd2ff31698535927
-- Text 2144eb6894cb440fde6b2b3aaae3b617c8f1dc9bb19813079dcf62ec6c517042
 - Text 498d39c83164cf8de195090f5564fc0308ab271344ca2f95484a7f1020952d00
 - Text 9068a8782d2fb4c6e432cfa25334efa56f722822180570802bf86e71b6003b1e
 - Text ffd8b33b354585f4ce119f19c53728281e48a97b074491eb6bf6d5c5ff305272
@@ -138442,10 +138434,10 @@ Evidence: archive; source archive SHA-256: eb5678b1392a76555766a8b03fb23ea7e05d0
 - Text 3f1189b28e3866e0d979968d466b78f813f76827cfdca1fbb124cc0a5c8841f8
 - Text ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224
 
-### npm:@next/swc-darwin-arm64=16.4.3
+### npm:@next/swc-darwin-arm64=16.4.5
 
 Coverage: source/build/runtime-superset; architecture: all; licence: MIT.
-Evidence: archive; source archive SHA-256: 7e62f01aa47f7b88ce06e82375e542e331047de611e956ae54acf4514e276c27.
+Evidence: archive; source archive SHA-256: f8e6929e63c45ce6ec247fc81d6ac5f0f4736fe7f44c30cf2677149e415e5127.
 - Text 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76
 - Text ff96bbd6a7408c166f16dbed7f2c87a8061e5a21289ec8f2d3069f8d3b15fc0a
 - Text bb3a5cb8fb224f632970e31425348f556f7a83b165d5384ea5e142575f5c412e
@@ -138481,6 +138473,7 @@ Evidence: archive; source archive SHA-256: 7e62f01aa47f7b88ce06e82375e542e331047
 - Text fc06db8dd5e7840db84ab328d9f58bdb91a56fbbf045bb977c11fcd07e2d8e3e
 - Text e4f76a7a19ef2989dd79339bd3abf8afcf1d6f065e5a10c76c19415ffd727eb3
 - Text 631987b7616a325a5b97566c232418481ddf7dbb5ecadefb991e791876cc2599
+- Text 9592377807fad09c3c1d7210d2e36db54c55e1e4cf2077497063c78e0b9a218b
 - Text a0ec0dab16b3666f24950f86d257930ac2ad475557b4bfe245620e0817d8a45d
 - Text 6236fa0b88a4a0cce3dda0367979491b2052b3c8d6b1c10b3668de083e86a7f0
 - Text 7261b3ab93df04c6d8f3398f87275d28f0e87d88cbd0033b788fb50402de03c5
@@ -138493,7 +138486,6 @@ Evidence: archive; source archive SHA-256: 7e62f01aa47f7b88ce06e82375e542e331047
 - Text e08c030e1274fadc495c71e0489612f0c74673b69ae8e41460526c233a94a728
 - Text 52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85
 - Text 53e59feb13058722d977c699eb0407c7bce2f93c949b681bbd2ff31698535927
-- Text 2144eb6894cb440fde6b2b3aaae3b617c8f1dc9bb19813079dcf62ec6c517042
 - Text 498d39c83164cf8de195090f5564fc0308ab271344ca2f95484a7f1020952d00
 - Text 9068a8782d2fb4c6e432cfa25334efa56f722822180570802bf86e71b6003b1e
 - Text ffd8b33b354585f4ce119f19c53728281e48a97b074491eb6bf6d5c5ff305272
@@ -138543,10 +138535,10 @@ Evidence: archive; source archive SHA-256: 7e62f01aa47f7b88ce06e82375e542e331047
 - Text 3f1189b28e3866e0d979968d466b78f813f76827cfdca1fbb124cc0a5c8841f8
 - Text ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224
 
-### npm:@next/swc-darwin-x64=16.4.3
+### npm:@next/swc-darwin-x64=16.4.5
 
 Coverage: source/build/runtime-superset; architecture: all; licence: MIT.
-Evidence: archive; source archive SHA-256: e6f6b235ed26acede102a3d8260be97420b6b91a50a6c989bfc427d179add59f.
+Evidence: archive; source archive SHA-256: e2b5416b0c3bb0820f53a8d304f066d6836f975cdb467c90851404f164845cff.
 - Text 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76
 - Text ff96bbd6a7408c166f16dbed7f2c87a8061e5a21289ec8f2d3069f8d3b15fc0a
 - Text bb3a5cb8fb224f632970e31425348f556f7a83b165d5384ea5e142575f5c412e
@@ -138582,6 +138574,7 @@ Evidence: archive; source archive SHA-256: e6f6b235ed26acede102a3d8260be97420b6b
 - Text fc06db8dd5e7840db84ab328d9f58bdb91a56fbbf045bb977c11fcd07e2d8e3e
 - Text e4f76a7a19ef2989dd79339bd3abf8afcf1d6f065e5a10c76c19415ffd727eb3
 - Text 631987b7616a325a5b97566c232418481ddf7dbb5ecadefb991e791876cc2599
+- Text 9592377807fad09c3c1d7210d2e36db54c55e1e4cf2077497063c78e0b9a218b
 - Text a0ec0dab16b3666f24950f86d257930ac2ad475557b4bfe245620e0817d8a45d
 - Text 6236fa0b88a4a0cce3dda0367979491b2052b3c8d6b1c10b3668de083e86a7f0
 - Text 7261b3ab93df04c6d8f3398f87275d28f0e87d88cbd0033b788fb50402de03c5
@@ -138594,7 +138587,6 @@ Evidence: archive; source archive SHA-256: e6f6b235ed26acede102a3d8260be97420b6b
 - Text e08c030e1274fadc495c71e0489612f0c74673b69ae8e41460526c233a94a728
 - Text 52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85
 - Text 53e59feb13058722d977c699eb0407c7bce2f93c949b681bbd2ff31698535927
-- Text 2144eb6894cb440fde6b2b3aaae3b617c8f1dc9bb19813079dcf62ec6c517042
 - Text 498d39c83164cf8de195090f5564fc0308ab271344ca2f95484a7f1020952d00
 - Text 9068a8782d2fb4c6e432cfa25334efa56f722822180570802bf86e71b6003b1e
 - Text ffd8b33b354585f4ce119f19c53728281e48a97b074491eb6bf6d5c5ff305272
@@ -138644,10 +138636,10 @@ Evidence: archive; source archive SHA-256: e6f6b235ed26acede102a3d8260be97420b6b
 - Text 3f1189b28e3866e0d979968d466b78f813f76827cfdca1fbb124cc0a5c8841f8
 - Text ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224
 
-### npm:@next/swc-linux-arm64-gnu=16.4.3
+### npm:@next/swc-linux-arm64-gnu=16.4.5
 
 Coverage: source/build/runtime-superset; architecture: all; licence: MIT.
-Evidence: archive; source archive SHA-256: ffe89bf2610ec9e9b4fe05bd9bcf31fa01e2bfbce39b57003fcd593d7f8df873.
+Evidence: archive; source archive SHA-256: 072340019c1fcaa040f88eef2d670616cedb028d55419af260dd9606119fd019.
 - Text 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76
 - Text ff96bbd6a7408c166f16dbed7f2c87a8061e5a21289ec8f2d3069f8d3b15fc0a
 - Text bb3a5cb8fb224f632970e31425348f556f7a83b165d5384ea5e142575f5c412e
@@ -138683,6 +138675,7 @@ Evidence: archive; source archive SHA-256: ffe89bf2610ec9e9b4fe05bd9bcf31fa01e2b
 - Text fc06db8dd5e7840db84ab328d9f58bdb91a56fbbf045bb977c11fcd07e2d8e3e
 - Text e4f76a7a19ef2989dd79339bd3abf8afcf1d6f065e5a10c76c19415ffd727eb3
 - Text 631987b7616a325a5b97566c232418481ddf7dbb5ecadefb991e791876cc2599
+- Text 9592377807fad09c3c1d7210d2e36db54c55e1e4cf2077497063c78e0b9a218b
 - Text a0ec0dab16b3666f24950f86d257930ac2ad475557b4bfe245620e0817d8a45d
 - Text 6236fa0b88a4a0cce3dda0367979491b2052b3c8d6b1c10b3668de083e86a7f0
 - Text 7261b3ab93df04c6d8f3398f87275d28f0e87d88cbd0033b788fb50402de03c5
@@ -138695,7 +138688,6 @@ Evidence: archive; source archive SHA-256: ffe89bf2610ec9e9b4fe05bd9bcf31fa01e2b
 - Text e08c030e1274fadc495c71e0489612f0c74673b69ae8e41460526c233a94a728
 - Text 52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85
 - Text 53e59feb13058722d977c699eb0407c7bce2f93c949b681bbd2ff31698535927
-- Text 2144eb6894cb440fde6b2b3aaae3b617c8f1dc9bb19813079dcf62ec6c517042
 - Text 498d39c83164cf8de195090f5564fc0308ab271344ca2f95484a7f1020952d00
 - Text 9068a8782d2fb4c6e432cfa25334efa56f722822180570802bf86e71b6003b1e
 - Text ffd8b33b354585f4ce119f19c53728281e48a97b074491eb6bf6d5c5ff305272
@@ -138745,10 +138737,10 @@ Evidence: archive; source archive SHA-256: ffe89bf2610ec9e9b4fe05bd9bcf31fa01e2b
 - Text 3f1189b28e3866e0d979968d466b78f813f76827cfdca1fbb124cc0a5c8841f8
 - Text ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224
 
-### npm:@next/swc-linux-arm64-musl=16.4.3
+### npm:@next/swc-linux-arm64-musl=16.4.5
 
 Coverage: source/build/runtime-superset; architecture: all; licence: MIT.
-Evidence: archive; source archive SHA-256: 8754308a0afed020910bbd2622c16df1807588dd0830d0c209e62a6fcf772b5b.
+Evidence: archive; source archive SHA-256: 1593b8a41a5f091df4a7653bd3316728ffe33cc5e440ea7521cab45e1d4aae52.
 - Text 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76
 - Text ff96bbd6a7408c166f16dbed7f2c87a8061e5a21289ec8f2d3069f8d3b15fc0a
 - Text bb3a5cb8fb224f632970e31425348f556f7a83b165d5384ea5e142575f5c412e
@@ -138784,6 +138776,7 @@ Evidence: archive; source archive SHA-256: 8754308a0afed020910bbd2622c16df180758
 - Text fc06db8dd5e7840db84ab328d9f58bdb91a56fbbf045bb977c11fcd07e2d8e3e
 - Text e4f76a7a19ef2989dd79339bd3abf8afcf1d6f065e5a10c76c19415ffd727eb3
 - Text 631987b7616a325a5b97566c232418481ddf7dbb5ecadefb991e791876cc2599
+- Text 9592377807fad09c3c1d7210d2e36db54c55e1e4cf2077497063c78e0b9a218b
 - Text a0ec0dab16b3666f24950f86d257930ac2ad475557b4bfe245620e0817d8a45d
 - Text 6236fa0b88a4a0cce3dda0367979491b2052b3c8d6b1c10b3668de083e86a7f0
 - Text 7261b3ab93df04c6d8f3398f87275d28f0e87d88cbd0033b788fb50402de03c5
@@ -138796,7 +138789,6 @@ Evidence: archive; source archive SHA-256: 8754308a0afed020910bbd2622c16df180758
 - Text e08c030e1274fadc495c71e0489612f0c74673b69ae8e41460526c233a94a728
 - Text 52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85
 - Text 53e59feb13058722d977c699eb0407c7bce2f93c949b681bbd2ff31698535927
-- Text 2144eb6894cb440fde6b2b3aaae3b617c8f1dc9bb19813079dcf62ec6c517042
 - Text 498d39c83164cf8de195090f5564fc0308ab271344ca2f95484a7f1020952d00
 - Text 9068a8782d2fb4c6e432cfa25334efa56f722822180570802bf86e71b6003b1e
 - Text ffd8b33b354585f4ce119f19c53728281e48a97b074491eb6bf6d5c5ff305272
@@ -138846,10 +138838,10 @@ Evidence: archive; source archive SHA-256: 8754308a0afed020910bbd2622c16df180758
 - Text 3f1189b28e3866e0d979968d466b78f813f76827cfdca1fbb124cc0a5c8841f8
 - Text ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224
 
-### npm:@next/swc-linux-x64-gnu=16.4.3
+### npm:@next/swc-linux-x64-gnu=16.4.5
 
 Coverage: source/build/runtime-superset; architecture: all; licence: MIT.
-Evidence: archive; source archive SHA-256: 86e792b745760839170e00df3b091bd751b275b8314778514046f0dd501ba0d2.
+Evidence: archive; source archive SHA-256: 01e56b1d3607d068f8f96601256264f73baaf1a5f5fd4c9e2fc8f7f7e9c2ea99.
 - Text 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76
 - Text ff96bbd6a7408c166f16dbed7f2c87a8061e5a21289ec8f2d3069f8d3b15fc0a
 - Text bb3a5cb8fb224f632970e31425348f556f7a83b165d5384ea5e142575f5c412e
@@ -138885,6 +138877,7 @@ Evidence: archive; source archive SHA-256: 86e792b745760839170e00df3b091bd751b27
 - Text fc06db8dd5e7840db84ab328d9f58bdb91a56fbbf045bb977c11fcd07e2d8e3e
 - Text e4f76a7a19ef2989dd79339bd3abf8afcf1d6f065e5a10c76c19415ffd727eb3
 - Text 631987b7616a325a5b97566c232418481ddf7dbb5ecadefb991e791876cc2599
+- Text 9592377807fad09c3c1d7210d2e36db54c55e1e4cf2077497063c78e0b9a218b
 - Text a0ec0dab16b3666f24950f86d257930ac2ad475557b4bfe245620e0817d8a45d
 - Text 6236fa0b88a4a0cce3dda0367979491b2052b3c8d6b1c10b3668de083e86a7f0
 - Text 7261b3ab93df04c6d8f3398f87275d28f0e87d88cbd0033b788fb50402de03c5
@@ -138897,7 +138890,6 @@ Evidence: archive; source archive SHA-256: 86e792b745760839170e00df3b091bd751b27
 - Text e08c030e1274fadc495c71e0489612f0c74673b69ae8e41460526c233a94a728
 - Text 52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85
 - Text 53e59feb13058722d977c699eb0407c7bce2f93c949b681bbd2ff31698535927
-- Text 2144eb6894cb440fde6b2b3aaae3b617c8f1dc9bb19813079dcf62ec6c517042
 - Text 498d39c83164cf8de195090f5564fc0308ab271344ca2f95484a7f1020952d00
 - Text 9068a8782d2fb4c6e432cfa25334efa56f722822180570802bf86e71b6003b1e
 - Text ffd8b33b354585f4ce119f19c53728281e48a97b074491eb6bf6d5c5ff305272
@@ -138947,10 +138939,10 @@ Evidence: archive; source archive SHA-256: 86e792b745760839170e00df3b091bd751b27
 - Text 3f1189b28e3866e0d979968d466b78f813f76827cfdca1fbb124cc0a5c8841f8
 - Text ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224
 
-### npm:@next/swc-linux-x64-musl=16.4.3
+### npm:@next/swc-linux-x64-musl=16.4.5
 
 Coverage: source/build/runtime-superset; architecture: all; licence: MIT.
-Evidence: archive; source archive SHA-256: c9a0836c8a8c520294bf22053a6ca3faa8e3897b0134dfc8f29f5c7f31d362dc.
+Evidence: archive; source archive SHA-256: 9ff0c4c364df044540780609a31ec51c729d5cec839807bbad6ecdf68397c93f.
 - Text 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76
 - Text ff96bbd6a7408c166f16dbed7f2c87a8061e5a21289ec8f2d3069f8d3b15fc0a
 - Text bb3a5cb8fb224f632970e31425348f556f7a83b165d5384ea5e142575f5c412e
@@ -138986,6 +138978,7 @@ Evidence: archive; source archive SHA-256: c9a0836c8a8c520294bf22053a6ca3faa8e38
 - Text fc06db8dd5e7840db84ab328d9f58bdb91a56fbbf045bb977c11fcd07e2d8e3e
 - Text e4f76a7a19ef2989dd79339bd3abf8afcf1d6f065e5a10c76c19415ffd727eb3
 - Text 631987b7616a325a5b97566c232418481ddf7dbb5ecadefb991e791876cc2599
+- Text 9592377807fad09c3c1d7210d2e36db54c55e1e4cf2077497063c78e0b9a218b
 - Text a0ec0dab16b3666f24950f86d257930ac2ad475557b4bfe245620e0817d8a45d
 - Text 6236fa0b88a4a0cce3dda0367979491b2052b3c8d6b1c10b3668de083e86a7f0
 - Text 7261b3ab93df04c6d8f3398f87275d28f0e87d88cbd0033b788fb50402de03c5
@@ -138998,7 +138991,6 @@ Evidence: archive; source archive SHA-256: c9a0836c8a8c520294bf22053a6ca3faa8e38
 - Text e08c030e1274fadc495c71e0489612f0c74673b69ae8e41460526c233a94a728
 - Text 52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85
 - Text 53e59feb13058722d977c699eb0407c7bce2f93c949b681bbd2ff31698535927
-- Text 2144eb6894cb440fde6b2b3aaae3b617c8f1dc9bb19813079dcf62ec6c517042
 - Text 498d39c83164cf8de195090f5564fc0308ab271344ca2f95484a7f1020952d00
 - Text 9068a8782d2fb4c6e432cfa25334efa56f722822180570802bf86e71b6003b1e
 - Text ffd8b33b354585f4ce119f19c53728281e48a97b074491eb6bf6d5c5ff305272
@@ -139048,10 +139040,10 @@ Evidence: archive; source archive SHA-256: c9a0836c8a8c520294bf22053a6ca3faa8e38
 - Text 3f1189b28e3866e0d979968d466b78f813f76827cfdca1fbb124cc0a5c8841f8
 - Text ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224
 
-### npm:@next/swc-win32-arm64-msvc=16.4.3
+### npm:@next/swc-win32-arm64-msvc=16.4.5
 
 Coverage: source/build/runtime-superset; architecture: all; licence: MIT.
-Evidence: archive; source archive SHA-256: 056bfb893bc0e8e2e7df8b507f5a80c6b299eab56ab71a3e93471dc6593ec5ef.
+Evidence: archive; source archive SHA-256: a2ca2278b852b08954e980fe963ced759fa88d6fef2b248b11ab61c33a461119.
 - Text 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76
 - Text ff96bbd6a7408c166f16dbed7f2c87a8061e5a21289ec8f2d3069f8d3b15fc0a
 - Text bb3a5cb8fb224f632970e31425348f556f7a83b165d5384ea5e142575f5c412e
@@ -139087,6 +139079,7 @@ Evidence: archive; source archive SHA-256: 056bfb893bc0e8e2e7df8b507f5a80c6b299e
 - Text fc06db8dd5e7840db84ab328d9f58bdb91a56fbbf045bb977c11fcd07e2d8e3e
 - Text e4f76a7a19ef2989dd79339bd3abf8afcf1d6f065e5a10c76c19415ffd727eb3
 - Text 631987b7616a325a5b97566c232418481ddf7dbb5ecadefb991e791876cc2599
+- Text 9592377807fad09c3c1d7210d2e36db54c55e1e4cf2077497063c78e0b9a218b
 - Text a0ec0dab16b3666f24950f86d257930ac2ad475557b4bfe245620e0817d8a45d
 - Text 6236fa0b88a4a0cce3dda0367979491b2052b3c8d6b1c10b3668de083e86a7f0
 - Text 7261b3ab93df04c6d8f3398f87275d28f0e87d88cbd0033b788fb50402de03c5
@@ -139099,7 +139092,6 @@ Evidence: archive; source archive SHA-256: 056bfb893bc0e8e2e7df8b507f5a80c6b299e
 - Text e08c030e1274fadc495c71e0489612f0c74673b69ae8e41460526c233a94a728
 - Text 52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85
 - Text 53e59feb13058722d977c699eb0407c7bce2f93c949b681bbd2ff31698535927
-- Text 2144eb6894cb440fde6b2b3aaae3b617c8f1dc9bb19813079dcf62ec6c517042
 - Text 498d39c83164cf8de195090f5564fc0308ab271344ca2f95484a7f1020952d00
 - Text 9068a8782d2fb4c6e432cfa25334efa56f722822180570802bf86e71b6003b1e
 - Text ffd8b33b354585f4ce119f19c53728281e48a97b074491eb6bf6d5c5ff305272
@@ -139149,10 +139141,10 @@ Evidence: archive; source archive SHA-256: 056bfb893bc0e8e2e7df8b507f5a80c6b299e
 - Text 3f1189b28e3866e0d979968d466b78f813f76827cfdca1fbb124cc0a5c8841f8
 - Text ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224
 
-### npm:@next/swc-win32-x64-msvc=16.4.3
+### npm:@next/swc-win32-x64-msvc=16.4.5
 
 Coverage: source/build/runtime-superset; architecture: all; licence: MIT.
-Evidence: archive; source archive SHA-256: 7314e84676d65fb6790aa5917e7f03582954be2db4e4fc352730a304dc621d9a.
+Evidence: archive; source archive SHA-256: c830209c2e58d165cbcade943753041b1fe1d59f96e62c42613cee34af76731c.
 - Text 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76
 - Text ff96bbd6a7408c166f16dbed7f2c87a8061e5a21289ec8f2d3069f8d3b15fc0a
 - Text bb3a5cb8fb224f632970e31425348f556f7a83b165d5384ea5e142575f5c412e
@@ -139188,6 +139180,7 @@ Evidence: archive; source archive SHA-256: 7314e84676d65fb6790aa5917e7f03582954b
 - Text fc06db8dd5e7840db84ab328d9f58bdb91a56fbbf045bb977c11fcd07e2d8e3e
 - Text e4f76a7a19ef2989dd79339bd3abf8afcf1d6f065e5a10c76c19415ffd727eb3
 - Text 631987b7616a325a5b97566c232418481ddf7dbb5ecadefb991e791876cc2599
+- Text 9592377807fad09c3c1d7210d2e36db54c55e1e4cf2077497063c78e0b9a218b
 - Text a0ec0dab16b3666f24950f86d257930ac2ad475557b4bfe245620e0817d8a45d
 - Text 6236fa0b88a4a0cce3dda0367979491b2052b3c8d6b1c10b3668de083e86a7f0
 - Text 7261b3ab93df04c6d8f3398f87275d28f0e87d88cbd0033b788fb50402de03c5
@@ -139200,7 +139193,6 @@ Evidence: archive; source archive SHA-256: 7314e84676d65fb6790aa5917e7f03582954b
 - Text e08c030e1274fadc495c71e0489612f0c74673b69ae8e41460526c233a94a728
 - Text 52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85
 - Text 53e59feb13058722d977c699eb0407c7bce2f93c949b681bbd2ff31698535927
-- Text 2144eb6894cb440fde6b2b3aaae3b617c8f1dc9bb19813079dcf62ec6c517042
 - Text 498d39c83164cf8de195090f5564fc0308ab271344ca2f95484a7f1020952d00
 - Text 9068a8782d2fb4c6e432cfa25334efa56f722822180570802bf86e71b6003b1e
 - Text ffd8b33b354585f4ce119f19c53728281e48a97b074491eb6bf6d5c5ff305272
@@ -140954,10 +140946,10 @@ Declared licence: MIT.
 - Text c18a71a2df9becf4d8d0a151bbf9c1f7fbeeec15f4b19852fffa62c3f11c7cb1
 - Text 25c4576db4a90ddaddaf1b5cd83dc1a537e600041009f6ca71ec62d770ea4390
 
-### npm:next=16.4.3
+### npm:next=16.4.5
 
 Coverage: source/build/runtime-superset; architecture: all; licence: MIT.
-Evidence: archive; source archive SHA-256: d37409b7530c4873cd14c0619a7b8734777fd0dc2cae627bb592e5a82f74f8f4.
+Evidence: archive; source archive SHA-256: a9b934c4deda237c1a269da4e68be28f39c7c5e07296a891e0a8346ce847ef97.
 - Text 117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76
 - Text ff96bbd6a7408c166f16dbed7f2c87a8061e5a21289ec8f2d3069f8d3b15fc0a
 - Text bb3a5cb8fb224f632970e31425348f556f7a83b165d5384ea5e142575f5c412e
@@ -140993,6 +140985,7 @@ Evidence: archive; source archive SHA-256: d37409b7530c4873cd14c0619a7b8734777fd
 - Text fc06db8dd5e7840db84ab328d9f58bdb91a56fbbf045bb977c11fcd07e2d8e3e
 - Text e4f76a7a19ef2989dd79339bd3abf8afcf1d6f065e5a10c76c19415ffd727eb3
 - Text 631987b7616a325a5b97566c232418481ddf7dbb5ecadefb991e791876cc2599
+- Text 9592377807fad09c3c1d7210d2e36db54c55e1e4cf2077497063c78e0b9a218b
 - Text a0ec0dab16b3666f24950f86d257930ac2ad475557b4bfe245620e0817d8a45d
 - Text 6236fa0b88a4a0cce3dda0367979491b2052b3c8d6b1c10b3668de083e86a7f0
 - Text 7261b3ab93df04c6d8f3398f87275d28f0e87d88cbd0033b788fb50402de03c5
@@ -141005,7 +140998,6 @@ Evidence: archive; source archive SHA-256: d37409b7530c4873cd14c0619a7b8734777fd
 - Text e08c030e1274fadc495c71e0489612f0c74673b69ae8e41460526c233a94a728
 - Text 52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85
 - Text 53e59feb13058722d977c699eb0407c7bce2f93c949b681bbd2ff31698535927
-- Text 2144eb6894cb440fde6b2b3aaae3b617c8f1dc9bb19813079dcf62ec6c517042
 - Text 498d39c83164cf8de195090f5564fc0308ab271344ca2f95484a7f1020952d00
 - Text 9068a8782d2fb4c6e432cfa25334efa56f722822180570802bf86e71b6003b1e
 - Text ffd8b33b354585f4ce119f19c53728281e48a97b074491eb6bf6d5c5ff305272

@@ -16,7 +16,7 @@ export default async function OAuthProviderDetailPage({
   return (
     <ProviderDetailView
       provider={provider}
-      deleteForm={<ProviderDetailActions id={provider.id} />}
+      deleteForm={<ProviderDetailActions id={provider.id} targetName={provider.name} />}
     />
   );
 }

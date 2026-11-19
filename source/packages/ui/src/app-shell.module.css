@@ -80,7 +80,7 @@
   padding: 0 var(--sp-2);
   border-radius: var(--r-2);
   color: var(--text-2);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-md);
   font-weight: 400;
   line-height: var(--lh-sm);
   text-decoration: none;
@@ -253,7 +253,7 @@
     /* Inherited visibility transitions can prevent initial drawer focus. */
     display: none;
     transform: translateX(-100%);
-    box-shadow: var(--shadow-1);
+    box-shadow: var(--shadow-2);
   }
   .menuToggle,
   .drawerClose {

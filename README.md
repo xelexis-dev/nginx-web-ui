@@ -47,7 +47,7 @@ The admin UI is in Korean. This guide quotes on-screen labels in Korean, with an
 - **Supported versions:** new fixes ship for 2.1 and later. 2.0.3 is the final 2.0.x release; no further 2.0.x releases will follow 2.1.0. **1.19.11 is the last 1.x release.** There will be no further 1.x releases, security fixes included.
 - **Environments 2.0.2 was verified on:** Docker Engine on an AMD64 Linux kernel, and OrbStack on macOS (ARM64). Docker Desktop on Windows and macOS was not verified with the final 2.0.2 build.
 - The image address is `ghcr.io/xelexis-dev/nginx-web-ui`.
-- The examples below use **2.1.1**.
+- The examples below use **2.1.2**.
 - Changes per version are in the [update history (Korean)](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPDATE.md), and new versions are announced on [Releases](https://github.com/xelexis-dev/nginx-web-ui/releases).
 
 Use the following commands to check the Docker connection, the Compose installation, and **the architecture of the Docker server that will run the container**. With a remote Docker context, the machine you type on and the machine that runs the container can differ.
@@ -61,10 +61,10 @@ docker info --format '{{.OSType}}/{{.Architecture}}'
 
 | Docker server | Image to use |
 | --- | --- |
-| `linux/x86_64` or `linux/amd64` | `ghcr.io/xelexis-dev/nginx-web-ui:2.1.1` |
-| `linux/aarch64` or `linux/arm64` | `ghcr.io/xelexis-dev/nginx-web-ui:2.1.1-arm64` |
+| `linux/x86_64` or `linux/amd64` | `ghcr.io/xelexis-dev/nginx-web-ui:2.1.2` |
+| `linux/aarch64` or `linux/arm64` | `ghcr.io/xelexis-dev/nginx-web-ui:2.1.2-arm64` |
 
-**`latest` stays on 1.19.11 and does not move across major versions.** This prevents an unplanned move from 1.x to 2.x. Install 2.1.1 with the version tags in the table above, and always pin a version tag for an installation in use. `latest` and version tags without a suffix are **AMD64 only**. For a new ARM64 installation, choose the `-arm64` tag. These are not multi-architecture tags that select the architecture for you. **When you update an existing installation, keep the architecture of the existing container's image, not the host's.** Section 6 shows how to check it.
+**`latest` stays on 1.19.11 and does not move across major versions.** This prevents an unplanned move from 1.x to 2.x. Install 2.1.2 with the version tags in the table above, and always pin a version tag for an installation in use. `latest` and version tags without a suffix are **AMD64 only**. For a new ARM64 installation, choose the `-arm64` tag. These are not multi-architecture tags that select the architecture for you. **When you update an existing installation, keep the architecture of the existing container's image, not the host's.** Section 6 shows how to check it.
 
 Before you install, check existing containers with `docker ps -a`. The example below is for a new installation. If a `nginx-web-ui` container or `nwu-*` volumes already exist, first find out whether they belong to an existing installation. Do not delete a service in use, and do not reuse its data volumes for a new installation.
 
@@ -77,12 +77,12 @@ mkdir nginx-web-ui
 cd nginx-web-ui
 ```
 
-In this folder, create a file named **`compose.yaml`** and save the following content as is. **On ARM64, change the `image` tag to `2.1.1-arm64` before you start it.**
+In this folder, create a file named **`compose.yaml`** and save the following content as is. **On ARM64, change the `image` tag to `2.1.2-arm64` before you start it.**
 
 ```yaml
 services:
   nginx-web-ui:
-    image: ghcr.io/xelexis-dev/nginx-web-ui:2.1.1
+    image: ghcr.io/xelexis-dev/nginx-web-ui:2.1.2
     container_name: nginx-web-ui
     restart: unless-stopped
     stop_grace_period: 10m
@@ -166,7 +166,7 @@ Mac shared folders in Docker Desktop and OrbStack do not enforce file permission
 
 On shared folders, owner and group numbers can look different depending on who reads them, and a successful ownership change does not guarantee access restriction by number. Read-only storage, and mounts not confirmed as a supported sharing method, keep the existing checks. Mounting a path inside the OrbStack virtual machine directly is not confirmed as supported, so use Docker-managed volumes.
 
-To use host folders, change the `volumes` of the Compose service above as follows. Replace `/absolute/path/nwui` with the real storage path, and with Docker Desktop make it accessible under file sharing. For a new installation, create the four folders first. An existing installation keeps the same database and app folders. For PostgreSQL 15 (PG15) data, first complete migration with 2.0.3 as described in section 6; 2.1.1 will not migrate it. No other container may use the same folders at the same time.
+To use host folders, change the `volumes` of the Compose service above as follows. Replace `/absolute/path/nwui` with the real storage path, and with Docker Desktop make it accessible under file sharing. For a new installation, create the four folders first. An existing installation keeps the same database and app folders. For PostgreSQL 15 (PG15) data, first complete migration with 2.0.3 as described in section 6; 2.1.2 will not migrate it. No other container may use the same folders at the same time.
 
 ```yaml
     security_opt: ["no-new-privileges:true"]
@@ -375,18 +375,18 @@ With a single target container, nothing can take requests while it restarts. Wit
 
 ## <a id="6-업데이트와-중지"></a>6. Update and stop
 
-### Coming from 1.x: first 2.0.3, then 2.1.1
+### Coming from 1.x: first 2.0.3, then 2.1.2
 
-**Do not replace a 1.x image directly with 2.1.1.** First complete the database migration with **2.0.3**, keeping the database and app volumes and settings, as the [2.0.3 installation guide](https://github.com/xelexis-dev/nginx-web-ui/blob/v2.0.3/README.md) describes. Confirm that 2.0.3 starts, existing accounts work and proxies respond, then follow the 2.x steps below. For versions below 1.19, follow that guide's intermediate-version conditions first.
+**Do not replace a 1.x image directly with 2.1.2.** First complete the database migration with **2.0.3**, keeping the database and app volumes and settings, as the [2.0.3 installation guide](https://github.com/xelexis-dev/nginx-web-ui/blob/v2.0.3/README.md) describes. Confirm that 2.0.3 starts, existing accounts work and proxies respond, then follow the 2.x steps below. For versions below 1.19, follow that guide's intermediate-version conditions first.
 
-2.1.1 does not contain the PostgreSQL 15 migration or restore tools. It refuses 1.x data or an unfinished migration without changing the database or app data, with `requires_2_0_first`. Do not delete the records or alter the database version files to bypass this. The 2.0.3 images remain available for the required stop; 2.0.3 is the final 2.0.x version.
+2.1.2 does not contain the PostgreSQL 15 migration or restore tools. It refuses 1.x data or an unfinished migration without changing the database or app data, with `requires_2_0_first`. Do not delete the records or alter the database version files to bypass this. The 2.0.3 images remain available for the required stop; 2.0.3 is the final 2.0.x version.
 
 ### Updating an existing 2.x installation
 
 1. Read the [update history (Korean)](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPDATE.md) and [upgrade path (Korean)](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPGRADE_PATH.md). Stop cleanly and keep the old image, Compose and environment settings with a database and app backup pair taken at the same point in time. Follow the upgrade path's 「중지 후 DB·앱을 함께 백업하고 복원하기」 for complete backup and restore commands. A retained PG15 backup does not replace an independent backup.
 2. Keep the existing image's architecture, volume names, mounts, ports and authentication settings. Do not create empty replacement volumes or let two containers write to the same volumes.
-3. Change the existing Compose image to `2.1.1` (AMD64) or `2.1.1-arm64` (ARM64). If pinned by digest, replace the whole image address, not just the tag. Pull and start the image. Updating from 2.1.0 does not change the database structure. Updating from 2.0.x applies the 2.1 database changes; an already migrated PG17 installation needs no PG15 conversion.
-4. Wait for startup to finish, then check version **2.1.1** in the account menu, sign-in, real HTTP/HTTPS and TCP/UDP responses, certificates, notifications and nodes. If an existing installation shows first-admin setup, stop and check the mounts. User API tokens issued before 2.1 are revoked: re-issue those you need. Server and gateway tokens stay valid.
+3. Change the existing Compose image to `2.1.2` (AMD64) or `2.1.2-arm64` (ARM64). If pinned by digest, replace the whole image address, not just the tag. Pull and start the image. Updating from 2.1.0 or 2.1.1 does not change the database structure. Updating from 2.0.x applies the 2.1 database changes; an already migrated PG17 installation needs no PG15 conversion.
+4. Wait for startup to finish, then check version **2.1.2** in the account menu, sign-in, real HTTP/HTTPS and TCP/UDP responses, certificates, notifications and nodes. If an existing installation shows first-admin setup, stop and check the mounts. User API tokens issued before 2.1 are revoked: re-issue those you need. Server and gateway tokens stay valid.
 
 ```sh
 docker image inspect "$(docker inspect nginx-web-ui --format '{{.Image}}')" --format '{{.Architecture}}'
@@ -402,13 +402,13 @@ docker exec nginx-web-ui nwui-db-upgrade auto-status
 
 Check startup at the existing host admin port (normally `http://<Docker server address>:8080`) and in the logs. Allow up to 600 seconds for a clean stop; do not force-stop immediately. While startup is in progress, a management domain served by the same container's 80/443 may be unavailable.
 
-If the container is stopped, keep it and its mounts and use this read-only status command. For ARM64 use `2.1.1-arm64`; pass any separately configured storage environment variables explicitly because `--volumes-from` does not copy them.
+If the container is stopped, keep it and its mounts and use this read-only status command. For ARM64 use `2.1.2-arm64`; pass any separately configured storage environment variables explicitly because `--volumes-from` does not copy them.
 
 ```sh
 docker run --rm --pull=never --security-opt no-new-privileges:true --network none \
   --volumes-from nginx-web-ui \
   --entrypoint /usr/local/bin/nwui-db-upgrade \
-  ghcr.io/xelexis-dev/nginx-web-ui:2.1.1 auto-status
+  ghcr.io/xelexis-dev/nginx-web-ui:2.1.2 auto-status
 ```
 
 ### Returning to 1.19.11 and removing a retained backup
@@ -419,7 +419,7 @@ An installation already migrated by 2.0 keeps its PG15 backup and the 「PG15 �
 
 ### Nodes and stopping
 
-Within 2.x, update the gateway first, then the nodes. A 2.1 gateway can manage 2.0 nodes, but HTTP/2 on needs a 2.1-or-later node. A gateway does not manage a node of a newer minor version than itself. The 2.0–1.19 bridge does not extend to 2.1: finish moving 1.19 nodes to 2.0.3 while the gateway is on 2.0.3, then raise the gateway to 2.1.1 and update the nodes. Never start an older image normally on a database used by a newer one; restore the pre-update database and app backup pair to go back.
+Within 2.x, update the gateway first, then the nodes. A 2.1 gateway can manage 2.0 nodes, but HTTP/2 on needs a 2.1-or-later node. A gateway does not manage a node of a newer minor version than itself. The 2.0–1.19 bridge does not extend to 2.1: finish moving 1.19 nodes to 2.0.3 while the gateway is on 2.0.3, then raise the gateway to 2.1.2 and update the nodes. Never start an older image normally on a database used by a newer one; restore the pre-update database and app backup pair to go back.
 
 For a temporary stop and restart:
 
@@ -457,7 +457,7 @@ docker logs --tail=100 nginx-web-ui
 | Code | What to check |
 | --- | --- |
 | `insufficient_space` | Compare the required space and inodes shown in the status with the available space. Fix the cause and restart the same image |
-| `requires_2_0_first` | Finish migration or recovery with 2.0.3 before starting 2.1.1. Keep both volumes and follow the 2.0.3 guide. Existing data was not changed |
+| `requires_2_0_first` | Finish migration or recovery with 2.0.3 before starting 2.1.2. Keep both volumes and follow the 2.0.3 guide. Existing data was not changed |
 | `storage_busy` | Whether a container or admin command is using the same database and app volumes. Stop the concurrent use |
 | `nginx_test_failed` | Check the file named in the nginx error lines of the log. Fix the errors in the base configuration or additional included files, then restart. Startup can also stop when isolation of user configuration could not finish or the final check failed |
 | `trusted_input_unsafe` | Whether the user that handles admin requests owns, or can write, the nginx executable, configuration or included files named in the error |

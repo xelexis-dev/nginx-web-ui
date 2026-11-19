@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { isValidElement, type ReactElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { Button, Checkbox, FilterChips, SearchField, Select, SegmentedControl } from "@repo/ui";
+import { Button, Checkbox, FilterChips, SearchField, Select, SegmentedControl, StatusBadge } from "@repo/ui";
 
 type Effect = { deps?: unknown[]; cleanup?: () => void };
 const h = vi.hoisted(() => ({
@@ -43,6 +43,8 @@ class FakeSource {
   onmessage!: (event: { data: string }) => void;
   onopen!: () => void;
   onerror!: () => void;
+  listeners = new Map<string, (event: { data: string }) => void>();
+  addEventListener = (type: string, listener: (event: { data: string }) => void) => { this.listeners.set(type, listener); };
   close = vi.fn();
   constructor(readonly url: string) { FakeSource.all.push(this); }
 }
@@ -272,4 +274,106 @@ it.each([
   const markup = renderToStaticMarkup(meta);
   expect(markup).toContain(`>${expected}</span>`);
   expect(markup).not.toContain("중");
+});
+
+const errorLine = (time: string, message: string) => `2026/11/17 ${time} [error] ${message}`;
+const offset = (value: string) => FakeSource.last.listeners.get("offset")!({ data: value });
+function errorStream() { change(SegmentedControl, "label", "로그 파일", "error"); render(); live(); }
+
+it("reads old-node error timestamps as UTC and applies a supplied writer offset", () => {
+  errorStream(); send(errorLine("09:40:14", "old"));
+  expect(html()).toContain("2026-11-17</span> 18:40:14");
+  offset("32400"); send(errorLine("18:40:15", "new"));
+  expect(html()).toContain("2026-11-17</span> 18:40:15");
+  expect(html()).not.toContain("03:40:15");
+});
+it("captures each offset before flush and never restamps an unrelated earlier line", () => {
+  errorStream(); offset("-14400"); FakeSource.last.onmessage({ data: errorLine("01:30:00", "summer") });
+  offset("-18000"); send(errorLine("01:30:00", "winter"));
+  expect(html()).toContain("2026-11-17</span> 14:30:00");
+  expect(html()).toContain("2026-11-17</span> 15:30:00");
+  offset("32400"); render();
+  expect(html()).toContain("2026-11-17</span> 14:30:00");
+});
+it.each([false, true])("repairs old-node replay metadata with paused=%s without changing rows or arrivals", (paused) => {
+  errorStream(); const raw = errorLine("18:40:14", "retained");
+  send(raw); if (paused) click(button("일시 정지"));
+  const pending = errorLine("18:40:15", "pending"); send(pending);
+  expect(html()).toContain("2026-11-18</span> 03:40:14");
+  reconnect(); offset("32400");
+  FakeSource.last.onmessage({ data: raw }); // Wait for the full overlap across offset changes.
+  offset("0"); send(pending);
+  expect(html()).toContain("2026-11-17</span> 18:40:14");
+  expect(paths()).toHaveLength(paused ? 1 : 2);
+  if (paused) {
+    expect(html()).toContain("새 줄 1개"); click(button("이어 보기"));
+  } else {
+    click(button("일시 정지")); expect(html()).toContain("새 줄 0개");
+  }
+  expect(paths()).toHaveLength(2);
+  expect(html()).toContain("2026-11-18</span> 03:40:15");
+  click(button("보기"));
+  expect(html()).toContain(raw.replaceAll('"', "&quot;"));
+});
+it("starts reconnects without an offset and ignores malformed offset data", () => {
+  errorStream(); offset("32400"); send(errorLine("18:40:14", "first"));
+  reconnect();
+  for (const invalid of ["", " ", "1.5", "86401", "-86401", "NaN", "Infinity", "0x10", "3e2"]) offset(invalid);
+  send(errorLine("09:40:15", "unrelated"));
+  expect(html()).toContain("2026-11-17</span> 18:40:15");
+  expect(html()).toContain("2026-11-17</span> 18:40:14");
+});
+it("corrects the Raw gutter but copies the unchanged original, and leaves access parsing alone", async () => {
+  errorStream(); offset("32400"); const raw = errorLine("18:40:14", "raw"); send(raw);
+  change(SegmentedControl, "label", "보기 모드", "raw");
+  const gutter = elements(tree).find((node) => node.type === "time" && node.props["aria-hidden"] === "true")!;
+  expect(gutter.props.children).toBe("18:40:14");
+  click(button("보이는 줄 복사")); await Promise.resolve();
+  expect(navigator.clipboard.writeText).toHaveBeenCalledWith(raw);
+  change(SegmentedControl, "label", "로그 파일", "access"); render(); live(); offset("-18000"); send(access("/access"));
+  const accessGutter = elements(tree).find((node) => node.type === "time" && node.props["aria-hidden"] === "true")!;
+  expect(accessGutter.props.children).toBe("23:32:08");
+});
+
+const levelOptions = () => find(FilterChips, "label", "레벨 필터").props.options as { value: string; label: string; count: number }[];
+const levelLine = (level: string, message = level) => `2026/11/18 03:32:51 [${level}] ${message}`;
+it("accounts for 108 lines with a separate crit-and-above chip", () => {
+  errorStream(); send(...Array.from({ length: 90 }, () => levelLine("error")), ...Array.from({ length: 16 }, () => levelLine("notice")), levelLine("emerg"), levelLine("emerg"));
+  const chips = levelOptions();
+  expect(chips.map(({ label, count }) => [label, count])).toEqual([["전체", 108], ["crit 이상", 2], ["error", 90], ["warn", 0], ["notice", 16], ["info", 0]]);
+  expect(chips.slice(1).reduce((sum, chip) => sum + chip.count, 0)).toBe(chips[0]!.count);
+});
+it("groups crit/alert/emerg, leaves error exact, and uses solid only on severe tags", () => {
+  errorStream(); send(...["crit", "alert", "emerg", "error", "notice"].map((level) => levelLine(level)));
+  const tags = elements(tree).filter((node) => node.type === StatusBadge);
+  for (const level of ["crit", "alert", "emerg"]) expect(tags.find((node) => node.props.children === level)?.props.variant).toBe("solid");
+  expect(tags.find((node) => node.props.children === "error")?.props.variant).toBe("soft");
+  expect(html().match(/data-variant="solid"/g)).toHaveLength(3);
+  change(FilterChips, "label", "레벨 필터", "crit"); expect(paths()).toEqual(["crit", "alert", "emerg"]);
+  change(SegmentedControl, "label", "보기 모드", "raw");
+  expect(html()).toContain("[crit]"); expect(html()).toContain("[alert]"); expect(html()).toContain("[emerg]"); expect(html()).not.toContain("[error]");
+  change(FilterChips, "label", "레벨 필터", "error");
+  expect(html()).toContain("[error]"); expect(html()).not.toContain("[emerg]");
+  change(SegmentedControl, "label", "보기 모드", "table"); expect(paths()).toEqual(["error"]);
+});
+it("shows 기타 only for uncovered lines and keeps every line accounted for", () => {
+  errorStream(); send(...Array.from({ length: 90 }, () => levelLine("error")), ...Array.from({ length: 16 }, () => levelLine("notice")), levelLine("emerg"), levelLine("emerg"), "unreadable");
+  expect(levelOptions().map(({ count }) => count)).toEqual([109, 2, 90, 0, 16, 0, 1]);
+  send(levelLine("debug"));
+  expect(levelOptions().at(-1)).toEqual({ value: "other", label: "기타", count: 2 });
+  expect(levelOptions().slice(1).reduce((sum, chip) => sum + chip.count, 0)).toBe(110);
+  change(FilterChips, "label", "레벨 필터", "other"); expect(paths()).toEqual(["unreadable", "debug"]);
+  change(SegmentedControl, "label", "보기 모드", "raw"); expect(html()).toContain("unreadable"); expect(html()).toContain("[debug]"); expect(html()).not.toContain("[error]");
+});
+it.each(["clear", "evict"])("keeps selected 기타 at zero after %s and hides it once deselected", (mode) => {
+  errorStream(); send("unreadable"); change(FilterChips, "label", "레벨 필터", "other");
+  if (mode === "clear") click(button("화면 비우기"));
+  else send(...Array.from({ length: 2000 }, () => levelLine("error")));
+  render();
+  expect(levelOptions().at(-1)).toEqual({ value: "other", label: "기타", count: 0 });
+  expect(find(FilterChips, "label", "레벨 필터").props.value).toBe("other");
+  expect(paths()).toHaveLength(0);
+  change(FilterChips, "label", "레벨 필터", "");
+  expect(levelOptions().some((chip) => chip.value === "other")).toBe(false);
+  expect(paths()).toHaveLength(mode === "clear" ? 0 : 2000);
 });

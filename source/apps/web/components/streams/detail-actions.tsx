@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef, useState } from "react";
 import Link from "next/link";
-import { Button, Banner, buttonClassName } from "@repo/ui";
+import { Button, Banner, buttonClassName, ConfirmDialog } from "@repo/ui";
 import { NodeErrorCard } from "@/components/node-error";
 import type { NodeActionState, NodeFormAction } from "@/lib/node-action-state";
 import { useApiAction } from "@/lib/use-api-action";
@@ -25,12 +25,14 @@ const INITIAL: NodeActionState = { ok: false };
  */
 export function StreamDetailActions({
   id,
+  targetName = id,
   editHref,
   enabled,
   toggleAction,
   deleteAction,
 }: {
   id: string;
+  targetName?: string;
   editHref: string;
   enabled: boolean;
   toggleAction: NodeFormAction;
@@ -45,6 +47,10 @@ export function StreamDetailActions({
     INITIAL,
   );
 
+  const deleteForm = useRef<HTMLFormElement>(null);
+  const approvedId = useRef<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+
   return (
     <div className={styles.opsDetailActions}>
       <div className={styles.detailActionsRow}>
@@ -54,7 +60,13 @@ export function StreamDetailActions({
             {enabled ? "비활성화" : "활성화"}
           </Button>
         </form>
-        <form action={deleteFormAction}>
+        <form ref={deleteForm} action={deleteFormAction} onSubmit={(event) => {
+          if (deletePending || approvedId.current !== id) {
+            event.preventDefault();
+            if (!(deletePending)) setConfirmId(id);
+          }
+          approvedId.current = null;
+        }}>
           <input type="hidden" name="id" value={id} />
           <Button type="submit" variant="dangerQuiet" disabled={deletePending}>
             삭제
@@ -64,6 +76,21 @@ export function StreamDetailActions({
           수정
         </Link>
       </div>
+      <ConfirmDialog
+        open={confirmId === id}
+        onClose={() => setConfirmId(null)}
+        title="삭제"
+        description="이 Stream을 삭제하시겠습니까?"
+        target={targetName}
+        confirmLabel="삭제"
+        pending={deletePending}
+        onConfirm={() => {
+          if (confirmId !== id || deletePending) return;
+          approvedId.current = id;
+          setConfirmId(null);
+          deleteForm.current?.requestSubmit();
+        }}
+      />
       {toggleState.nodeError ? (
         <NodeErrorCard {...toggleState.nodeError} />
       ) : toggleState.error ? (

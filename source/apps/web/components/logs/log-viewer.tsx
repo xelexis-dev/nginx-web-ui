@@ -125,7 +125,7 @@ function parseAccessTime(value: string): number | null {
   return asUtc - offsetMinutes * 60_000;
 }
 
-function parseLine(file: LogFile, text: string): Rec {
+function parseLine(file: LogFile, text: string, offset: number | null = null): Rec {
   if (file === "access") {
     const m = ACCESS_RE.exec(text);
     if (m) {
@@ -157,8 +157,7 @@ function parseLine(file: LogFile, text: string): Rec {
   } else {
     const m = ERROR_RE.exec(text);
     if (m) {
-      // error 로그는 오프셋을 적지 않는다. 이 이미지는 TZ를 설정하지 않아
-      // 컨테이너가 UTC로 동작하므로 UTC로 읽는다(Dockerfile에 TZ 없음).
+      // The writer reports seconds east of UTC; older nodes without metadata stay UTC.
       const atMs = Date.UTC(
         Number(m[1]),
         Number(m[2]) - 1,
@@ -166,7 +165,7 @@ function parseLine(file: LogFile, text: string): Rec {
         Number(m[4]),
         Number(m[5]),
         Number(m[6]),
-      );
+      ) - (offset ?? 0) * 1000;
       return {
         kind: "error",
         atMs: Number.isNaN(atMs) ? null : atMs,
@@ -222,6 +221,7 @@ interface LogLine {
   id: number;
   text: string;
   rec: Rec;
+  offset: number | null;
 }
 
 function statusClassOf(status: number): StatusClass {
@@ -262,6 +262,13 @@ function isNoise(rec: Rec): boolean {
   );
 }
 
+function levelGroup(rec: Rec): string {
+  if (rec.kind !== "error") return "other";
+  const level = rec.level.toLowerCase();
+  if (["crit", "alert", "emerg"].includes(level)) return "crit";
+  return ["error", "warn", "notice", "info"].includes(level) ? level : "other";
+}
+
 const METHOD_OPTIONS = [
   { value: "", label: "전체 메서드" },
   ...["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"].map((m) => ({
@@ -278,6 +285,7 @@ const STATUS_CHIPS: { value: StatusClass; label: string }[] = [
 ];
 const LEVEL_CHIPS = [
   { value: "", label: "전체" },
+  { value: "crit", label: "crit 이상" },
   { value: "error", label: "error" },
   { value: "warn", label: "warn" },
   { value: "notice", label: "notice" },
@@ -339,7 +347,7 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
 
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const detailRef = useRef<HTMLDivElement | null>(null);
-  const received = useRef<string[]>([]);
+  const received = useRef<LogLine[]>([]);
   const nextId = useRef(0);
   const pendingLines = useRef<LogLine[]>([]);
   const following = useRef(true);
@@ -372,23 +380,29 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
     // 끊겼다 바로 회복하는 링크가 예전 장애의 긴 대기시간을 물려받지 않는다.
     let attempt = 0;
 
-    function append(text: string) {
+    function append(text: string, offset: number | null) {
       arrivalCount.current += 1;
-      received.current.push(text);
+      const line = { id: nextId.current++, text, offset, rec: parseLine(fileRef.current, text, offset) };
+      received.current.push(line);
       if (received.current.length > MAX_LINES) received.current.shift();
-      const id = nextId.current++;
-      pendingLines.current.push({ id, text, rec: parseLine(fileRef.current, text) });
+      pendingLines.current.push(line);
       if (pendingLines.current.length > MAX_LINES) pendingLines.current.shift();
     }
 
     function connect() {
       const held = received.current.slice(-RECONNECT_TAIL_LINES);
       let candidates = held.map((_, index) => index);
-      let replay: string[] = [];
+      let replay: { text: string; offset: number | null }[] = [];
+      let offset: number | null = null;
       let overlap = 0;
       // Match a contiguous suffix, not a set: identical new log lines must survive.
       let matching = held.length > 0;
       es = new EventSource(`${streamPath}?file=${file}`);
+      es.addEventListener("offset", (event) => {
+        if (cancelled || file !== "error" || !/^[+-]?\d+$/.test(event.data.trim())) return;
+        const value = Number(event.data);
+        if (Number.isInteger(value) && Math.abs(value) <= 86400) offset = value;
+      });
       es.onopen = () => {
         if (cancelled) return;
         attempt = 0;
@@ -397,14 +411,28 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
       };
       es.onmessage = (event) => {
         if (cancelled) return;
-        if (!matching) { append(event.data); return; }
-        replay.push(event.data);
-        candidates = candidates.filter((start) => held[start + replay.length - 1] === event.data);
+        if (!matching) { append(event.data, offset); return; }
+        replay.push({ text: event.data, offset });
+        candidates = candidates.filter((start) => held[start + replay.length - 1]?.text === event.data);
         if (candidates.some((start) => start + replay.length === held.length)) overlap = replay.length;
         candidates = candidates.filter((start) => start + replay.length < held.length);
         if (candidates.length) return;
         matching = false;
-        replay.slice(overlap).forEach(append);
+        // A replay can supply metadata an old node never sent. Update only those exact records.
+        const updates = new Map<number, LogLine>();
+        held.slice(held.length - overlap).forEach((line, index) => {
+          const nextOffset = replay[index]!.offset;
+          if (nextOffset !== null && nextOffset !== line.offset) updates.set(line.id, {
+            ...line, offset: nextOffset, rec: parseLine(file, line.text, nextOffset),
+          });
+        });
+        if (updates.size) {
+          const apply = (records: LogLine[]) => records.map((line) => updates.get(line.id) ?? line);
+          received.current = apply(received.current);
+          pendingLines.current = apply(pendingLines.current);
+          setLines(apply);
+        }
+        replay.slice(overlap).forEach((line) => append(line.text, line.offset));
         replay = [];
       };
       es.onerror = () => {
@@ -488,14 +516,7 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
         if (status && statusClassOf(r.status) !== status) continue;
         if (method && r.method !== method) continue;
       }
-      if (file === "error" && level && r.kind !== "error") continue;
-      if (
-        file === "error" &&
-        level &&
-        r.kind === "error" &&
-        r.level.toLowerCase() !== level
-      )
-        continue;
+      if (file === "error" && level && levelGroup(r) !== level) continue;
       if (q && !l.text.toLowerCase().includes(q)) continue;
       out.push(l);
     }
@@ -503,11 +524,13 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
   }, [lines, file, search, status, method, level, hideNoise]);
 
   const shown = rows;
-  const chips = (file === "access" ? STATUS_CHIPS : LEVEL_CHIPS).map((chip) => ({
+  const otherCount = lines.filter(({ rec }) => levelGroup(rec) === "other").length;
+  const levelChips = otherCount || level === "other" ? [...LEVEL_CHIPS, { value: "other", label: "기타" }] : LEVEL_CHIPS;
+  const chips = (file === "access" ? STATUS_CHIPS : levelChips).map((chip) => ({
     ...chip,
-    count: lines.filter(({ rec }) => !chip.value || (rec.kind === "access"
-      ? statusClassOf(rec.status) === chip.value
-      : rec.kind === "error" && rec.level.toLowerCase() === chip.value)).length,
+    count: lines.filter(({ rec }) => !chip.value || (file === "access"
+      ? rec.kind === "access" && statusClassOf(rec.status) === chip.value
+      : levelGroup(rec) === chip.value)).length,
   }));
 
   function pause() {
@@ -625,7 +648,7 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
         {connection === "connecting" && !lines.length ? <div className={styles.progress} role="progressbar" aria-label="로그에 연결하는 중" /> : null}
         <div className={styles.viewport} aria-busy={connection === "connecting" && !lines.length} data-log-view="table" ref={viewportRef} onScroll={handleScroll}>
           <Table label={`${file}.log`} layout="fixed">
-            <colgroup><col className={styles.colTime} /><col className={styles.colStatus} />
+            <colgroup><col className={styles.colTime} /><col className={file === "error" ? styles.colLevel : styles.colStatus} />
               {file === "access" ? <><col className={styles.colMethod} /><col className={styles.colHost} /><col /><col className={styles.colBytes} /><col className={styles.colIp} /></> : <col />}
               <col className={styles.colAction} /></colgroup>
             <thead><Tr><Th>일시 <span className={styles.zone}>({timeZone})</span></Th><Th>{file === "access" ? "상태" : "레벨"}</Th>
@@ -649,7 +672,7 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
                       if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); toggleRow(line.id); }
                     }}>
                     <Td className={styles.time}>{time(r)}</Td>
-                    <Td cell="status"><StatusBadge tone={recordTone(r)} size="sm" dot={false}>
+                    <Td cell="status"><StatusBadge tone={recordTone(r)} variant={r.kind === "error" && levelGroup(r) === "crit" ? "solid" : "soft"} size="sm" dot={false}>
                       {r.kind === "access" ? r.statusRaw : r.kind === "error" ? r.level : "원문"}</StatusBadge></Td>
                     {file === "access" ? <><Td>{r.kind === "access" ? r.method || "—" : "—"}</Td><Td truncate title={r.kind === "access" ? r.host : undefined}>{r.kind === "access" ? r.host || "—" : "—"}</Td></> : null}
                     <Td cell="primary" truncate className={styles.message} title={title}>{title}</Td>

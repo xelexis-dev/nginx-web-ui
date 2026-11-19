@@ -9,7 +9,7 @@ import {
   TextInput,
   buttonClassName,
   Button,
-  Select,
+  Switch,
   Field,
   Banner,
   CodePane,
@@ -235,17 +235,28 @@ export function ProviderForm({
                 />
               </Field>
 
-              <Field label="사용" htmlFor="provider-enabled">
-                <Select
-                  name="enabled"
-                  value={values.enabled}
-                  onChange={(value) => change("enabled", value)}
-                  options={[
-                    { value: "true", label: "사용" },
-                    { value: "false", label: "사용 안 함 (설정만 보관)" },
-                  ]}
-                  aria-label="사용 여부"
-                />
+              <Field
+                label="사용"
+                htmlFor="provider-enabled"
+                hint="끄면 설정만 보관합니다."
+              >
+                {(control) => (
+                  <>
+                    <input
+                      type="hidden"
+                      name="enabled"
+                      value={values.enabled}
+                    />
+                    <Switch
+                      {...control}
+                      label="사용"
+                      checked={values.enabled === "true"}
+                      onCheckedChange={(checked) =>
+                        change("enabled", String(checked))
+                      }
+                    />
+                  </>
+                )}
               </Field>
 
               {callbackUrl ? (
@@ -266,7 +277,7 @@ export function ProviderForm({
         </Card>
         <FormBar>
           <Link
-            href="/admin/oauth"
+            href={defaults?.id ? `/admin/oauth/${defaults.id}` : "/admin/oauth"}
             className={buttonClassName({ variant: "secondary" })}
           >
             취소

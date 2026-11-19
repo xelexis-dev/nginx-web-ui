@@ -92,3 +92,10 @@
 .nav[data-variant="tabs"] .item:focus-visible {
   outline-offset: -2px;
 }
+
+@media (max-width: 768px) {
+  .nav[data-variant="tabs"],
+  .nav[data-variant="tabs"] .list {
+    gap: var(--sp-5);
+  }
+}

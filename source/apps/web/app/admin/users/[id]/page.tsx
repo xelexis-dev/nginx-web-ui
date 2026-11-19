@@ -64,6 +64,7 @@ export default async function UserDetailPage({
       detailActions={
         <UserDetailActions
           id={user.id}
+          targetName={user.email ?? user.id}
           isSelf={isSelf}
           enabled={user.enabled}
         />

@@ -2,6 +2,7 @@
 use super::parser::MAX_LINE_BYTES;
 use axum::response::sse::{Event, KeepAlive, Sse};
 use futures_core::Stream;
+use chrono::{Datelike, NaiveDateTime, Timelike};
 use std::{
     convert::Infallible,
     path::{Path, PathBuf},
@@ -37,19 +38,20 @@ impl Drop for LogStream {
 pub fn response(
     path: PathBuf,
     shutdown: watch::Receiver<bool>,
+    error: bool,
 ) -> impl axum::response::IntoResponse {
-    Sse::new(tail(path, Duration::from_secs(1), shutdown)).keep_alive(
+    Sse::new(tail(path, Duration::from_secs(1), shutdown, error)).keep_alive(
         KeepAlive::new()
             .interval(Duration::from_secs(15))
             .text("keepalive"),
     )
 }
-pub fn tail(path: PathBuf, poll: Duration, mut shutdown: watch::Receiver<bool>) -> LogStream {
+pub fn tail(path: PathBuf, poll: Duration, mut shutdown: watch::Receiver<bool>, error: bool) -> LogStream {
     let (tx, receiver) = mpsc::channel(32);
     let task = tokio::spawn(async move {
         tokio::select! {
             _=async {if !*shutdown.borrow() {let _=shutdown.wait_for(|v|*v).await;}} => {},
-            _=run(&path,poll,&tx) => {},
+            _=run(&path,poll,&tx,error) => {},
             _=tx.closed()=>{},
         }
     });
@@ -75,7 +77,58 @@ async fn send(tx: &mpsc::Sender<Result<Event, Infallible>>, line: &[u8]) -> bool
     .await
     .is_ok()
 }
-async fn run(path: &Path, poll: Duration, tx: &mpsc::Sender<Result<Event, Infallible>>) {
+// Use the writer's libc rules, including :POSIX TZ forms. Round trips reject DST gaps.
+fn writer_offset(wall: NaiveDateTime) -> Option<i32> {
+    let mut earliest = None;
+    for isdst in [-1, 0, 1] {
+        // SAFETY: both tm values are owned, initialized buffers; libc retains neither pointer.
+        let candidate = unsafe {
+            let mut input: libc::tm = std::mem::zeroed();
+            input.tm_year = wall.year() - 1900;
+            input.tm_mon = wall.month0() as i32;
+            input.tm_mday = wall.day() as i32;
+            input.tm_hour = wall.hour() as i32;
+            input.tm_min = wall.minute() as i32;
+            input.tm_sec = wall.second() as i32;
+            input.tm_isdst = isdst;
+            let instant = libc::mktime(&mut input);
+            let mut local: libc::tm = std::mem::zeroed();
+            if libc::localtime_r(&instant, &mut local).is_null()
+                || local.tm_year != wall.year() - 1900 || local.tm_mon != wall.month0() as i32
+                || local.tm_mday != wall.day() as i32 || local.tm_hour != wall.hour() as i32
+                || local.tm_min != wall.minute() as i32 || local.tm_sec != wall.second() as i32 {
+                continue;
+            }
+            let offset = i32::try_from(local.tm_gmtoff).ok()?;
+            if !(-86400..=86400).contains(&offset) { continue; }
+            (instant, offset)
+        };
+        if earliest.is_none_or(|(instant, _)| candidate.0 < instant) { earliest = Some(candidate); }
+    }
+    earliest.map(|(_, offset)| offset)
+}
+
+struct Offsets {
+    resolve: Option<fn(NaiveDateTime) -> Option<i32>>,
+    last: Option<i32>,
+}
+impl Offsets {
+    async fn send(&mut self, tx: &mpsc::Sender<Result<Event, Infallible>>, line: &[u8]) -> bool {
+        if let Some(resolve) = self.resolve
+            && line.get(19..21) == Some(b" [")
+            && let Some(wall) = std::str::from_utf8(&line[..19]).ok()
+                .and_then(|value| NaiveDateTime::parse_from_str(value, "%Y/%m/%d %H:%M:%S").ok())
+            && let Some(offset) = resolve(wall)
+            && self.last != Some(offset) {
+                if tx.send(Ok(Event::default().event("offset").data(offset.to_string()))).await.is_err() { return false; }
+                self.last = Some(offset);
+        }
+        send(tx, line).await
+    }
+}
+
+async fn run(path: &Path, poll: Duration, tx: &mpsc::Sender<Result<Event, Infallible>>, error: bool) {
+    let mut offsets = Offsets { resolve: error.then_some(writer_offset), last: None };
     let mut offset = 0_u64;
     let mut ino = None;
     let mut pending = Vec::new();
@@ -108,7 +161,7 @@ async fn run(path: &Path, poll: Duration, tx: &mpsc::Sender<Result<Event, Infall
                     .filter(|b| !b.is_empty())
                     .collect();
                 for line in lines.iter().skip(lines.len().saturating_sub(TAIL_LINES)) {
-                    if !send(tx, line).await {
+                    if !offsets.send(tx, line).await {
                         return;
                     }
                 }
@@ -143,7 +196,7 @@ async fn run(path: &Path, poll: Duration, tx: &mpsc::Sender<Result<Event, Infall
             offset = meta.len();
             pending.clear();
             discard = false;
-            if !send(tx, b"[log-viewer] log file found, tailing new lines").await {
+            if !offsets.send(tx, b"[log-viewer] log file found, tailing new lines").await {
                 return;
             }
             continue;
@@ -184,7 +237,7 @@ async fn run(path: &Path, poll: Duration, tx: &mpsc::Sender<Result<Event, Infall
                 if complete {
                     if !discard
                         && pending.len() > 1
-                        && !send(tx, &pending[..pending.len() - 1]).await
+                        && !offsets.send(tx, &pending[..pending.len() - 1]).await
                     {
                         return;
                     }
@@ -207,7 +260,7 @@ mod tests {
             let stream = tail(
                 dir.path().join("absent"),
                 Duration::from_millis(1),
-                shutdown.subscribe(),
+                shutdown.subscribe(), false,
             );
             let abort = stream.task.abort_handle();
             drop(stream);
@@ -215,4 +268,55 @@ mod tests {
             assert!(abort.is_finished());
         }
     }
+    #[test]
+    fn writer_offset_child() {
+        let Ok(wall) = std::env::var("NWUI_TZ_WALL") else { return; };
+        let expected = std::env::var("NWUI_TZ_EXPECTED").unwrap();
+        let wall = NaiveDateTime::parse_from_str(&wall, "%Y-%m-%d %H:%M:%S").unwrap();
+        assert_eq!(writer_offset(wall), expected.parse::<i32>().ok());
+    }
+
+    #[test]
+    fn writer_offsets_use_libc_in_isolated_children() {
+        for (zone, wall, expected) in [
+            ("Asia/Seoul", "2026-11-17 18:40:14", "32400"),
+            ("KST-9", "2026-11-17 18:40:14", "32400"),
+            (":KST-9", "2026-11-17 18:40:14", "32400"),
+            ("UTC", "2026-11-17 18:40:14", "0"),
+            ("", "2026-11-17 18:40:14", "0"),
+            ("Invalid/Zone", "2026-11-17 18:40:14", "0"),
+            ("America/New_York", "2026-07-01 12:00:00", "-14400"),
+            ("America/New_York", "2026-12-01 12:00:00", "-18000"),
+            ("America/New_York", "2026-11-01 01:30:00", "-14400"),
+            ("America/New_York", "2026-03-08 02:30:00", "none"),
+        ] {
+            let output = std::process::Command::new(std::env::current_exe().unwrap())
+                .args(["--exact", "observability::logs::tests::writer_offset_child", "--nocapture"])
+                .env_clear().env("TZ", zone).env("NWUI_TZ_WALL", wall)
+                .env("NWUI_TZ_EXPECTED", expected).output().unwrap();
+            assert!(output.status.success(), "TZ={zone}: {}", String::from_utf8_lossy(&output.stdout));
+        }
+    }
+
+    #[tokio::test]
+    async fn offsets_precede_only_error_lines_and_preserve_data() {
+        use axum::{body::Body, response::IntoResponse};
+        use http_body_util::BodyExt;
+        let (tx, receiver) = mpsc::channel(16);
+        let mut offsets = Offsets { last: None, resolve: Some(|wall| match wall.hour() { 1 => Some(-14400), 2 => None, _ => Some(-18000) }) };
+        let lines = ["unparsed", "2026/11/01 01:30:00 [error] first", "2026/11/01 01:31:00 [warn] same", "2026/11/01 02:30:00 [error] gap", "2026/11/01 03:30:00 [error] next"];
+        for line in lines { assert!(offsets.send(&tx, line.as_bytes()).await); }
+        drop(tx);
+        let task = tokio::spawn(async {});
+        let body: Body = Sse::new(LogStream { receiver, task }).into_response().into_body();
+        let all = body.collect().await.unwrap().to_bytes();
+        let expected = format!("data: {}\n\nevent: offset\ndata: -14400\n\ndata: {}\n\ndata: {}\n\ndata: {}\n\nevent: offset\ndata: -18000\n\ndata: {}\n\n", lines[0], lines[1], lines[2], lines[3], lines[4]);
+        assert_eq!(all.as_ref(), expected.as_bytes());
+        let (tx, mut rx) = mpsc::channel(2);
+        let mut access = Offsets { last: None, resolve: None };
+        assert!(access.send(&tx, lines[1].as_bytes()).await);
+        drop(tx);
+        assert!(rx.recv().await.is_some()); assert!(rx.recv().await.is_none());
+    }
+
 }

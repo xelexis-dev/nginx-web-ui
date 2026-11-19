@@ -7,7 +7,7 @@ import { FormErrors } from "@/components/form-errors";
 import { useActionState, useMemo, useState } from "react";
 import {
   Banner,
-  SegmentedControl,
+  Switch,
   TextArea,
   TextInput,
   Button,
@@ -73,32 +73,6 @@ export interface WebhookFormProps {
   maskedUrl?: string | null;
   /** 저장된 헤더 이름들. 값은 내려보내지 않는다. */
   storedHeaderNames?: string[];
-}
-
-function Toggle({
-  value,
-  onChange,
-  ariaLabel,
-  offLabel,
-  onLabel,
-}: {
-  value: boolean;
-  onChange: (v: boolean) => void;
-  ariaLabel: string;
-  offLabel: string;
-  onLabel: string;
-}) {
-  return (
-    <SegmentedControl
-      label={ariaLabel}
-      value={value}
-      onChange={onChange}
-      options={[
-        { value: false, label: offLabel },
-        { value: true, label: onLabel },
-      ]}
-    />
-  );
 }
 
 /** 서버 액션 하나의 결과 배너. 저장과 테스트가 각자의 배너를 갖는다(SMTP 폼과 같은 이유). */
@@ -226,12 +200,11 @@ export function WebhookForm({
           title={<>이 수신처로 보내기</>}
           description={<>꺼두면 설정은 남기고 보내지 않습니다.</>}
           actions={
-            <Toggle
-              value={enabled}
-              onChange={setEnabled}
-              ariaLabel="사용 여부"
-              offLabel="사용 안 함"
-              onLabel="사용"
+            <Switch
+              checked={enabled}
+              onCheckedChange={setEnabled}
+              label="사용 여부"
+              visibleLabel="사용"
             />
           }
           errorCount={Object.values(fieldErrors ?? {}).filter(Boolean).length}
@@ -369,7 +342,8 @@ export function WebhookForm({
                 >
                   <TextArea
                     name="bodyTemplate"
-                    className={`${styles.textarea} ${styles.templateArea}`}
+                    className={styles.templateArea}
+                    mono
                     value={bodyTemplate}
                     onChange={(e) => setBodyTemplate(e.target.value)}
                     spellCheck={false}
@@ -389,12 +363,8 @@ export function WebhookForm({
                     {group.events.map((event) => (
                       <Checkbox
                         key={event.type}
-                        className={styles.eventItem}
-                        label={
-                          <span className={styles.eventLabel}>
-                            {group.label} · {event.label}
-                          </span>
-                        }
+                        tile
+                        label={`${group.label} · ${event.label}`}
                         description={event.hint || undefined}
                         checked={events.includes(event.type)}
                         onChange={(e) =>

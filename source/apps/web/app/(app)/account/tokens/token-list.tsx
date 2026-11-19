@@ -70,7 +70,7 @@ export function TokenList({
           ) : null}
           {rows.map((row) => (
             <Tr key={row.id}>
-              <Td cell="primary" icon={<Icon name="tokens" size={18} />}>
+              <Td cell="primary" icon={<Icon name="tokens" size={16} />}>
                 {/*
                  * ⚠ **링크 대상은 `row.id` 다.** `masked` 는 접두사 + 뒤 4자라
                  * 22비트뿐이고 약 2,400개에서 겹친다(Task 4 실측) — 식별자로 쓰면

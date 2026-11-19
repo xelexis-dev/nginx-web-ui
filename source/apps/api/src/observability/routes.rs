@@ -55,9 +55,9 @@ async fn read(
             .into_owned()
             .collect();
     let mut response = if path == "/logs/stream" {
-        let path = match params.get("file").map(String::as_str).unwrap_or("access") {
-            "access" => state.config.nginx_access_log.clone(),
-            "error" => state.config.nginx_error_log.clone(),
+        let (path, error) = match params.get("file").map(String::as_str).unwrap_or("access") {
+            "access" => (state.config.nginx_access_log.clone(), false),
+            "error" => (state.config.nginx_error_log.clone(), true),
             _ => {
                 return Err(ApiError::new(
                     StatusCode::BAD_REQUEST,
@@ -89,7 +89,7 @@ async fn read(
                 crate::auth::stream_guard::REVALIDATE_EVERY,
             )
         };
-        let mut r = logs::response(path, shutdown).into_response();
+        let mut r = logs::response(path, shutdown, error).into_response();
         r.headers_mut().insert(
             "cache-control",
             HeaderValue::from_static("no-cache, no-transform"),

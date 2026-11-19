@@ -1,10 +1,8 @@
 import layout from "@/components/page-layout.module.css";
-import { buttonClassName, PageHeader } from "@repo/ui";
-import Link from "next/link";
+import { PageHeader } from "@repo/ui";
 import { readPageApi } from "@/lib/api-page";
 import type { ProviderView } from "../../form-types";
 import { ProviderForm } from "../../provider-form";
-import styles from "../../oauth.module.css";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,20 +13,7 @@ export default async function EditOAuthProviderPage({ params }: { params: Promis
 
   return (
     <section className={layout.page}>
-      <PageHeader
-        title={<>공급자 수정</>}
-        description={<>{provider.name}</>}
-        actions={
-          <>
-            {" "}
-            <div className={styles.headerActions}>
-              <Link href={`/admin/oauth/${provider.id}`} className={buttonClassName({ variant: "secondary" })}>
-                상세로
-              </Link>
-            </div>{" "}
-          </>
-        }
-      />
+      <PageHeader title={<>공급자 수정</>} description={<>{provider.name}</>} />
 
       <ProviderForm
         mode="edit"

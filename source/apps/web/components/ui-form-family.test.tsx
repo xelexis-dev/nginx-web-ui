@@ -12,10 +12,11 @@ import {
   Field,
   FieldGroup,
   SegmentedControl,
+  Switch,
   TextInput,
 } from "@repo/ui";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 it("supports a header-only category and a footer outside its body", () => {
   const headerOnly = renderToStaticMarkup(
@@ -398,4 +399,201 @@ describe("table density", () => {
       expect(html).toContain('data-current=""');
     },
   );
+});
+
+// The visible word is fixed; aria-checked conveys the value without changing the submit contract.
+it("Switch keeps its visible word and accessible state on either side of a toggle", () => {
+  for (const checked of [false, true]) {
+    const change = vi.fn();
+    const props = {
+      checked,
+      label: "메일 발송",
+      visibleLabel: "사용",
+      onCheckedChange: change,
+    };
+    const html = renderToStaticMarkup(<Switch {...props} />);
+    expect(html).toContain('role="switch"');
+    expect(html).toContain(`aria-checked="${checked}"`);
+    expect(html).toContain('aria-label="메일 발송"');
+    expect(html).toMatch(/<span[^>]*>사용<\/span>/);
+    expect(html).not.toMatch(/>비?활성<\/span>/);
+    const button = Switch(props);
+    button.props.onClick({ defaultPrevented: false });
+    expect(change).toHaveBeenCalledExactlyOnceWith(!checked);
+  }
+});
+
+vi.mock("react", async (original) => ({
+  ...(await original<typeof import("react")>()),
+  useActionState: (_action: unknown, initial: unknown) => [
+    initial,
+    () => {},
+    false,
+  ],
+}));
+vi.mock("@/lib/use-api-action", () => ({
+  useApiAction: () => async (previous: unknown) => previous,
+}));
+vi.mock("@/lib/api-page", () => ({
+  readPageApi: async () => ({
+    id: "sso",
+    name: "SSO",
+    issuer: "https://id.example.test",
+    clientId: "client",
+    scope: "openid",
+    enabled: true,
+    sortOrder: 0,
+  }),
+}));
+import { SmtpForm } from "@/app/admin/settings/smtp/smtp-form";
+import { SecurityForm } from "@/app/admin/security/security-form";
+import { MailRecipientForm } from "@/app/admin/notifications/mail/recipient-form";
+import { RecipientListView } from "@/app/admin/notifications/mail/recipient-list";
+import { WebhookForm } from "@/app/admin/notifications/webhooks/webhook-form";
+import { ProviderForm } from "@/app/admin/oauth/provider-form";
+import { TwoFactorEnroll } from "@/app/(app)/account/2fa/two-factor-forms";
+import EditOAuthProviderPage from "@/app/admin/oauth/[id]/edit/page";
+const smtpDefaults = {
+  enabled: true,
+  host: "smtp.example.test",
+  port: 587,
+  secure: false,
+  username: "ops",
+  fromEmail: "ops@example.test",
+  fromName: "Ops",
+  rejectUnauthorized: true,
+};
+
+it.each([false, true])(
+  "boolean settings keep existing hidden submit values: %s",
+  (enabled) => {
+    const forms = [
+      renderToStaticMarkup(
+        <SmtpForm defaults={{ ...smtpDefaults, enabled }} hasStoredPassword />,
+      ),
+      renderToStaticMarkup(
+        <MailRecipientForm
+          mode="create"
+          defaults={{
+            address: "ops@example.test",
+            label: "Ops",
+            enabled,
+            events: ["cert.issued"],
+          }}
+          smtpReady={false}
+        />,
+      ),
+      renderToStaticMarkup(
+        <WebhookForm
+          mode="create"
+          defaults={{
+            name: "Ops",
+            enabled,
+            format: "generic",
+            events: ["cert.issued"],
+            bodyTemplate: "",
+          }}
+        />,
+      ),
+      renderToStaticMarkup(
+        <ProviderForm
+          mode="edit"
+          defaults={{
+            id: "sso",
+            name: "SSO",
+            issuer: "https://id.example.test",
+            clientId: "client",
+            scope: "openid",
+            enabled,
+            sortOrder: 0,
+          }}
+        />,
+      ),
+    ];
+    for (const html of forms) {
+      expect(attrsOf(html, "input", 'name="enabled"')).toMatchObject({
+        type: "hidden",
+        value: String(enabled),
+      });
+      expect(html).toMatch(
+        new RegExp(`role="switch"[^>]*aria-checked="${enabled}"`),
+      );
+    }
+    expect(forms[0]).toContain('name="password" value="__keep__"');
+    const policy = renderToStaticMarkup(
+      <SecurityForm
+        requireAdmin={enabled}
+        requireUser={enabled}
+        requireOauth={enabled}
+      />,
+    );
+    for (const name of ["require2faAdmin", "require2faUser", "require2faOauth"])
+      expect(attrsOf(policy, "input", `name="${name}"`)).toMatchObject({
+        type: "hidden",
+        value: String(enabled),
+      });
+    expect(policy.match(/>강제<\/span>/g)).toHaveLength(3);
+  },
+);
+it("SMTP has only secondary CardFoot submits in Save then Test order", () => {
+  const html = renderToStaticMarkup(
+    <SmtpForm defaults={smtpDefaults} hasStoredPassword />,
+  );
+  expect(html).not.toContain("nwui-btn-primary");
+  expect(html).not.toMatch(/class="[^"]*formBar/);
+  expect(html).toMatch(
+    /cardFoot[^]*>저장<\/button>[^]*>연결 확인 \/ 테스트 발송<\/button>/,
+  );
+});
+it("form exits use approved destinations and OAuth edit has no header action", async () => {
+  const enroll = renderToStaticMarkup(
+    <TwoFactorEnroll secret="fixture" qrDataUrl="data:image/png;base64," />,
+  );
+  expect(enroll).toMatch(/href="\/account"[^>]*>취소<\/a>/);
+  expect(enroll.indexOf(">취소</a>")).toBeLessThan(
+    enroll.indexOf("2FA 활성화</button>"),
+  );
+  const provider = renderToStaticMarkup(
+    <ProviderForm
+      mode="edit"
+      defaults={{
+        id: "sso",
+        name: "SSO",
+        issuer: "https://id.example.test",
+        clientId: "client",
+        scope: "openid",
+        enabled: true,
+        sortOrder: 0,
+      }}
+    />,
+  );
+  expect(provider).toMatch(/href="\/admin\/oauth\/sso"[^>]*>취소<\/a>/);
+  expect(provider).toContain("끄면 설정만 보관합니다.");
+  expect(
+    renderToStaticMarkup(
+      await EditOAuthProviderPage({ params: Promise.resolve({ id: "sso" }) }),
+    ),
+  ).not.toContain("상세로");
+});
+it("SMTP-not-ready notices announce an alert in recipient list and form", () => {
+  for (const node of [
+    <RecipientListView
+      key="list"
+      recipients={[]}
+      mailer={{
+        ok: false,
+        reason: "disabled",
+        message: "SMTP가 꺼져 있습니다.",
+      }}
+    />,
+    <MailRecipientForm
+      key="form"
+      mode="create"
+      defaults={{ address: "", label: "", enabled: true, events: [] }}
+      smtpReady={false}
+    />,
+  ])
+    expect(renderToStaticMarkup(node)).toMatch(
+      /data-tone="error"[^>]*role="alert"/,
+    );
 });

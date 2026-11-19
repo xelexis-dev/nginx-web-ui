@@ -8,7 +8,7 @@
 
 .trigger {
   position: relative;
-  border-radius: var(--r-3);
+  border-radius: var(--r-2);
 }
 
 .badge {

@@ -48,6 +48,8 @@ docker cp nginx-web-ui:/usr/share/nginx-web-ui/fail2ban/jail.d/nginx-web-ui.conf
 **3. `jail.d/nginx-web-ui.conf` 의 `logpath` 를 실제 마운트 경로로 고친다**
 (위 예시라면 `/srv/nginx-web-ui/log/app/auth.log`, `/srv/nginx-web-ui/log/nginx/error.log`)
 
+`error.log`의 오프셋 없는 시각은 기본적으로 호스트 fail2ban의 시간대로 해석합니다. 컨테이너 `TZ`를 호스트와 맞추거나, jail의 `logtimezone`에 같은 고정 오프셋을 지정하세요(`TZ` 미설정은 `UTC`, 한국은 `UTC+0900`). `logtimezone`은 지역명·일광절약시간 자동 전환을 지원하지 않으므로 해당 지역은 호스트와 `TZ`를 맞추세요. [공식 옵션 설명](https://github.com/fail2ban/fail2ban/blob/master/man/jail.conf.5#L193-L205)을 확인하세요.
+
 **4. filter 를 실측한다 — 넘어가지 말 것**
 
 ```bash

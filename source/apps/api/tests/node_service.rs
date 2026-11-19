@@ -314,3 +314,76 @@ async fn local_node_relay_audit_keeps_token_via_and_browser_null() {
     assert_eq!(rows[0].get::<_,Option<serde_json::Value>>(0),None);
     assert_eq!(rows[1].get::<_,serde_json::Value>(0),json!({"kind":"token","id":"relay-id","name":"relay-token"}));
 }
+
+#[tokio::test]
+#[ignore = "requires NWUI_TEST_DATABASE_URL"]
+async fn live_reads_refresh_the_context_bar_version_without_an_extra_node_request() {
+    use axum::{Json,Router,http::StatusCode,routing::get};
+    use std::sync::{Arc,atomic::{AtomicUsize,AtomicBool,Ordering}};
+    let version=Arc::new(std::sync::Mutex::new(Some("2.1.0")));
+    let rejected=Arc::new(AtomicBool::new(false));let reject=rejected.clone();
+    let remote_version=version.clone();let calls=Arc::new(AtomicUsize::new(0));let hits=calls.clone();let unexpected=calls.clone();
+    let server_hits=calls.clone();let pending_hits=calls.clone();
+    let remote=Router::new().route("/api/v1/status",get(move || {
+        let version=*remote_version.lock().unwrap();let rejected=reject.load(Ordering::SeqCst);hits.fetch_add(1,Ordering::SeqCst);
+        async move {
+            let mut headers=axum::http::HeaderMap::new();if let Some(version)=version {headers.insert("x-node-version",version.parse().unwrap());}
+            (if rejected {StatusCode::CONFLICT}else{StatusCode::OK},headers,Json(json!({"semver":version,"instanceId":"bound","gatewayTokenId":"untrusted-proof"})))
+        }
+    })).route("/api/v1/servers",get(move || {server_hits.fetch_add(1,Ordering::SeqCst);async {([("x-node-version","2.0.0")],Json(json!({"servers":[]})))}}))
+    .route("/api/v1/pending",get(move || {pending_hits.fetch_add(1,Ordering::SeqCst);async {StatusCode::SERVICE_UNAVAILABLE}}))
+    .fallback(move || {unexpected.fetch_add(1,Ordering::SeqCst);async {StatusCode::NOT_FOUND}});
+    let listener=tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();let address=listener.local_addr().unwrap();
+    let server=tokio::spawn(async move{axum::serve(listener,remote).await.unwrap()});
+    let db=auth_support::test_db().await;let sealed=db.state.secrets.seal("paired-secret").unwrap();
+    db.client.execute("INSERT INTO nodes(id,name,base_url,token_enc,token_role,instance_id,gateway_token_id,last_version,last_seen_at) VALUES('live','node',$1,$2,'admin','bound','original-proof','2.1.0','2026-01-01')",&[&format!("http://{address}"),&sealed]).await.unwrap();
+    let principal=nwui_api::auth::principal::SessionPrincipal{user_id:"viewer".into(),email:None,name:None,role:Role::Editor,session_version:0,totp_enabled:false,requires_2fa:false,mfa_verified:true,expires_at:i64::MAX};
+    *version.lock().unwrap()=Some("2.1.1");
+    let live=nwui_api::nodes::views::view(&db.state,&principal.clone().into(),"/nodes/live",&Default::default()).await.unwrap().unwrap();
+    assert_eq!(live["data"]["semver"],"2.1.1");assert_eq!(live["node"]["lastVersion"],"2.1.1");assert_eq!(calls.load(Ordering::SeqCst),1);
+    let context=nwui_api::nodes::views::view(&db.state,&principal.clone().into(),"/nodes/live/layout",&Default::default()).await.unwrap().unwrap();
+    assert_eq!(context["node"]["lastVersion"],"2.1.1");
+    assert!(db.client.query_one("SELECT last_seen_at > '2026-01-01'::timestamptz FROM nodes WHERE id='live'",&[]).await.unwrap().get::<_,bool>(0));
+    let row=db.client.query_one("SELECT instance_id,gateway_token_id FROM nodes WHERE id='live'",&[]).await.unwrap();assert_eq!(row.get::<_,String>(0),"bound");assert_eq!(row.get::<_,String>(1),"original-proof");
+    db.client.execute("UPDATE nodes SET instance_id='' WHERE id='live'",&[]).await.unwrap();
+    let live=nwui_api::nodes::views::view(&db.state,&principal.clone().into(),"/nodes/live",&Default::default()).await.unwrap().unwrap();assert_eq!(live["ok"],true);
+    let row=db.client.query_one("SELECT instance_id,gateway_token_id FROM nodes WHERE id='live'",&[]).await.unwrap();assert_eq!(row.get::<_,String>(0),"");assert_eq!(row.get::<_,String>(1),"original-proof");
+    db.client.batch_execute("CREATE FUNCTION reject_node_observation() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'injected observation write failure'; END $$;CREATE TRIGGER reject_node_observation BEFORE UPDATE ON nodes FOR EACH ROW EXECUTE FUNCTION reject_node_observation()").await.unwrap();
+    *version.lock().unwrap()=Some("2.1.2");
+    let observed=nwui_api::nodes::views::view(&db.state,&principal.clone().into(),"/nodes/live",&Default::default()).await.unwrap().unwrap();
+    assert_eq!(observed["ok"],true,"metadata write failure must not hide a successful node read");
+    assert_eq!(observed["node"]["lastVersion"],"2.1.2");
+    assert_eq!(service::get(&db.state,"live").await.unwrap().last_version.as_deref(),Some("2.1.1"));
+    db.client.batch_execute("DROP TRIGGER reject_node_observation ON nodes;DROP FUNCTION reject_node_observation()").await.unwrap();
+    *version.lock().unwrap()=None;
+    let live=nwui_api::nodes::views::view(&db.state,&principal.clone().into(),"/nodes/live",&Default::default()).await.unwrap().unwrap();assert_eq!(live["ok"],true);
+    assert_eq!(service::get(&db.state,"live").await.unwrap().last_version.as_deref(),Some("2.1.1"));assert_eq!(calls.load(Ordering::SeqCst),4);
+    rejected.store(true,Ordering::SeqCst);*version.lock().unwrap()=Some("2.0.0");
+    let failure=nwui_api::nodes::views::view(&db.state,&principal.clone().into(),"/nodes/live",&Default::default()).await.unwrap().unwrap();assert_eq!(failure["ok"],false);
+    assert_eq!(service::get(&db.state,"live").await.unwrap().last_version.as_deref(),Some("2.1.1"));
+    let partial=nwui_api::nodes::views::view(&db.state,&principal.clone().into(),"/nodes/live/reverse-proxy",&Default::default()).await.unwrap().unwrap();assert_eq!(partial["ok"],false);
+    assert_eq!(service::get(&db.state,"live").await.unwrap().last_version.as_deref(),Some("2.1.1"),"partial failures must not lower the stored version");
+    assert_eq!(calls.load(Ordering::SeqCst),8,"the existing RP view has three resource requests");
+    server.abort();server.await.unwrap_err();
+    let closed=tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();let unavailable=closed.local_addr().unwrap();drop(closed);
+    db.client.execute("UPDATE nodes SET base_url=$1 WHERE id='live'",&[&format!("http://{unavailable}")]).await.unwrap();
+    let started=std::time::Instant::now();
+    let failed=nwui_api::nodes::views::view(&db.state,&principal.clone().into(),"/nodes/live",&Default::default()).await.unwrap().unwrap();assert_eq!(failed["ok"],false);
+    assert_eq!(service::get(&db.state,"live").await.unwrap().last_version.as_deref(),Some("2.1.1"));
+    println!("STOPPED_NODE_VIEW_MS={}",started.elapsed().as_millis());
+    assert_eq!(calls.load(Ordering::SeqCst),8,"unreachable nodes do not gain an info probe");
+}
+
+#[tokio::test]
+#[ignore = "requires NWUI_TEST_DATABASE_URL"]
+async fn stopped_node_read_preserves_the_context_bar_version() {
+    let closed=tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();let address=closed.local_addr().unwrap();drop(closed);
+    let db=auth_support::test_db().await;let sealed=db.state.secrets.seal("paired-secret").unwrap();
+    db.client.execute("INSERT INTO nodes(id,name,base_url,token_enc,token_role,instance_id,last_version) VALUES('stopped','node',$1,$2,'admin','bound','2.1.0')",&[&format!("http://{address}"),&sealed]).await.unwrap();
+    let principal=nwui_api::auth::principal::SessionPrincipal{user_id:"viewer".into(),email:None,name:None,role:Role::Editor,session_version:0,totp_enabled:false,requires_2fa:false,mfa_verified:true,expires_at:i64::MAX};
+    let started=std::time::Instant::now();
+    let result=nwui_api::nodes::views::view(&db.state,&principal.into(),"/nodes/stopped",&Default::default()).await.unwrap().unwrap();
+    println!("STOPPED_NODE_READ_MS={}",started.elapsed().as_millis());
+    assert_eq!(result["ok"],false);assert_eq!(result["node"]["lastVersion"],"2.1.0");
+    assert_eq!(service::get(&db.state,"stopped").await.unwrap().last_version.as_deref(),Some("2.1.0"));
+}

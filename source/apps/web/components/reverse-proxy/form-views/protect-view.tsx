@@ -12,6 +12,7 @@ import {
   InfoTip,
   Select,
   SegmentedControl,
+  Switch,
   Button,
 } from "@repo/ui";
 import type { RealIpHeader } from "@repo/presentation/nginx";
@@ -118,12 +119,11 @@ function TlsFields({
         ) : null}
       </div>
       <FieldGroup id="server-http2" legend="HTTP/2">
-        <SegmentedControl
+        <Switch
           label="HTTP/2"
-          value={tls.certificateId && tls.http2 ? "on" : "off"}
-          onChange={(value) => tls.setHttp2(value === "on")}
+          checked={Boolean(tls.certificateId && tls.http2)}
+          onCheckedChange={tls.setHttp2}
           disabled={!tls.certificateId || !tls.http2Supported}
-          options={[{ value: "on", label: "사용" }, { value: "off", label: "사용 안 함" }]}
         />
         <p className={formStyles.directiveGroupNote}>
           {!tls.http2Supported

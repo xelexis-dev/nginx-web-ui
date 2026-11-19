@@ -42,4 +42,4 @@
 .digest { display: flex; align-items: baseline; gap: var(--sp-2); flex-wrap: wrap; margin: 0; padding: var(--sp-3) var(--sp-4); background: var(--bg-sunken); border-radius: var(--r-2); }
 .digestLabel { font-size: var(--fs-xs); line-height: var(--lh-xs); color: var(--text-2); }
 .digestValue { font-size: var(--fs-xs); line-height: var(--lh-xs); color: var(--text-1); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-@media (max-width: 768px) { .title { font-size: var(--fs-xl); line-height: var(--lh-xl); } }
+@media (max-width: 768px) { .title { font-size: var(--fs-xl); line-height: var(--lh-xl); letter-spacing: var(--ls-snug); } }

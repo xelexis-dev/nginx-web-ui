@@ -3,6 +3,9 @@
    the app and in @repo/ui — wins over it whatever the load order or specificity. These rules only
    fill in what a component leaves unset. */
 @layer base {
+  strong {
+    font-weight: var(--fw-semibold);
+  }
   html,
   body {
     margin: 0;

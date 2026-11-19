@@ -59,8 +59,8 @@
   width: var(--size-ctl-sm);
   height: var(--size-ctl-sm);
   border-radius: var(--r-full);
-  background: var(--bg-selected);
-  color: var(--accent);
+  background: var(--bg-active);
+  color: var(--text-1);
   font-size: var(--fs-sm);
   font-weight: 600;
 }
@@ -71,3 +71,7 @@
 }
 
 /* Table owns the border, scrolling and narrow reflow. */
+
+.twoFactorEmpty {
+  margin-block-start: var(--sp-4);
+}

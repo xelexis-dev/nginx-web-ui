@@ -1,6 +1,5 @@
 import layout from "@/components/page-layout.module.css";
 import {
-  Banner,
   EmptyState,
   Surface,
   Table,
@@ -58,7 +57,7 @@ export interface HistoryListProps {
   data: HistoryListVM;
   title?: string;
   info: string;
-  /** 목록 위 추가 안내 배너. 로컬은 안 넘긴다. */
+  /** 페이지 설명. 로컬은 안 넘긴다. */
   notice?: string;
   /** 있으면 시간 셀이 `${basePath}/${id}` 로 링크된다(로컬 상세 페이지). 노드는 상세가 없어 넘기지 않는다. */
   basePath?: string;
@@ -78,9 +77,9 @@ export function HistoryList({
 
   return (
     <section className={layout.page}>
-      <PageHeader title={<>{title}</>} info={<>{info}</>} />
+      <PageHeader title={<>{title}</>} info={<>{info}</>} description={notice} />
 
-      <Surface flush toolbar={notice ? <Banner tone="neutral" title={notice} /> : undefined}>
+      <Surface flush>
         <Table density="comfortable" label="설정 적용 이력">
           <thead>
             <Tr>

@@ -305,7 +305,7 @@ function AdminPage({ kind }: { kind: Kind }) {
           ) : null
         }
         detailActions={
-          <UserDetailActions id={user.id} isSelf={isSelf} enabled />
+          <UserDetailActions targetName={user.email} id={user.id} isSelf={isSelf} enabled />
         }
         twoFactor={
           <AdminTwoFactor
@@ -333,6 +333,7 @@ function AdminPage({ kind }: { kind: Kind }) {
         isSelf={kind === "user-self"}
         detailActions={
           <UserDetailActions
+            targetName={user.email}
             id={user.id}
             isSelf={kind === "user-self"}
             enabled
@@ -406,7 +407,7 @@ function AdminPage({ kind }: { kind: Kind }) {
     return (
       <ProviderDetailView
         provider={provider}
-        deleteForm={<ProviderDetailActions id={provider.id} />}
+        deleteForm={<ProviderDetailActions id={provider.id} targetName={provider.name} />}
       />
     );
   if (kind === "general")
@@ -505,6 +506,7 @@ function AdminPage({ kind }: { kind: Kind }) {
         events={webhook.events}
         detailActions={
           <WebhookDetailActions
+              targetName={webhook.name}
             id={webhook.id}
             format={webhook.format}
             bodyTemplate={webhook.bodyTemplate}

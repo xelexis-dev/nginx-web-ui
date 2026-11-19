@@ -1,6 +1,5 @@
 "use client";
-import { Card, FormStack, formFieldsClassName } from "@repo/ui";
-import adminStyles from "@/app/admin/admin-pages.module.css";
+import { Card, CardFoot, FormStack, formFieldsClassName } from "@repo/ui";
 import resourceStyles from "@/components/resource-layout.module.css";
 import { FormErrors } from "@/components/form-errors";
 import { useActionState, useRef, useState } from "react";
@@ -71,6 +70,17 @@ export function EditUserForms({
         <FormErrors errors={roleState.fieldErrors} />
         <FormStack>
           <Card
+            footer={
+              <CardFoot>
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  disabled={rolePending}
+                >
+                  {rolePending ? "저장 중..." : "역할 저장"}
+                </Button>
+              </CardFoot>
+            }
             id="admin-user-edit-0"
             title={<>역할 변경</>}
             errorCount={
@@ -103,15 +113,6 @@ export function EditUserForms({
                   data-wide
                 />
               ) : null}
-              <footer className={adminStyles.foot}>
-                <Button
-                  type="submit"
-                  variant="secondary"
-                  disabled={rolePending}
-                >
-                  {rolePending ? "저장 중..." : "역할 저장"}
-                </Button>
-              </footer>
             </div>
           </Card>
         </FormStack>
@@ -138,6 +139,17 @@ export function EditUserForms({
           />
           <FormStack>
             <Card
+              footer={
+                <CardFoot>
+                  <Button
+                    type="submit"
+                    variant="secondary"
+                    disabled={passwordPending}
+                  >
+                    {passwordPending ? "저장 중..." : "비밀번호 재설정"}
+                  </Button>
+                </CardFoot>
+              }
               id="admin-user-edit-1"
               title={<>{email ?? "이 사용자"} 비밀번호 재설정</>}
               description="비밀번호를 재설정하면 이 사용자의 API 토큰도 모두 폐기됩니다."
@@ -191,15 +203,6 @@ export function EditUserForms({
                     data-wide
                   />
                 ) : null}
-                <footer className={adminStyles.foot}>
-                  <Button
-                    type="submit"
-                    variant="secondary"
-                    disabled={passwordPending}
-                  >
-                    {passwordPending ? "저장 중..." : "비밀번호 재설정"}
-                  </Button>
-                </footer>
               </div>
             </Card>
           </FormStack>

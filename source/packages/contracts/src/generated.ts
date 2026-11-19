@@ -16550,7 +16550,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description SSE log tail: raw log lines in data fields, not JSON. Initial tail up to 64 KiB / 200 lines; 15-second comment keepalive. Disconnect closes tailing. Missing log file can be awaited after stream starts. */
+            /** @description SSE log tail: raw log lines in data fields, not JSON. Initial tail up to 64 KiB / 200 lines; 15-second comment keepalive. Disconnect closes tailing. Missing log file can be awaited after stream starts. For file=error, an offset event (data: the writer UTC offset in seconds) precedes the first parseable line and any line whose offset differs; it may be ignored. */
             200: {
                 headers: {
                     "Cache-Control"?: "no-store";
@@ -17162,7 +17162,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description SSE log tail: raw log lines in data fields, not JSON. Initial tail up to 64 KiB / 200 lines; 15-second comment keepalive. Disconnect closes tailing. Missing log file can be awaited after stream starts. */
+            /** @description SSE log tail: raw log lines in data fields, not JSON. Initial tail up to 64 KiB / 200 lines; 15-second comment keepalive. Disconnect closes tailing. Missing log file can be awaited after stream starts. For file=error, an offset event (data: the writer UTC offset in seconds) precedes the first parseable line and any line whose offset differs; it may be ignored. */
             200: {
                 headers: {
                     "Cache-Control"?: "no-store";
@@ -17223,7 +17223,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description SSE log tail: raw log lines in data fields, not JSON. Initial tail up to 64 KiB / 200 lines; 15-second comment keepalive. Disconnect closes tailing. Missing log file can be awaited after stream starts. */
+            /** @description SSE log tail: raw log lines in data fields, not JSON. Initial tail up to 64 KiB / 200 lines; 15-second comment keepalive. Disconnect closes tailing. Missing log file can be awaited after stream starts. For file=error, an offset event (data: the writer UTC offset in seconds) precedes the first parseable line and any line whose offset differs; it may be ignored. */
             200: {
                 headers: {
                     "Cache-Control"?: "no-store";

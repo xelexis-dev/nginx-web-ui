@@ -9,7 +9,8 @@ export interface StatusBadgeProps extends Omit<
   "children"
 > {
   size?: "sm" | "md";
-  variant?: "soft" | "outline";
+  /** Solid is reserved for error classification tags (dot=false). */
+  variant?: "soft" | "outline" | "solid";
   tone: Tone;
   children: ReactNode;
   /** A status shape before the text. Default true; false renders a classification tag. */

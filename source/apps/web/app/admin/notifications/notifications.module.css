@@ -11,53 +11,8 @@
 
 /* ---------------------------------------------------------------- cards */
 
-/* A wide field: the local class, or a shared Field/FieldGroup with `wide` (data-wide). */
-
-.textarea {
-  /* width:100% 와 padding 을 함께 쓰므로 border-box 가 필수다. 이 앱에는 전역
-     box-sizing 리셋이 없어서, content-box 로 두면 좌우 padding+border(26px)만큼
-     칸을 넘쳐 흘러 그리드 열 간격을 먹는다 — 이름 input 과 형식 select 가 붙어
-     보이던 원인. */
-  box-sizing: border-box;
-  width: 100%;
-  padding: var(--sp-2) var(--sp-3);
-  border-radius: var(--r-2);
-  border: 1px solid var(--border-control);
-  background: var(--bg-input);
-  color: var(--text-1);
-  font-size: var(--fs-md);
-  font-family: inherit;
-  min-height: var(--size-ctl);
-}
-
-.textarea:hover:not(:disabled) {
-  border-color: var(--border-control-hover);
-}
-
-.textarea:disabled {
-  background: var(--bg-disabled);
-  color: var(--text-disabled);
-  cursor: not-allowed;
-}
-
-.textarea {
-  min-width: 0;
-  min-height: 96px;
-  /* Also used by <pre>: keep long JSON lines inside a scrollable preview. */
-  overflow: auto;
-  resize: vertical;
-  font-family: var(--font);
-  font-size: var(--fs-sm);
-  line-height: var(--lh-sm);
-}
-
 .templateArea {
   min-height: 200px;
-}
-
-.textarea:focus {
-  outline: var(--bw-2) solid var(--focus);
-  outline-offset: var(--sp-0-5);
 }
 
 .hint {
@@ -105,30 +60,6 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
   gap: var(--sp-2) var(--sp-6);
-}
-
-.eventItem {
-  display: flex;
-  gap: var(--sp-3);
-  align-items: flex-start;
-  padding: var(--sp-3) var(--sp-3);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--r-2);
-  background: var(--bg-canvas);
-  cursor: pointer;
-}
-
-.eventItem input {
-  margin-top: var(--sp-1);
-  flex-shrink: 0;
-}
-
-/* span 이 아니라 블록이어야 라벨과 설명이 두 줄로 갈린다(인라인이면 붙어 버린다). */
-.eventLabel {
-  display: block;
-  font-size: var(--fs-md);
-  font-weight: 500;
-  color: var(--text-1);
 }
 
 /* ---------------------------------------------------------------- table */

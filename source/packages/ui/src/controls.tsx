@@ -62,10 +62,12 @@ export interface SwitchProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   onCheckedChange?: (next: boolean) => void;
   /** Also show "활성" / "비활성" next to the track. */
   showState?: boolean;
+  /** A fixed visible word beside the track, e.g. "사용" or "강제". */
+  visibleLabel?: string;
   size?: "sm" | "md";
 }
 
-export function Switch({ checked, label, onCheckedChange, showState = false, size = "md", type = "button", onClick, className, ...rest }: SwitchProps) {
+export function Switch({ checked, label, onCheckedChange, showState = false, visibleLabel, size = "md", type = "button", onClick, className, ...rest }: SwitchProps) {
   return (
     <button
       {...rest}
@@ -83,7 +85,7 @@ export function Switch({ checked, label, onCheckedChange, showState = false, siz
       <span className={styles.track} aria-hidden="true">
         <span className={styles.thumb} />
       </span>
-      {showState ? <span className={styles.state}>{checked ? "활성" : "비활성"}</span> : null}
+      {visibleLabel || showState ? <span className={styles.state}>{visibleLabel ?? (checked ? "활성" : "비활성")}</span> : null}
     </button>
   );
 }

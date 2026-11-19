@@ -1,12 +1,12 @@
 "use client";
-import { Card, FormStack, FormBar } from "@repo/ui";
+import { Card, FormStack, CardFoot } from "@repo/ui";
 import adminStyles from "@/app/admin/admin-pages.module.css";
 import resourceStyles from "@/components/resource-layout.module.css";
 import { FormErrors } from "@/components/form-errors";
 import { useActionState, useState } from "react";
 import {
   Banner,
-  SegmentedControl,
+  Switch,
   TextInput,
   Button,
   Select,
@@ -35,32 +35,6 @@ export interface SmtpFormProps {
   };
   /** 비밀번호가 저장되어 있는지 — 원문은 절대 내려보내지 않는다. */
   hasStoredPassword: boolean;
-}
-
-function Toggle({
-  value,
-  onChange,
-  ariaLabel,
-  offLabel,
-  onLabel,
-}: {
-  value: boolean;
-  onChange: (v: boolean) => void;
-  ariaLabel: string;
-  offLabel: string;
-  onLabel: string;
-}) {
-  return (
-    <SegmentedControl
-      label={ariaLabel}
-      value={value}
-      onChange={onChange}
-      options={[
-        { value: false, label: offLabel },
-        { value: true, label: onLabel },
-      ]}
-    />
-  );
 }
 
 /**
@@ -151,16 +125,35 @@ export function SmtpForm({ defaults, hasStoredPassword }: SmtpFormProps) {
       />
       <FormStack>
         <Card
+          footer={
+            <CardFoot>
+              <Button
+                type="submit"
+                variant="secondary"
+                formAction={saveAction}
+                disabled={pending}
+              >
+                {savePending ? "저장 중..." : "저장"}
+              </Button>
+              <Button
+                type="submit"
+                formAction={testAction}
+                disabled={pending}
+                variant="secondary"
+              >
+                {testPending ? "확인 중..." : "연결 확인 / 테스트 발송"}
+              </Button>
+            </CardFoot>
+          }
           id="admin-smtp"
           title={<>메일 발송</>}
           description={<>꺼두면 설정은 남기고 메일을 보내지 않습니다.</>}
           actions={
-            <Toggle
-              value={enabled}
-              onChange={setEnabled}
-              ariaLabel="메일 발송"
-              offLabel="사용 안 함"
-              onLabel="사용"
+            <Switch
+              checked={enabled}
+              onCheckedChange={setEnabled}
+              label="메일 발송"
+              visibleLabel="사용"
             />
           }
           errorCount={Object.values(fieldErrors ?? {}).filter(Boolean).length}
@@ -307,19 +300,6 @@ export function SmtpForm({ defaults, hasStoredPassword }: SmtpFormProps) {
             <Result state={testState} label="연결 확인" />
           </div>
         </Card>
-        <FormBar>
-          <Button type="submit" formAction={saveAction} disabled={pending}>
-            {savePending ? "저장 중..." : "저장"}
-          </Button>
-          <Button
-            type="submit"
-            formAction={testAction}
-            disabled={pending}
-            variant="secondary"
-          >
-            {testPending ? "확인 중..." : "연결 확인 / 테스트 발송"}
-          </Button>
-        </FormBar>
       </FormStack>
     </form>
   );

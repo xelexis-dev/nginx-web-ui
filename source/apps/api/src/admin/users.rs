@@ -275,12 +275,19 @@ async fn lock_with_admins(tx: &tokio_postgres::Transaction<'_>, id: &str) -> Adm
     Ok((target, admins))
 }
 
-fn authorize_token_user_change(actor: &UserPrincipal, current: Role, resulting: Option<Role>) -> AdminResult<()> {
+fn token_user_change_denial(actor: &UserPrincipal, ctx: &RequestContext, id: &str, operation: &str, current: Role, resulting: Option<Role>) -> Option<AuditEntry> {
     if actor.is_token() && (current == Role::Admin || resulting.is_some_and(|role|
         role == Role::Admin || Action::ALL.into_iter().any(|action|can(role, action) && !actor.can(action)))) {
-        return Err(AdminError::Forbidden);
+        let missing: Vec<_> = Action::ALL.into_iter().filter(|action|resulting.is_some_and(|role|can(role,*action)) && !actor.can(*action)).map(Action::as_str).collect();
+        let reason = if current == Role::Admin { "admin_target" }
+            else if resulting == Some(Role::Admin) { "admin_grant" } else { "exceeds_token" };
+        return Some(AuditEntry {
+            actor_id: Some(actor.user_id.clone()), action: "rbac:denied".into(), target: Some(operation.into()),
+            before: Some(json!({"operation":operation,"userId":id,"role":role_str(actor.role_label()),"targetRole":role_str(current),"resultingRole":resulting.map(role_str),"missingActions":missing,"reason":reason})),
+            ip: ctx.ip.clone(), via: actor.actor(ctx).via, ..Default::default()
+        });
     }
-    Ok(())
+    None
 }
 
 fn bad_request() -> AdminError {
@@ -301,7 +308,13 @@ pub async fn update_role(state: &AppState, actor: &UserPrincipal, ctx: &RequestC
     let tx = client.transaction().await.map_err(unavailable)?;
     let (target, admins) = lock_with_admins(&tx, id).await?;
     let before = target.ok_or(AdminError::NotFound)?;
-    authorize_token_user_change(actor, before.role, Some(role))?;
+    if let Some(entry) = token_user_change_denial(actor, ctx, id, "user:update", before.role, Some(role)) {
+        // Release actor/target row locks before the same-connection autocommit audit.
+        if tx.rollback().await.is_ok() {
+            let _ = audit::write(&**client, &entry).await;
+        }
+        return Err(AdminError::Forbidden);
+    }
     if before.role == Role::Admin && before.enabled && before.approved && role != Role::Admin && admins <= 1 {
         return Err(AdminError::Refused("마지막 남은 활성 admin의 역할은 변경할 수 없습니다.".to_owned()));
     }
@@ -399,7 +412,13 @@ pub async fn toggle(state: &AppState, actor: &UserPrincipal, ctx: &RequestContex
     let (target, admins) = lock_with_admins(&tx, id).await?;
     let before = target.ok_or(AdminError::NotFound)?;
     let enabled = !before.enabled;
-    authorize_token_user_change(actor, before.role, enabled.then_some(before.role))?;
+    if let Some(entry) = token_user_change_denial(actor, ctx, id, if enabled { "user:enable" } else { "user:disable" }, before.role, enabled.then_some(before.role)) {
+        // Release actor/target row locks before the same-connection autocommit audit.
+        if tx.rollback().await.is_ok() {
+            let _ = audit::write(&**client, &entry).await;
+        }
+        return Err(AdminError::Forbidden);
+    }
     if !enabled {
         if id == actor.user_id {
             return Err(AdminError::Refused("본인 계정은 비활성화할 수 없습니다.".to_owned()));
@@ -441,7 +460,13 @@ pub async fn approve(state: &AppState, actor: &UserPrincipal, ctx: &RequestConte
         return Ok(());
     };
     let before = role_of(&row)?;
-    authorize_token_user_change(actor, before, Some(role))?;
+    if let Some(entry) = token_user_change_denial(actor, ctx, id, "user:approve", before, Some(role)) {
+        // Release actor/target row locks before the same-connection autocommit audit.
+        if tx.rollback().await.is_ok() {
+            let _ = audit::write(&**client, &entry).await;
+        }
+        return Err(AdminError::Forbidden);
+    }
     if row.get::<_,bool>("approved") { return Ok(()); }
     tx.execute("UPDATE users SET approved = true, role = $2::text::role WHERE id = $1", &[&id, &role_str(role)])
         .await
@@ -472,7 +497,13 @@ pub async fn reject(state: &AppState, actor: &UserPrincipal, ctx: &RequestContex
         return Ok(());
     };
     let before: bool = row.get(0);
-    authorize_token_user_change(actor, role_of(&row)?, None)?;
+    if let Some(entry) = token_user_change_denial(actor, ctx, id, "user:reject", role_of(&row)?, None) {
+        // Release actor/target row locks before the same-connection autocommit audit.
+        if tx.rollback().await.is_ok() {
+            let _ = audit::write(&**client, &entry).await;
+        }
+        return Err(AdminError::Forbidden);
+    }
     if row.get::<_,bool>("approved") { return Ok(()); }
     tx.execute("UPDATE users SET enabled = false WHERE id = $1", &[&id]).await.map_err(unavailable)?;
     crate::auth::tokens::revoke_user_tokens(&tx, id, "pending-reject", &actor.actor(ctx)).await.map_err(unavailable)?;

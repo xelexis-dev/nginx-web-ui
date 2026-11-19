@@ -143,3 +143,39 @@ it.each([
     render(<Icon name={name} size={16} />),
   );
 });
+
+it("keeps description prose and opts metadata into an item layout", () => {
+  const prose = render(
+    <PageHeader
+      title="보안"
+      description={
+        <>
+          기본값은 <strong>해제</strong>입니다. <a href="/help">안내</a>를
+          확인하세요.
+        </>
+      }
+    />,
+  );
+  expect(prose).toContain('data-layout="text"');
+  expect(prose).toContain(
+    '기본값은 <strong>해제</strong>입니다. <a href="/help">안내</a>를 확인하세요.',
+  );
+  const meta = render(
+    <PageHeader
+      title="계정"
+      descriptionVariant="meta"
+      description={
+        <>
+          <span>owner@example.test</span>
+          <StatusBadge tone="neutral" size="sm" dot={false}>
+            admin
+          </StatusBadge>
+        </>
+      }
+    />,
+  );
+  expect(meta).toContain('data-layout="meta"');
+  expect(meta).toContain("owner@example.test");
+  expect(meta).toContain('data-tag=""');
+  expect(meta).toContain("admin");
+});

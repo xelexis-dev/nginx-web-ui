@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef, useState } from "react";
 import Link from "next/link";
-import { Button, Switch, Banner, buttonClassName } from "@repo/ui";
+import { Button, Switch, Banner, buttonClassName, ConfirmDialog } from "@repo/ui";
 import { NodeErrorCard } from "@/components/node-error";
 import type { NodeActionState, NodeFormAction } from "@/lib/node-action-state";
 import { useApiAction } from "@/lib/use-api-action";
@@ -50,6 +50,10 @@ export function ServerDetailActions({
     INITIAL,
   );
 
+  const deleteForm = useRef<HTMLFormElement>(null);
+  const approvedId = useRef<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+
   return (
     <div className={styles.opsDetailActions}>
       <div className={styles.detailActionsRow}>
@@ -65,7 +69,13 @@ export function ServerDetailActions({
             aria-busy={togglePending || undefined}
           />
         </form>
-        <form action={deleteFormAction}>
+        <form ref={deleteForm} action={deleteFormAction} onSubmit={(event) => {
+          if (deletePending || approvedId.current !== id) {
+            event.preventDefault();
+            if (!(deletePending)) setConfirmId(id);
+          }
+          approvedId.current = null;
+        }}>
           <input type="hidden" name="id" value={id} />
           <Button
             type="submit"
@@ -80,6 +90,21 @@ export function ServerDetailActions({
           수정
         </Link>
       </div>
+      <ConfirmDialog
+        open={confirmId === id}
+        onClose={() => setConfirmId(null)}
+        title="삭제"
+        description="이 서버를 삭제하시겠습니까?"
+        target={serverName}
+        confirmLabel="삭제"
+        pending={deletePending}
+        onConfirm={() => {
+          if (confirmId !== id || deletePending) return;
+          approvedId.current = id;
+          setConfirmId(null);
+          deleteForm.current?.requestSubmit();
+        }}
+      />
       {toggleState.nodeError ? (
         <NodeErrorCard {...toggleState.nodeError} />
       ) : toggleState.error ? (

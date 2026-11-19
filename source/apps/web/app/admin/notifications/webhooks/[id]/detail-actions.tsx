@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
-import { Banner, Button, buttonClassName } from "@repo/ui";
+import { useActionState, useRef, useState } from "react";
+import { Banner, Button, buttonClassName, ConfirmDialog } from "@repo/ui";
 import type { WebhookFormat } from "@repo/presentation/webhook";
 import { useApiAction } from "@/lib/use-api-action";
 import type { WebhookFormState } from "../form-types";
@@ -21,10 +21,12 @@ const KEEP_SECRET = "__keep__";
  */
 export function WebhookDetailActions({
   id,
+  targetName = id,
   format,
   bodyTemplate,
 }: {
   id: string;
+  targetName?: string;
   format: WebhookFormat;
   bodyTemplate: string | null;
 }) {
@@ -36,6 +38,10 @@ export function WebhookDetailActions({
     useApiAction<WebhookFormState>({ id: "admin.webhooks.delete", args: [] }),
     INITIAL,
   );
+
+  const deleteForm = useRef<HTMLFormElement>(null);
+  const approvedId = useRef<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   return (
     <div className={resourceStyles.detailActions}>
@@ -55,7 +61,13 @@ export function WebhookDetailActions({
             {testPending ? "보내는 중..." : "테스트 전송"}
           </Button>
         </form>
-        <form action={deleteAction}>
+        <form ref={deleteForm} action={deleteAction} onSubmit={(event) => {
+          if (testPending || deletePending || approvedId.current !== id) {
+            event.preventDefault();
+            if (!(testPending || deletePending)) setConfirmId(id);
+          }
+          approvedId.current = null;
+        }}>
           <input type="hidden" name="id" value={id} />
           <Button
             type="submit"
@@ -72,6 +84,21 @@ export function WebhookDetailActions({
           수정
         </Link>
       </div>
+      <ConfirmDialog
+        open={confirmId === id}
+        onClose={() => setConfirmId(null)}
+        title="삭제"
+        description="이 Webhook 수신처를 삭제하시겠습니까?"
+        target={targetName}
+        confirmLabel="삭제"
+        pending={testPending || deletePending}
+        onConfirm={() => {
+          if (confirmId !== id || testPending || deletePending) return;
+          approvedId.current = id;
+          setConfirmId(null);
+          deleteForm.current?.requestSubmit();
+        }}
+      />
 
       {testState.error ? (
         <Banner

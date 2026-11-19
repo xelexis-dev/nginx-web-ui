@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { ApiForm } from "@/components/api-form";
-import resourceStyles from "@/components/resource-layout.module.css";
 import type { ReactNode } from "react";
 import layout from "@/components/page-layout.module.css";
 import {
@@ -9,10 +7,8 @@ import {
   Surface,
   StatusBadge,
   PageHeader,
-  Button,
   Icon,
   linkClassName,
-  buttonClassName,
 } from "@repo/ui";
 import type { ProviderView } from "./form-types";
 
@@ -113,24 +109,4 @@ export function ProviderDetailView({
   );
 }
 
-export function ProviderDetailActions({ id }: { id: string }) {
-  return (
-    <ApiForm
-      action={{ id: "admin.oauth.delete", args: [] }}
-      className={resourceStyles.detailActions}
-    >
-      <input type="hidden" name="id" value={id} />
-      <div className={resourceStyles.actionRow}>
-        <Button type="submit" variant="dangerQuiet">
-          공급자 삭제
-        </Button>
-        <Link
-          href={`/admin/oauth/${id}/edit`}
-          className={buttonClassName({ variant: "secondary" })}
-        >
-          수정
-        </Link>
-      </div>
-    </ApiForm>
-  );
-}
+export { ProviderDetailActions } from "./provider-detail-actions";

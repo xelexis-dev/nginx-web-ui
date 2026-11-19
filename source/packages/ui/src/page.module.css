@@ -143,6 +143,7 @@
     align-items: stretch;
   }
   .title {
+    letter-spacing: var(--ls-snug);
     font-size: var(--fs-xl);
     line-height: var(--lh-xl);
   }
@@ -155,7 +156,7 @@
 .heading > .titleRow {
   gap: var(--sp-3);
 }
-.description {
+.description[data-layout="meta"] {
   display: flex;
   flex-wrap: wrap;
   align-items: center;

@@ -3,6 +3,7 @@ import layout from "@/components/page-layout.module.css";
 import Link from "next/link";
 import {
   Surface,
+  Icon,
   StatusBadge,
   CodePane,
   PageHeader,
@@ -66,6 +67,7 @@ export function ServerTemplates({
               <details className={styles.templatePreview}>
                 <summary className={styles.templatePreviewSummary}>
                   생성될 nginx 설정 미리보기
+                  <span className={styles.templateChevron}><Icon name="chevronDown" size={14} /></span>
                 </summary>
                 {unresolvedPaths?.length ? (
                   <div role="status" className={styles.previewHint}>

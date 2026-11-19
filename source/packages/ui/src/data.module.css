@@ -54,6 +54,11 @@
 .badge[data-tag][data-variant="outline"] {
   background: transparent;
 }
+.badge[data-tag][data-tone="error"][data-variant="solid"] {
+  background: var(--danger-solid);
+  border-color: var(--danger-solid);
+  color: var(--on-accent);
+}
 .badgeDot,
 .statusDot {
   display: inline-block;
@@ -287,7 +292,7 @@
   }
 }
 
-.badge[data-size="sm"] {
+.badge[data-size="sm"]:not([data-tag]) {
   font-size: var(--fs-sm);
 }
 .badge[data-tone="neutral"] {
@@ -360,8 +365,8 @@
   grid-column: 1 / -1;
   margin-top: var(--sp-2);
 }
-.settingRow .badge,
-.facts .badge {
+.settingRow .badge:not([data-tag]),
+.facts .badge:not([data-tag]) {
   font-size: var(--fs-sm);
 }
 @media (max-width: 768px) {

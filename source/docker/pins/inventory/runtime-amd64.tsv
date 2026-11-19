@@ -100,7 +100,7 @@ mount	amd64	2.41.5-0+deb13u1	util-linux	2.41.5-0+deb13u1	base
 ncurses-base	all	6.5+20250216-2	ncurses	6.5+20250216-2	base
 ncurses-bin	amd64	6.5+20250216-2	ncurses	6.5+20250216-2	base
 netbase	all	6.5	netbase	6.5	debian
-nginx	amd64	1.30.6-1~trixie	nginx	1.30.6-1~trixie	nginx.org
+nginx	amd64	1.30.7-1~trixie	nginx	1.30.7-1~trixie	nginx.org
 openssl	amd64	3.5.7-1~deb13u3	openssl	3.5.7-1~deb13u3	debian-security
 openssl-provider-legacy	amd64	3.5.7-1~deb13u3	openssl	3.5.7-1~deb13u3	base
 passwd	amd64	1:4.17.4-2	shadow	1:4.17.4-2	base

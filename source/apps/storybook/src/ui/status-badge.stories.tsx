@@ -68,7 +68,7 @@ const meta = {
     },
     variant: {
       control: "inline-radio",
-      options: badgeVariants,
+      options: [...badgeVariants, "solid"],
       table: { defaultValue: { summary: '"soft"' } },
     },
     dot: { control: "boolean", table: { defaultValue: { summary: "true" } } },
@@ -245,3 +245,16 @@ export const States: Story = {
 };
 export const SpecDark: Story = { ...Spec, globals: { theme: "dark" } };
 export const StatesDark: Story = { ...States, globals: { theme: "dark" } };
+
+export const SolidErrorTags: Story = {
+  name: "crit 이상 · solid 오류 태그",
+  render: () => <div style={{ display: "flex", gap: "var(--sp-2)" }}>
+    {["crit", "alert", "emerg"].map((level) => <StatusBadge key={level} tone="error" variant="solid" dot={false} size="sm">{level}</StatusBadge>)}
+    <StatusBadge tone="error" dot={false} size="sm">error</StatusBadge>
+  </div>,
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelectorAll('[data-variant="solid"][data-tone="error"][data-tag]')).toHaveLength(3);
+    await expect(within(canvasElement).getByText("error")).toHaveAttribute("data-variant", "soft");
+  },
+};
+export const SolidErrorTagsDark: Story = { ...SolidErrorTags, name: "crit 이상 · 다크", globals: { theme: "dark" } };

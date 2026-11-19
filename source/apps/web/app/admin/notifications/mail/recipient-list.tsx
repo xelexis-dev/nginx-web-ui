@@ -65,7 +65,7 @@ export function RecipientListView({
           title={
             <>SMTP 가 준비되지 않아 메일이 나가지 않습니다 — {mailer.message}</>
           }
-          role="status"
+          role="alert"
         >
           <p className={styles.hint}>
             <Link href="/admin/settings/smtp" className={linkClassName()}>

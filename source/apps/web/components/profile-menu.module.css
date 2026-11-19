@@ -113,7 +113,7 @@
   border: 0;
   border-radius: var(--r-1);
   color: var(--text-2);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-md);
   line-height: var(--lh-sm);
   text-align: left;
   text-decoration: none;

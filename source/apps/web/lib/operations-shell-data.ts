@@ -5,6 +5,7 @@ import { can } from "./permissions";
 
 export type OperationsShellData = {
   available: true;
+  nodeVersion?: string | null;
   serverTotal: number;
   serverActive: number;
   pendingCount: number;
@@ -17,6 +18,7 @@ export type OperationsShellData = {
 type RemoteList = { ok: false } | {
   ok: true;
   effectiveRole: Role;
+  node?: { lastVersion?: string | null };
   data: {
     servers: { servers: { enabled: boolean }[] };
     pending: { count: number; hasBaseline?: boolean; diff: ConfigDiff };
@@ -32,9 +34,10 @@ export async function readOperationsShellData(nodeId?: string): Promise<Operatio
     if (nodeId) {
       const view = await readView<RemoteList>(basePath);
       if (!view.ok) return { available: false };
-      return snapshot(view.data.servers.servers, view.data.pending,
+      const data = snapshot(view.data.servers.servers, view.data.pending,
         can(view.effectiveRole, "nginx:reload"),
         { id: "node.applyNodeConfig", args: [nodeId, basePath] });
+      return data.available ? { ...data, nodeVersion: view.node?.lastVersion ?? null } : data;
     }
     const view = await readView<ServerListView>(basePath);
     return snapshot(view.servers, view.pending, view.canApply,

@@ -49,6 +49,7 @@ export function AccountOverview({
     <div className={layout.page}>
       <PageHeader
         title="계정"
+        descriptionVariant="meta"
         description={
           <span className={styles.accountMeta}>
             <strong>{account.email}</strong>

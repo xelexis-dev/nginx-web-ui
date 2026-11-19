@@ -26,7 +26,7 @@ hickory-resolver = "=0.26.3"
 instant-acme = "=0.8.5"
 josekit = "=0.10.3"
 libc = "=0.2.189"
-lettre = { version = "=0.11.23", default-features = false, features = ["builder", "smtp-transport", "tokio1-rustls", "aws-lc-rs", "rustls-native-certs"] }
+lettre = { version = "=0.11.24", default-features = false, features = ["builder", "smtp-transport", "tokio1-rustls", "aws-lc-rs", "rustls-native-certs"] }
 getrandom = "=0.4.3"
 percent-encoding = "=2.3.2"
 regex = "=1.13.1"

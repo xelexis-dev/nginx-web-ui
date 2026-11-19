@@ -157,6 +157,12 @@ export function TwoFactorEnroll({
           </div>
         </Card>
         <FormBar>
+          <Link
+            href="/account"
+            className={buttonClassName({ variant: "secondary" })}
+          >
+            취소
+          </Link>
           <Button type="submit" disabled={pending}>
             {pending ? "확인 중..." : "2FA 활성화"}
           </Button>

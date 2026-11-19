@@ -69,7 +69,7 @@
   font-size: var(--fs-xs);
   line-height: var(--lh-xs);
   font-weight: var(--fw-medium);
-  color: var(--text-3);
+  color: var(--text-2);
 }
 .diagnostics {
   margin: 0;

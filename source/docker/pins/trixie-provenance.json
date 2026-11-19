@@ -117,9 +117,9 @@
     {
       "file": "nginx.Release",
       "url": "https://nginx.org/packages/debian/dists/trixie/Release",
-      "sha256": "d1c6aaad9ab7dfd1a86924752ef3491d74a44a41bd7aae2d342c0ddd70ff32d2",
+      "sha256": "4f33eccd5374605e0323f14c04c7cf70c22bec92cbe91bc57e44d5bef6ca9231",
       "size": 2354,
-      "date": "Fri, 02 Oct 2026 18:34:54 UTC",
+      "date": "Wed, 11 Nov 2026 21:11:29 UTC",
       "validUntil": null,
       "verifiedPrimaryFingerprints": [
         "8540A6F18833A80E9C1653A42FD21310B49F6B46"
@@ -127,15 +127,15 @@
       "indexes": [
         {
           "path": "nginx/binary-amd64/Packages",
-          "sha256": "ba0a84e7a5b78f45bbe9501104531e9a2b3ffa0ba8751875190780491d1cd86b",
-          "size": 161634,
+          "sha256": "4711e3c1a428fcddc940def0972836a81d5268467088b066e3466453d3f5e6fe",
+          "size": 175106,
           "url": "https://nginx.org/packages/debian/dists/trixie/nginx/binary-amd64/Packages",
           "architecture": "amd64"
         },
         {
           "path": "nginx/binary-arm64/Packages",
-          "sha256": "8ae3588b43470b2cc55c1a81a5bc84eb8648846c814793bec44a58e357490a3a",
-          "size": 161637,
+          "sha256": "419225c6441974508178fe2ee1e7b9b37a3a7af00404db0254c0e4847729054a",
+          "size": 175110,
           "url": "https://nginx.org/packages/debian/dists/trixie/nginx/binary-arm64/Packages",
           "architecture": "arm64"
         }
@@ -155,24 +155,24 @@
   "approvedExternalPackages": [
     {
       "Package": "nginx",
-      "Version": "1.30.6-1~trixie",
+      "Version": "1.30.7-1~trixie",
       "Architecture": "amd64",
-      "Filename": "pool/nginx/n/nginx/nginx_1.30.6-1~trixie_amd64.deb",
-      "Size": "1087236",
-      "SHA256": "8dc9a5da6d62b33aaef20c047760a82c7b18c90100251290ef5f553b9de3bc3c",
+      "Filename": "pool/nginx/n/nginx/nginx_1.30.7-1~trixie_amd64.deb",
+      "Size": "1089144",
+      "SHA256": "7e9e787849bed1fbb677868fc8ee86f8b513cd9e46ad29e41c7710cec3c8825d",
       "Depends": "libc6 (>= 2.34), libcrypt1 (>= 1:4.1.0), libpcre2-8-0 (>= 10.22), libssl3t64 (>= 3.5.0), zlib1g (>= 1:1.1.4), lsb-base (>= 3.0-6)",
-      "url": "https://nginx.org/packages/debian/pool/nginx/n/nginx/nginx_1.30.6-1~trixie_amd64.deb",
+      "url": "https://nginx.org/packages/debian/pool/nginx/n/nginx/nginx_1.30.7-1~trixie_amd64.deb",
       "origin": "nginx.org"
     },
     {
       "Package": "nginx",
-      "Version": "1.30.6-1~trixie",
+      "Version": "1.30.7-1~trixie",
       "Architecture": "arm64",
-      "Filename": "pool/nginx/n/nginx/nginx_1.30.6-1~trixie_arm64.deb",
-      "Size": "1017184",
-      "SHA256": "101b082dd58a7fd699e8c0eb76844bc884ce5935e8822a30f7e5dd3994c715d4",
+      "Filename": "pool/nginx/n/nginx/nginx_1.30.7-1~trixie_arm64.deb",
+      "Size": "1016448",
+      "SHA256": "b32bff964b8e64e1297e6da783748b8db1117a68f3d9ad85589b41be79a38f46",
       "Depends": "libc6 (>= 2.34), libcrypt1 (>= 1:4.1.0), libpcre2-8-0 (>= 10.22), libssl3t64 (>= 3.5.0), zlib1g (>= 1:1.1.4), lsb-base (>= 3.0-6)",
-      "url": "https://nginx.org/packages/debian/pool/nginx/n/nginx/nginx_1.30.6-1~trixie_arm64.deb",
+      "url": "https://nginx.org/packages/debian/pool/nginx/n/nginx/nginx_1.30.7-1~trixie_arm64.deb",
       "origin": "nginx.org"
     }
   ],

@@ -144,6 +144,7 @@ export const WithInfo: Story = {
 export const Status: Story = {
   args: {
     title: "운영 서버",
+    descriptionVariant: "meta",
     status: <StatusBadge tone="success">사용 중</StatusBadge>,
     description: (
       <>

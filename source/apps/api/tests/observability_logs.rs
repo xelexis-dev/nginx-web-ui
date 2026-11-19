@@ -33,7 +33,7 @@ async fn sse_tails_only_complete_lines_and_detects_same_size_inode_rotation() {
     let mut body = Sse::new(tail(
         path.clone(),
         Duration::from_millis(5),
-        shutdown.subscribe(),
+        shutdown.subscribe(), false,
     ))
     .into_response()
     .into_body();
@@ -69,7 +69,7 @@ async fn initial_tail_is_bounded_and_missing_file_starts_at_end() {
     let mut body = Sse::new(tail(
         path.clone(),
         Duration::from_millis(5),
-        shutdown.subscribe(),
+        shutdown.subscribe(), false,
     ))
     .into_response()
     .into_body();
@@ -81,7 +81,7 @@ async fn initial_tail_is_bounded_and_missing_file_starts_at_end() {
     let mut body = Sse::new(tail(
         missing.clone(),
         Duration::from_millis(5),
-        shutdown.subscribe(),
+        shutdown.subscribe(), false,
     ))
     .into_response()
     .into_body();
@@ -101,7 +101,7 @@ async fn oversized_live_line_is_discarded_without_losing_following_record() {
     let mut body = Sse::new(tail(
         path.clone(),
         Duration::from_millis(5),
-        shutdown.subscribe(),
+        shutdown.subscribe(), false,
     ))
     .into_response()
     .into_body();
@@ -121,7 +121,7 @@ async fn initial_window_ending_exactly_on_oversized_line_boundary_keeps_next_lin
     let mut body = Sse::new(tail(
         path.clone(),
         Duration::from_millis(5),
-        shutdown.subscribe(),
+        shutdown.subscribe(), false,
     ))
     .into_response()
     .into_body();
@@ -143,7 +143,7 @@ async fn one_poll_catches_up_with_a_burst_larger_than_one_read() {
     tokio::fs::write(&path, "ready\n").await.unwrap();
     let (shutdown, _) = tokio::sync::watch::channel(false);
     let poll = Duration::from_millis(300);
-    let mut body = Sse::new(tail(path.clone(), poll, shutdown.subscribe()))
+    let mut body = Sse::new(tail(path.clone(), poll, shutdown.subscribe(), false))
         .into_response()
         .into_body();
     assert!(event(&mut body).await.contains("ready"));

@@ -74,6 +74,7 @@ export function StreamDetail({
           canWrite ? (
             <StreamDetailActions
               id={data.id}
+              targetName={`listen ${data.listen} · ${data.protocol.toUpperCase()}`}
               enabled={data.enabled}
               toggleAction={toggleAction}
               deleteAction={deleteAction}

@@ -1,5 +1,5 @@
 "use client";
-import { Card, FormStack } from "@repo/ui";
+import { Card, CardFoot, FormStack } from "@repo/ui";
 import adminStyles from "@/app/admin/admin-pages.module.css";
 import resourceStyles from "@/components/resource-layout.module.css";
 import { FormErrors } from "@/components/form-errors";
@@ -38,6 +38,13 @@ export function BaseUrlForm({ defaultValue }: { defaultValue: string }) {
       <FormErrors errors={state.fieldErrors} />
       <FormStack>
         <Card
+          footer={
+            <CardFoot>
+              <Button type="submit" variant="secondary" disabled={pending}>
+                {pending ? "저장 중..." : "저장"}
+              </Button>
+            </CardFoot>
+          }
           id="admin-base-url"
           title={<>일반</>}
           errorCount={
@@ -76,12 +83,6 @@ export function BaseUrlForm({ defaultValue }: { defaultValue: string }) {
                 role="status"
               ></Banner>
             ) : null}
-
-            <footer className={adminStyles.foot}>
-              <Button type="submit" variant="secondary" disabled={pending}>
-                {pending ? "저장 중..." : "저장"}
-              </Button>
-            </footer>
           </div>
         </Card>
       </FormStack>

@@ -12,6 +12,7 @@ import {
   Td,
   Tr,
   PageHeader,
+  StatusBadge,
 } from "@repo/ui";
 import styles from "../oauth/oauth.module.css";
 
@@ -31,14 +32,8 @@ export function PendingListView({
   return (
     <section className={layout.page}>
       <PageHeader
-        title={
-          <>
-            승인 대기
-            {pending.length > 0 ? (
-              <span className={styles.rowNote}> · {pending.length}명</span>
-            ) : null}
-          </>
-        }
+        title="승인 대기"
+        status={pending.length > 0 ? <StatusBadge tone="neutral" dot={false} size="sm">{pending.length}명</StatusBadge> : undefined}
         description={
           <>
             승인하기 전까지는 <strong>로그인 자체가 되지 않습니다</strong>.

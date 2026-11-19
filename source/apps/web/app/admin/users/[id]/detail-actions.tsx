@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
-import { Button, Banner, buttonClassName } from "@repo/ui";
+import { useActionState, useRef, useState } from "react";
+import { Button, Banner, buttonClassName, ConfirmDialog } from "@repo/ui";
 import type { BasicFormState as ActionState } from "@repo/contracts";
 import { useApiAction } from "@/lib/use-api-action";
 import Link from "next/link";
@@ -16,10 +16,12 @@ const INITIAL: ActionState = { ok: false };
  */
 export function UserDetailActions({
   id,
+  targetName = id,
   isSelf,
   enabled,
 }: {
   id: string;
+  targetName?: string;
   isSelf: boolean;
   enabled: boolean;
 }) {
@@ -31,6 +33,10 @@ export function UserDetailActions({
     useApiAction<ActionState>({ id: "admin.users.delete", args: [] }),
     INITIAL,
   );
+
+  const deleteForm = useRef<HTMLFormElement>(null);
+  const approvedId = useRef<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   return (
     <div className={resourceStyles.detailActions}>
@@ -62,7 +68,13 @@ export function UserDetailActions({
             삭제
           </Button>
         ) : (
-          <form action={deleteAction}>
+          <form ref={deleteForm} action={deleteAction} onSubmit={(event) => {
+          if (deletePending || isSelf || approvedId.current !== id) {
+            event.preventDefault();
+            if (!(deletePending || isSelf)) setConfirmId(id);
+          }
+          approvedId.current = null;
+        }}>
             <input type="hidden" name="id" value={id} />
             <Button
               type="submit"
@@ -80,6 +92,21 @@ export function UserDetailActions({
           수정
         </Link>
       </div>
+      <ConfirmDialog
+        open={confirmId === id && !isSelf}
+        onClose={() => setConfirmId(null)}
+        title="삭제"
+        description="이 사용자를 삭제하시겠습니까?"
+        target={targetName}
+        confirmLabel="삭제"
+        pending={deletePending || isSelf}
+        onConfirm={() => {
+          if (confirmId !== id || deletePending || isSelf) return;
+          approvedId.current = id;
+          setConfirmId(null);
+          deleteForm.current?.requestSubmit();
+        }}
+      />
       {enabled && !isSelf ? <Banner tone="warning" title="비활성화하면 이 사용자의 API 토큰도 모두 폐기됩니다." /> : null}
       {toggleState.error ? (
         <Banner tone="error" role="alert" title={toggleState.error} />

@@ -1,6 +1,6 @@
 //! C1: credential exclusivity, live authority, route census and token lifecycle at use.
 mod auth_support;
-use auth_support::{TestDb, UserRow, insert_user, test_db};
+use auth_support::{TestDb, UserRow, insert_user};
 use axum::{
     Router,
     body::Body,
@@ -30,7 +30,10 @@ fn headers() -> HeaderMap {
     h
 }
 async fn fixture(scopes: &[&str]) -> TestDb {
-    let db = test_db().await;
+    fixture_with(scopes, &[]).await
+}
+async fn fixture_with(scopes: &[&str], extra: &[(&str, &str)]) -> TestDb {
+    let db = auth_support::test_db_with(extra).await;
     insert_user(
         &db.client,
         UserRow {
@@ -1009,10 +1012,7 @@ async fn explicit_admin_business_actions_accept_tokens_and_preserve_actor_and_pr
         let via:Value=db.client.query_one("SELECT via FROM audit_logs WHERE action=$1",&[&action]).await.unwrap().get(0);
         assert_eq!(via,json!({"kind":"token","id":"pat","name":"automation"}));
     }
-    let request=Request::builder().method("POST").uri("/api/ui/v1/forms/admin.users.toggle")
-        .header("host","ui.example.test").header("authorization",&auth).header("content-type","application/x-www-form-urlencoded")
-        .extension(ConnectInfo(SocketAddr::from(([127,0,0,1],12345)))).body(Body::from("id=u1")).unwrap();
-    assert!(app.oneshot(request).await.unwrap().status().is_client_error());
+    f2_refused(&db,&app,"admin.users.toggle",&[("id","u1")], f2_row("user:disable","u1","admin",None,&[],"admin_target")).await;
     assert!(db.client.query_one("SELECT enabled FROM users WHERE id='u1'",&[]).await.unwrap().get::<_,bool>(0));
 }
 
@@ -1064,12 +1064,48 @@ async fn review_post(app: &Router, operation: &str, fields: &[(&str,&str)], toke
         .extension(ConnectInfo(SocketAddr::from(([127,0,0,1],12345))));
     if token {request=request.header("authorization",format!("Bearer {}",credential()));}
     else {request=request.header("cookie",review_cookie()).header("origin","http://ui.example.test");}
-    app.clone().oneshot(request.body(Body::from(encoded)).unwrap()).await.unwrap()
+    tokio::time::timeout(Duration::from_secs(30), app.clone().oneshot(request.body(Body::from(encoded)).unwrap())).await.expect("user change must finish after releasing row locks").unwrap()
 }
 async fn review_scopes(db: &TestDb, scopes: &[&str]) {
     db.client.execute("UPDATE access_tokens SET scopes=$1 WHERE id='pat'",&[&json!(scopes)]).await.unwrap();
 }
 const REVIEW_FULL: &[&str]=&["config:read","config:write","nginx:reload","user:manage"];
+
+async fn f2_audit_rows(db: &TestDb) -> BTreeMap<String, Value> {
+    db.client.query("SELECT id,to_jsonb(a) FROM audit_logs a ORDER BY id",&[]).await.unwrap().into_iter().map(|r|(r.get(0),r.get(1))).collect()
+}
+fn f2_delta(before: &BTreeMap<String,Value>, after: &BTreeMap<String,Value>) -> Vec<(String,Value)> {
+    for (id,row) in before { assert_eq!(after.get(id),Some(row),"existing audit row changed"); }
+    after.iter().filter(|(id,_)|!before.contains_key(*id)).map(|(id,row)| {
+        assert!(uuid::Uuid::parse_str(id).is_ok());
+        let mut row=row.clone();assert!(row["created_at"].is_string());
+        row.as_object_mut().unwrap().remove("id");row.as_object_mut().unwrap().remove("created_at");
+        (id.clone(),row)
+    }).collect()
+}
+fn f2_row(operation: &str, id: &str, current: &str, resulting: Option<&str>, missing: &[&str], reason: &str) -> Value {
+    json!({"action":"rbac:denied","target":operation,"actor_id":"u1","actor_label":"u1@example.test","ip":"127.0.0.1","via":{"kind":"token","id":"pat","name":"automation"},"before":{"operation":operation,"userId":id,"role":"admin","targetRole":current,"resultingRole":resulting,"missingActions":missing,"reason":reason},"after":null})
+}
+async fn f2_forbidden(response: Response) {
+    assert_eq!(response.status(),403);assert!(!response.headers().contains_key(header::SET_COOKIE));
+    assert_eq!(body(response).await,json!({"error":{"code":"forbidden","message":"이 동작을 수행할 권한이 없습니다."}}));
+}
+async fn f2_refused(db: &TestDb, app: &Router, op: &str, fields: &[(&str,&str)], expected: Value) -> String {
+    let before=f2_audit_rows(db).await;let mut data=database_snapshot(db).await;data.remove("audit_logs");
+    f2_forbidden(review_post(app,op,fields,true).await).await;
+    let delta=f2_delta(&before,&f2_audit_rows(db).await);assert_eq!(delta.len(),1,"exactly one new audit row across all actions");assert_eq!(delta[0].1,expected);
+    let mut after=database_snapshot(db).await;after.remove("audit_logs");assert_eq!(after,data,"all business tables unchanged");
+    tokio::time::timeout(Duration::from_secs(10),db.client.execute("UPDATE users SET email=email WHERE id=$1 OR id='u1'",&[&expected["before"]["userId"].as_str().unwrap()])).await.expect("target and actor locks released").unwrap();
+    delta[0].0.clone()
+}
+async fn f2_allowed(db: &TestDb, app: &Router, op: &str, fields: &[(&str,&str)], token: bool) -> Response {
+    let before=f2_audit_rows(db).await;let response=review_post(app,op,fields,token).await;
+    let delta=f2_delta(&before,&f2_audit_rows(db).await);
+    assert!(delta.iter().all(|(_,row)|row["action"]!="rbac:denied"));
+    if response.status()==200 { assert!(delta.iter().any(|(_,row)|match op {
+        "admin.users.updateRole"=>row["action"]=="user:update", "admin.users.toggle"=>row["action"]=="user:enable"||row["action"]=="user:disable", "admin.pending.approve"=>row["action"]=="user:approve", "admin.pending.reject"=>row["action"]=="user:reject", _=>false
+    }),"allowed change retains success audit"); } response
+}
 
 #[tokio::test]
 #[ignore="real PostgreSQL"]
@@ -1112,13 +1148,13 @@ async fn review_f1_outer_headers_do_not_lock_password_signin() {
 async fn review_f2_role_updates_stay_within_token_authority() {
     let db=fixture(&["config:read","user:manage"]).await;let app=nwui_api::server::router(db.state.clone());
     insert_user(&db.client,UserRow {id:"target",email:"target@example.test",role:"viewer",..Default::default()},None).await;
-    assert_eq!(review_post(&app,"admin.users.updateRole",&[("id","target"),("role","editor")],true).await.status(),403);
+    f2_refused(&db,&app,"admin.users.updateRole",&[("id","target"),("role","editor")],f2_row("user:update","target","viewer",Some("editor"),&["config:write","nginx:reload"],"exceeds_token")).await;
     assert_eq!(db.client.query_one("SELECT role::text FROM users WHERE id='target'",&[]).await.unwrap().get::<_,String>(0),"viewer");
     review_scopes(&db,REVIEW_FULL).await;
-    assert_eq!(review_post(&app,"admin.users.updateRole",&[("id","target"),("role","editor")],true).await.status(),200);
-    assert_eq!(review_post(&app,"admin.users.updateRole",&[("id","target"),("role","admin")],true).await.status(),403);
-    assert_eq!(review_post(&app,"admin.users.updateRole",&[("id","target"),("role","admin")],false).await.status(),200);
-    assert_eq!(review_post(&app,"admin.users.updateRole",&[("id","target"),("role","viewer")],true).await.status(),403,"even a full token cannot edit an admin target");
+    assert_eq!(f2_allowed(&db,&app,"admin.users.updateRole",&[("id","target"),("role","editor")],true).await.status(),200);
+    f2_refused(&db,&app,"admin.users.updateRole",&[("id","target"),("role","admin")],f2_row("user:update","target","editor",Some("admin"),&[],"admin_grant")).await;
+    assert_eq!(f2_allowed(&db,&app,"admin.users.updateRole",&[("id","target"),("role","admin")],false).await.status(),200);
+    f2_refused(&db,&app,"admin.users.updateRole",&[("id","target"),("role","viewer")],f2_row("user:update","target","admin",Some("viewer"),&[],"admin_target")).await;
 }
 #[tokio::test]
 #[ignore="real PostgreSQL"]
@@ -1127,20 +1163,20 @@ async fn review_f2_approval_and_enable_cannot_mint_a_stronger_session() {
     for (id,approved) in [("pending",false),("disabled",true)] {
         insert_user(&db.client,UserRow {id,email:if approved {"disabled@example.test"}else{"pending@example.test"},role:"editor",approved,enabled:false,..Default::default()},None).await;
     }
-    assert_eq!(review_post(&app,"admin.pending.approve",&[("id","pending"),("role","editor")],true).await.status(),403);
-    assert_eq!(review_post(&app,"admin.users.toggle",&[("id","disabled")],true).await.status(),403);
+    f2_refused(&db,&app,"admin.pending.approve",&[("id","pending"),("role","editor")],f2_row("user:approve","pending","editor",Some("editor"),&["config:write","nginx:reload"],"exceeds_token")).await;
+    f2_refused(&db,&app,"admin.users.toggle",&[("id","disabled")],f2_row("user:enable","disabled","editor",Some("editor"),&["config:write","nginx:reload"],"exceeds_token")).await;
     review_scopes(&db,REVIEW_FULL).await;
-    assert_eq!(review_post(&app,"admin.pending.approve",&[("id","pending"),("role","admin")],true).await.status(),403);
-    assert_eq!(review_post(&app,"admin.pending.approve",&[("id","pending"),("role","editor")],true).await.status(),200);
-    assert_eq!(review_post(&app,"admin.users.toggle",&[("id","disabled")],true).await.status(),200);
+    f2_refused(&db,&app,"admin.pending.approve",&[("id","pending"),("role","admin")],f2_row("user:approve","pending","editor",Some("admin"),&[],"admin_grant")).await;
+    assert_eq!(f2_allowed(&db,&app,"admin.pending.approve",&[("id","pending"),("role","editor")],true).await.status(),200);
+    assert_eq!(f2_allowed(&db,&app,"admin.users.toggle",&[("id","disabled")],true).await.status(),200);
     // A narrowed token may still disable or reject a non-admin target.
     review_scopes(&db,&["config:read","user:manage"]).await;
-    assert_eq!(review_post(&app,"admin.users.toggle",&[("id","disabled")],true).await.status(),200);
+    assert_eq!(f2_allowed(&db,&app,"admin.users.toggle",&[("id","disabled")],true).await.status(),200);
     db.client.execute("UPDATE users SET approved=false,enabled=true WHERE id='pending'",&[]).await.unwrap();
-    assert_eq!(review_post(&app,"admin.pending.reject",&[("id","pending")],true).await.status(),200);
+    assert_eq!(f2_allowed(&db,&app,"admin.pending.reject",&[("id","pending")],true).await.status(),200);
     assert!(!db.client.query_one("SELECT enabled FROM users WHERE id='pending'",&[]).await.unwrap().get::<_,bool>(0));
     // The cookie path retains the original authority to approve as admin.
-    assert_eq!(review_post(&app,"admin.pending.approve",&[("id","pending"),("role","admin")],false).await.status(),200);
+    assert_eq!(f2_allowed(&db,&app,"admin.pending.approve",&[("id","pending"),("role","admin")],false).await.status(),200);
 }
 #[tokio::test]
 #[ignore="real PostgreSQL"]
@@ -1149,16 +1185,16 @@ async fn review_f2_admin_targets_are_untouchable_by_tokens() {
     for (id,approved,enabled) in [("active-admin",true,true),("disabled-admin",true,false),("pending-admin",false,true)] {
         insert_user(&db.client,UserRow {id,email:if id=="active-admin" {"active@example.test"}else if approved {"disabled@example.test"}else{"pending@example.test"},role:"admin",approved,enabled,..Default::default()},None).await;
     }
-    let before=database_snapshot(&db).await;
-    for (operation,fields) in [
-        ("admin.users.updateRole",vec![("id","active-admin"),("role","viewer")]),
-        ("admin.users.toggle",vec![("id","active-admin")]),
-        ("admin.users.toggle",vec![("id","disabled-admin")]),
-        ("admin.pending.approve",vec![("id","pending-admin"),("role","viewer")]),
-        ("admin.pending.reject",vec![("id","pending-admin")]),
-    ] {assert_eq!(review_post(&app,operation,&fields,true).await.status(),403,"{operation} {fields:?}");}
-    assert_eq!(database_snapshot(&db).await,before);
-    assert_eq!(review_post(&app,"admin.users.toggle",&[("id","disabled-admin")],false).await.status(),200);
+    let mut before=database_snapshot(&db).await;before.remove("audit_logs");
+    for (operation,fields,action,id,resulting) in [
+        ("admin.users.updateRole",vec![("id","active-admin"),("role","viewer")],"user:update","active-admin",Some("viewer")),
+        ("admin.users.toggle",vec![("id","active-admin")],"user:disable","active-admin",None),
+        ("admin.users.toggle",vec![("id","disabled-admin")],"user:enable","disabled-admin",Some("admin")),
+        ("admin.pending.approve",vec![("id","pending-admin"),("role","viewer")],"user:approve","pending-admin",Some("viewer")),
+        ("admin.pending.reject",vec![("id","pending-admin")],"user:reject","pending-admin",None),
+    ] {f2_refused(&db,&app,operation,&fields,f2_row(action,id,"admin",resulting,&[],"admin_target")).await;}
+    let mut after=database_snapshot(&db).await;after.remove("audit_logs");assert_eq!(after,before);
+    assert_eq!(f2_allowed(&db,&app,"admin.users.toggle",&[("id","disabled-admin")],false).await.status(),200);
 }
 #[tokio::test]
 #[ignore="real PostgreSQL"]
@@ -1225,5 +1261,85 @@ async fn review_f1_proxy_authorization_preserves_recent_self_reset() {
         let response=nwui_api::server::router(db.state.clone()).oneshot(request).await.unwrap();
         assert_eq!(response.status(),200,"{auth}: {}",body(response).await);
         assert!(nwui_api::auth::password::verify_password("New-Passw0rd!", &db.client.query_one("SELECT password_hash FROM users WHERE id='u1'",&[]).await.unwrap().get::<_,String>(0)));
+    }
+}
+
+#[tokio::test]
+#[ignore="real PostgreSQL"]
+async fn review_f2_pool_one_persists_all_callers_and_audit_projection() {
+    let db=fixture_with(REVIEW_FULL,&[("API_DB_POOL_SIZE","1")]).await;
+    insert_user(&db.client,UserRow {id:"target",email:"target@example.test",role:"admin",approved:false,..Default::default()},None).await;
+    let app=nwui_api::server::router(db.state.clone());
+    for (op,fields,action,resulting) in [
+        ("admin.users.updateRole",vec![("id","target"),("role","viewer")],"user:update",Some("viewer")),
+        ("admin.users.toggle",vec![("id","target")],"user:disable",None),
+        ("admin.pending.approve",vec![("id","target"),("role","viewer")],"user:approve",Some("viewer")),
+        ("admin.pending.reject",vec![("id","target")],"user:reject",None),
+    ] {
+        let expected=f2_row(action,"target","admin",resulting,&[],"admin_target");
+        let id=f2_refused(&db,&app,op,&fields,expected.clone()).await;
+        let list=nwui_api::observability::query::audit_list(&db.state,&BTreeMap::from([("action".into(),"rbac:denied".into())])).await.unwrap();
+        let item=list["items"].as_array().unwrap().iter().find(|r|r["id"]==id).unwrap();
+        assert_eq!(item["target"],action);assert_eq!(item["via"],expected["via"]);assert_eq!(item["actorLabel"],"u1@example.test");assert!(item.get("before").is_none());
+        let detail=nwui_api::observability::query::audit_detail(&db.state,&id).await.unwrap();
+        assert_eq!(detail["log"]["target"],action);assert_eq!(detail["log"]["before"],expected["before"]);assert_eq!(detail["log"]["after"],Value::Null);assert_eq!(detail["log"]["via"],expected["via"]);
+    }
+    db.client.execute("UPDATE users SET enabled=false WHERE id='target'",&[]).await.unwrap();
+    f2_refused(&db,&app,"admin.users.toggle",&[("id","target")],f2_row("user:enable","target","admin",Some("admin"),&[],"admin_target")).await;
+}
+
+#[tokio::test]
+#[ignore="real PostgreSQL"]
+async fn review_f2_audit_insert_failure_keeps_forbidden_and_all_tables_unchanged() {
+    for extra in [vec![],vec![("API_DB_POOL_SIZE","1")]] {
+        let db=fixture_with(REVIEW_FULL,&extra).await;
+        insert_user(&db.client,UserRow {id:"target",email:"target@example.test",role:"admin",approved:false,..Default::default()},None).await;
+        db.client.batch_execute("ALTER TABLE audit_logs ADD CONSTRAINT test_reject_denial CHECK(action <> 'rbac:denied')").await.unwrap();
+        let app=nwui_api::server::router(db.state.clone());
+        for (op,fields) in [
+            ("admin.users.updateRole",vec![("id","target"),("role","viewer")]),("admin.users.toggle",vec![("id","target")]),
+            ("admin.pending.approve",vec![("id","target"),("role","viewer")]),("admin.pending.reject",vec![("id","target")]),
+        ] {
+            let before=database_snapshot(&db).await;
+            f2_forbidden(review_post(&app,op,&fields,true).await).await;
+            assert_eq!(database_snapshot(&db).await,before,"audit failure must not change any table: {op}");
+            tokio::time::timeout(Duration::from_secs(10),db.client.execute("UPDATE users SET email=email WHERE id IN ('u1','target')",&[])).await.expect("locks released even after audit failure").unwrap();
+            assert_eq!(db.state.db.get().await.unwrap().query_one("SELECT 1",&[]).await.unwrap().get::<_,i32>(0),1,"same pooled connection remains usable");
+        }
+    }
+}
+
+#[tokio::test]
+#[ignore="real PostgreSQL"]
+async fn review_f2_general_denial_is_not_duplicated() {
+    let db=fixture(&["config:read"]).await;
+    insert_user(&db.client,UserRow {id:"target",email:"target@example.test",..Default::default()},None).await;
+    let app=nwui_api::server::router(db.state.clone());let before=f2_audit_rows(&db).await;
+    let response=review_post(&app,"admin.users.updateRole",&[("id","target"),("role","viewer")],true).await;
+    assert_eq!(response.status(),403);assert!(!response.headers().contains_key(header::SET_COOKIE));assert_eq!(body(response).await["error"]["code"],"insufficient_scope");
+    let delta=f2_delta(&before,&f2_audit_rows(&db).await);
+    let mut expected=f2_row("user:manage","target","editor",Some("viewer"),&[],"exceeds_token");expected["before"]=json!({"role":"admin","requiredAction":"user:manage"});
+    assert_eq!(delta.len(),1);assert_eq!(delta[0].1,expected);
+}
+
+#[tokio::test]
+#[ignore="real PostgreSQL"]
+async fn review_f2_guard_order_and_early_refusals_stay_unchanged() {
+    let db=fixture(&["user:manage"]).await;let app=nwui_api::server::router(db.state.clone());
+    insert_user(&db.client,UserRow {id:"target",email:"target@example.test",role:"admin",..Default::default()},None).await;
+    // Admin-target reason wins even though viewer would require the missing config:read.
+    f2_refused(&db,&app,"admin.users.updateRole",&[("id","target"),("role","viewer")],f2_row("user:update","target","admin",Some("viewer"),&["config:read"],"admin_target")).await;
+    // The F2 guard still precedes approved/no-op checks and self-disable.
+    f2_refused(&db,&app,"admin.pending.approve",&[("id","target"),("role","viewer")],f2_row("user:approve","target","admin",Some("viewer"),&["config:read"],"admin_target")).await;
+    f2_refused(&db,&app,"admin.pending.reject",&[("id","target")],f2_row("user:reject","target","admin",None,&[],"admin_target")).await;
+    f2_refused(&db,&app,"admin.users.toggle",&[("id","u1")],f2_row("user:disable","u1","admin",None,&[],"admin_target")).await;
+    for (op,fields,status) in [
+        ("admin.users.updateRole",vec![("id","target"),("role","invalid")],400),
+        ("admin.users.updateRole",vec![("id","u1"),("role","viewer")],409),
+        ("admin.users.updateRole",vec![("id","gone"),("role","viewer")],404),
+        ("admin.pending.approve",vec![("id","gone"),("role","viewer")],200),
+        ("admin.pending.reject",vec![("id","gone")],200),
+    ] {
+        let before=f2_audit_rows(&db).await;assert_eq!(review_post(&app,op,&fields,true).await.status(),status,"{op} {fields:?}");assert!(f2_delta(&before,&f2_audit_rows(&db).await).is_empty());
     }
 }

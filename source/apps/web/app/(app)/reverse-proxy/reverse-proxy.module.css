@@ -113,8 +113,8 @@
 
 .templateDesc {
   margin: 0;
-  font-size: var(--fs-md);
-  line-height: 1.5;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
   color: var(--text-2);
   flex: 1;
 }
@@ -124,12 +124,17 @@
 }
 
 .templatePreviewSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
   padding: var(--sp-3) var(--sp-4);
   font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
   font-weight: 500;
-  color: var(--info-text);
+  color: var(--text-1);
   cursor: pointer;
-  list-style: revert;
+  list-style: none;
 }
 
 @media (max-width: 768px) {
@@ -295,3 +300,7 @@
 .opsServerCell > span > span:last-child {
   flex: 1;
 }
+
+.templatePreviewSummary::-webkit-details-marker { display: none; }
+.templateChevron { flex: none; color: var(--text-3); }
+.templatePreview[open] .templateChevron { transform: rotate(180deg); }

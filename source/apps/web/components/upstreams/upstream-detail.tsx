@@ -59,6 +59,7 @@ export function UpstreamDetail({
           canWrite ? (
             <UpstreamDetailActions
               id={data.id}
+              targetName={data.name}
               action={deleteAction}
               editHref={`${basePath}/${data.id}/edit`}
             />

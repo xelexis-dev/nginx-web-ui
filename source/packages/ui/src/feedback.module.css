@@ -247,3 +247,13 @@
 .pane[data-variant="secret"] .codeLine {
   display: block;
 }
+
+:global([data-card]) .pane {
+  border-radius: var(--r-2);
+}
+:global([data-card]) .paneHeader {
+  border-radius: var(--r-2) var(--r-2) 0 0;
+}
+:global([data-card]) .code {
+  border-radius: 0 0 calc(var(--r-2) - var(--bw)) calc(var(--r-2) - var(--bw));
+}

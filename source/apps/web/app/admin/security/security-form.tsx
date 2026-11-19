@@ -1,36 +1,14 @@
 "use client";
-import { Card, FormStack, SettingRows, SettingRow } from "@repo/ui";
+import { Card, CardFoot, FormStack, SettingRows, SettingRow } from "@repo/ui";
 import adminStyles from "@/app/admin/admin-pages.module.css";
 import resourceStyles from "@/components/resource-layout.module.css";
 import { FormErrors } from "@/components/form-errors";
 import { useActionState, useState } from "react";
-import { Banner, SegmentedControl, Button } from "@repo/ui";
+import { Banner, Switch, Button } from "@repo/ui";
 import type { BasicFormState as PolicyState } from "@repo/contracts";
 import { useApiAction } from "@/lib/use-api-action";
 
 const INITIAL: PolicyState = { ok: false };
-
-function Toggle({
-  value,
-  onChange,
-  ariaLabel,
-}: {
-  value: boolean;
-  onChange: (v: boolean) => void;
-  ariaLabel: string;
-}) {
-  return (
-    <SegmentedControl
-      label={ariaLabel}
-      value={value}
-      onChange={onChange}
-      options={[
-        { value: false, label: "해제" },
-        { value: true, label: "강제" },
-      ]}
-    />
-  );
-}
 
 /**
  * 역할별 2FA 강제 정책 토글. 저장 시 변경된 역할군은 재로그인이 강제되어(서버가
@@ -62,6 +40,13 @@ export function SecurityForm({
       <FormErrors errors={state.fieldErrors} />
       <FormStack>
         <Card
+          footer={
+            <CardFoot>
+              <Button type="submit" variant="secondary" disabled={pending}>
+                {pending ? "저장 중..." : "정책 저장"}
+              </Button>
+            </CardFoot>
+          }
           id="admin-security"
           title={<>보안 — 2FA 강제</>}
           errorCount={
@@ -79,10 +64,11 @@ export function SecurityForm({
                 wideDetail
                 detail="admin 역할 계정에 2단계 인증을 강제합니다."
                 action={
-                  <Toggle
-                    value={admin}
-                    onChange={setAdmin}
-                    ariaLabel="관리자 계정 2FA 강제"
+                  <Switch
+                    checked={admin}
+                    onCheckedChange={setAdmin}
+                    label="관리자 계정 2FA 강제"
+                    visibleLabel="강제"
                   />
                 }
               />
@@ -91,10 +77,11 @@ export function SecurityForm({
                 wideDetail
                 detail="editor·viewer 역할 계정에 2단계 인증을 강제합니다."
                 action={
-                  <Toggle
-                    value={user}
-                    onChange={setUser}
-                    ariaLabel="일반 계정 2FA 강제"
+                  <Switch
+                    checked={user}
+                    onCheckedChange={setUser}
+                    label="일반 계정 2FA 강제"
+                    visibleLabel="강제"
                   />
                 }
               />
@@ -103,10 +90,11 @@ export function SecurityForm({
                 wideDetail
                 detail="OAuth 로 로그인한 사용자에게도 이 앱의 2단계 인증을 요구합니다. 역할과 무관한 별개 축입니다 — 공급자가 이미 2단계 인증을 하는 경우가 많아, 켜면 이중이 될 수 있습니다."
                 action={
-                  <Toggle
-                    value={oauth}
-                    onChange={setOauth}
-                    ariaLabel="OAuth 로그인 2FA 강제"
+                  <Switch
+                    checked={oauth}
+                    onCheckedChange={setOauth}
+                    label="OAuth 로그인 2FA 강제"
+                    visibleLabel="강제"
                   />
                 }
               />
@@ -129,12 +117,6 @@ export function SecurityForm({
             {state.error ? (
               <Banner tone="error" role="alert" title={state.error} data-wide />
             ) : null}
-
-            <footer className={adminStyles.foot}>
-              <Button type="submit" variant="secondary" disabled={pending}>
-                {pending ? "저장 중..." : "정책 저장"}
-              </Button>
-            </footer>
           </div>
         </Card>
       </FormStack>

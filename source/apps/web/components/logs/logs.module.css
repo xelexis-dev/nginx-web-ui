@@ -28,12 +28,15 @@
 }
 .viewport [role="region"] { margin-inline: 0; overflow: visible; }
 .viewport thead th { position: sticky; top: 0; z-index: 1; background: var(--bg-canvas); }
+.viewport thead th:first-child { box-shadow: calc(-1 * var(--cell-x)) 0 var(--bg-canvas); }
+.viewport thead th:last-child { box-shadow: var(--cell-x) 0 var(--bg-canvas); }
 .viewport td[data-truncate] { max-width: none; }
 .zone { font-weight: 400; }
 .time { font-weight: 500; }
 .date { color: var(--text-2); font-weight: 400; }
 .colTime { width: 168px; }
 .colStatus { width: 64px; }
+.colLevel { width: 76px; }
 .colMethod { width: 76px; }
 .colHost { width: 188px; }
 .colBytes { width: 84px; }
@@ -41,7 +44,14 @@
 .colAction { width: 60px; }
 .row { cursor: pointer; }
 .row:focus-visible { outline: var(--bw-2) solid var(--focus); outline-offset: calc(-1 * var(--bw-2)); }
-.viewport .detailRow td { padding: var(--sp-3) var(--cell-x) var(--sp-4); background: var(--bg-sunken); white-space: normal; }
+.viewport .detailRow td {
+  padding: var(--sp-3) 0 var(--sp-4);
+  background: var(--bg-sunken);
+  box-shadow: calc(-1 * var(--cell-x)) 0 var(--bg-sunken), var(--cell-x) 0 var(--bg-sunken);
+  white-space: normal;
+}
+/* The shared empty-row hover rule must not clear an expanded detail panel. */
+.viewport .detailRow:hover td[colspan] { background: var(--bg-sunken); }
 .detail { display: grid; gap: var(--sp-3); min-width: 0; }
 .detail dd { white-space: pre-wrap; overflow-wrap: anywhere; }
 .empty { padding-block: var(--sp-6); }
@@ -69,6 +79,7 @@
 @keyframes connecting { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
 @media (prefers-reduced-motion: reduce) { .progress::after { animation: none; } }
 @media (max-width: 768px) {
+  .viewport .detailRow td { padding-inline: var(--cell-x); box-shadow: none; }
   .filters { flex-basis: 100%; }
   .filters > [role="group"] { width: 100%; }
   .filters > [role="group"] > button { white-space: nowrap; }

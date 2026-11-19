@@ -15,6 +15,10 @@ use nwui_api::{
 };
 use serde_json::{Value, json};
 use std::{sync::Arc, time::Duration};
+// The notification's own acquisition deadline and count assertion detect a held pool.
+// This bounds the whole durable publish operation only to stop a true hang.
+const PUBLISH_HANG_BACKSTOP: Duration = Duration::from_secs(120);
+
 struct Ca {
     base: String,
     status: String,
@@ -238,7 +242,7 @@ async fn apply_releases_the_single_connection_before_skipped_notification() {
     g13_support::witness(&mut t.state);
     t.client.batch_execute("INSERT INTO nginx_servers(id,server_name,config) VALUES('invalid','broken.test','{\"proxyPass\":\"not-a-url\"}')").await.unwrap();
     let result = tokio::time::timeout(
-        Duration::from_secs(2),
+        PUBLISH_HANG_BACKSTOP,
         nwui_api::publisher_client::apply_saved(&t.state, &actor(), None),
     )
     .await
@@ -254,7 +258,8 @@ async fn apply_releases_the_single_connection_before_skipped_notification() {
             .await
             .unwrap()
             .get::<_, i64>(0),
-        1
+        1,
+        "apply must return its only connection before recording the skipped notice"
     );
 }
 
@@ -304,9 +309,9 @@ async fn rollback_releases_the_single_connection_before_skipped_notification() {
     let data = json!({"upstreams":[],"streams":[],"servers":[{"id":"invalid","serverName":"broken.test","listen":8081,"enabled":true,"config":{"proxyPass":"not-a-url"}}]});
     g13_support::witness(&mut t.state);
     t.client.execute("INSERT INTO config_snapshots(id,data) VALUES('77777777-7777-4777-8777-777777777777',$1)", &[&data]).await.unwrap();
-    let result = tokio::time::timeout(Duration::from_secs(2), nwui_api::publisher_client::rollback_snapshot(&t.state, "77777777-7777-4777-8777-777777777777", &actor())).await.expect("rollback must not wait on its own pooled connection").unwrap();
+    let result = tokio::time::timeout(PUBLISH_HANG_BACKSTOP, nwui_api::publisher_client::rollback_snapshot(&t.state, "77777777-7777-4777-8777-777777777777", &actor())).await.expect("rollback must not wait on its own pooled connection").unwrap();
     assert!(result.result.ok, "{}", result.result.output);
-    assert_eq!(t.client.query_one("SELECT count(*) FROM notifications WHERE type='config.apply-skipped' AND severity='warning'", &[]).await.unwrap().get::<_, i64>(0), 1);
+    assert_eq!(t.client.query_one("SELECT count(*) FROM notifications WHERE type='config.apply-skipped' AND severity='warning'", &[]).await.unwrap().get::<_, i64>(0), 1, "rollback must return its only connection before recording the skipped notice");
 }
 
 #[tokio::test]

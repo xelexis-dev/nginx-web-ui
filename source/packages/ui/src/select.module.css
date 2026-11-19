@@ -172,6 +172,8 @@
 }
 
 .check {
+  display: flex;
+  align-items: center;
   flex-shrink: 0;
   color: var(--accent);
   font-size: var(--fs-sm);

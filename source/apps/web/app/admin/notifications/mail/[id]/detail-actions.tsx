@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
-import { Banner, Button, buttonClassName } from "@repo/ui";
+import { useActionState, useRef, useState } from "react";
+import { Banner, Button, buttonClassName, ConfirmDialog } from "@repo/ui";
 import { useApiAction } from "@/lib/use-api-action";
 import type { MailRecipientState } from "../form-types";
 import Link from "next/link";
@@ -32,6 +32,10 @@ export function MailRecipientDetailActions({
     INITIAL,
   );
 
+  const deleteForm = useRef<HTMLFormElement>(null);
+  const approvedId = useRef<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+
   return (
     <div className={resourceStyles.detailActions}>
       <div className={resourceStyles.actionRow}>
@@ -45,7 +49,13 @@ export function MailRecipientDetailActions({
             {testPending ? "보내는 중..." : "테스트 발송"}
           </Button>
         </form>
-        <form action={deleteAction}>
+        <form ref={deleteForm} action={deleteAction} onSubmit={(event) => {
+          if (testPending || deletePending || approvedId.current !== id) {
+            event.preventDefault();
+            if (!(testPending || deletePending)) setConfirmId(id);
+          }
+          approvedId.current = null;
+        }}>
           <input type="hidden" name="id" value={id} />
           <Button
             type="submit"
@@ -62,6 +72,21 @@ export function MailRecipientDetailActions({
           수정
         </Link>
       </div>
+      <ConfirmDialog
+        open={confirmId === id}
+        onClose={() => setConfirmId(null)}
+        title="삭제"
+        description="이 메일 수신처를 삭제하시겠습니까?"
+        target={address}
+        confirmLabel="삭제"
+        pending={testPending || deletePending}
+        onConfirm={() => {
+          if (confirmId !== id || testPending || deletePending) return;
+          approvedId.current = id;
+          setConfirmId(null);
+          deleteForm.current?.requestSubmit();
+        }}
+      />
 
       {testState.error ? (
         <Banner

@@ -81,7 +81,7 @@ export default async function NodeLayout({
                     shellData.available ? (
                       <NodeStatusBadge
                         status={node.lastStatus}
-                        version={node.lastVersion}
+                        version={shellData.nodeVersion ?? node.lastVersion}
                       />
                     ) : (
                       <StatusBadge tone="error" size="sm">

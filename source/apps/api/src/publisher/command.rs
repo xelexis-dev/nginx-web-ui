@@ -122,7 +122,9 @@ fn root_capture(
         .ok_or_else(||root_error("publisher process identity unavailable"))?;
     let mut command=std::process::Command::new(bin);
     command.args(args).env_clear().stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped()).process_group(0);
-    if let Some(path)=std::env::var_os("PATH") {command.env("PATH",path);}
+    for key in ["PATH", "TZ"] {
+        if let Some(value)=std::env::var_os(key) {command.env(key,value);}
+    }
     #[cfg(target_os="linux")]
     unsafe {
         let parent=libc::getpid();
@@ -212,6 +214,33 @@ mod root_stream_tests {
     fn assert_reaped(pid_file:&Path) {
         let pid=std::fs::read_to_string(pid_file).unwrap().trim().parse().unwrap();
         assert!(super::super::poison::start_ticks(pid).unwrap().is_none(),"owned leader must be reaped");
+    }
+
+    #[test]
+    fn child_environment_tz_probe() {
+        let Ok(expected)=std::env::var("NWUI_EXPECT_TZ") else {return;};
+        let (_temp,store,bin)=fixture("/usr/bin/env >&2");
+        let result=root_capture(store,bin,vec![],Duration::from_secs(2),drain).unwrap();
+        let CommandResult::Accepted(env)=result else {panic!("{result:?}")};
+        let mut lines:Vec<_>=env.lines().collect(); lines.sort();
+        // /bin/sh may add PWD; the captured executable must see no injected secret.
+        assert!(!env.contains("NWUI_TEST_SECRET")); assert!(!env.contains("NWUI_EXPECT_TZ"));
+        assert_eq!(env.lines().find_map(|line|line.strip_prefix("TZ=")), if expected=="<unset>" {None} else {Some(expected.as_str())});
+        assert!(env.lines().any(|line|line.starts_with("PATH=")));
+        assert!(lines.iter().all(|line|line.starts_with("PATH=")||line.starts_with("TZ=")||line.starts_with("PWD=")));
+    }
+
+    #[test]
+    fn root_children_keep_only_path_and_optional_unmodified_tz() {
+        for zone in [None,Some("Asia/Seoul"),Some(":KST-9"),Some("")] {
+            let mut command=std::process::Command::new(std::env::current_exe().unwrap());
+            command.args(["--exact","publisher::command::root_stream_tests::child_environment_tz_probe","--nocapture"])
+                .env_clear().env("PATH","/usr/bin:/bin").env("NWUI_TEST_SECRET","not-forwarded")
+                .env("NWUI_EXPECT_TZ",zone.unwrap_or("<unset>"));
+            if let Some(zone)=zone {command.env("TZ",zone);}
+            let result=command.output().unwrap();
+            assert!(result.status.success(),"{}",String::from_utf8_lossy(&result.stdout));
+        }
     }
 
     #[tokio::test]

@@ -44,3 +44,10 @@ it.each([undefined, "node-1"])("preserves the baseline from the selected target 
     expect(await readOperationsShellData(nodeId)).toMatchObject({available: true, pendingCount: count, pendingHasBaseline: hasBaseline === true, canApply: true});
   }
 });
+
+
+it("carries the node version from the existing remote read without another request", async () => {
+  vi.mocked(readView).mockResolvedValue({ok: true, node: {lastVersion: "2.1.1"}, effectiveRole: "viewer", data: {servers: {servers}, pending}});
+  expect(await readOperationsShellData("node-1")).toMatchObject({available: true, nodeVersion: "2.1.1"});
+  expect(readView).toHaveBeenCalledExactlyOnceWith("/nodes/node-1/reverse-proxy");
+});
