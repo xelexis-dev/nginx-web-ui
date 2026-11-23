@@ -4,7 +4,7 @@ use std::{path::{Path, PathBuf}, fs::{self, File, OpenOptions}, io::{self, Read,
 use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
 use crate::db_upgrade::files;
 
-#[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[serde(rename_all = "kebab-case")]
 pub enum Step { P0, P0b, F1, Y1, Y2, Y3, P1Backup, P2Preflight, P3Convert, P4Target,
     S4Prepare, P5Publish, P5Guard, P5Commit, S4Activate, Handoff, Phase2Monitor, P6Cleanup,
@@ -174,6 +174,118 @@ fn staged_key_records(records:&[Record])->Result<(),StepError>{
         state=Some(match (state,&record.state){(None,StepState::Intent)=>(generation,false),(Some((previous,false)),StepState::Done)if previous==generation=>(generation,true),_=>return Err(invalid())});
     }Ok(())
 }
+#[derive(PartialEq, Eq, Hash)]
+enum FoldKey<'a> {
+    Boot(Step, &'a str, bool),
+    Stage(Step, bool),
+    Monitor(&'a str),
+    Receipt(&'a str),
+    Failure(Step),
+}
+
+fn identity_shape(value: &serde_json::Value) -> bool {
+    value.as_str().is_some_and(|id| id.len() == 64
+        && id.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)))
+}
+
+fn authority_event(record: &Record) -> Option<&str> {
+    record.data.as_ref()?.get("authorityEvent")?.as_str()
+}
+
+fn fold_key(record: &Record) -> Option<FoldKey<'_>> {
+    use FoldKey::*;
+    use Step::*;
+    let data = record.data.as_ref();
+    let done = match record.state {
+        StepState::Done => true,
+        StepState::Intent => false,
+        StepState::Failed { .. } => {
+            return (data.is_none() && !command_step(record.step)).then_some(Failure(record.step));
+        }
+    };
+    let fields = data.and_then(serde_json::Value::as_object);
+    match record.step {
+        Y2 | P4Target | P5Publish if fields.is_some_and(|f| f.len() == 1 && f.contains_key("bootStep")) => {
+            let name = fields?.get("bootStep")?.as_str()?;
+            match (record.step, name) {
+                (Y2 | P4Target, "run_migrations" | "preflight_api_port_rows" | "ensure_instance"
+                    | "seed_admin" | "dns_preflight" | "backfill" | "upgrade_notifications")
+                | (P5Publish, "prepare_privileges") => Some(Boot(record.step, name, done)),
+                _ => None,
+            }
+        }
+        S4Prepare if crate::nonroot::is_prepare_record(data?, &record.state) => Some(Stage(S4Prepare, done)),
+        S4Activate if data.is_none() => Some(Stage(S4Activate, done)),
+        Handoff if fields.is_some_and(|f| f.len() == 1 && f.get("bootIdentity").is_some_and(identity_shape)) =>
+            Some(Stage(Handoff, done)),
+        Phase2Monitor if !done && data.is_none() => Some(Stage(Phase2Monitor, false)),
+        Phase2Monitor if done => {
+            let f = fields?;
+            let generation = f.get("generation")?.as_str()?;
+            (f.len() == 3 && super::types::canonical_generation(generation)
+                && f.get("bootIdentity").is_some_and(identity_shape)
+                && chrono::DateTime::parse_from_rfc3339(f.get("observedAt")?.as_str()?).is_ok())
+                .then_some(Monitor(generation))
+        }
+        P5Publish if done => {
+            let event = authority_event(record)?;
+            let f = fields?;
+            match event {
+                "privilege-discarded" | "privilege-split-off" if f.len() == 1 => Some(Receipt(event)),
+                "refusal-readiness" => {
+                    let identity = f.get("bootIdentity")?.as_str()?;
+                    let outcome = serde_json::from_value(f.get("outcome")?.clone()).ok()?;
+                    super::refusal::receipt(outcome, identity)
+                        .is_ok_and(|expected| Some(&expected) == data)
+                        .then_some(Receipt(event))
+                }
+                _ => None,
+            }
+        }
+        _ => None,
+    }
+}
+
+fn fold(next: &JournalV1) -> Option<JournalV1> {
+    if pre_pool_frame(next) || matches!(next.outcome, Outcome::Restored | Outcome::RestoreIncomplete)
+        || !moves_done(&next.moves) || !commands_settled(&next.records) {
+        return None;
+    }
+    let (start, conversion_generation) = if next.branch == Branch::Upgrade {
+        let commit = next.records.iter().position(|r|
+            r.step == Step::P5Commit && r.state == StepState::Done && r.data.is_none())?;
+        let generation = next.records[..commit].iter().rev()
+            .find(|r| r.step == Step::P5Commit && r.state == StepState::Intent)
+            .and_then(|r| r.data.as_ref()?.get("generation")?.as_str());
+        (commit + 1, generation)
+    } else {
+        (0, None)
+    };
+    let suffix = &next.records[start..];
+    let first_handoff = (start != 0).then(|| suffix.iter().position(|r|
+        r.step == Step::Handoff && r.state == StepState::Done)).flatten();
+    let first_proof = conversion_generation.and_then(|generation|
+        suffix.iter().position(|r| fold_key(r) == Some(FoldKey::Monitor(generation))));
+    let last_non_refusal = suffix.iter().rposition(|r| authority_event(r) != Some("refusal-readiness"));
+    let mut seen = std::collections::HashSet::new();
+    let keep = suffix.iter().enumerate().rev().map(|(index, r)| {
+        let newest = fold_key(r).is_none_or(|key| seen.insert(key));
+        // Other latest-step, Intent, failure and space witnesses are retained by their keys or shape.
+        newest || [first_handoff, first_proof, last_non_refusal].contains(&Some(index))
+    }).collect::<Vec<_>>();
+    if keep.iter().all(|keep| *keep) {
+        return None;
+    }
+    let mut folded = next.clone();
+    let mut keep = keep.into_iter().rev();
+    let mut index = 0;
+    folded.records.retain(|_| {
+        index += 1;
+        index <= start || keep.next().expect("one decision per suffix record")
+    });
+    Some(folded)
+}
+
 pub struct Journal { root: PathBuf, state: JournalV1 }
 /// In-memory only: old N2 records were discarded in this run and have not changed since.
 pub(crate) struct RolloverDiscarded {attempt_id:String,last_seq:u64}
@@ -485,6 +597,20 @@ impl Journal {
     fn commit(&mut self, next: JournalV1) -> Result<(), StepError> {
         next.validate()?;let pre_pool=self.pre_pool()?;
         if pre_pool&&!pre_pool_frame(&next){return Err(invalid());}
+        let folded = if pre_pool { None } else { fold(&next) };
+        #[cfg(test)]
+        let folded = folded.map(|mut frame| {
+            if journal_bound::INVALID_FOLD.take() { frame.version = 0; }
+            frame
+        });
+        let next = match folded {
+            Some(folded) if folded.validate().is_ok() => folded,
+            Some(_) => {
+                eprintln!("[upgrade] journal compaction skipped");
+                next
+            }
+            None => next,
+        };
         self.persist(&next)?; self.state=next;
         if self.state.branch==Branch::Upgrade&&!pre_pool { self.refill_slots()?; }
         Ok(())
@@ -638,6 +764,8 @@ impl Journal {
             let mut f=checked_file(&path,true)?; f.set_len(0)?; f.write_all(bytes)?; publish_checkpoint("slot-written");f.sync_all()?;publish_checkpoint("slot-fsynced");Ok(())
         })?;
         self.retry(||fs::rename(&path,self.root.join(name)))?;publish_checkpoint("journal-renamed");
+        #[cfg(test)]
+        if journal_bound::FAIL_AFTER_RENAME.take() { return Err(write_failed()); }
         self.retry(||sync_dir(&slots))?; self.retry(||sync_dir(&self.root))?;publish_checkpoint("journal-durable");
         Ok(())
     }
@@ -646,6 +774,10 @@ impl Journal {
 
 #[cfg(test)]fn publish_checkpoint(point:&str){if std::env::var("NWUI_JOURNAL_KILL_POINT").as_deref()==Ok(point){unsafe{libc::kill(libc::getpid(),libc::SIGKILL);}}}
 #[cfg(not(test))]fn publish_checkpoint(_point:&str){}
+
+#[cfg(test)]
+#[path = "journal_bound_tests.rs"]
+pub(super) mod journal_bound;
 
 #[cfg(test)]
 mod tests {

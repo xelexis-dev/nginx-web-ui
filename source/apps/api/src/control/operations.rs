@@ -248,11 +248,33 @@ pub async fn view(
     }
     let mut client = state.db.get().await.map_err(|_| db_unavailable())?;
     if path == "/history" {
-        let rows=client.query("SELECT s.id,s.created_at,s.label,s.data,u.email FROM config_snapshots s LEFT JOIN users u ON u.id=s.actor_id ORDER BY s.created_at DESC,s.id DESC LIMIT 50",&[]).await.map_err(|_|db_unavailable())?;
-        let items:Vec<Value>=rows.into_iter().map(|r| {
-            let data=pending::snapshot_from_value(&r.get::<_,Value>(3));
-            json!({"id":r.get::<_,String>(0),"iso":iso(r.get(1)),"label":r.get::<_,Option<String>>(2),"actorEmail":r.get::<_,Option<String>>(4),"upstreamCount":data.upstreams.len(),"serverCount":data.servers.len(),"streamCount":data.streams.len()})
-        }).collect();
+        let rows = client
+            .query(
+                "SELECT s.id, s.created_at, s.label, u.email,
+                        CASE WHEN jsonb_typeof(s.data->'upstreams') = 'array'
+                             THEN jsonb_array_length(s.data->'upstreams') ELSE 0 END AS upstream_count,
+                        CASE WHEN jsonb_typeof(s.data->'servers') = 'array'
+                             THEN jsonb_array_length(s.data->'servers') ELSE 0 END AS server_count,
+                        CASE WHEN jsonb_typeof(s.data->'streams') = 'array'
+                             THEN jsonb_array_length(s.data->'streams') ELSE 0 END AS stream_count
+                 FROM config_snapshots s LEFT JOIN users u ON u.id = s.actor_id
+                 ORDER BY s.created_at DESC, s.id DESC LIMIT 50",
+                &[],
+            )
+            .await
+            .map_err(|_| db_unavailable())?;
+        let items: Vec<Value> = rows
+            .iter()
+            .map(|r| json!({
+                "id": r.get::<_, String>("id"),
+                "iso": iso(r.get("created_at")),
+                "label": r.get::<_, Option<String>>("label"),
+                "actorEmail": r.get::<_, Option<String>>("email"),
+                "upstreamCount": r.get::<_, i32>("upstream_count"),
+                "serverCount": r.get::<_, i32>("server_count"),
+                "streamCount": r.get::<_, i32>("stream_count")
+            }))
+            .collect();
         return Ok(Some(json!({"data":{"items":items,"showDetails":true}})));
     }
     let id = path.strip_prefix("/history/").unwrap();
@@ -366,6 +388,81 @@ pub(crate) mod publisher_caller_tests {
     fn success(ok:bool)->OpResult {
         OpResult::Ok{apply:Some(ApplyResult{ok,output:"publisher-fixture".into(),rolled_back_to:None}),skipped:vec![],uncertain:false,phase:"done".into()}
     }
+    #[tokio::test]
+    #[ignore = "real DB: set NWUI_TEST_DATABASE_URL"]
+    async fn history_list_counts_match_snapshot_decoding() {
+        use crate::{auth::principal::SessionPrincipal, contracts::Role};
+
+        let server = Server::start(std::iter::empty::<Script>()).await.unwrap();
+        let fixture = database(Client::socket_for_tests(server.path().to_owned(), Bounds::default())).await;
+        let cases = [
+            json!({"upstreams":[{}], "servers":[null,{}], "streams":[1,{},[]]}),
+            json!({"upstreams":[], "servers":[], "streams":[]}),
+            json!({}),
+            json!({"upstreams":null, "servers":null, "streams":null}),
+            json!({"upstreams":true, "servers":1, "streams":"scalar"}),
+            json!({"upstreams":{"a":1}, "servers":{}, "streams":{"b":[]}}),
+            json!([{"servers":[{}]}]),
+            json!("scalar snapshot"),
+        ];
+        fixture.db.batch_execute(
+            "INSERT INTO config_snapshots (id, created_at, data)
+             SELECT 'tie-' || lpad(n::text, 2, '0'), '2026-11-18T00:00:00Z', '{}'::jsonb
+             FROM generate_series(1, 50) n",
+        ).await.unwrap();
+        for (index, data) in cases.iter().enumerate() {
+            let id = format!("case-{index}");
+            fixture.db.execute(
+                "INSERT INTO config_snapshots (id, created_at, label, actor_id, data)
+                 VALUES ($1, '2026-11-19T00:00:00Z', $1, 'caller-user', $2)",
+                &[&id, data],
+            ).await.unwrap();
+        }
+        let rows = fixture.db.query(
+            "SELECT s.id,s.created_at,s.label,s.data,u.email
+             FROM config_snapshots s LEFT JOIN users u ON u.id=s.actor_id
+             ORDER BY s.created_at DESC,s.id DESC LIMIT 50",
+            &[],
+        ).await.unwrap();
+        let items: Vec<Value> = rows.iter().map(|r| {
+            let data = pending::snapshot_from_value(&r.get::<_, Value>(3));
+            json!({
+                "id": r.get::<_, String>(0),
+                "iso": iso(r.get(1)),
+                "label": r.get::<_, Option<String>>(2),
+                "actorEmail": r.get::<_, Option<String>>(4),
+                "upstreamCount": data.upstreams.len(),
+                "serverCount": data.servers.len(),
+                "streamCount": data.streams.len()
+            })
+        }).collect();
+        let session = SessionPrincipal {
+            user_id: "caller-user".into(),
+            email: Some("caller@example.test".into()),
+            name: None,
+            role: Role::Admin,
+            session_version: 3,
+            totp_enabled: false,
+            requires_2fa: false,
+            mfa_verified: false,
+            expires_at: i64::MAX,
+        }.into();
+        let actual = view(&fixture.state, &session, "/history", &BTreeMap::new())
+            .await.unwrap().unwrap();
+        let actual_ids: Vec<_> = actual["data"]["items"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|item| item["id"].as_str().unwrap())
+            .collect();
+        let expected_ids: Vec<_> = (0..8).rev().map(|n| format!("case-{n}"))
+            .chain((9..=50).rev().map(|n| format!("tie-{n:02}")))
+            .collect();
+        assert_eq!(actual_ids, expected_ids, "history list ID order");
+        let expected = json!({"data":{"items":items,"showDetails":true}});
+        assert_eq!(serde_json::to_vec(&actual).unwrap(), serde_json::to_vec(&expected).unwrap());
+    }
+
     async fn audit_count(f:&Fixture)->i64 {f.db.query_one("SELECT count(*) FROM audit_logs",&[]).await.unwrap().get(0)}
     async fn socket_route(path:&str,args:&[&str],operation:&str) {
         let server=Server::start([Script::Reply(success(true))]).await.unwrap();

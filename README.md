@@ -45,9 +45,9 @@ The admin UI is in Korean. This guide quotes on-screen labels in Korean, with an
 - You need Docker that can run Linux containers: Docker Engine with the Compose plugin on Linux, or Docker Desktop in Linux-container mode on Windows and macOS. [Install Docker and Compose](https://docs.docker.com/compose/install/)
 - **Linux hosts need kernel 5.11 or later and a recent Docker Engine.** Check with `uname -r` on the Docker server. If the kernel is older, or an older Docker's system-call filter blocks a required operation, the container does not start and reports `isolation_unavailable`. The container cannot finish startup in an unsupported environment. Prepare a supported kernel and Docker Engine before updating an existing installation. Docker Desktop on macOS and Windows is not subject to the host kernel requirement.
 - **Supported versions:** new fixes ship for 2.1 and later. 2.0.3 is the final 2.0.x release; no further 2.0.x releases will follow 2.1.0. **1.19.11 is the last 1.x release.** There will be no further 1.x releases, security fixes included.
-- **Environments 2.0.2 was verified on:** Docker Engine on an AMD64 Linux kernel, and OrbStack on macOS (ARM64). Docker Desktop on Windows and macOS was not verified with the final 2.0.2 build.
+- **Tested environments:** each release is tested on OrbStack on macOS (ARM64). Docker Engine on an AMD64 Linux kernel was last verified with 2.0.2. Docker Desktop on Windows and macOS has not been verified.
 - The image address is `ghcr.io/xelexis-dev/nginx-web-ui`.
-- The examples below use **2.1.2**.
+- The examples below use **2.1.3**.
 - Changes per version are in the [update history (Korean)](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPDATE.md), and new versions are announced on [Releases](https://github.com/xelexis-dev/nginx-web-ui/releases).
 
 Use the following commands to check the Docker connection, the Compose installation, and **the architecture of the Docker server that will run the container**. With a remote Docker context, the machine you type on and the machine that runs the container can differ.
@@ -61,10 +61,10 @@ docker info --format '{{.OSType}}/{{.Architecture}}'
 
 | Docker server | Image to use |
 | --- | --- |
-| `linux/x86_64` or `linux/amd64` | `ghcr.io/xelexis-dev/nginx-web-ui:2.1.2` |
-| `linux/aarch64` or `linux/arm64` | `ghcr.io/xelexis-dev/nginx-web-ui:2.1.2-arm64` |
+| `linux/x86_64` or `linux/amd64` | `ghcr.io/xelexis-dev/nginx-web-ui:2.1.3` |
+| `linux/aarch64` or `linux/arm64` | `ghcr.io/xelexis-dev/nginx-web-ui:2.1.3-arm64` |
 
-**`latest` stays on 1.19.11 and does not move across major versions.** This prevents an unplanned move from 1.x to 2.x. Install 2.1.2 with the version tags in the table above, and always pin a version tag for an installation in use. `latest` and version tags without a suffix are **AMD64 only**. For a new ARM64 installation, choose the `-arm64` tag. These are not multi-architecture tags that select the architecture for you. **When you update an existing installation, keep the architecture of the existing container's image, not the host's.** Section 6 shows how to check it.
+**`latest` stays on 1.19.11 and does not move across major versions.** This prevents an unplanned move from 1.x to 2.x. Install 2.1.3 with the version tags in the table above, and always pin a version tag for an installation in use. `latest` and version tags without a suffix are **AMD64 only**. For a new ARM64 installation, choose the `-arm64` tag. These are not multi-architecture tags that select the architecture for you. **When you update an existing installation, keep the architecture of the existing container's image, not the host's.** Section 6 shows how to check it.
 
 Before you install, check existing containers with `docker ps -a`. The example below is for a new installation. If a `nginx-web-ui` container or `nwu-*` volumes already exist, first find out whether they belong to an existing installation. Do not delete a service in use, and do not reuse its data volumes for a new installation.
 
@@ -77,12 +77,12 @@ mkdir nginx-web-ui
 cd nginx-web-ui
 ```
 
-In this folder, create a file named **`compose.yaml`** and save the following content as is. **On ARM64, change the `image` tag to `2.1.2-arm64` before you start it.**
+In this folder, create a file named **`compose.yaml`** and save the following content as is. **On ARM64, change the `image` tag to `2.1.3-arm64` before you start it.**
 
 ```yaml
 services:
   nginx-web-ui:
-    image: ghcr.io/xelexis-dev/nginx-web-ui:2.1.2
+    image: ghcr.io/xelexis-dev/nginx-web-ui:2.1.3
     container_name: nginx-web-ui
     restart: unless-stopped
     stop_grace_period: 10m
@@ -136,7 +136,7 @@ From another machine, open `http://<Docker server address>:8080`. Replace `<Dock
 
 If the admin port is already in use, change `"8080:8080"` to `"18080:8080"` and use `http://localhost:18080`. To allow access to the admin UI only from the machine you installed on, use `"127.0.0.1:8080:8080"`. Until the first administrator exists, make sure only the person installing can reach the admin port. Section 3 lists the address requirements for the first setup.
 
-The internal web server `3000/tcp`, the API server `3001/tcp` and PostgreSQL `5432/tcp` are not published. Keep the container's default ports and internal process settings.
+The internal web server `3000/tcp`, the API server `3001/tcp` and PostgreSQL `5432/tcp` are not published. Keep the container's default ports and internal process settings. Proxies and streams cannot listen on these ports or on the internal DNS port (`5354` by default), and port `8080` is reserved for the admin UI.
 
 ### Persistent data
 
@@ -153,7 +153,23 @@ The internal web server `3000/tcp`, the API server `3001/tcp` and PostgreSQL `54
 
 If you mount host folders on the log paths, the nginx logs are set to root:nginx 0750 and the app logs to root 0755. If an external program writes the logs, or an account other than root reads them, check the permissions. Log monitoring that reads as root keeps working.
 
-**Logs are not cleaned up automatically.** `nwu-nginx-log` and `nwu-app-log` keep collecting every request that passes through the proxies and every app log, so watch the free disk space and rotate the logs on the host regularly. After you move or rename a log file, run `docker exec nginx-web-ui nginx -s reopen` so that nginx writes to the new file. Otherwise it keeps writing to the old file, and the traffic statistics may show 0. Emptying the file in place instead of moving it (logrotate's `copytruncate`) also works. The container's own output (`docker logs`) can be capped with the Compose `logging` settings, such as `max-size`.
+**Logs are not cleaned up automatically.** `nwu-nginx-log` and `nwu-app-log` keep collecting every request that passes through the proxies and every app log, so watch the free disk space and rotate the logs on the host regularly.
+
+- **nginx logs** (`nwu-nginx-log`): move or rename the file, then run `docker exec nginx-web-ui nginx -s reopen` so that nginx writes to the new file. Otherwise it keeps writing to the old file, and the traffic statistics may show 0. A rotation can leave out up to about 2 minutes of traffic statistics.
+- **The sign-in failure log** (`auth.log` in `nwu-app-log`): rotate it only by emptying the file in place (logrotate's `copytruncate`). The app keeps this file open, so after a move it keeps writing to the moved file until the container restarts, and anything that reads `auth.log`, such as fail2ban, sees no new lines.
+
+The container's own output (`docker logs`) can be capped with the Compose `logging` settings, such as `max-size`.
+
+### Time zone
+
+The container uses UTC unless you set `TZ`. To use another time zone, add a time zone name to the `environment` of the Compose service. nginx writes its log times in this zone, and the web server that renders the admin UI uses it too.
+
+```yaml
+    environment:
+      TZ: Asia/Seoul
+```
+
+Use a name from the time zone database, such as `Asia/Seoul` or `Europe/Berlin`. Other values fall back to UTC. If fail2ban on the host reads the nginx error log, keep `TZ` the same as the host's time zone.
 
 ### Host folders on macOS
 
@@ -166,7 +182,7 @@ Mac shared folders in Docker Desktop and OrbStack do not enforce file permission
 
 On shared folders, owner and group numbers can look different depending on who reads them, and a successful ownership change does not guarantee access restriction by number. Read-only storage, and mounts not confirmed as a supported sharing method, keep the existing checks. Mounting a path inside the OrbStack virtual machine directly is not confirmed as supported, so use Docker-managed volumes.
 
-To use host folders, change the `volumes` of the Compose service above as follows. Replace `/absolute/path/nwui` with the real storage path, and with Docker Desktop make it accessible under file sharing. For a new installation, create the four folders first. An existing installation keeps the same database and app folders. For PostgreSQL 15 (PG15) data, first complete migration with 2.0.3 as described in section 6; 2.1.2 will not migrate it. No other container may use the same folders at the same time.
+To use host folders, change the `volumes` of the Compose service above as follows. Replace `/absolute/path/nwui` with the real storage path, and with Docker Desktop make it accessible under file sharing. For a new installation, create the four folders first. An existing installation keeps the same database and app folders. For PostgreSQL 15 (PG15) data, first complete migration with 2.0.3 as described in section 6; 2.1.3 will not migrate it. No other container may use the same folders at the same time.
 
 ```yaml
     security_opt: ["no-new-privileges:true"]
@@ -223,7 +239,7 @@ ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD='REPLACE_WITH_YOUR_UNIQUE_PASSWORD_123'
 ```
 
-Do not use the example password. In a Compose environment file, a password in single quotes passes characters such as `$` through unchanged. Only the person installing should be able to read the file, and it must not be committed to a repository. [Compose environment file syntax](https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/#env-file-syntax)
+Do not use the example password. Set both values: if only `ADMIN_PASSWORD` is set, the account is created with the email `admin@example.com`. In a Compose environment file, a password in single quotes passes characters such as `$` through unchanged. Only the person installing should be able to read the file, and it must not be committed to a repository. [Compose environment file syntax](https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/#env-file-syntax)
 
 Merge the following settings into the `nginx-web-ui` service in `compose.yaml`. `env_file` is indented at the same level as `image`, `ports` and `volumes`. Write the existing `security_opt` only once.
 
@@ -295,6 +311,14 @@ In PowerShell, use this command:
 ```
 
 A new installation that booted correctly returns **HTTP 200** from the first setup page. If an administrator already exists, you are taken to the sign-in page. Finally, check that you can sign in with a real account. If you used a remote Docker server or a different host port, change the URL you check as well.
+
+To see whether startup has finished, read the health status:
+
+```sh
+docker inspect -f '{{.State.Health.Status}}' nginx-web-ui
+```
+
+It prints `healthy` once nginx, the API, the database and the web UI server answer. While a data upgrade runs it can stay `starting` for up to 15 minutes. If it then turns `unhealthy`, startup did not finish; read the logs.
 
 ## 5. Start using proxies
 
@@ -375,18 +399,18 @@ With a single target container, nothing can take requests while it restarts. Wit
 
 ## <a id="6-업데이트와-중지"></a>6. Update and stop
 
-### Coming from 1.x: first 2.0.3, then 2.1.2
+### Coming from 1.x: first 2.0.3, then 2.1.3
 
-**Do not replace a 1.x image directly with 2.1.2.** First complete the database migration with **2.0.3**, keeping the database and app volumes and settings, as the [2.0.3 installation guide](https://github.com/xelexis-dev/nginx-web-ui/blob/v2.0.3/README.md) describes. Confirm that 2.0.3 starts, existing accounts work and proxies respond, then follow the 2.x steps below. For versions below 1.19, follow that guide's intermediate-version conditions first.
+**Do not replace a 1.x image directly with 2.1.3.** First complete the database migration with **2.0.3**, keeping the database and app volumes and settings, as the [2.0.3 installation guide](https://github.com/xelexis-dev/nginx-web-ui/blob/v2.0.3/README.md) describes. Confirm that 2.0.3 starts, existing accounts work and proxies respond, then follow the 2.x steps below. For versions below 1.19, follow that guide's intermediate-version conditions first.
 
-2.1.2 does not contain the PostgreSQL 15 migration or restore tools. It refuses 1.x data or an unfinished migration without changing the database or app data, with `requires_2_0_first`. Do not delete the records or alter the database version files to bypass this. The 2.0.3 images remain available for the required stop; 2.0.3 is the final 2.0.x version.
+2.1.3 does not contain the PostgreSQL 15 migration or restore tools. It refuses 1.x data or an unfinished migration without changing the database or app data, with `requires_2_0_first`. Do not delete the records or alter the database version files to bypass this. The 2.0.3 images remain available for the required stop; 2.0.3 is the final 2.0.x version.
 
 ### Updating an existing 2.x installation
 
 1. Read the [update history (Korean)](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPDATE.md) and [upgrade path (Korean)](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPGRADE_PATH.md). Stop cleanly and keep the old image, Compose and environment settings with a database and app backup pair taken at the same point in time. Follow the upgrade path's 「중지 후 DB·앱을 함께 백업하고 복원하기」 for complete backup and restore commands. A retained PG15 backup does not replace an independent backup.
 2. Keep the existing image's architecture, volume names, mounts, ports and authentication settings. Do not create empty replacement volumes or let two containers write to the same volumes.
-3. Change the existing Compose image to `2.1.2` (AMD64) or `2.1.2-arm64` (ARM64). If pinned by digest, replace the whole image address, not just the tag. Pull and start the image. Updating from 2.1.0 or 2.1.1 does not change the database structure. Updating from 2.0.x applies the 2.1 database changes; an already migrated PG17 installation needs no PG15 conversion.
-4. Wait for startup to finish, then check version **2.1.2** in the account menu, sign-in, real HTTP/HTTPS and TCP/UDP responses, certificates, notifications and nodes. If an existing installation shows first-admin setup, stop and check the mounts. User API tokens issued before 2.1 are revoked: re-issue those you need. Server and gateway tokens stay valid.
+3. Change the existing Compose image to `2.1.3` (AMD64) or `2.1.3-arm64` (ARM64). If pinned by digest, replace the whole image address, not just the tag. Pull and start the image. Updating from 2.1.0, 2.1.1 or 2.1.2 does not change the database structure. Updating from 2.0.x applies the 2.1 database changes; an already migrated PG17 installation needs no PG15 conversion.
+4. Wait for startup to finish, then check version **2.1.3** in the account menu, sign-in, real HTTP/HTTPS and TCP/UDP responses, certificates, notifications and nodes. If an existing installation shows first-admin setup, stop and check the mounts. User API tokens issued before 2.1 are revoked: re-issue those you need. Server and gateway tokens stay valid.
 
 ```sh
 docker image inspect "$(docker inspect nginx-web-ui --format '{{.Image}}')" --format '{{.Architecture}}'
@@ -402,13 +426,13 @@ docker exec nginx-web-ui nwui-db-upgrade auto-status
 
 Check startup at the existing host admin port (normally `http://<Docker server address>:8080`) and in the logs. Allow up to 600 seconds for a clean stop; do not force-stop immediately. While startup is in progress, a management domain served by the same container's 80/443 may be unavailable.
 
-If the container is stopped, keep it and its mounts and use this read-only status command. For ARM64 use `2.1.2-arm64`; pass any separately configured storage environment variables explicitly because `--volumes-from` does not copy them.
+If the container is stopped, keep it and its mounts and use this read-only status command. For ARM64 use `2.1.3-arm64`; pass any separately configured storage environment variables explicitly because `--volumes-from` does not copy them.
 
 ```sh
 docker run --rm --pull=never --security-opt no-new-privileges:true --network none \
   --volumes-from nginx-web-ui \
   --entrypoint /usr/local/bin/nwui-db-upgrade \
-  ghcr.io/xelexis-dev/nginx-web-ui:2.1.2 auto-status
+  ghcr.io/xelexis-dev/nginx-web-ui:2.1.3 auto-status
 ```
 
 ### Returning to 1.19.11 and removing a retained backup
@@ -419,7 +443,7 @@ An installation already migrated by 2.0 keeps its PG15 backup and the 「PG15 �
 
 ### Nodes and stopping
 
-Within 2.x, update the gateway first, then the nodes. A 2.1 gateway can manage 2.0 nodes, but HTTP/2 on needs a 2.1-or-later node. A gateway does not manage a node of a newer minor version than itself. The 2.0–1.19 bridge does not extend to 2.1: finish moving 1.19 nodes to 2.0.3 while the gateway is on 2.0.3, then raise the gateway to 2.1.2 and update the nodes. Never start an older image normally on a database used by a newer one; restore the pre-update database and app backup pair to go back.
+Within 2.x, update the gateway first, then the nodes. A 2.1 gateway can manage 2.0 nodes, but HTTP/2 on needs a 2.1-or-later node. A gateway does not manage a node of a newer minor version than itself. The 2.0–1.19 bridge does not extend to 2.1: finish moving 1.19 nodes to 2.0.3 while the gateway is on 2.0.3, then raise the gateway to 2.1.3 and update the nodes. Never start an older image normally on a database used by a newer one; restore the pre-update database and app backup pair to go back.
 
 For a temporary stop and restart:
 
@@ -440,6 +464,8 @@ docker compose -f compose.yaml start
 | Image download fails | The image address and version tag, and network, DNS and HTTPS access to the registry |
 | Container is running but the admin UI is unreachable | `docker logs --tail=100 nginx-web-ui`, the `nginx -t` and `pg_isready` results, host ports and the firewall |
 | New installation, but `/setup` does not appear | Whether an existing database volume or `ADMIN_PASSWORD` has already created an account |
+| After a power loss, a forced stop or a crash, the container runs but nginx does not start, and the log repeats `[nginx-guard] nginx start deferred: restore_incomplete` | Fixed in 2.1.3. On an older version, keep the volumes and re-create the container with `docker compose -f compose.yaml up -d --force-recreate`. Updating to 2.1.3 also re-creates it |
+| Behind an HTTPS front proxy, the logs page stays at 「연결 중」 (connecting) | 2.1.3 and later ask the proxy directly in front of the gateway not to buffer the log stream, and an nginx-based proxy there follows this. With more than one proxy layer, or a front proxy that ignores this, turn response buffering off for `/api/` on the outer front proxy (in nginx, `proxy_buffering off;`) or use HTTP/2 between the browser and that front proxy |
 | Proxy returns 502 or 504 | The target address, port and Docker network. With runtime name resolution on, check that the target has started, the DNS response, and the internal DNS service. `localhost` means this container itself |
 | Errors about the database password or encryption key | Whether `nwu-pg` and `nwu-app` are volumes of the same installation. Do not delete or replace only one of them; check the backup in which both were kept together |
 
@@ -457,7 +483,7 @@ docker logs --tail=100 nginx-web-ui
 | Code | What to check |
 | --- | --- |
 | `insufficient_space` | Compare the required space and inodes shown in the status with the available space. Fix the cause and restart the same image |
-| `requires_2_0_first` | Finish migration or recovery with 2.0.3 before starting 2.1.2. Keep both volumes and follow the 2.0.3 guide. Existing data was not changed |
+| `requires_2_0_first` | Finish migration or recovery with 2.0.3 before starting 2.1.3. Keep both volumes and follow the 2.0.3 guide. Existing data was not changed |
 | `storage_busy` | Whether a container or admin command is using the same database and app volumes. Stop the concurrent use |
 | `nginx_test_failed` | Check the file named in the nginx error lines of the log. Fix the errors in the base configuration or additional included files, then restart. Startup can also stop when isolation of user configuration could not finish or the final check failed |
 | `trusted_input_unsafe` | Whether the user that handles admin requests owns, or can write, the nginx executable, configuration or included files named in the error |

@@ -110,6 +110,25 @@ mod alias_tests {
 #[cfg(test)]
 mod fxb3_tests {
     #[test]
+    fn shipped_admin_api_passes_the_anti_buffering_response_header() {
+        use super::super::guard_targets::{End, statements};
+        let conf = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../docker/nginx.conf"));
+        let mut blocks = Vec::new();
+        let mut header_scopes = Vec::new();
+        for statement in statements(conf) {
+            match statement.end {
+                End::Open => blocks.push(statement.words),
+                End::Close => { blocks.pop(); }
+                End::Semicolon if statement.words == ["proxy_pass_header", "X-Accel-Buffering"] => {
+                    header_scopes.push(blocks.clone());
+                }
+                End::Semicolon => {}
+            }
+        }
+        assert_eq!(header_scopes, [vec![vec!["http"], vec!["server"], vec!["location", "^~", "/api/"]]]);
+    }
+
+    #[test]
     fn fxb3_shipped_admin_and_status_trust_use_distinct_sources() {
         let conf=include_str!(concat!(env!("CARGO_MANIFEST_DIR"),"/../../docker/nginx.conf"));
         let parsed=super::super::guard_targets::statements(conf);

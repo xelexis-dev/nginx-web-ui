@@ -19,6 +19,20 @@ pub(super) struct PrepareRecord {
     #[serde(default)] pub(super) candidate: Option<StorageSelection>,
 }
 
+/// Match only the full N2 writer shape, including nested fields and explicit nulls.
+pub(crate) fn is_prepare_record(data: &serde_json::Value, state: &StepState) -> bool {
+    let Ok(record) = serde_json::from_value::<PrepareRecord>(data.clone()) else {
+        return false;
+    };
+    record.candidate.as_ref().is_some_and(|candidate| matches!(candidate.key_binding, crate::upgrade::KeyBinding::Verified { .. }))
+        && match state {
+            StepState::Intent => record.prepared.is_none(),
+            StepState::Done => record.prepared.as_ref().is_some_and(|p| p.payload.is_some() && p.key_receipt.is_some()),
+            StepState::Failed { .. } => false,
+        }
+        && serde_json::to_value(record).is_ok_and(|written| written == *data)
+}
+
 pub(super) fn latest_record(records: &[crate::upgrade::journal::Record]) -> Option<PrepareRecord> {
     records.iter().rev().find(|record| record.step == Step::S4Prepare && matches!(record.state, StepState::Intent | StepState::Done))
         .and_then(|record| record.data.clone().and_then(|data| serde_json::from_value(data).ok()))

@@ -146,24 +146,22 @@ pub async fn audit_list(
         .unwrap_or(1);
     let offset = (page - 1) * 50;
     let rows=client.query("SELECT a.id,a.created_at,a.action,a.target,CASE WHEN u.email IS NOT NULL THEN COALESCE(a.actor_label,u.email) END AS email,a.actor_label,a.ip,a.via FROM audit_logs a LEFT JOIN users u ON u.id=a.actor_id WHERE ($1::text IS NULL OR a.action=$1) ORDER BY a.created_at DESC,a.id DESC LIMIT 50 OFFSET $2",&[&action,&offset]).await.map_err(|_|db_unavailable())?;
-    let total: i64 = client
-        .query_one(
-            "SELECT count(*) FROM audit_logs WHERE ($1::text IS NULL OR action=$1)",
-            &[&action],
-        )
-        .await
-        .map_err(|_| db_unavailable())?
-        .get(0);
-    let actions: Vec<String> = client
+    let groups = client
         .query(
-            "SELECT DISTINCT action FROM audit_logs ORDER BY action",
+            "SELECT action, count(*) FROM audit_logs GROUP BY action ORDER BY action",
             &[],
         )
         .await
-        .map_err(|_| db_unavailable())?
-        .iter()
-        .map(|r| r.get(0))
-        .collect();
+        .map_err(|_| db_unavailable())?;
+    let mut total = 0_i64;
+    let mut actions = Vec::with_capacity(groups.len());
+    for group in groups {
+        let name: String = group.get(0);
+        if action.is_none() || action == Some(name.as_str()) {
+            total += group.get::<_, i64>(1);
+        }
+        actions.push(name);
+    }
     Ok(
         json!({"items":rows.iter().map(|r|audit_row(r,false)).collect::<Vec<_>>(),"total":total,"page":page,"totalPages":((total+49)/50).max(1),"actions":actions,"actionFilter":action.unwrap_or("")}),
     )

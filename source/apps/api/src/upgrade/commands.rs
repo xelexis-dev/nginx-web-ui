@@ -76,7 +76,7 @@ pub(crate) fn offline_status(roots:&crate::db_upgrade::layout::Roots,candidate:&
     Ok(Some(UpgradeStatus{warnings:super::status::storage_warnings(),version:1,updated_at,outcome:j.outcome,branch:j.branch,step:StatusStep{id:step,index,total,started_at,bytes_done:0,bytes_total:0},failure,space:None,locations,backup,discarded,cleanup_pending,retry}))
 }
 #[cfg(test)]
-fn render_at(status_path:&Path,app_root:&Path)->Result<String,StepError> {
+pub(super) fn render_at(status_path:&Path,app_root:&Path)->Result<String,StepError> {
     let roots=crate::db_upgrade::layout::Roots{app:app_root.into(),db:app_root.parent().unwrap().join("db"),architecture:"arm64".into()};
     let candidate=if present(&app_root.join(".nwui-auto/journal-v1.json"))? {journal::read_only(app_root)?.candidate}else{journal::Candidate{revision:"0".repeat(40),pins_sha256:"1".repeat(64),migrations_sha256:"2".repeat(64)}};
     render(status::read_at(status_path),&roots,&candidate,chrono::Utc::now())

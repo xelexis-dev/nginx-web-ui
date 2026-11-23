@@ -2,6 +2,7 @@
 mod record;
 use record::{LogMode,Receipt,PrepareRecord,latest_record};
 pub use record::prepared_from_journal;
+pub(crate) use record::is_prepare_record;
 #[cfg(test)]
 pub(crate) use record::fixture_prepare_records;
 pub mod access_probe;

@@ -8,7 +8,7 @@ enum Kind { Restore, RemoveBackup, RemoveDiscarded }
 #[derive(Debug)]
 struct Command { kind: Kind, id: String }
 #[derive(Debug, PartialEq, Eq)]
-enum Progress { New, Resume, Done }
+pub(super) enum Progress { New, Resume, Done }
 
 fn refuse(code: &'static str, message: &'static str) -> StepError {
     StepError { code, message, detail: None }
@@ -63,7 +63,7 @@ fn execute(roots:&Roots,command:Command,candidate:Option<Result<super::journal::
     }
 }
 
-fn started_once(journal: &JournalV1, selected: &Selector) -> Result<(), StepError> {
+pub(super) fn started_once(journal: &JournalV1, selected: &Selector) -> Result<(), StepError> {
     selected.validate()?;
     let proved = journal.outcome == Outcome::Pg17 && selected.active_major == 17 && selected.generation.as_ref().is_some_and(|generation| {
         journal.records.iter().any(|record| record.step == Step::Phase2Monitor && record.state == StepState::Done
@@ -73,7 +73,7 @@ fn started_once(journal: &JournalV1, selected: &Selector) -> Result<(), StepErro
     Ok(())
 }
 
-fn progress(journal: &JournalV1, step: Step, data: &serde_json::Value) -> Result<Progress,StepError> {
+pub(super) fn progress(journal: &JournalV1, step: Step, data: &serde_json::Value) -> Result<Progress,StepError> {
     let others=journal.records.iter().filter(|record| !(record.step==step && record.data.as_ref()==Some(data))).cloned().collect::<Vec<_>>();
     if !super::journal::commands_settled(&others) { return Err(refuse("pair_mismatch","다른 관리 명령이 끝나지 않았습니다. 기록된 명령부터 다시 실행해 완료하세요.")); }
     let latest=journal.records.iter().rev().find(|record| record.step==step && record.data.as_ref()==Some(data) && matches!(record.state,StepState::Intent|StepState::Done));
@@ -147,7 +147,7 @@ fn remove_discarded_with(roots:&Roots,locks:&StorageLocks,journal:&mut Journal,i
     Ok(format!("보관 PG17 {id}와 실행 파일 세대 삭제 완료: 이 실행에서 {bytes} 바이트를 비웠습니다."))
 }
 
-fn retained_attempt<'a>(journal: &'a JournalV1, selected: &Selector, id: &str) -> Result<&'a str,StepError> {
+pub(super) fn retained_attempt<'a>(journal: &'a JournalV1, selected: &Selector, id: &str) -> Result<&'a str,StepError> {
     let mismatch=||refuse("pair_mismatch","이 ID를 보관한 복원 기록과 선택 기록이 일치하지 않습니다. 보관 사본을 보존했습니다.");
     selected.validate()?;
     if !super::types::canonical_generation(id) || selected.generation.as_deref()==Some(id) { return Err(mismatch()); }
@@ -256,6 +256,32 @@ mod tests {
             assert_eq!(fs::read(roots.db.join("pgdata/PG_VERSION")).unwrap(),b"15\n");
             assert_eq!(j.load().records.iter().filter(|r|r.step==Step::CmdRemoveBackup&&r.state==StepState::Done).count(),1);
         }
+    }
+
+    #[test]
+    fn journal_bound_interrupted_removal_resumes_at_limit() {
+        let (_t, roots, locks, mut j, _) = backup_fixture();
+        let id = j.load().attempt_id.clone();
+        let backup = roots.db.join(".nwui-pg15-backup").join(&id);
+        j.record(Step::CmdRemoveBackup, StepState::Intent, Some(serde_json::json!({"backupId":id}))).unwrap();
+        let journal_path = roots.app.join(".nwui-auto/journal-v1.json");
+        let mut old = j.load().clone();
+        super::super::journal::journal_bound::inflate(&mut old);
+        fs::write(&journal_path, serde_json::to_vec(&old).unwrap()).unwrap();
+        fs::remove_dir_all(&backup).unwrap();
+        assert_eq!(super::super::runner::initial_journal(&roots.app).unwrap_err().code, "pair_mismatch");
+        drop(locks);
+        let arguments = ["--confirm".into(), id.clone()];
+        execute(&roots, parse("remove-pg15-backup", &arguments).unwrap(), None).unwrap();
+        assert!(super::super::runner::initial_journal(&roots.app).is_ok());
+        execute(&roots, parse("remove-pg15-backup", &arguments).unwrap(), None).unwrap();
+        let (_locks, mut j) = open(&roots).unwrap();
+        assert!(!backup.exists());
+        assert_eq!(j.load().records.iter().filter(|r| r.step == Step::CmdRemoveBackup && r.state == StepState::Done).count(), 1);
+        assert!(fs::metadata(&journal_path).unwrap().len() < 64 * 1024);
+        let count = j.load().records.len();
+        j.record(Step::P4Target, StepState::Done, Some(serde_json::json!({"bootStep":"backfill"}))).unwrap();
+        assert_eq!(j.load().records.len(), count);
     }
 
     #[test]

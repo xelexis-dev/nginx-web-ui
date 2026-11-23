@@ -57,7 +57,7 @@ fn initial_journal_hint(app:&Path)->Result<Option<JournalV1>,StepError> {
         Err(_)=>Err(startup_error("io_error","복구 기록을 읽지 못했습니다. 기존 데이터를 보존했습니다.")),
     }
 }
-fn initial_journal(app:&Path)->Result<Option<JournalV1>,StepError> {
+pub(super) fn initial_journal(app:&Path)->Result<Option<JournalV1>,StepError> {
     let journal=initial_journal_hint(app)?;
     if journal.as_ref().is_some_and(|j|!super::journal::commands_settled(&j.records)){return Err(startup_error("pair_mismatch","오프라인 관리 작업이 완료되지 않았습니다. 해당 remove 명령을 다시 실행해 완료하세요. 기존 데이터를 보존했습니다."));}
     Ok(journal)

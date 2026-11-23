@@ -134,6 +134,61 @@ async fn audit_projection_pagination_and_detail_missing() {
 
 #[tokio::test]
 #[ignore = "real DB: set NWUI_TEST_DATABASE_URL"]
+async fn audit_list_metadata_matches_separate_count_and_distinct_queries() {
+    use nwui_api::observability::query::audit_list;
+
+    let db = test_db().await;
+    for (seed, action, page, expected_total, expected_len) in [
+        (false, None, 1_i64, 0_i64, 0),
+        (true, None, 1, 55, 50),
+        (false, Some(" Config:read "), 1, 51, 50),
+        (false, Some("missing"), 1, 0, 0),
+        (false, None, 3, 55, 0),
+    ] {
+        if seed {
+            db.client.batch_execute(
+                "INSERT INTO audit_logs (id, action)
+                 SELECT n::text, CASE WHEN n <= 51 THEN 'Config:read'
+                     WHEN n <= 53 THEN 'config:read' ELSE 'config-read' END
+                 FROM generate_series(1, 55) n",
+            ).await.unwrap();
+        }
+        let mut query = BTreeMap::from([("page".to_owned(), page.to_string())]);
+        if let Some(action) = action {
+            query.insert("action".into(), action.into());
+        }
+        let filter = action.map(str::trim);
+        let total: i64 = db.client.query_one(
+            "SELECT count(*) FROM audit_logs WHERE ($1::text IS NULL OR action=$1)",
+            &[&filter],
+        ).await.unwrap().get(0);
+        let actions: Vec<String> = db.client.query(
+            "SELECT DISTINCT action FROM audit_logs ORDER BY action",
+            &[],
+        ).await.unwrap().iter().map(|row| row.get(0)).collect();
+
+        let actual = audit_list(&db.state, &query).await.unwrap();
+        assert_eq!(total, expected_total);
+        assert_eq!(actions.len(), if total == 0 && action.is_none() { 0 } else { 3 });
+        assert_eq!(actual["items"].as_array().unwrap().len(), expected_len);
+        let expected = json!({
+            "items": actual["items"],
+            "total": total,
+            "page": page,
+            "totalPages": ((total + 49) / 50).max(1),
+            "actions": actions,
+            "actionFilter": filter.unwrap_or("")
+        });
+        assert_eq!(
+            serde_json::to_string(&actual).unwrap(),
+            serde_json::to_string(&expected).unwrap(),
+            "action={action:?}, page={page}"
+        );
+    }
+}
+
+#[tokio::test]
+#[ignore = "real DB: set NWUI_TEST_DATABASE_URL"]
 async fn audit_e6_s7_open_node_log_stream_ends_after_gateway_token_revocation() {
     use http_body_util::BodyExt;
     use std::time::Duration;
