@@ -838,3 +838,85 @@ impl FixtureFiles {
         Ok(Self{conf:read(&config.nginx_conf_dir,"server-")?,stream:read(&config.nginx_stream_dir,"stream-")?})
     }
 }
+
+#[tokio::test]
+#[ignore = "real DB: set NWUI_TEST_DATABASE_URL"]
+async fn history_prune_and_publisher_rollback_can_complete_in_either_order() {
+    let name = "history_prune_and_publisher_rollback_can_complete_in_either_order";
+    if g13_support::isolated(name).await { return; }
+    let temp = TempDir::new().unwrap();
+    let db = real_db(&temp).await;
+    db.client.batch_execute(
+        "INSERT INTO nginx_servers (id,server_name,listen,config) VALUES
+            ('1d215cf4-7a1e-4ddf-9677-416bc3e6aef1','race.example.test',8081,'{\"proxyPass\":\"http://127.0.0.1:9000\"}');
+         INSERT INTO app_settings(id,history_retention_days) VALUES('current',30);
+         INSERT INTO config_snapshots(id,created_at,data)
+            SELECT 'floor-'||n, now()-interval '90 days', '{}'::jsonb FROM generate_series(1,100) n"
+    ).await.unwrap();
+    assert!(nwui_api::publisher_client::apply_saved(&db.state, &actor(), Some("admissible rollback")).await.unwrap().ok);
+    let snapshot: String = db.client.query_one(
+        "UPDATE config_snapshots SET created_at=now()-interval '100 days' WHERE label='admissible rollback' RETURNING id", &[],
+    ).await.unwrap().get(0);
+    db.client.batch_execute("UPDATE nginx_servers SET listen=8082").await.unwrap();
+    assert!(nwui_api::publisher_client::apply_saved(&db.state, &actor(), Some("current")).await.unwrap().ok);
+
+    let mut client = db.state.db.get().await.unwrap();
+    let row_lock = client.transaction().await.unwrap();
+    row_lock.query_one("SELECT id FROM nginx_servers FOR UPDATE", &[]).await.unwrap();
+    let writer = db.state.clone();
+    let target = snapshot.clone();
+    let rolling_back = tokio::spawn(async move {
+        nwui_api::publisher_client::rollback_snapshot(&writer, &target, &actor()).await.unwrap()
+    });
+    // The publisher has read the snapshot once it attempts to replace the locked resource row.
+    tokio::time::timeout(std::time::Duration::from_secs(5), async {
+        loop {
+            let admitted: bool = db.client.query_one(
+                "SELECT EXISTS (SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock'
+                    AND query LIKE 'DELETE FROM nginx_servers; DELETE FROM nginx_streams;%')", &[],
+            ).await.unwrap().get(0);
+            if admitted { break; }
+            tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+        }
+    }).await.expect("rollback reached the resource write");
+    db.client.batch_execute("UPDATE retention_state SET next_run_at=now() WHERE collection='history'").await.unwrap();
+    nwui_api::retention::prune_history_for_tests(&db.state).await;
+    assert!(db.client.query_opt("SELECT id FROM config_snapshots WHERE id=$1", &[&snapshot]).await.unwrap().is_none());
+    row_lock.rollback().await.unwrap();
+    assert!(rolling_back.await.unwrap().result.ok);
+    assert_eq!(db.client.query_one("SELECT listen FROM nginx_servers", &[]).await.unwrap().get::<_, i32>(0), 8081);
+
+    let before = FixtureFiles::capture(&db.state.config).await.unwrap();
+    let marker: serde_json::Value = db.client.query_one("SELECT data FROM applied_config WHERE id='current'", &[]).await.unwrap().get(0);
+    let refused = nwui_api::publisher_client::rollback_snapshot(&db.state, &snapshot, &actor()).await.unwrap();
+    assert!(matches!(refused.kind, Some(model::RollbackKind::NotFound)));
+    assert!(!refused.result.ok);
+    let after = FixtureFiles::capture(&db.state.config).await.unwrap();
+    assert_eq!(before.conf, after.conf);
+    assert_eq!(before.stream, after.stream);
+    assert_eq!(db.client.query_one("SELECT data FROM applied_config WHERE id='current'", &[]).await.unwrap().get::<_, serde_json::Value>(0), marker);
+    assert_eq!(db.client.query_one("SELECT listen FROM nginx_servers", &[]).await.unwrap().get::<_, i32>(0), 8081);
+
+    for n in 0..3 {
+        db.client.batch_execute("UPDATE retention_state SET next_run_at=now() WHERE collection='history'").await.unwrap();
+        let label = format!("concurrent apply {n}");
+        let writer_actor = actor();
+        let (applied, _) = tokio::join!(
+            nwui_api::publisher_client::apply_saved(&db.state, &writer_actor, Some(&label)),
+            nwui_api::retention::prune_history_for_tests(&db.state),
+        );
+        assert!(applied.unwrap().ok);
+        assert!(db.client.query_one("SELECT count(*) FROM config_snapshots", &[]).await.unwrap().get::<_, i64>(0) >= 100);
+
+        let recent: String = db.client.query_one(
+            "SELECT id FROM config_snapshots WHERE label=$1", &[&label],
+        ).await.unwrap().get(0);
+        db.client.batch_execute("UPDATE retention_state SET next_run_at=now() WHERE collection='history'").await.unwrap();
+        let (rolled_back, _) = tokio::join!(
+            nwui_api::publisher_client::rollback_snapshot(&db.state, &recent, &writer_actor),
+            nwui_api::retention::prune_history_for_tests(&db.state),
+        );
+        assert!(rolled_back.unwrap().result.ok);
+        assert!(db.client.query_one("SELECT count(*) FROM config_snapshots", &[]).await.unwrap().get::<_, i64>(0) >= 100);
+    }
+}

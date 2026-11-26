@@ -51,7 +51,7 @@ pub(super) fn unrecorded_branch(db:&Path)->(super::Branch,Outcome){
 /// 2.0.1 F10: a storage-permission refusal names the path, condition and host command itself.
 fn next_action(error:&StepError)->String {
     match (error.code,error.detail.as_deref()) {
-        ("requires_2_0_first",_)=>"같은 볼륨을 그대로 연결해 2.0.x 최신(2.0.3 이상)에서 이전을 마친 뒤 2.1로 올리세요.".into(),
+        ("requires_2_0_first",_)=>"같은 볼륨을 그대로 연결해 2.0.3에서 이전을 마친 뒤 최신 2.x로 올리세요.".into(),
         ("storage_permissions",Some(detail)) if !detail.is_empty()=>detail.chars().filter(|c|!c.is_control()).take(2048).collect(),
         _=>"원인을 해결한 뒤 컨테이너를 다시 시작하면 다시 확인합니다.".into(),
     }
@@ -127,11 +127,11 @@ pub(super) fn status_value(roots:&Roots,j:&JournalV1,outcome:Outcome,current:&su
             }
             retry=StatusRetry{next_eligible_at:None,reason:None};
             let f=failure.as_mut().ok_or_else(failed)?;f.message="업그레이드는 완료됐지만 서비스 시작에 실패했습니다".into();
-            f.next_action=match &backup{Some(backup)=>format!("컨테이너를 중지하고 2.0.x 최신(2.0.3 이상) 이미지의 offline entrypoint로 nwui-db-upgrade restore-pg15 --confirm-loss {} 명령을 실행하세요. 복원하면 업그레이드 이후의 변경은 사라집니다. 2.0 이미지를 정상 시작해 2.1 데이터를 열지 마세요.",backup.id),None=>"컨테이너를 다시 시작하면 이어서 진행합니다.".into()};
+            f.next_action=match &backup{Some(backup)=>format!("컨테이너를 중지하고 2.0.3 이미지의 오프라인 진입점으로 nwui-db-upgrade restore-pg15 --confirm-loss {} 명령을 실행하세요. 복원하면 업그레이드 이후의 변경은 사라집니다. 2.0.3 이미지를 정상 시작해 2.1 이상에서 사용한 데이터를 열지 마세요.",backup.id),None=>"컨테이너를 다시 시작하면 이어서 진행합니다.".into()};
         },
         Outcome::RestoreIncomplete=>{
             backup=None;locations.clear();retry=StatusRetry{next_eligible_at:None,reason:None};
-            let f=failure.as_mut().ok_or_else(failed)?;f.message="원본 복원을 끝내지 못했습니다. 데이터는 아래 위치에 보존돼 있습니다.".into();f.next_action="컨테이너를 중지하고 2.0.x 최신(2.0.3 이상) 이미지의 offline entrypoint에서 미완료 복구를 마치세요. 2.0 이미지를 정상 시작해 2.1 데이터를 열지 마세요. 기존 데이터는 보존했습니다.".into();
+            let f=failure.as_mut().ok_or_else(failed)?;f.message="원본 복원을 끝내지 못했습니다. 데이터는 아래 위치에 보존돼 있습니다.".into();f.next_action="컨테이너를 중지하고 2.0.3 이미지의 오프라인 진입점에서 미완료 복구를 마치세요. 2.0.3 이미지를 정상 시작해 2.1 이상에서 사용한 데이터를 열지 마세요. 기존 데이터는 보존했습니다.".into();
             let location=saved.and_then(|r|r.data.as_ref()).and_then(|v|v.get("header")).and_then(|v|v.get("sourceLocation")).and_then(|v|v.as_str()).ok_or_else(failed)?;
             let source=match location{"root"=>roots.db.clone(),"pgdata"=>roots.db.join("pgdata"),_=>return Err(failed())};let work=roots.db.join(".nwui-auto-work").join(&j.attempt_id);
             for path in [source,roots.db.join(".nwui-pg15-backup").join(&j.attempt_id),work.join("linked"),work.join("target"),roots.db.join("17")]{match std::fs::symlink_metadata(&path){Ok(_)=>locations.push(path.display().to_string()),Err(e)if e.kind()==std::io::ErrorKind::NotFound=>{},Err(_)=>return Err(failed())}}
@@ -196,16 +196,16 @@ mod tests {
     }
     #[test]
     fn restored_status_requires_the_intermediate_image_without_retry(){
-        let(_t,r,_l,mut j)=fixture();let now=chrono::Utc::now();for _ in 0..2{j.record_retry_failure(Step::P3Convert,"interrupted",now).unwrap();}j.set_outcome(Outcome::Restored).unwrap();let value=status_value(&r,j.load(),Outcome::Restored,&j.load().candidate,None).unwrap();assert!(value.failure.unwrap().next_action.contains("2.0.x 최신(2.0.3 이상)"));assert!(value.retry.next_eligible_at.is_none());
-        let value=status_value(&r,j.load(),Outcome::Restored,&j.load().candidate,Some("fixed")).unwrap();assert!(value.failure.unwrap().next_action.contains("2.0.x 최신(2.0.3 이상)"));assert!(value.retry.next_eligible_at.is_none());
-        j.record_retry_failure(Step::P2Preflight,"insufficient_space",now).unwrap();let value=status_value(&r,j.load(),Outcome::Restored,&j.load().candidate,None).unwrap();assert!(value.failure.unwrap().next_action.contains("2.0.x 최신(2.0.3 이상)"));
+        let(_t,r,_l,mut j)=fixture();let now=chrono::Utc::now();for _ in 0..2{j.record_retry_failure(Step::P3Convert,"interrupted",now).unwrap();}j.set_outcome(Outcome::Restored).unwrap();let value=status_value(&r,j.load(),Outcome::Restored,&j.load().candidate,None).unwrap();assert_eq!(value.failure.unwrap().next_action,super::super::legacy::GUIDANCE);assert!(value.retry.next_eligible_at.is_none());
+        let value=status_value(&r,j.load(),Outcome::Restored,&j.load().candidate,Some("fixed")).unwrap();assert_eq!(value.failure.unwrap().next_action,super::super::legacy::GUIDANCE);assert!(value.retry.next_eligible_at.is_none());
+        j.record_retry_failure(Step::P2Preflight,"insufficient_space",now).unwrap();let value=status_value(&r,j.load(),Outcome::Restored,&j.load().candidate,None).unwrap();assert_eq!(value.failure.unwrap().next_action,super::super::legacy::GUIDANCE);
     }
     #[test]
     fn operator_status_and_shared_cli_text_have_the_same_admission_and_no_failure(){
         for code in [None,Some("privilege_activate_failed")]{
             let(_t,r,_l,mut j)=fixture();if let Some(code)=code{j.record_retry_failure(Step::S4Activate,code,chrono::Utc::now()).unwrap();}
             let g=uuid::Uuid::new_v4().to_string();j.record(Step::P5Commit,StepState::Intent,Some(serde_json::json!({"generation":g}))).unwrap();j.record(Step::P5Commit,StepState::Done,None).unwrap();let data=Some(serde_json::json!({"backupId":j.load().attempt_id,"generation":g,"discardId":g}));j.record(Step::CmdRestorePg15,StepState::Intent,data.clone()).unwrap();j.record(Step::CmdRestorePg15,StepState::Done,data).unwrap();j.set_outcome(Outcome::Restored).unwrap();let discard=r.db.join(".nwui-discard").join(&g);fs::create_dir_all(&discard).unwrap();fs::write(discard.join("retained"),b"1234").unwrap();
-            let admission=super::super::retry::admit(j.load(),&j.load().candidate,None,true,chrono::Utc::now()).unwrap();let value=status_value(&r,j.load(),Outcome::Restored,&j.load().candidate,None).unwrap();assert!(value.failure.is_none());assert!(value.backup.is_none());assert_eq!(value.retry.reason.as_deref(),Some(super::super::retry::restored_next_action(&admission)));assert_eq!(value.discarded.len(),1);assert_eq!(value.discarded[0].bytes,4);assert_eq!(value.discarded[0].id,g);if code.is_some(){assert!(value.retry.reason.unwrap().contains("2.0.x 최신(2.0.3 이상)"));}
+            let admission=super::super::retry::admit(j.load(),&j.load().candidate,None,true,chrono::Utc::now()).unwrap();let value=status_value(&r,j.load(),Outcome::Restored,&j.load().candidate,None).unwrap();assert!(value.failure.is_none());assert!(value.backup.is_none());assert_eq!(value.retry.reason.as_deref(),Some(super::super::retry::restored_next_action(&admission)));assert_eq!(value.discarded.len(),1);assert_eq!(value.discarded[0].bytes,4);assert_eq!(value.discarded[0].id,g);if code.is_some(){assert_eq!(value.retry.reason.as_deref(),Some(super::super::legacy::GUIDANCE));}
             fs::remove_dir_all(&discard).unwrap();j.record(Step::CmdRemoveDiscarded,StepState::Intent,Some(serde_json::json!({"discardId":g}))).unwrap();j.finish_remove_discarded(&g).unwrap();assert!(status_value(&r,j.load(),Outcome::Restored,&j.load().candidate,None).unwrap().discarded.is_empty());
         }
     }
@@ -215,7 +215,7 @@ mod tests {
             let t=tempfile::tempdir().unwrap();let roots=Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:"arm64".into()};for p in [&roots.db,&roots.app]{fs::create_dir(p).unwrap();fs::set_permissions(p,fs::Permissions::from_mode(0o700)).unwrap();}let locks=StorageLocks::acquire(&roots.db,&roots.app).unwrap();let mut j=Journal::begin(&roots.app,&locks,super::super::Branch::Upgrade,super::super::journal::Candidate{revision:"0".repeat(40),pins_sha256:"1".repeat(64),migrations_sha256:"2".repeat(64)}).unwrap();j.ensure_app_pool().unwrap();j.record(Step::P1Backup,StepState::Done,Some(serde_json::json!({"header":{"backupId":j.load().attempt_id,"sourceLocation":"root"},"sourceBytes":12}))).unwrap();j.record_retry_failure(Step::RRestore,code,chrono::Utc::now()).unwrap();j.set_outcome(outcome).unwrap();
             // Projection fixture only; the production outcome commit must include its receipt.
             let identity="a".repeat(64);j.record(Step::P5Publish,StepState::Done,Some(receipt(outcome,&identity).unwrap())).unwrap();record(&roots,&locks,&mut j,&identity).unwrap();let before=fs::read(roots.app.join(".nwui-auto/journal-v1.json")).unwrap();let descriptor=t.path().join("selection");let status=t.path().join("status");publish_at(&roots,&locks,&j,&identity,&j.load().candidate,None,&descriptor,&status).unwrap();let value=super::super::status::read_at(&status).unwrap();assert_eq!(value.outcome,outcome);assert!(value.backup.is_none());assert!(value.discarded.is_empty());assert!(!serde_json::to_string(&value).unwrap().contains("removeCommand"));let failure=value.failure.unwrap();assert_eq!(failure.code,code);
-            if outcome==Outcome::Restored{assert_eq!(failure.message,"업그레이드를 끝내지 못해 원본 PG15 데이터를 검증 후 복원했습니다.");assert!(value.locations.is_empty());assert!(failure.next_action.contains("2.0.x 최신(2.0.3 이상)"));}else{assert_eq!(failure.message,"원본 복원을 끝내지 못했습니다. 데이터는 아래 위치에 보존돼 있습니다.");assert_eq!(value.locations,vec![roots.db.display().to_string()]);assert!(failure.next_action.contains("offline entrypoint에서 미완료 복구"));}
+            if outcome==Outcome::Restored{assert_eq!(failure.message,"업그레이드를 끝내지 못해 원본 PG15 데이터를 검증 후 복원했습니다.");assert!(value.locations.is_empty());assert_eq!(failure.next_action,super::super::legacy::GUIDANCE);}else{assert_eq!(failure.message,"원본 복원을 끝내지 못했습니다. 데이터는 아래 위치에 보존돼 있습니다.");assert_eq!(value.locations,vec![roots.db.display().to_string()]);assert_eq!(failure.next_action,"컨테이너를 중지하고 2.0.3 이미지의 오프라인 진입점에서 미완료 복구를 마치세요. 2.0.3 이미지를 정상 시작해 2.1 이상에서 사용한 데이터를 열지 마세요. 기존 데이터는 보존했습니다.");}
             assert_eq!(super::super::runner::boot_plan(j.load(),Some(&identity)),super::super::runner::BootPlan::ParkedRefusal);assert_eq!(super::super::runner::boot_plan(j.load(),Some(&"b".repeat(64))),super::super::runner::BootPlan::Phase1);publish_at(&roots,&locks,&j,&identity,&j.load().candidate,None,&descriptor,&status).unwrap();assert_eq!(fs::read(roots.app.join(".nwui-auto/journal-v1.json")).unwrap(),before);assert!(fs::File::open(&roots.db).unwrap().try_lock().is_err());assert!(fs::File::open(&roots.app).unwrap().try_lock().is_err());
         }
     }
@@ -249,7 +249,7 @@ mod tests {
         if outcome==Outcome::Restored {if operator {assert!(offline.failure.is_none());assert!(offline.retry.reason.is_some());}else{assert_eq!(offline.failure.as_ref().unwrap().message,"업그레이드를 끝내지 못해 원본 PG15 데이터를 검증 후 복원했습니다.");}}
         if outcome==Outcome::ActivationFailed {
             assert_eq!(offline.failure.as_ref().unwrap().message,"업그레이드는 완료됐지만 서비스 시작에 실패했습니다");
-            assert_eq!(offline.failure.as_ref().unwrap().next_action,format!("컨테이너를 중지하고 2.0.x 최신(2.0.3 이상) 이미지의 offline entrypoint로 nwui-db-upgrade restore-pg15 --confirm-loss {} 명령을 실행하세요. 복원하면 업그레이드 이후의 변경은 사라집니다. 2.0 이미지를 정상 시작해 2.1 데이터를 열지 마세요.",j.load().attempt_id));
+            assert_eq!(offline.failure.as_ref().unwrap().next_action,format!("컨테이너를 중지하고 2.0.3 이미지의 오프라인 진입점으로 nwui-db-upgrade restore-pg15 --confirm-loss {} 명령을 실행하세요. 복원하면 업그레이드 이후의 변경은 사라집니다. 2.0.3 이미지를 정상 시작해 2.1 이상에서 사용한 데이터를 열지 마세요.",j.load().attempt_id));
             assert!(offline.retry.next_eligible_at.is_none());assert!(offline.retry.reason.is_none());
         }
         assert_eq!(fs::read(roots.app.join(".nwui-auto/journal-v1.json")).unwrap(),before);

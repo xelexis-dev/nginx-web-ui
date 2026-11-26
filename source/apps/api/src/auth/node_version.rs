@@ -1,7 +1,7 @@
 //! Gateway ↔ node compatibility, a port of `packages/node-api/src/version.ts`.
 //!
 //! Arguments are (gateway, node). For the same major ≥ 2, the gateway minor must be at least
-//! the node minor. Major 1 keeps exact major.minor matching; 2.0 ↔ 1.19 is the supported bridge.
+//! the node minor. Major 1 keeps exact major.minor matching.
 //! Patches preserve the node contract; newer minors must remain additive for older nodes.
 //! Unreadable on either side means incompatible — refusing is the default.
 
@@ -29,9 +29,8 @@ pub fn parse_semver(value: &str) -> Option<Semver> {
 
 pub fn is_compatible(gateway: &str, node: &str) -> bool {
     match (parse_semver(gateway), parse_semver(node)) {
-        (Some(g), Some(n)) => (g.major == n.major
-            && ((g.major >= 2 && g.minor >= n.minor) || (g.major == 1 && g.minor == n.minor)))
-            || matches!(((g.major, g.minor), (n.major, n.minor)), ((2, 0), (1, 19)) | ((1, 19), (2, 0))),
+        (Some(g), Some(n)) => g.major == n.major
+            && ((g.major >= 2 && g.minor >= n.minor) || (g.major == 1 && g.minor == n.minor)),
         _ => false,
     }
 }
@@ -76,26 +75,6 @@ mod tests {
     }
 
     #[test]
-    fn shipped_pairs_keep_the_legacy_rule() {
-        fn legacy_rule(gateway: &str, node: &str) -> bool {
-            match (parse_semver(gateway), parse_semver(node)) {
-                (Some(g), Some(n)) => (g.major == n.major && g.minor == n.minor)
-                    || matches!(((g.major, g.minor), (n.major, n.minor)), ((2, 0), (1, 19)) | ((1, 19), (2, 0))),
-                _ => false,
-            }
-        }
-        let shipped: Vec<_> = versions().into_iter().filter(|v| parse_semver(v).is_some_and(|v| v.major == 1 || (v.major == 2 && v.minor == 0))).collect();
-        for g in &shipped {
-            for n in &shipped { assert_eq!(is_compatible(g, n), legacy_rule(g, n), "{g} -> {n}"); }
-        }
-        for patch in 0..=11 {
-            let legacy = format!("1.19.{patch}");
-            assert!(is_compatible("2.0.0", &legacy));
-            assert!(is_compatible(&legacy, "2.0.9"));
-        }
-    }
-
-    #[test]
     fn gateway_first_version_grid() {
         // Explicit family edges keep the oracle independent of the implementation's inequality.
         let modern_edges = [(0, 0), (1, 0), (1, 1), (9, 0), (9, 1), (9, 9)];
@@ -106,8 +85,6 @@ mod tests {
                         (1, 1) => g.minor == n.minor,
                         (2, 2) => modern_edges.contains(&(g.minor, n.minor)),
                         (3, 3) => true,
-                        (2, 1) => g.minor == 0 && n.minor == 19,
-                        (1, 2) => g.minor == 19 && n.minor == 0,
                         _ => false,
                     },
                     _ => false,

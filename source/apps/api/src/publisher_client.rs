@@ -302,6 +302,12 @@ pub mod fake {
     pub enum Script {
         Reply(OpResult),
         Delay(Duration, OpResult),
+        #[cfg(test)]
+        GatedReply {
+            started: tokio::sync::oneshot::Sender<()>,
+            release: tokio::sync::oneshot::Receiver<()>,
+            result: OpResult,
+        },
         CloseAfterRead,
         /// Raw response bytes, including any framing (also allows trailing-byte probes).
         Garbage(Vec<u8>),
@@ -378,6 +384,12 @@ pub mod fake {
         let result=match action {
             Script::Reply(result)=>result,
             Script::Delay(delay,result)=>{tokio::time::sleep(delay).await;result}
+            #[cfg(test)]
+            Script::GatedReply { started, release, result } => {
+                started.send(()).map_err(|_| io::Error::other("request observer dropped"))?;
+                release.await.map_err(io::Error::other)?;
+                result
+            }
             Script::CloseAfterRead=>return Ok(()),
             Script::Garbage(bytes)=>return stream.write_all(&bytes).await,
             Script::Length(length)=>return stream.write_u32(length).await,
@@ -610,11 +622,45 @@ mod tests {
     }
     #[tokio::test]
     async fn socket_apply_lock_is_held_and_admission_is_bounded() {
-        let server=fake::Server::start([fake::Script::Delay(Duration::from_millis(80),success())]).await.unwrap();let dir=tempfile::tempdir().unwrap();let state=socket_state(dir.path(),&server);
-        let check=async{tokio::time::timeout(Duration::from_secs(2),async{while server.requests.lock().await.is_empty(){tokio::task::yield_now().await;}}).await.unwrap();assert!(state.runtime.apply_lock.try_lock().is_err());};
-        let operator=actor();let (result,())=tokio::join!(apply_saved(&state,&operator,None),check);assert!(result.unwrap().ok);
-        let _lock=state.runtime.apply_lock.lock().await;
-        let error=apply_saved(&state,&actor(),None).await.err().unwrap();assert_eq!(error.to_string(),"설정 적용 대기가 30초를 넘었습니다. 잠시 후 다시 시도하세요.");assert_eq!(server.requests.lock().await.len(),1);
+        let (started, request_seen) = tokio::sync::oneshot::channel();
+        let (respond, release) = tokio::sync::oneshot::channel();
+        let server = fake::Server::start([fake::Script::GatedReply {
+            started,
+            release,
+            result: success(),
+        }])
+        .await
+        .unwrap();
+        let dir = tempfile::tempdir().unwrap();
+        let mut state = state(dir.path());
+        let io_budget = Duration::from_secs(5);
+        let bounds = Bounds {
+            operation: io_budget,
+            connect: io_budget,
+            write: io_budget,
+            ..fast_bounds()
+        };
+        std::sync::Arc::get_mut(&mut state.runtime).unwrap().publisher =
+            Client::socket_for_tests(server.path().into(), bounds);
+        let check = async {
+            tokio::time::timeout(io_budget, request_seen).await.unwrap().unwrap();
+            assert!(state.runtime.apply_lock.try_lock().is_err());
+            respond.send(()).unwrap();
+        };
+        let operator = actor();
+        let (result, ()) = tokio::join!(apply_saved(&state, &operator, None), check);
+        assert!(result.unwrap().ok);
+
+        let _lock = state.runtime.apply_lock.lock().await;
+        let error = tokio::time::timeout(Duration::from_secs(2), apply_saved(&state, &operator, None))
+            .await
+            .expect("admission should time out while the lock is held")
+            .unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "설정 적용 대기가 30초를 넘었습니다. 잠시 후 다시 시도하세요."
+        );
+        assert_eq!(server.requests.lock().await.len(), 1);
     }
     #[tokio::test]
     async fn system_checks_refuse_writable_parent_and_nonroot_socket_owner() {

@@ -5,8 +5,14 @@ import { useEffect, useState } from "react";
 // 브라우저 시간대를 못 구하면 KST(한국 표준시)로 표시한다.
 const FALLBACK_TZ = "Asia/Seoul";
 
-function format(iso: string, timeZone: string): string {
-  return new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium", timeStyle: "medium", timeZone }).format(new Date(iso));
+const formats = {
+  full: { dateStyle: "medium", timeStyle: "medium" },
+  date: { dateStyle: "medium" },
+  time: { timeStyle: "short" },
+} satisfies Record<string, Intl.DateTimeFormatOptions>;
+
+function format(iso: string, timeZone: string, precision: keyof typeof formats): string {
+  return new Intl.DateTimeFormat("ko-KR", { ...formats[precision], timeZone }).format(new Date(iso));
 }
 
 /**
@@ -24,13 +30,13 @@ function format(iso: string, timeZone: string): string {
  * 와 같다 — `(app)/history` 와 `(node)/nodes/[id]/history` 양쪽이 이 컴포넌트를
  * 쓴다.
  */
-export function HistoryTime({ iso }: { iso: string }) {
-  const [text, setText] = useState(() => format(iso, FALLBACK_TZ));
+export function HistoryTime({ iso, precision = "full" }: { iso: string; precision?: keyof typeof formats }) {
+  const [text, setText] = useState(() => format(iso, FALLBACK_TZ, precision));
 
   useEffect(() => {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || FALLBACK_TZ;
-    setText(format(iso, tz));
-  }, [iso]);
+    setText(format(iso, tz, precision));
+  }, [iso, precision]);
 
   return (
     <time dateTime={iso} suppressHydrationWarning>

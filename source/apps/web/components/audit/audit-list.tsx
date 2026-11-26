@@ -1,4 +1,4 @@
-import type { AuditVia } from "@repo/contracts";
+import type { AuditVia, RetentionCleanup } from "@repo/contracts";
 import { formatServerTime } from "@/lib/format-time";
 import layout from "@/components/page-layout.module.css";
 import {
@@ -46,6 +46,7 @@ export interface AuditListVM {
   actions: string[];
   /** `""` when no filter is applied — matches `<Select>`'s "전체 액션" option value. */
   actionFilter: string;
+  lastCleanup?: RetentionCleanup | null;
 }
 
 /**
@@ -80,7 +81,7 @@ export function AuditList({
   data: AuditListVM;
   basePath: string;
 }) {
-  const { items, total, page, totalPages, actions, actionFilter } = data;
+  const { items, total, page, totalPages, actions, actionFilter, lastCleanup } = data;
 
   return (
     <section className={layout.page}>
@@ -160,6 +161,12 @@ export function AuditList({
             ))}
           </tbody>
         </Table>
+        {lastCleanup && page === totalPages && (
+          <p className={layout.listNote}>
+            오래된 기록 가운데 일부는 보존 기간이 지나 지워졌습니다. 마지막 정리{" "}
+            {formatAuditTime(new Date(lastCleanup.at))} · {lastCleanup.deleted.toLocaleString("ko-KR")}건
+          </p>
+        )}
         <div className={styles.pagination}>
           {page > 1 ? (
             <Link

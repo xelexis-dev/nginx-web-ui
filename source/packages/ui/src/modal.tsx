@@ -5,6 +5,8 @@ import { IconButton } from "./button";
 import { Icon } from "./icon";
 import styles from "./modal.module.css";
 
+export const modalTargetClassName = styles.target;
+
 /**
  * 공통 모달. 네이티브 `<dialog>` + `showModal()`을 쓰므로 포커스 트랩, Esc 닫기,
  * 배경 inert를 브라우저가 제공한다(직접 구현하지 않는다). 닫힘 경로를 하나로

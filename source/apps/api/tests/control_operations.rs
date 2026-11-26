@@ -302,7 +302,7 @@ mod live {
 
     #[tokio::test]
     #[ignore = "real DB: set NWUI_TEST_DATABASE_URL"]
-    async fn history_view_uses_strict_chronological_predecessor_and_fifty_row_list() {
+    async fn history_view_uses_timestamp_and_id_predecessor_and_fifty_row_list() {
         let temp = TempDir::new().unwrap();
         let db = db(&temp).await;
         for (id, at, name) in [
@@ -313,13 +313,17 @@ mod live {
             db.client.execute("INSERT INTO config_snapshots(id,created_at,label,data) VALUES($1,$2::text::timestamptz,$1,$3)",&[&id,&at,&json!({"servers":[{"id":"s","serverName":name,"listen":80}],"streams":[],"upstreams":[]})]).await.unwrap();
         }
         let query = std::collections::BTreeMap::new();
-        let first = operations::view(&db.state, &(principal(Role::Viewer)).clone().into(), "/history/same", &query)
+        let first = operations::view(&db.state, &(principal(Role::Viewer)).clone().into(), "/history/first", &query)
             .await
             .unwrap()
             .unwrap();
         assert_eq!(first["isFirst"], true);
         assert_eq!(first["diff"]["hasChanges"], false);
         assert_eq!(first["canRollback"], false);
+        let tied = operations::view(&db.state, &(principal(Role::Viewer)).into(), "/history/same", &query)
+            .await.unwrap().unwrap();
+        assert_eq!(tied["isFirst"], false);
+        assert_eq!(tied["diff"]["servers"][0]["changes"][0]["field"], "serverName");
         let last = operations::view(
             &db.state, &(principal(Role::Editor)).clone().into(),
             "/history/latest",

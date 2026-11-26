@@ -2,7 +2,7 @@
 use super::{Branch,Outcome,Step,StepState,StepError};
 use crate::db_upgrade::{files,layout::Roots};
 use std::{fs::{self,OpenOptions},io::Read,os::unix::fs::{MetadataExt,OpenOptionsExt},path::Path};
-pub(crate) const GUIDANCE:&str="1.x(PostgreSQL 15) 데이터입니다. 먼저 2.0.x 최신(2.0.3 이상) 이미지에서 이전을 완료한 뒤 2.1로 올리세요. 기존 데이터는 변경하지 않았습니다.";
+pub(crate) const GUIDANCE:&str="1.x(PostgreSQL 15) 데이터입니다. 먼저 2.0.3 이미지에서 이전을 완료한 뒤 최신 2.x로 올리세요. 기존 데이터는 변경하지 않았습니다.";
 pub(crate) fn required()->StepError {StepError{code:"requires_2_0_first",message:GUIDANCE,detail:None}}
 fn invalid()->StepError {StepError{code:"unsupported_layout",message:"데이터 경로 또는 파일 형식을 확인하지 못했습니다. 기존 데이터는 변경하지 않았습니다.",detail:None}}
 fn present(path:&Path)->Result<bool,StepError>{match fs::symlink_metadata(path){Ok(_)=>Ok(true),Err(e)if e.kind()==std::io::ErrorKind::NotFound=>Ok(false),Err(_)=>Err(invalid())}}

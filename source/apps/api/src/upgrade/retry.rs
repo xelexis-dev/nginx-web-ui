@@ -10,13 +10,13 @@ fn valid_label(label:Option<&str>)->Result<Option<&str>,StepError> {
     if label.is_some_and(|s|s.is_empty() || s.len()>128 || s.contains('\0')) {return Err(invalid());}Ok(label)
 }
 /// Trusted startup settings only; labels are never printed or taken from a socket request.
-pub(crate) struct Policy {pub postponed:bool,pub label:Option<String>}
+pub(crate) struct Policy {pub label:Option<String>}
 impl Policy {
     pub(crate) fn startup()->Result<Self,StepError>{Self::read(crate::nonroot::startup_value)}
     fn read(get:impl Fn(&str)->Option<String>)->Result<Self,StepError>{
         let label=get("NWUI_DB_UPGRADE_RETRY");valid_label(label.as_deref())?;
-        if get("NWUI_DB_UPGRADE").as_deref()==Some("off"){eprintln!("[upgrade] NWUI_DB_UPGRADE=off is ignored in 2.1; legacy data requires 2.0.x first.");}
-        Ok(Self{postponed:false,label})
+        if get("NWUI_DB_UPGRADE").as_deref()==Some("off"){eprintln!("[upgrade] NWUI_DB_UPGRADE=off is ignored in 2.1 and later; legacy data requires 2.0.3 first.");}
+        Ok(Self{label})
     }
 }
 pub(crate) fn admit(j:&JournalV1,candidate:&Candidate,label:Option<&str>,space_sufficient:bool,now:chrono::DateTime<chrono::Utc>)->Result<Admission,StepError> {
@@ -51,15 +51,15 @@ mod tests {
     fn now()->chrono::DateTime<chrono::Utc> {"2026-10-28T00:00:00Z".parse().unwrap()}
     #[test]
     fn startup_policy_reads_only_documented_settings_and_validates_retry_labels(){
-        let default=Policy::read(|_|None).unwrap();assert!(!default.postponed);assert!(default.label.is_none());
-        for value in ["off","on",""]{let policy=Policy::read(|name|match name{"NWUI_DB_UPGRADE"=>Some(value.into()),"NWUI_DB_UPGRADE_RETRY"=>Some("operator-fix".into()),_=>panic!("unexpected setting")}).unwrap();assert!(!policy.postponed);assert_eq!(policy.label.as_deref(),Some("operator-fix"));}
+        let default=Policy::read(|_|None).unwrap();assert!(default.label.is_none());
+        for value in ["off","on",""]{let policy=Policy::read(|name|match name{"NWUI_DB_UPGRADE"=>Some(value.into()),"NWUI_DB_UPGRADE_RETRY"=>Some("operator-fix".into()),_=>panic!("unexpected setting")}).unwrap();assert_eq!(policy.label.as_deref(),Some("operator-fix"));}
         for label in ["",&"x".repeat(129),"x\0y"]{assert!(Policy::read(|name|(name=="NWUI_DB_UPGRADE_RETRY").then(||label.into())).is_err());}
     }
     #[test]
     fn historical_admission_is_readable_but_restored_guidance_requires_20(){
-        let (_t,_locks,mut j)=fixture();let candidate=j.load().candidate.clone();j.set_outcome(super::super::Outcome::Pg17).unwrap();let choice=admit(j.load(),&candidate,None,true,now()).unwrap();assert_eq!(choice,Admission::Attempt);assert!(restored_next_action(&choice).contains("2.0.x 최신(2.0.3 이상)"));
-        failed(&mut j,Step::S4Activate,"privilege_activate_failed",now()).unwrap();j.set_outcome(super::super::Outcome::ActivationFailed).unwrap();let choice=admit(j.load(),&candidate,None,true,now()).unwrap();assert_eq!(choice,Admission::SameCandidateRefused);assert!(restored_next_action(&choice).contains("2.0.x 최신(2.0.3 이상)"));let retry=admit(j.load(),&candidate,Some("fixed"),true,now()).unwrap();assert_eq!(retry,Admission::Attempt);
-        failed(&mut j,Step::P3Convert,"interrupted",now()).unwrap();failed(&mut j,Step::P3Convert,"interrupted",now()).unwrap();let choice=admit(j.load(),&candidate,None,true,now()).unwrap();assert!(matches!(choice,Admission::Backoff(_)));assert!(restored_next_action(&choice).contains("2.0.x 최신(2.0.3 이상)"));
+        let (_t,_locks,mut j)=fixture();let candidate=j.load().candidate.clone();j.set_outcome(super::super::Outcome::Pg17).unwrap();let choice=admit(j.load(),&candidate,None,true,now()).unwrap();assert_eq!(choice,Admission::Attempt);assert_eq!(restored_next_action(&choice),super::super::legacy::GUIDANCE);
+        failed(&mut j,Step::S4Activate,"privilege_activate_failed",now()).unwrap();j.set_outcome(super::super::Outcome::ActivationFailed).unwrap();let choice=admit(j.load(),&candidate,None,true,now()).unwrap();assert_eq!(choice,Admission::SameCandidateRefused);assert_eq!(restored_next_action(&choice),super::super::legacy::GUIDANCE);let retry=admit(j.load(),&candidate,Some("fixed"),true,now()).unwrap();assert_eq!(retry,Admission::Attempt);
+        failed(&mut j,Step::P3Convert,"interrupted",now()).unwrap();failed(&mut j,Step::P3Convert,"interrupted",now()).unwrap();let choice=admit(j.load(),&candidate,None,true,now()).unwrap();assert!(matches!(choice,Admission::Backoff(_)));assert_eq!(restored_next_action(&choice),super::super::legacy::GUIDANCE);
         failed(&mut j,Step::P2Preflight,"insufficient_space",now()).unwrap();let mut state=j.load().clone();state.retry.backoff_until=Some((now()+chrono::Duration::hours(24)).to_rfc3339());let choice=admit(&state,&candidate,None,true,now()).unwrap();assert_eq!(choice,Admission::Attempt);
     }
     #[test]

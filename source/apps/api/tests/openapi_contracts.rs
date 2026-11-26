@@ -224,3 +224,89 @@ fn null_tls_server_input_contract_preserves_plain_server_requests() {
     assert!(check.is_valid(&base),"{schema}");
     for bad in [json!(5),json!("x"),json!([])] {let mut value=base.clone();value["tls"]=bad;assert!(!check.is_valid(&value));}
 }
+
+#[tokio::test]
+#[ignore = "real PostgreSQL"]
+async fn retention_settings_use_browser_admin_authority_and_validate_both_fields() {
+    use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
+
+    let db = auth_support::test_db().await;
+    for role in ["admin", "editor", "viewer"] {
+        let email = format!("{role}@example.test");
+        auth_support::insert_user(&db.client, auth_support::UserRow {
+            id: role, role, email: &email, totp_enabled: true, ..Default::default()
+        }, None).await;
+    }
+    let credential = format!("nwu_u_{}", URL_SAFE_NO_PAD.encode([7; 32]));
+    db.client.execute(
+        "INSERT INTO access_tokens(id,name,kind,owner_user_id,token_hash,token_suffix,scopes)
+         VALUES('pat','contract fixture','user','admin',$1,'test','[\"user:manage\"]')",
+        &[&nwui_api::auth::token_digest(&credential)],
+    ).await.unwrap();
+
+    let router = nwui_api::server::router(db.state.clone());
+    let endpoint = "/api/ui/v1/admin/settings/retention";
+    let request = |method, uri: String, role: &'static str, origin, input: String| {
+        let mut request = Request::builder().method(method).uri(uri).header("host", "ui.example.test")
+            .header("origin", origin).header("content-type", "application/x-www-form-urlencoded")
+            .extension(ConnectInfo(SocketAddr::from(([127, 0, 0, 1], 12345))));
+        if role == "token" {
+            request = request.header("authorization", format!("Bearer {credential}"));
+        } else {
+            let claims = json!({"id":role,"sv":3});
+            let cookie = nwui_api::auth::session::encode(
+                claims.as_object().unwrap(), auth_support::SECRET, nwui_api::auth::session::COOKIE_NAME_PLAIN,
+                nwui_api::auth::principal::now_unix_ms()/1000, 3600,
+            ).unwrap();
+            request = request.header("cookie", format!("authjs.session-token={cookie}"));
+        }
+        router.clone().oneshot(request.body(Body::from(input)).unwrap())
+    };
+    let origin = "http://ui.example.test";
+    let fields = |audit, history| url::form_urlencoded::Serializer::new(String::new())
+        .append_pair("auditRetentionDays", audit).append_pair("historyRetentionDays", history).finish();
+    for role in ["viewer", "editor", "token"] {
+        for (method, path, body) in [
+            ("GET", endpoint.to_owned(), String::new()),
+            ("PUT", endpoint.to_owned(), fields("90", "30")),
+            ("GET", format!("{endpoint}/estimate?{}", fields("90", "30")), String::new()),
+        ] {
+            assert_eq!(request(method, path, role, origin, body).await.unwrap().status(), 403);
+        }
+    }
+    assert_eq!(
+        request("PUT", endpoint.into(), "admin", "https://foreign.example.test", fields("90", "30")).await.unwrap().status(), 403,
+    );
+    for (field, invalid) in [
+        ("auditRetentionDays", ["0", "89", "3651", "-90", "90.0", "90d"]),
+        ("historyRetentionDays", ["0", "29", "3651", "-30", "30.0", "30d"]),
+    ] {
+        for value in invalid {
+            let body = if field.starts_with("audit") { fields(value, "30") } else { fields("90", value) };
+            let response = request("PUT", endpoint.into(), "admin", origin, body).await.unwrap();
+            assert_eq!(response.status(), 400, "{field}={value}");
+            let response: Value = serde_json::from_slice(&axum::body::to_bytes(response.into_body(), 1<<20).await.unwrap()).unwrap();
+            assert!(response["error"]["fieldErrors"][field].is_string());
+        }
+    }
+    let missing = format!("{}&expectedAuditRetentionDays=", fields("90", "30"));
+    let response = request("PUT", endpoint.into(), "admin", origin, missing).await.unwrap();
+    assert_eq!(response.status(), 400);
+    let missing_error: Value = serde_json::from_slice(&axum::body::to_bytes(response.into_body(), 1<<20).await.unwrap()).unwrap();
+    assert!(missing_error["error"]["fieldErrors"]["expectedHistoryRetentionDays"].is_string());
+    for (method, path, body, schema) in [
+        ("GET", endpoint.into(), String::new(), "RetentionSettingsView"),
+        ("GET", format!("{endpoint}/estimate?{}", fields("90", "30")), String::new(), "RetentionEstimates"),
+        ("PUT", endpoint.into(), format!("{}&expectedAuditRetentionDays=&expectedHistoryRetentionDays=", fields("90", "30")), "RetentionSettingsSaved"),
+    ] {
+        let response = request(method, path, "admin", origin, body).await.unwrap();
+        assert_eq!(response.status(), 200);
+        let value = serde_json::from_slice(&axum::body::to_bytes(response.into_body(), 1<<20).await.unwrap()).unwrap();
+        assert!(validator(schema).is_valid(&value), "{schema}: {value}");
+    }
+    let stale = format!("{}&expectedAuditRetentionDays=&expectedHistoryRetentionDays=", fields("", "45"));
+    assert_eq!(request("PUT", endpoint.into(), "admin", origin, stale).await.unwrap().status(), 409);
+    let unchanged = db.client.query_one("SELECT audit_retention_days, history_retention_days FROM app_settings WHERE id='current'", &[]).await.unwrap();
+    assert_eq!(unchanged.get::<_, i32>(0), 90);
+    assert_eq!(unchanged.get::<_, i32>(1), 30);
+}

@@ -251,6 +251,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/ui/v1/admin/settings/retention": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["readRetentionSettings"];
+        put: operations["updateRetentionSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ui/v1/admin/settings/retention/estimate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["estimateRetentionSettings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ui/v1/admin/secrets": {
         parameters: {
             query?: never;
@@ -4125,6 +4157,7 @@ export interface components {
             totalPages: number;
             actions: string[];
             actionFilter: string;
+            lastCleanup?: components["schemas"]["RetentionCleanup"] | null;
         };
         AuditDetailView: {
             log: components["schemas"]["AuditRecordView"];
@@ -4144,6 +4177,7 @@ export interface components {
                 items: components["schemas"]["HistoryListItemView"][];
                 /** @constant */
                 showDetails: true;
+                lastCleanup?: components["schemas"]["RetentionCleanup"] | null;
             };
         };
         BrowserConfigSnapshot: {
@@ -4170,6 +4204,7 @@ export interface components {
             canRollback: boolean;
             /** Format: date-time */
             iso: string;
+            previousPruned?: boolean;
         };
         CertificateDomainView: {
             primary: string | null;
@@ -4406,6 +4441,54 @@ export interface components {
             kind: "token";
             id: string;
             name: string;
+        };
+        RetentionInput: {
+            auditRetentionDays: string;
+            historyRetentionDays: string;
+            /** @description Value last read by this browser, empty when disabled. A changed policy returns 409. */
+            expectedAuditRetentionDays: string;
+            /** @description Value last read by this browser, empty when disabled. A changed policy returns 409. */
+            expectedHistoryRetentionDays: string;
+        };
+        RetentionSettingsSaved: {
+            schedulesCleanup: boolean;
+        };
+        RetentionCleanup: {
+            /** Format: date-time */
+            at: string;
+            deleted: number;
+        };
+        RetentionFailure: {
+            /** Format: date-time */
+            at: string;
+            message: string;
+            deleted: number;
+        };
+        RetentionCollectionView: {
+            days: number | null;
+            count: number;
+            /** Format: date-time */
+            oldestAt: string | null;
+            lastCleanup: components["schemas"]["RetentionCleanup"] | null;
+            /** Format: date-time */
+            nextRunAt: string | null;
+            remaining: number;
+            lastFailure: components["schemas"]["RetentionFailure"] | null;
+            /** @enum {string} */
+            status: "off" | "waiting" | "running" | "done" | "failed";
+        };
+        RetentionSettingsView: {
+            audit: components["schemas"]["RetentionCollectionView"];
+            history: components["schemas"]["RetentionCollectionView"];
+        };
+        RetentionEstimate: {
+            /** Format: date-time */
+            cutoff: string;
+            deleted: number;
+        };
+        RetentionEstimates: {
+            audit: components["schemas"]["RetentionEstimate"] | null;
+            history: components["schemas"]["RetentionEstimate"] | null;
         };
     };
     responses: {
@@ -4793,6 +4876,86 @@ export interface operations {
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
             429: components["responses"]["ApiError"];
+            503: components["responses"]["ApiError"];
+        };
+    };
+    readRetentionSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Authorized safe response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetentionSettingsView"];
+                };
+            };
+            401: components["responses"]["ApiError"];
+            403: components["responses"]["ApiError"];
+            503: components["responses"]["ApiError"];
+        };
+    };
+    updateRetentionSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/x-www-form-urlencoded": components["schemas"]["RetentionInput"];
+            };
+        };
+        responses: {
+            /** @description Authorized safe response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetentionSettingsSaved"];
+                };
+            };
+            400: components["responses"]["ApiError"];
+            401: components["responses"]["ApiError"];
+            403: components["responses"]["ApiError"];
+            409: components["responses"]["ApiError"];
+            415: components["responses"]["ApiError"];
+            503: components["responses"]["ApiError"];
+        };
+    };
+    estimateRetentionSettings: {
+        parameters: {
+            query?: {
+                auditRetentionDays?: string;
+                historyRetentionDays?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Authorized safe response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetentionEstimates"];
+                };
+            };
+            400: components["responses"]["ApiError"];
+            401: components["responses"]["ApiError"];
+            403: components["responses"]["ApiError"];
             503: components["responses"]["ApiError"];
         };
     };
@@ -9605,7 +9768,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -9718,7 +9881,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -9815,7 +9978,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -9944,7 +10107,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -10060,7 +10223,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -10173,7 +10336,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -10270,7 +10433,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -10383,7 +10546,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -10480,7 +10643,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -10605,7 +10768,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -10718,7 +10881,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -10815,7 +10978,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -10942,7 +11105,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -11051,7 +11214,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -11190,7 +11353,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -11303,7 +11466,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -11446,7 +11609,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -11543,7 +11706,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -11670,7 +11833,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -11800,7 +11963,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -11909,7 +12072,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -12066,7 +12229,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -12195,7 +12358,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -12308,7 +12471,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -12451,7 +12614,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -12548,7 +12711,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -12675,7 +12838,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -12805,7 +12968,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -12914,7 +13077,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -13071,7 +13234,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -13200,7 +13363,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -13313,7 +13476,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -13456,7 +13619,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -13553,7 +13716,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -13680,7 +13843,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -13810,7 +13973,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -13919,7 +14082,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -14076,7 +14239,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -14189,7 +14352,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -14306,7 +14469,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -14403,7 +14566,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -14520,7 +14683,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -14647,7 +14810,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -14777,7 +14940,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -14886,7 +15049,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -15017,7 +15180,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -15159,7 +15322,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -15301,7 +15464,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -15443,7 +15606,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -15582,7 +15745,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -15724,7 +15887,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -15870,7 +16033,7 @@ export interface operations {
                 range?: components["schemas"]["NodeMetricRange"];
             };
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -15986,7 +16149,7 @@ export interface operations {
                 range?: components["schemas"]["NodeMetricRange"];
             };
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -16088,7 +16251,7 @@ export interface operations {
                 action?: string;
             };
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -16206,7 +16369,7 @@ export interface operations {
                 action?: string;
             };
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -16303,7 +16466,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -16430,7 +16593,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path: {
@@ -16542,7 +16705,7 @@ export interface operations {
                 file?: "access" | "error";
             };
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -16659,7 +16822,7 @@ export interface operations {
                 file?: "access" | "error";
             };
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;
@@ -17013,7 +17176,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
+                /** @description Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored. */
                 "X-Gateway-Version": string;
             };
             path?: never;

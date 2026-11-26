@@ -52,13 +52,13 @@ libgcrypt20	amd64	1.11.0-7+deb13u1	libgcrypt20	1.11.0-7+deb13u1	debian
 libgmp10	amd64	2:6.3.0+dfsg-3	gmp	2:6.3.0+dfsg-3	base
 libgnutls30t64	amd64	3.8.9-3+deb13u4	gnutls28	3.8.9-3+deb13u4	debian
 libgpg-error0	amd64	1.51-4	libgpg-error	1.51-4	debian
-libgssapi-krb5-2	amd64	1.21.3-5+deb13u1	krb5	1.21.3-5+deb13u1	debian
+libgssapi-krb5-2	amd64	1.21.3-5+deb13u2	krb5	1.21.3-5+deb13u2	debian-security
 libhogweed6t64	amd64	3.10.1-1	nettle	3.10.1-1	base
 libidn2-0	amd64	2.3.8-2	libidn2	2.3.8-2	debian
-libk5crypto3	amd64	1.21.3-5+deb13u1	krb5	1.21.3-5+deb13u1	debian
+libk5crypto3	amd64	1.21.3-5+deb13u2	krb5	1.21.3-5+deb13u2	debian-security
 libkeyutils1	amd64	1.6.3-6	keyutils	1.6.3-6	debian
-libkrb5-3	amd64	1.21.3-5+deb13u1	krb5	1.21.3-5+deb13u1	debian
-libkrb5support0	amd64	1.21.3-5+deb13u1	krb5	1.21.3-5+deb13u1	debian
+libkrb5-3	amd64	1.21.3-5+deb13u2	krb5	1.21.3-5+deb13u2	debian-security
+libkrb5support0	amd64	1.21.3-5+deb13u2	krb5	1.21.3-5+deb13u2	debian-security
 libksba8	amd64	1.6.7-2+b1	libksba	1.6.7-2	debian
 liblastlog2-2	amd64	2.41.5-0+deb13u1	util-linux	2.41.5-0+deb13u1	base
 libldap2	amd64	2.6.10+dfsg-1	openldap	2.6.10+dfsg-1	debian

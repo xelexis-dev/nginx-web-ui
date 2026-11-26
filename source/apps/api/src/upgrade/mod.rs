@@ -24,7 +24,6 @@ mod monitor;
 mod cleanup;
 mod guard;
 mod space;
-mod diagnostics;
 mod signals;
 mod retry;
 mod rollover;
@@ -47,14 +46,6 @@ pub async fn auto_status(args:&[String])->i32 {commands::auto_status(args).await
 
 /// Internal root-only fdholder subprocess entry; no runtime configuration or secrets are read.
 pub fn fdholder_passback(args:&[String])->std::process::ExitCode {fdholder::passback(args)}
-
-/// Shared read-only selector policy for the path-included offline transport and runner.
-#[doc(hidden)]
-pub fn precommit_selector(app_root:&std::path::Path,journal:&Journal)->Result<(),StepError>{replacement::precommit(app_root,journal)}
-
-/// Fixed journal-owned diagnostic mapping for the path-included offline transport tests.
-#[doc(hidden)]
-pub fn diagnostic_log_path(db:&std::path::Path,j:&Journal,name:&str,check:bool)->Result<std::path::PathBuf,StepError>{diagnostics::owned_path(db,j,name,check)}
 
 /// Offline dispatch shared with the path-included db-upgrade transport tests.
 #[doc(hidden)]

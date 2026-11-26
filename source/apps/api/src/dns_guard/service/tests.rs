@@ -416,13 +416,16 @@ async fn configured_secondary_is_used_within_the_total_deadline() {
     let fixture = Fixture::new(0).await;
     let mut guard = fixture.guard(false);
     guard.servers.insert(0, silent.local_addr().unwrap());
-    guard.timeout = Duration::from_millis(200);
+    // Two servers share this deadline, so the silent primary gets only one second.
+    guard.timeout = Duration::from_secs(2);
     let started = Instant::now();
     assert_eq!(
         ask(&guard, RecordType::A, false).await.response_code,
         ResponseCode::NoError
     );
-    assert!(started.elapsed() < Duration::from_millis(200));
+    assert!(started.elapsed() < guard.timeout);
+    silent.try_recv_from(&mut [0; 512]).unwrap();
+    assert_eq!(fixture.count.load(Ordering::SeqCst), 1);
 }
 #[tokio::test]
 async fn upstream_servfail_tries_the_next_configured_server() {

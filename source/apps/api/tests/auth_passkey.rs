@@ -989,8 +989,9 @@ async fn removed_credentials_and_expiry_while_waiting_for_a_user_lock_are_refuse
             .unwrap();
         let mut e = entry(&f, &f["assertionChallenge"], None);
         if !removed {
-            e.expires_ms = principal::now_unix_ms() + 1000;
+            e.expires_ms = principal::now_unix_ms() + 5_000;
         }
+        let expires_ms = e.expires_ms;
         db.state
             .runtime
             .passkey_ceremonies
@@ -1014,20 +1015,28 @@ async fn removed_credentials_and_expiry_while_waiting_for_a_user_lock_are_refuse
             .await
             .unwrap()
             .get(0);
-        let mut blocked = false;
-        for _ in 0..100 {
-            blocked=db.client.query_one("SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE $1=ANY(pg_blocking_pids(pid)))",&[&pid]).await.unwrap().get(0);
-            if blocked {
-                break;
+        tokio::time::timeout(Duration::from_secs(10), async {
+            loop {
+                let blocked: bool = db
+                    .client
+                    .query_one(
+                        "SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE $1=ANY(pg_blocking_pids(pid)))",
+                        &[&pid],
+                    )
+                    .await
+                    .unwrap()
+                    .get(0);
+                if blocked {
+                    break;
+                }
+                tokio::time::sleep(Duration::from_millis(10)).await;
             }
-            tokio::time::sleep(Duration::from_millis(10)).await;
-        }
-        assert!(
-            blocked,
-            "finish reached the user row lock before the mutation"
-        );
+        })
+        .await
+        .expect("finish reached the user row lock before the mutation");
         if !removed {
-            tokio::time::sleep(Duration::from_millis(1100)).await;
+            let remaining_ms = (expires_ms + 1 - principal::now_unix_ms()).max(0) as u64;
+            tokio::time::sleep(Duration::from_millis(remaining_ms)).await;
         }
         if removed {
             tx.execute("DELETE FROM user_passkeys WHERE user_id='owner'", &[])

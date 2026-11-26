@@ -89,6 +89,7 @@ async fn run() -> anyhow::Result<()> {
     let certificates = nwui_api::certificates::jobs::start(state.clone()).await?;
     let mut worker_failed = certificates.failure_receiver();
     let metrics = nwui_api::observability::start(state.clone());
+    let retention = nwui_api::retention::start(state.clone());
     let notifications = nwui_api::notifications::start(state.clone());
     let runtime = state.runtime.clone();
     let shutdown = runtime.clone();
@@ -108,6 +109,7 @@ async fn run() -> anyhow::Result<()> {
     metrics.shutdown().await;
     notifications.shutdown().await;
     certificates.shutdown().await?;
+    retention.await?;
     serving?;
     Ok(())
 }

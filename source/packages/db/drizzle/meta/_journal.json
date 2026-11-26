@@ -267,6 +267,13 @@
       "when": 1793102405000,
       "tag": "0037_user_token_api",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1793102406000,
+      "tag": "0038_record_retention",
+      "breakpoints": true
     }
   ]
 }

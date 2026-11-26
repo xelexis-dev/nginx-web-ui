@@ -71,28 +71,14 @@ fn a_node_still_starting_its_publisher_is_not_recorded_as_broken() {
     assert_eq!(value["kind"],"conflict");assert_eq!(value["message"],message);
 }
 
-#[test]
-fn compatibility_header_is_limited_to_the_supported_pair() {
-    use nwui_api::nodes::client::gateway_version;
-    for version in ["1.19.0", "1.19.11", "1.19.99"] {
-        assert_eq!(gateway_version("2.0.0", Some(version)), "1.19.11");
-    }
-    for version in [None, Some("garbage"), Some("1.18.9"), Some("1.20.0"), Some("2.0.0")] {
-        assert_eq!(gateway_version("2.0.0", version), "2.0.0");
-    }
-    for gateway in ["2.1.0", "2.9.3", "3.0.0"] {
-        assert_eq!(gateway_version(gateway, Some("1.19.11")), gateway);
-    }
-}
-
 #[tokio::test]
-async fn legacy_target_uses_the_compatibility_header_for_json_and_streams() {
+async fn cached_legacy_target_uses_the_local_version_for_json_and_streams() {
     let app = Router::new().route("/api/v1/info", get(|headers: HeaderMap| async move {
-        assert_eq!(headers["x-gateway-version"], "1.19.11");
+        assert_eq!(headers["x-gateway-version"], "2.0.0");
         assert_eq!(headers["authorization"], "Bearer legacy-token");
         Json(json!({"semver":"1.19.11"}))
     })).route("/api/v1/logs/stream", get(|headers: HeaderMap| async move {
-        assert_eq!(headers["x-gateway-version"], "1.19.11");
+        assert_eq!(headers["x-gateway-version"], "2.0.0");
         ([("content-type", "text/event-stream")], "data: legacy\n\n")
     }));
     let listener=tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -111,26 +97,24 @@ async fn legacy_target_uses_the_compatibility_header_for_json_and_streams() {
 }
 
 #[tokio::test]
-async fn info_negotiation_retries_only_the_get_and_requires_authenticated_consistent_identity() {
+async fn info_probe_is_sent_once_and_requires_authenticated_consistent_identity() {
     use axum::response::IntoResponse;
     use nwui_api::nodes::client::{NodeResult, FailureKind};
-    for mode in ["legacy", "modern", "forged", "foreign", "inconsistent", "invalid", "missing", "unsupported", "malformed", "redirect", "busy", "slow"] {
+    for mode in ["legacy", "modern", "foreign", "inconsistent", "invalid", "missing", "unsupported", "malformed", "redirect", "busy", "slow"] {
         let hits = Arc::new(AtomicUsize::new(0));
         let seen = hits.clone();
         let remote = Router::new().route("/api/v1/info", get(move |headers: HeaderMap| {
-            let attempt = seen.fetch_add(1, Ordering::SeqCst);
+            seen.fetch_add(1, Ordering::SeqCst);
             async move {
                 assert_eq!(headers["authorization"], "Bearer paired-secret");
                 if mode == "slow" { tokio::time::sleep(Duration::from_secs(4)).await; }
-                if matches!(mode, "legacy" | "forged") && attempt == 0 {
-                    assert_eq!(headers["x-gateway-version"], "2.0.0");
+                assert_eq!(headers["x-gateway-version"], "2.0.0");
+                if mode == "legacy" {
                     return (StatusCode::CONFLICT, [("x-node-version", "1.19.11")], Json(json!({"error":{"code":"version_mismatch"}}))).into_response();
                 }
-                if mode == "forged" { return StatusCode::UNAUTHORIZED.into_response(); }
                 if mode == "redirect" { return (StatusCode::FOUND, [("location", "/stolen")]).into_response(); }
                 if mode == "busy" { return StatusCode::TOO_MANY_REQUESTS.into_response(); }
-                let version = match mode { "legacy" => "1.19.11", "invalid" => "garbage", "unsupported" => "2.1.0", _ => "2.0.0" };
-                if mode == "legacy" { assert_eq!(headers["x-gateway-version"], "1.19.11"); }
+                let version = match mode { "invalid" => "garbage", "unsupported" => "2.1.0", _ => "2.0.0" };
                 if mode == "malformed" { return ([("x-node-version", "2.0.0")],Json(json!(null))).into_response(); }
                 if mode == "missing" { return Json(json!({"instanceId":"bound"})).into_response(); }
                 ([("x-node-version", version)], Json(json!({"semver":if mode=="inconsistent" {"1.19.11"} else {version}, "instanceId":if mode=="foreign" {"other"} else {"bound"}}))).into_response()
@@ -142,8 +126,8 @@ async fn info_negotiation_retries_only_the_get_and_requires_authenticated_consis
         let client=NodeHttp::new("2.0.0",&outbound_support::runtime_config()).unwrap();
         let started=std::time::Instant::now();
         let result=client.negotiate_info(&SecretBox::from_key([42;32]),&target,"bound").await;
-        assert_eq!(result.is_ok(), matches!(mode,"legacy"|"modern"), "{mode}: {result:?}");
-        assert_eq!(hits.load(Ordering::SeqCst), if matches!(mode,"legacy"|"forged") {2} else {1}, "{mode}");
+        assert_eq!(result.is_ok(), mode == "modern", "{mode}: {result:?}");
+        assert_eq!(hits.load(Ordering::SeqCst), 1, "{mode}");
         if mode=="slow" {
             assert!(matches!(result,NodeResult::Failure {kind:FailureKind::Unreachable,..}));
             assert!(started.elapsed()<Duration::from_millis(3300));
@@ -161,6 +145,8 @@ async fn gateway_first_info_negotiation() {
         ("2.0.5", "2.0.0", true),
         ("2.0.0", "2.0.9", true),
         ("3.0.0", "3.0.9", true),
+        ("2.0.0", "1.19.11", false),
+        ("1.19.11", "2.0.0", false),
         ("2.1.0", "1.19.11", false),
         ("1.19.11", "2.1.0", false),
         ("2.0.0", "3.0.0", false),

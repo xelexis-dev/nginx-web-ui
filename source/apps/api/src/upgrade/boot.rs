@@ -38,7 +38,7 @@ pub(crate) async fn migrate(selection:&StorageSelection,current_candidate:&super
     Ok(migrations_applied)
 }
 /// Call only after the candidate catalog and data have passed V2 on the upgrade branch.
-pub(crate) async fn finish(selection:&StorageSelection,config:&RuntimeConfig,secrets:&SecretBox,pg:&PrivatePg,locks:&StorageLocks,j:&mut Journal,inputs:Inputs,notices:&[super::status::UpgradeNotification],mode:crate::publisher::boot::BootMode)->Result<crate::nonroot::Prepared,StepError> {
+pub(super) async fn finish(selection:&StorageSelection,config:&RuntimeConfig,secrets:&SecretBox,pg:&PrivatePg,locks:&StorageLocks,j:&mut Journal,inputs:Inputs,notices:&Notices,mode:crate::publisher::boot::BootMode)->Result<crate::nonroot::Prepared,StepError> {
     verified(selection,locks,j)?;
     let pool=pg.pool(config)?;let ctx=BootCtx{config,secrets,pool:&pool};
     let id=if j.load().branch==Branch::Upgrade{Step::P4Target}else{Step::Y2};
@@ -47,11 +47,7 @@ pub(crate) async fn finish(selection:&StorageSelection,config:&RuntimeConfig,sec
     step(j,id,"seed_admin",runtime_boot::seed_admin(&ctx,inputs.admin_email.as_deref(),inputs.admin_password.as_deref())).await?;
     step(j,id,"dns_preflight",runtime_boot::dns_preflight(&ctx)).await?;
     step(j,id,"backfill",runtime_boot::backfill(&ctx,inputs.backfill.as_deref())).await?;
-    if !notices.is_empty(){step(j,id,"upgrade_notifications",async{
-        let mut client=ctx.pool.get().await.map_err(|_|notice_failed())?;let transaction=client.transaction().await.map_err(|_|notice_failed())?;
-        for notice in notices{super::status::insert_notification(&*transaction,notice).await?;}
-        transaction.commit().await.map_err(|_|notice_failed())
-    }).await?;}
+    record_notices(&pool,j,id,notices).await?;
     storage_notice(&pool).await;
     pool.close();
     let event=serde_json::json!({"bootStep":"prepare_privileges"});j.record(Step::P5Publish,StepState::Intent,Some(event.clone()))?;
@@ -76,8 +72,63 @@ async fn storage_notice(pool:&deadpool_postgres::Pool){
 }
 fn storage_notice_result(result:Result<(),StepError>){if result.is_err(){eprintln!("[storage] desktop_shared_folder_notice_pending");}}
 fn notice_failed()->StepError{StepError{code:"io_error",message:"업그레이드 알림을 저장하지 못했습니다.",detail:None}}
+pub(super) struct Notices {
+    pub(super) rows: Vec<super::status::UpgradeNotification>,
+    retention_known: bool,
+}
+
+const STALE_BACKUP_NOTICES: &str = "FROM notifications WHERE type = $1
+    AND ($2::text IS NULL OR data->>'backupId' IS DISTINCT FROM $2 OR dedupe_key IS DISTINCT FROM $3)";
+
+pub(super) async fn record_notices(pool: &deadpool_postgres::Pool, j: &mut Journal, id: Step, notices: &Notices) -> Result<(), StepError> {
+    if notices.rows.is_empty() {
+        if !notices.retention_known {
+            return Ok(());
+        }
+        let stale = async {
+            let client = pool.get().await.ok()?;
+            // With no notice to publish, both retained-backup parameters are NULL.
+            let empty: Option<&str> = None;
+            let query = format!("SELECT EXISTS (SELECT 1 {STALE_BACKUP_NOTICES})");
+            let row = client.query_one(query.as_str(), &[&super::status::BACKUP_KEPT_KIND, &empty, &empty]).await.ok()?;
+            row.try_get::<_, bool>(0).ok()
+        }.await;
+        match stale {
+            Some(true) => {}
+            Some(false) => return Ok(()),
+            None => {
+                eprintln!("[upgrade] retained backup notice check unavailable");
+                return Ok(());
+            }
+        }
+    }
+    step(j, id, "upgrade_notifications", async {
+        let mut client = pool.get().await.map_err(|_| notice_failed())?;
+        let transaction = client.transaction().await.map_err(|_| notice_failed())?;
+        publish_notices(&*transaction, notices).await?;
+        transaction.commit().await.map_err(|_| notice_failed())
+    }).await
+}
+
+async fn publish_notices(client: &impl tokio_postgres::GenericClient, notices: &Notices) -> Result<(), StepError> {
+    for notice in &notices.rows {
+        super::status::insert_notification(client, notice).await?;
+    }
+    if notices.retention_known {
+        let backup = notices.rows.iter().find(|notice| notice.kind == super::status::BACKUP_KEPT_KIND);
+        let id = backup.map(|notice| notice.data["backupId"].as_str().ok_or_else(notice_failed)).transpose()?;
+        let key = backup.map(|notice| notice.dedupe_key.as_str());
+        let query = format!("DELETE {STALE_BACKUP_NOTICES}");
+        client.execute(
+            query.as_str(),
+            &[&super::status::BACKUP_KEPT_KIND, &id, &key],
+        ).await.map_err(|_| notice_failed())?;
+    }
+    Ok(())
+}
+
 /// Capture durable notice inputs before this boot's row steps; insert only in the target BootCtx.
-pub(crate) fn notices(roots:&crate::db_upgrade::layout::Roots,j:&Journal)->Result<Vec<super::status::UpgradeNotification>,StepError>{
+pub(super) fn notices(roots:&crate::db_upgrade::layout::Roots,j:&Journal)->Result<Notices,StepError>{
     let mut rows=Vec::new();let attempt=&j.load().attempt_id;
     let consumed=matches!(j.load().outcome,super::Outcome::Restored|super::Outcome::RestoreIncomplete)||j.load().records.iter().any(|r|matches!(r.step,Step::CmdRemoveBackup|Step::CmdRestorePg15)&&r.state==StepState::Done&&r.data.as_ref().and_then(|d|d.get("backupId")).and_then(|v|v.as_str())==Some(attempt.as_str()));
     let retained=(|| ->Result<(),StepError>{
@@ -90,9 +141,11 @@ pub(crate) fn notices(roots:&crate::db_upgrade::layout::Roots,j:&Journal)->Resul
         }
     }}
     Ok(())})();
+    // A failed inspection cannot prove the backup is gone.
+    let retention_known=retained.is_ok();
     if let Err(error)=retained{eprintln!("[upgrade] retained backup notice unavailable: {}",error.code);}
     if j.load().outcome==super::Outcome::ActivationFailed{let failure=super::journal::last_attempt_failure(&j.load().records).ok_or_else(notice_failed)?;rows.push(super::status::activation_failed_notification(attempt,&failure.code));}
-    Ok(rows)
+    Ok(Notices { rows, retention_known })
 }
 
 /// Fresh/ready have no conversion V2 boundary; upgrades call migrate and finish separately.
@@ -100,7 +153,7 @@ pub(crate) fn notices(roots:&crate::db_upgrade::layout::Roots,j:&Journal)->Resul
 pub(crate) async fn prepare(selection:&StorageSelection,current_candidate:&super::journal::Candidate,config:&RuntimeConfig,secrets:&SecretBox,pg:&PrivatePg,locks:&StorageLocks,j:&mut Journal,inputs:Inputs)->Result<Prepared,StepError> {
     if selection.branch==Branch::Upgrade {return Err(StepError{code:"verification_failed",message:"변환한 데이터 검증을 완료한 뒤 시작 준비를 진행해야 합니다.",detail:Some("upgrade_requires_v2_boundary".into())});}
     let migrations_applied=migrate(selection,current_candidate,config,secrets,pg,locks,j).await?;
-    let privileges=finish(selection,config,secrets,pg,locks,j,inputs,&[],crate::publisher::boot::BootMode::Conversion).await?;
+    let privileges=finish(selection,config,secrets,pg,locks,j,inputs,&Notices { rows: Vec::new(), retention_known: true },crate::publisher::boot::BootMode::Conversion).await?;
     Ok(Prepared{privileges,migrations_applied})
 }
 
@@ -121,9 +174,9 @@ mod tests {
     fn inputs()->Inputs {Inputs{admin_email:None,admin_password:None,backfill:None}}
     #[test]
     fn notice_inputs_use_journal_authority_and_never_resurrect_a_removed_backup(){
-        let t=tempfile::tempdir().unwrap();let roots=crate::db_upgrade::layout::Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:"arm64".into()};for path in [&roots.db,&roots.app]{fs::create_dir(path).unwrap();fs::set_permissions(path,fs::Permissions::from_mode(0o700)).unwrap();}let locks=StorageLocks::acquire(&roots.db,&roots.app).unwrap();let mut j=Journal::begin(&roots.app,&locks,Branch::Upgrade,super::super::journal::Candidate{revision:"0".repeat(40),pins_sha256:"1".repeat(64),migrations_sha256:"2".repeat(64)}).unwrap();j.ensure_app_pool().unwrap();j.record(Step::P1Backup,StepState::Done,Some(serde_json::json!({"sourceBytes":123}))).unwrap();assert!(notices(&roots,&j).unwrap().is_empty());
-        let parent=roots.db.join(".nwui-pg15-backup");fs::create_dir(&parent).unwrap();fs::set_permissions(&parent,fs::Permissions::from_mode(0o700)).unwrap();let backup=parent.join(&j.load().attempt_id);fs::create_dir(&backup).unwrap();fs::set_permissions(&backup,fs::Permissions::from_mode(0o700)).unwrap();let rows=notices(&roots,&j).unwrap();assert_eq!(rows.len(),1);assert_eq!(rows[0].data["bytes"],123);assert!(rows[0].body.contains(&j.load().attempt_id));
-        let data=Some(serde_json::json!({"backupId":j.load().attempt_id}));j.record(Step::CmdRemoveBackup,StepState::Intent,data.clone()).unwrap();j.record(Step::CmdRemoveBackup,StepState::Done,data).unwrap();assert!(backup.exists());assert!(notices(&roots,&j).unwrap().is_empty());j.fail_attempt(Step::S4Activate,&StepError{code:"activation_timeout",message:"fixture",detail:None},super::super::Outcome::ActivationFailed,chrono::Utc::now()).unwrap();let rows=notices(&roots,&j).unwrap();assert_eq!(rows.len(),1);assert_eq!(rows[0].kind,"system.db_upgrade_activation_failed");
+        let t=tempfile::tempdir().unwrap();let roots=crate::db_upgrade::layout::Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:"arm64".into()};for path in [&roots.db,&roots.app]{fs::create_dir(path).unwrap();fs::set_permissions(path,fs::Permissions::from_mode(0o700)).unwrap();}let locks=StorageLocks::acquire(&roots.db,&roots.app).unwrap();let mut j=Journal::begin(&roots.app,&locks,Branch::Upgrade,super::super::journal::Candidate{revision:"0".repeat(40),pins_sha256:"1".repeat(64),migrations_sha256:"2".repeat(64)}).unwrap();j.ensure_app_pool().unwrap();j.record(Step::P1Backup,StepState::Done,Some(serde_json::json!({"sourceBytes":123}))).unwrap();assert!(notices(&roots,&j).unwrap().rows.is_empty());
+        let parent=roots.db.join(".nwui-pg15-backup");fs::create_dir(&parent).unwrap();fs::set_permissions(&parent,fs::Permissions::from_mode(0o700)).unwrap();let backup=parent.join(&j.load().attempt_id);fs::create_dir(&backup).unwrap();fs::set_permissions(&backup,fs::Permissions::from_mode(0o700)).unwrap();let rows=notices(&roots,&j).unwrap().rows;assert_eq!(rows.len(),1);assert_eq!(rows[0].data["bytes"],123);assert!(rows[0].body.contains(&j.load().attempt_id));
+        let data=Some(serde_json::json!({"backupId":j.load().attempt_id}));j.record(Step::CmdRemoveBackup,StepState::Intent,data.clone()).unwrap();j.record(Step::CmdRemoveBackup,StepState::Done,data).unwrap();assert!(backup.exists());assert!(notices(&roots,&j).unwrap().rows.is_empty());j.fail_attempt(Step::S4Activate,&StepError{code:"activation_timeout",message:"fixture",detail:None},super::super::Outcome::ActivationFailed,chrono::Utc::now()).unwrap();let rows=notices(&roots,&j).unwrap().rows;assert_eq!(rows.len(),1);assert_eq!(rows[0].kind,"system.db_upgrade_activation_failed");
     }
     #[tokio::test]
     async fn w1_boot_upgrade_cannot_bypass_the_v2_boundary_with_the_composed_ready_path() {
@@ -186,7 +239,7 @@ mod tests {
         let mut selected=base.clone();selected.dbname(&name);let (boundary,driver)=selected.connect(tokio_postgres::NoTls).await.unwrap();tokio::spawn(driver);
         assert_eq!(boundary.query_one("SELECT count(*) FROM users",&[]).await.unwrap().get::<_,i64>(0),0);drop(boundary);
         assert!(!config.target_dns.descriptor_path.exists());assert!(!j.load().records.iter().any(|r|r.step==Step::P5Publish || r.step==Step::S4Prepare));
-        let privileges=finish(&selection,&config,&secrets,&pg,&locks,&mut j,Inputs{admin_email:Some("i1@example.test".into()),admin_password:Some("fixture-password-only".into()),backfill:None},&[],crate::publisher::boot::BootMode::Conversion).await.unwrap();assert!(privileges.payload.is_none() && privileges.key_receipt.is_none());
+        let privileges=finish(&selection,&config,&secrets,&pg,&locks,&mut j,Inputs{admin_email:Some("i1@example.test".into()),admin_password:Some("fixture-password-only".into()),backfill:None},&Notices { rows: Vec::new(), retention_known: true },crate::publisher::boot::BootMode::Conversion).await.unwrap();assert!(privileges.payload.is_none() && privileges.key_receipt.is_none());
         let completed=j.load().records.iter().filter(|r|r.state==StepState::Done).filter_map(|r|r.data.as_ref()?.get("bootStep")?.as_str()).collect::<Vec<_>>();assert_eq!(completed,["run_migrations","preflight_api_port_rows","ensure_instance","seed_admin","dns_preflight","backfill","prepare_privileges"]);
         assert_eq!(prepare(&selection,&current_candidate,&config,&secrets,&pg,&locks,&mut j,inputs()).await.unwrap().migrations_applied,0);let descriptor=fs::read(&config.target_dns.descriptor_path).unwrap();
         let mut selected=base.clone();selected.dbname(&name);let (db,driver)=selected.connect(tokio_postgres::NoTls).await.unwrap();tokio::spawn(driver);

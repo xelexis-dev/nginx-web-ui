@@ -54,7 +54,7 @@ pub struct DatabaseSnapshot {
     pub tables:BTreeMap<String,Table>,pub sequences:BTreeMap<String,String>,pub schema_sha256:String,pub has_encrypted:bool,
 }
 // Released NWUI tables; other application relations require explicit qualification.
-const TABLES:&[&str]=&["certificate_jobs","users","sessions","audit_logs","upstreams","nginx_servers","nginx_streams","config_snapshots","applied_config","certificates","acme_accounts","acme_challenges","app_settings","gateway_tokens","access_tokens","nodes","smtp_settings","notifications","notification_deliveries","mail_recipients","webhook_targets","nginx_metric_samples","metric_hosts","domain_metric_minutes","domain_metric_hours","metric_parse_state","oauth_providers","oauth_accounts"];
+const TABLES:&[&str]=&["certificate_jobs","users","sessions","audit_logs","upstreams","nginx_servers","nginx_streams","config_snapshots","retention_state","applied_config","certificates","acme_accounts","acme_challenges","app_settings","gateway_tokens","access_tokens","nodes","smtp_settings","notifications","notification_deliveries","mail_recipients","webhook_targets","nginx_metric_samples","metric_hosts","domain_metric_minutes","domain_metric_hours","metric_parse_state","oauth_providers","oauth_accounts"];
 fn known_table(schema:&str,name:&str)->bool{(schema=="public"&&TABLES.contains(&name))||(schema=="drizzle"&&name=="__drizzle_migrations")}
 async fn validate_object_catalogs(client:&Client,application:bool,admitted:&Admitted)->Result<()> {
     let catalogs=client.query(OBJECT_CATALOGS_QUERY,&[]).await.map_err(|_|failed())?.into_iter().map(|r|r.get::<_,String>(0)).collect::<Vec<_>>();

@@ -57,7 +57,7 @@ fn obsolete_cli_commands_refuse_before_paths_configuration_or_secrets(){
         let result=std::process::Command::new(env!("CARGO_BIN_EXE_nwui-api")).args(["db-upgrade",command]).env_clear().env("PGROOT","/invalid-root").env("DATA_KEY_FILE","").current_dir(t.path()).output().unwrap();
         assert_eq!(result.status.code(),Some(2),"{command}");
         let error=String::from_utf8(result.stderr).unwrap();
-        assert!(error.contains("2.0.x 최신(2.0.3 이상)"));assert!(error.contains("offline entrypoint"));assert!(error.contains("변경하지 않았습니다"));assert!(result.stdout.is_empty());
+        assert_eq!(error, "requires_2_0_first: 이 명령은 2.1 이상에서 실행할 수 없습니다. 컨테이너를 중지한 뒤 2.0.3 이미지의 오프라인 진입점(nwui-db-upgrade)으로 같은 명령을 실행하세요. 2.0.3 이미지를 정상 시작해 2.1 이상에서 사용한 데이터를 열지 마세요. 기존 데이터는 변경하지 않았습니다.\n");assert!(result.stdout.is_empty());
         assert_eq!(fs::read_dir(t.path()).unwrap().count(),0);
     }
 }

@@ -35,12 +35,3 @@ fn missing_database_or_changed_role_locale_rows_and_secrets_never_verify() {
         assert!(source.require_equivalent(&target).is_err(),"{changed}");
     }
 }
-
-#[test]
-fn relevant_non_c_icu_and_changed_versions_require_reindex_before_refresh() {
-    let mut snapshot=sample("nginx_web_ui");let mut db=snapshot.databases.last().unwrap().clone();
-    assert!(!snapshot.needs_reindex(&db));db.collate="en_US.UTF-8".into();assert!(snapshot.needs_reindex(&db));
-    db.collate="C".into();db.provider="i".into();assert!(snapshot.needs_reindex(&db));db.provider="c".into();
-    snapshot.collations.insert(db.name.clone(),vec![cluster::Collation{schema:"pg_catalog".into(),name:"named".into(),provider:"c".into(),locale:Some("C".into()),recorded:Some("old".into()),actual:Some("new".into())}]);
-    assert!(snapshot.needs_reindex(&db));
-}

@@ -113,10 +113,12 @@ pub(crate) struct UpgradeNotification {
     pub kind: &'static str, pub severity: &'static str, pub title: &'static str,
     pub body: String, pub dedupe_key: String, pub data: serde_json::Value,
 }
+pub(super) const BACKUP_KEPT_KIND: &str = "system.db_upgrade_backup_kept";
+
 pub(crate) fn backup_kept_notification(backup: &super::types::RetainedCopy, location: &str) -> UpgradeNotification {
     UpgradeNotification {
-        kind:"system.db_upgrade_backup_kept", severity:"info", title:"PG15 백업을 보관하고 있습니다",
-        body:format!("업그레이드 전 PG15 데이터 백업({} 바이트)을 {location}에 보관하고 있습니다. 자동으로 지우지 않습니다. 1.19.11로 되돌리려면 컨테이너를 중지하고 2.0.x 최신(2.0.3 이상) 이미지의 offline entrypoint로 restore-pg15를 실행하세요. 복원하면 업그레이드 이후의 변경은 사라집니다. 2.0 이미지를 정상 시작해 2.1 데이터를 열지 마세요. 되돌릴 필요가 없으면 컨테이너를 중지하고 같은 볼륨으로 {} 명령을 실행해 지울 수 있습니다. 자세한 절차는 업그레이드 안내를 참고하세요.",backup.bytes,backup.remove_command),
+        kind:BACKUP_KEPT_KIND, severity:"info", title:"PG15 백업을 보관하고 있습니다",
+        body:format!("업그레이드 전 PG15 데이터 백업({} 바이트)을 {location}에 보관하고 있습니다. 자동으로 지우지 않습니다. 1.19.11로 되돌리려면 컨테이너를 중지하고 2.0.3 이미지의 오프라인 진입점으로 restore-pg15를 실행하세요. 복원하면 업그레이드 이후의 변경은 사라집니다. 2.0.3 이미지를 정상 시작해 2.1 이상에서 사용한 데이터를 열지 마세요. 되돌릴 필요가 없으면 컨테이너를 중지하고 같은 볼륨으로 {} 명령을 실행해 지울 수 있습니다. 자세한 절차는 업그레이드 안내를 참고하세요.",backup.bytes,backup.remove_command),
         dedupe_key:format!("db-upgrade-backup:{}",backup.id),data:serde_json::json!({"backupId":backup.id,"bytes":backup.bytes}),
     }
 }
@@ -232,9 +234,7 @@ pub(crate) mod tests {
         let value=sample();let backup=value.backup.as_ref().unwrap();let kept=backup_kept_notification(backup,"/var/lib/postgresql/data/.nwui-pg15-backup/kept");
         assert_eq!((kept.kind,kept.severity,kept.title),("system.db_upgrade_backup_kept","info","PG15 백업을 보관하고 있습니다"));
         assert_eq!(kept.dedupe_key,"db-upgrade-backup:kept");assert_eq!(kept.data,serde_json::json!({"backupId":"kept","bytes":2048}));
-        assert!(kept.body.contains("2.0.x 최신(2.0.3 이상) 이미지의 offline entrypoint"));
-        assert!(kept.body.contains("2.0 이미지를 정상 시작해 2.1 데이터를 열지 마세요"));
-        assert!(kept.body.contains("remove-pg15-backup --confirm kept"));
+        assert_eq!(kept.body,"업그레이드 전 PG15 데이터 백업(2048 바이트)을 /var/lib/postgresql/data/.nwui-pg15-backup/kept에 보관하고 있습니다. 자동으로 지우지 않습니다. 1.19.11로 되돌리려면 컨테이너를 중지하고 2.0.3 이미지의 오프라인 진입점으로 restore-pg15를 실행하세요. 복원하면 업그레이드 이후의 변경은 사라집니다. 2.0.3 이미지를 정상 시작해 2.1 이상에서 사용한 데이터를 열지 마세요. 되돌릴 필요가 없으면 컨테이너를 중지하고 같은 볼륨으로 nwui-db-upgrade remove-pg15-backup --confirm kept 명령을 실행해 지울 수 있습니다. 자세한 절차는 업그레이드 안내를 참고하세요.");
         let failed=activation_failed_notification("attempt","activation_failed");
         assert_eq!((failed.kind,failed.severity,failed.title),("system.db_upgrade_activation_failed","error","업그레이드 후 서비스 시작에 실패했습니다"));
         assert_eq!(failed.dedupe_key,"db-upgrade-activation:attempt:activation_failed");
@@ -398,7 +398,9 @@ pub(crate) mod tests {
 
 #[cfg(test)]mod desktop_shared_database_tests{
  use super::*;
- #[tokio::test]async fn desktop_shared_notice_dedupe_and_insert_failure_are_nonfatal(){
+ #[tokio::test]
+ #[ignore = "real DB: set NWUI_TEST_DATABASE_URL"]
+ async fn desktop_shared_notice_dedupe_and_insert_failure_are_nonfatal(){
   let Ok(url)=std::env::var("NWUI_TEST_DATABASE_URL")else{eprintln!("SKIP desktop_shared_notice_dedupe: database profile absent");return};
   let(mut db,connection)=tokio_postgres::connect(&url,tokio_postgres::NoTls).await.unwrap();let task=tokio::spawn(connection);
   let tx=db.transaction().await.unwrap();let schema=format!("shared_{}",uuid::Uuid::new_v4().simple());

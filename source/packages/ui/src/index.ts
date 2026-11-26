@@ -8,7 +8,7 @@ export {
   type ButtonVariant,
 } from "./button";
 export { Combobox, type ComboboxOption, type ComboboxProps } from "./combobox";
-export { Modal } from "./modal";
+export { Modal, modalTargetClassName } from "./modal";
 export type { ModalProps } from "./modal";
 export { ConfirmDialog, type ConfirmDialogProps } from "./confirm-dialog";
 export { Select, type SelectOption, type SelectProps } from "./select";

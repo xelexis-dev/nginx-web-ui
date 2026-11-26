@@ -21,17 +21,6 @@ export default defineConfig({
   oxc: {
     jsx: { runtime: "automatic" },
   },
-  // `next@16.3.0` 은 package.json 에 `exports` 필드가 없다. next-auth 의
-  // lib/env.js 는 확장자 없이 `import ... from "next/server"` 를 쓰는데,
-  // `exports` 가 없으면 엄격 ESM 로더(Vite 의 SSR 외부화 경로가 그대로
-  // 넘기는 Node 네이티브 로더 포함)가 확장자를 자동으로 붙여주지 않아
-  // 그 임포트가 풀리지 않는다(`node -e "import('next-auth')"` 로 vitest 와
-  // 무관하게 재현됨). `noExternal` 로 next-auth 를 Vite 번들링 경로에 넣으면
-  // Vite 자체 리졸버가 확장자를 찾아 붙여 해결된다. next 가 `exports` 필드를
-  // 갖는 버전으로 오르면 이 줄은 지워도 된다 — 그때 다시 깨지는지 확인할 것.
-  ssr: {
-    noExternal: ["next-auth"],
-  },
   test: {
     /**
      * **검사의 타임존을 고정한다. 그리고 UTC 로 고정하지 않는다.**

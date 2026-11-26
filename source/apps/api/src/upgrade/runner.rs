@@ -599,7 +599,7 @@ mod tests {
     fn g34_kept_a8_defers_proof_without_failing_activation(){
         let(t,_locks,mut j)=journal();let identity="a".repeat(64);let generation=uuid::Uuid::new_v4().to_string();j.set_outcome(Outcome::Pg17).unwrap();j.handoff(Handoff::Intent,&identity).unwrap();j.handoff(Handoff::Done,&identity).unwrap();j.record(Step::Phase2Monitor,StepState::Intent,None).unwrap();let before=j.load().records.len();
         assert!(!record_monitor_result(&mut j,&identity,&generation,Ok(()),true).unwrap());assert_eq!(j.load().records.len(),before);assert_eq!(j.load().outcome,Outcome::Pg17);assert!(!activation_proof(&j,&identity,&generation));assert!(!j.load().records.iter().any(|r|matches!(r.state,StepState::Failed{..})||r.step==Step::P6Cleanup));
-        let roots=crate::db_upgrade::layout::Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:"arm64".into()};assert!(super::super::refusal::status_value(&roots,j.load(),Outcome::Pg17,&j.load().candidate,None).unwrap().failure.is_none());assert!(!super::super::boot::notices(&roots,&j).unwrap().iter().any(|n|n.kind=="system.db_upgrade_activation_failed"));
+        let roots=crate::db_upgrade::layout::Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:"arm64".into()};assert!(super::super::refusal::status_value(&roots,j.load(),Outcome::Pg17,&j.load().candidate,None).unwrap().failure.is_none());assert!(!super::super::boot::notices(&roots,&j).unwrap().rows.iter().any(|n|n.kind=="system.db_upgrade_activation_failed"));
     }
     #[test]
     fn g34_retry_and_next_boot_reobserve_before_creating_cleanup_proof(){
@@ -715,7 +715,7 @@ mod tests {
     #[test]
     fn a_new_boots_privilege_refusal_replaces_an_old_activation_receipt_atomically(){
         let(t,l,mut j)=journal();let error=StepError{code:"boot_step_failed",message:"fixture",detail:None};let old="a".repeat(64);j.fail_attempt_with_identity(Step::S4Activate,&error,Outcome::ActivationFailed,chrono::Utc::now(),Some(&old)).unwrap();let seq=j.load().records.last().unwrap().seq;let identity="b".repeat(64);j.fail_attempt_with_identity(Step::Y2,&error,Outcome::RefusedPrivilege,chrono::Utc::now(),Some(&identity)).unwrap();let opened=Journal::open(&t.path().join("app"),&l).unwrap();assert_eq!(opened.load().records.last().unwrap().seq,seq+2);assert_eq!(boot_plan(opened.load(),Some(&identity)),BootPlan::ParkedRefusal);assert_eq!(boot_plan(opened.load(),Some(&old)),BootPlan::Phase1);
-        let roots=crate::db_upgrade::layout::Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:"arm64".into()};let status=super::super::refusal::status_value(&roots,opened.load(),Outcome::RefusedPrivilege,&opened.load().candidate,None).unwrap();assert_eq!(status.failure.as_ref().unwrap().message,"PG17 데이터는 변경되지 않았습니다 — 원인을 해결하고 재시작하세요");assert!(!serde_json::to_string(&status).unwrap().contains("restore-pg15"));assert!(super::super::boot::notices(&roots,&opened).unwrap().is_empty());
+        let roots=crate::db_upgrade::layout::Roots{db:t.path().join("db"),app:t.path().join("app"),architecture:"arm64".into()};let status=super::super::refusal::status_value(&roots,opened.load(),Outcome::RefusedPrivilege,&opened.load().candidate,None).unwrap();assert_eq!(status.failure.as_ref().unwrap().message,"PG17 데이터는 변경되지 않았습니다 — 원인을 해결하고 재시작하세요");assert!(!serde_json::to_string(&status).unwrap().contains("restore-pg15"));assert!(super::super::boot::notices(&roots,&opened).unwrap().rows.is_empty());
     }
     #[test]
     fn cleanup_retry_with_injected_clock_waits_fifteen_minutes_and_can_be_taken_only_once(){

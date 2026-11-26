@@ -4,7 +4,7 @@ use crate::db_upgrade::layout::Roots;
 use std::{fs::File, io, os::{fd::{AsRawFd, FromRawFd}, unix::fs::MetadataExt}, path::Path};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Kind { Restore, RemoveBackup, RemoveDiscarded }
+enum Kind { RemoveBackup, RemoveDiscarded }
 #[derive(Debug)]
 struct Command { kind: Kind, id: String }
 #[derive(Debug, PartialEq, Eq)]
@@ -15,9 +15,8 @@ fn refuse(code: &'static str, message: &'static str) -> StepError {
 }
 
 fn parse(command: &str, args: &[String]) -> Result<Command, StepError> {
-    let invalid = || refuse("invalid_arguments", "명령과 확인 인자를 확인하세요: restore-pg15 --confirm-loss <보관 ID>, remove-pg15-backup --confirm <보관 ID>, remove-discarded --confirm <보관 ID>.");
+    let invalid = || refuse("invalid_arguments", "명령과 확인 인자를 확인하세요: remove-pg15-backup --confirm <보관 ID>, remove-discarded --confirm <보관 ID>.");
     let (kind, flag) = match command {
-        "restore-pg15" => (Kind::Restore, "--confirm-loss"),
         "remove-pg15-backup" => (Kind::RemoveBackup, "--confirm"),
         "remove-discarded" => (Kind::RemoveDiscarded, "--confirm"),
         _ => return Err(invalid()),
@@ -39,11 +38,9 @@ fn open(roots: &Roots) -> Result<(StorageLocks, Journal), StepError> {
 pub(crate) async fn run(command:&str,args:&[String])->Result<String,StepError> {
     if command=="restore-pg15"{return Err(super::legacy::required());}
     let command=parse(command,args)?;
-    // A completed restore must still drain reserves even when image metadata is unavailable.
-    let candidate=if command.kind==Kind::Restore {Some(super::journal::Candidate::current().await)}else{None};
     tokio::task::spawn_blocking(move||{
         let roots=crate::db_upgrade::storage::roots().map_err(|error|StepError{code:error.code,message:error.message,detail:None})?;
-        execute(&roots,command,candidate)
+        execute(&roots,command)
     }).await.map_err(|_|refuse("boot_step_failed","관리 명령을 완료하지 못했습니다. 보관 기록을 확인하고 같은 명령을 다시 실행하세요."))?
 }
 
@@ -54,12 +51,11 @@ fn target_identifier(path:&Path)->Result<String,StepError> {
     Ok(control.system_identifier)
 }
 
-fn execute(roots:&Roots,command:Command,candidate:Option<Result<super::journal::Candidate,StepError>>)->Result<String,StepError> {
+fn execute(roots:&Roots,command:Command)->Result<String,StepError> {
     let (locks,mut journal)=open(roots)?;
     match command.kind {
         Kind::RemoveBackup=>remove_backup(roots,&locks,&mut journal,&command.id),
         Kind::RemoveDiscarded=>remove_discarded_with(roots,&locks,&mut journal,&command.id,&target_identifier),
-        Kind::Restore=>Err(super::legacy::required()),
     }
 }
 
@@ -238,6 +234,132 @@ mod tests {
         let sequence=j.load().records.len();assert!(remove_backup(&roots,&locks,&mut j,&id).unwrap().contains("이미 삭제했습니다"));assert_eq!(j.load().records.len(),sequence);
     }
 
+    #[tokio::test]
+    #[ignore = "real DB: set NWUI_TEST_DATABASE_URL"]
+    async fn boot_reconciles_backup_notices_after_offline_removal() {
+        use super::super::{boot, status};
+        let Ok(url) = std::env::var("NWUI_TEST_DATABASE_URL") else {
+            eprintln!("SKIP backup notice reconciliation: database profile absent");
+            return;
+        };
+        let mut config: tokio_postgres::Config = url.parse().unwrap();
+        let (admin, connection) = config.connect(tokio_postgres::NoTls).await.unwrap();
+        let driver = tokio::spawn(connection);
+        let name = format!("backup_notice_{}", uuid::Uuid::new_v4().simple());
+        admin.batch_execute(&format!("CREATE DATABASE {name}")).await.unwrap();
+        config.dbname(&name);
+        let pool = deadpool_postgres::Pool::builder(deadpool_postgres::Manager::new(config.clone(), tokio_postgres::NoTls))
+            .build().unwrap();
+        let migrations = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packages/db/drizzle");
+        crate::migrations::run(&pool, &migrations).await.unwrap();
+        let db = pool.get().await.unwrap();
+
+        async fn backup_rows(db: &tokio_postgres::Client) -> Vec<(String, String, String)> {
+            db.query("SELECT id, data->>'backupId', body FROM notifications WHERE type=$1", &[&status::BACKUP_KEPT_KIND])
+                .await.unwrap().into_iter().map(|row| (row.get(0), row.get(1), row.get(2))).collect()
+        }
+        async fn publish_boot(pool: &deadpool_postgres::Pool, roots: &Roots, journal: &mut Journal) {
+            let step = if journal.load().branch == Branch::Upgrade { Step::P4Target } else { Step::Y2 };
+            let notices = boot::notices(roots, journal).unwrap();
+            boot::record_notices(pool, journal, step, &notices).await.unwrap();
+        }
+
+        let fresh_dir = tempfile::tempdir().unwrap();
+        let fresh = Roots { db: fresh_dir.path().join("db"), app: fresh_dir.path().join("app"), architecture: "arm64".into() };
+        for path in [&fresh.db, &fresh.app] { crate::db_upgrade::files::private_dir(path).unwrap(); }
+        let fresh_locks = StorageLocks::acquire(&fresh.db, &fresh.app).unwrap();
+        let (_temp, roots, locks, mut journal, _) = backup_fixture();
+        let mut fresh_journal = Journal::begin(&fresh.app, &fresh_locks, Branch::Fresh, journal.load().candidate.clone()).unwrap();
+        let fresh_count = fresh_journal.load().records.len();
+        publish_boot(&pool, &fresh, &mut fresh_journal).await;
+        assert_eq!(fresh_journal.load().records.len(), fresh_count);
+        assert!(backup_rows(&db).await.is_empty());
+
+        config.options("-c search_path=pg_catalog");
+        let bad_pool = deadpool_postgres::Pool::builder(deadpool_postgres::Manager::new(config, tokio_postgres::NoTls))
+            .build().unwrap();
+        publish_boot(&bad_pool, &fresh, &mut fresh_journal).await;
+        assert_eq!(fresh_journal.load().records.len(), fresh_count, "pre-check query error");
+        bad_pool.close();
+        publish_boot(&bad_pool, &fresh, &mut fresh_journal).await;
+        assert_eq!(fresh_journal.load().records.len(), fresh_count, "pre-check pool error");
+
+        let activation = status::activation_failed_notification("activation", "activation_failed");
+        status::insert_notification(&**db, &activation).await.unwrap();
+        let mut other = status::activation_failed_notification("other", "fixture");
+        other.kind = "system.fixture_other";
+        status::insert_notification(&**db, &other).await.unwrap();
+        let unrelated = "SELECT id, type, body FROM notifications WHERE type<>$1 ORDER BY type";
+        let original_unrelated = db.query(unrelated, &[&status::BACKUP_KEPT_KIND]).await.unwrap();
+
+        let id = journal.load().attempt_id.clone();
+        publish_boot(&pool, &roots, &mut journal).await;
+        let original = backup_rows(&db).await;
+        assert_eq!(original.len(), 1);
+        assert_eq!(original[0].1, id);
+        assert_eq!(original[0].2, boot::notices(&roots, &journal).unwrap().rows[0].body);
+        publish_boot(&pool, &roots, &mut journal).await;
+        assert_eq!(backup_rows(&db).await, original);
+
+        let activation_id: String = original_unrelated[0].get(0);
+        db.execute(
+            "INSERT INTO notification_deliveries (id,notification_id,channel,target_id)
+             VALUES ('backup-delivery',$1,'webhook','target'), ('other-delivery',$2,'webhook','target')",
+            &[&original[0].0, &activation_id],
+        ).await.unwrap();
+
+        drop(journal);
+        drop(locks);
+        let command = parse("remove-pg15-backup", &["--confirm".into(), id.clone()]).unwrap();
+        execute(&roots, command).unwrap();
+        assert!(!roots.db.join(".nwui-pg15-backup").join(&id).exists());
+        assert_eq!(backup_rows(&db).await, original, "the offline command does not write notifications");
+        for expected_delta in [2, 0] {
+            let (_locks, mut journal) = open(&roots).unwrap();
+            let before = journal.load().records.last().unwrap().seq;
+            publish_boot(&pool, &roots, &mut journal).await;
+            assert!(backup_rows(&db).await.is_empty());
+            assert_eq!(journal.load().records.last().unwrap().seq, before + expected_delta);
+            let deliveries = db.query("SELECT id FROM notification_deliveries ORDER BY id", &[]).await.unwrap();
+            assert_eq!(deliveries.len(), 1);
+            assert_eq!(deliveries[0].get::<_, String>(0), "other-delivery");
+        }
+
+        let (_temp, next_roots, _locks, mut next_journal, _) = backup_fixture();
+        let next_id = next_journal.load().attempt_id.clone();
+        db.execute(
+            "INSERT INTO notifications (id,type,severity,title,data,dedupe_key) VALUES
+             ('old',$1,'info','old',jsonb_build_object('backupId',$2::text),'old-key'),
+             ('duplicate',$1,'info','duplicate',jsonb_build_object('backupId',$3::text),NULL),
+             ('malformed',$1,'info','malformed','{}',NULL)",
+            &[&status::BACKUP_KEPT_KIND, &id, &next_id],
+        ).await.unwrap();
+        publish_boot(&pool, &next_roots, &mut next_journal).await;
+        let current = backup_rows(&db).await;
+        assert_eq!(current.len(), 1);
+        assert_eq!(current[0].1, next_id);
+
+        let backup = next_roots.db.join(".nwui-pg15-backup").join(&next_id);
+        let moved = backup.with_extension("actual");
+        fs::rename(&backup, &moved).unwrap();
+        std::os::unix::fs::symlink(&moved, &backup).unwrap();
+        publish_boot(&pool, &next_roots, &mut next_journal).await;
+        assert_eq!(backup_rows(&db).await, current, "a failed lookup does not prove removal");
+
+        let remaining = db.query(unrelated, &[&status::BACKUP_KEPT_KIND]).await.unwrap();
+        assert_eq!(remaining.len(), original_unrelated.len());
+        for (actual, expected) in remaining.iter().zip(original_unrelated) {
+            for field in 0..3 {
+                assert_eq!(actual.get::<_, String>(field), expected.get::<_, String>(field));
+            }
+        }
+        drop(db);
+        pool.close();
+        admin.batch_execute(&format!("DROP DATABASE {name} WITH (FORCE)")).await.unwrap();
+        drop(admin);
+        driver.await.unwrap().unwrap();
+    }
+
     #[test]
     fn backup_removal_kill_child() {
         let Some(root)=std::env::var_os("NWUI_OPERATOR_BACKUP_FIXTURE") else {return;};let root=std::path::PathBuf::from(root);
@@ -272,9 +394,9 @@ mod tests {
         assert_eq!(super::super::runner::initial_journal(&roots.app).unwrap_err().code, "pair_mismatch");
         drop(locks);
         let arguments = ["--confirm".into(), id.clone()];
-        execute(&roots, parse("remove-pg15-backup", &arguments).unwrap(), None).unwrap();
+        execute(&roots, parse("remove-pg15-backup", &arguments).unwrap()).unwrap();
         assert!(super::super::runner::initial_journal(&roots.app).is_ok());
-        execute(&roots, parse("remove-pg15-backup", &arguments).unwrap(), None).unwrap();
+        execute(&roots, parse("remove-pg15-backup", &arguments).unwrap()).unwrap();
         let (_locks, mut j) = open(&roots).unwrap();
         assert!(!backup.exists());
         assert_eq!(j.load().records.iter().filter(|r| r.step == Step::CmdRemoveBackup && r.state == StepState::Done).count(), 1);
@@ -366,10 +488,11 @@ mod tests {
     #[test]
     fn parsing_requires_the_exact_confirmation_and_one_canonical_id() {
         let id = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee".to_string();
-        for (name, flag) in [("restore-pg15", "--confirm-loss"), ("remove-pg15-backup", "--confirm"), ("remove-discarded", "--confirm")] {
+        let flag = "--confirm";
+        for (name, kind) in [("remove-pg15-backup", Kind::RemoveBackup), ("remove-discarded", Kind::RemoveDiscarded)] {
             let parsed = parse(name, &[flag.into(), id.clone()]).unwrap();
             assert_eq!(parsed.id, id);
-            assert_eq!(parsed.kind, match name { "restore-pg15" => Kind::Restore, "remove-pg15-backup" => Kind::RemoveBackup, _ => Kind::RemoveDiscarded });
+            assert_eq!(parsed.kind, kind);
             for args in [vec![], vec![id.clone()], vec!["--wrong".into(), id.clone()], vec![flag.into(), "../other".into()], vec![flag.into(), id.clone(), "extra".into()], vec![flag.into(), id.to_uppercase()]] {
                 assert_eq!(parse(name, &args).unwrap_err().code, "invalid_arguments");
             }
@@ -463,7 +586,7 @@ mod tests {
       let mut saved=serde_json::to_value(j.load()).unwrap();for record in saved["records"].as_array_mut().unwrap(){if record["step"]=="p5-commit"&&record["state"]["kind"]=="intent"{record["data"]["selectorSha256"]=super::super::selector::digest(&selected_bytes).into();}}
       crate::db_upgrade::files::atomic_json(&roots.app.join(".nwui-auto/journal-v1.json"),&saved).unwrap();j=Journal::open(&roots.app,&locks).unwrap();
       let pg=postgres::Private::start(17,&roots.db.join("17/data"),&log).unwrap();let session=inspect::connect(&pg.socket,"postgres","postgres",None).await.unwrap();session.client.batch_execute("SET default_transaction_read_only=off").await.unwrap();session.client.batch_execute("CREATE TABLE public.kept(value text);INSERT INTO public.kept VALUES('before backup removal')").await.unwrap();let snapshot="SELECT jsonb_build_object('databases',(SELECT jsonb_agg(to_jsonb(t)) FROM (SELECT oid,datname,datdba,datallowconn FROM pg_database ORDER BY oid)t),'roles',(SELECT jsonb_agg(to_jsonb(t)) FROM (SELECT rolname,rolsuper,rolcanlogin FROM pg_roles ORDER BY rolname)t),'columns',(SELECT jsonb_agg(to_jsonb(t)) FROM (SELECT table_name,column_name,data_type FROM information_schema.columns WHERE table_schema='public' ORDER BY table_name,ordinal_position)t),'rows',(SELECT jsonb_agg(value ORDER BY value) FROM public.kept))";let before:serde_json::Value=session.client.query_one(snapshot,&[]).await.unwrap().get(0);drop(session);pg.stop().unwrap();
-      crate::db_upgrade::files::private_dir(&roots.app.join("secrets")).unwrap();let key=roots.app.join("secrets/data_key");fs::write(&key,[7u8;32]).unwrap();fs::set_permissions(&key,fs::Permissions::from_mode(0o600)).unwrap();let canonical=fs::read(&key).unwrap();let id=j.load().attempt_id.clone();drop(j);drop(locks);execute(&roots,parse("remove-pg15-backup",&["--confirm".into(),id.clone()]).unwrap(),None).unwrap();assert!(!roots.db.join(".nwui-pg15-backup").join(&id).exists());assert_eq!(fs::read(&key).unwrap(),canonical);
+      crate::db_upgrade::files::private_dir(&roots.app.join("secrets")).unwrap();let key=roots.app.join("secrets/data_key");fs::write(&key,[7u8;32]).unwrap();fs::set_permissions(&key,fs::Permissions::from_mode(0o600)).unwrap();let canonical=fs::read(&key).unwrap();let id=j.load().attempt_id.clone();drop(j);drop(locks);execute(&roots,parse("remove-pg15-backup",&["--confirm".into(),id.clone()]).unwrap()).unwrap();assert!(!roots.db.join(".nwui-pg15-backup").join(&id).exists());assert_eq!(fs::read(&key).unwrap(),canonical);
       let after=t.path().join("after-removal");postgres::directory(&after).unwrap();let pg=postgres::Private::start(17,&roots.db.join("17/data"),&after).unwrap();let session=inspect::connect(&pg.socket,"postgres","postgres",None).await.unwrap();assert_eq!(session.client.query_one(snapshot,&[]).await.unwrap().get::<_,serde_json::Value>(0),before);drop(session);pg.stop().unwrap();assert_eq!(super::super::journal::read_only(&roots.app).unwrap().records.iter().filter(|r|r.step==Step::CmdRemoveBackup&&r.state==StepState::Done).count(),1);
     }
 

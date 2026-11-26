@@ -610,6 +610,135 @@
         "description": "User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After."
       }
     },
+    "/api/ui/v1/admin/settings/retention": {
+      "get": {
+        "operationId": "readRetentionSettings",
+        "security": [
+          {
+            "browserSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized safe response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetentionSettingsView"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/ApiError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ApiError"
+          },
+          "503": {
+            "$ref": "#/components/responses/ApiError"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateRetentionSettings",
+        "security": [
+          {
+            "browserSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized safe response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetentionSettingsSaved"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/ApiError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ApiError"
+          },
+          "503": {
+            "$ref": "#/components/responses/ApiError"
+          },
+          "400": {
+            "$ref": "#/components/responses/ApiError"
+          },
+          "415": {
+            "$ref": "#/components/responses/ApiError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ApiError"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/RetentionInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ui/v1/admin/settings/retention/estimate": {
+      "get": {
+        "operationId": "estimateRetentionSettings",
+        "security": [
+          {
+            "browserSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized safe response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetentionEstimates"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/ApiError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ApiError"
+          },
+          "503": {
+            "$ref": "#/components/responses/ApiError"
+          },
+          "400": {
+            "$ref": "#/components/responses/ApiError"
+          }
+        },
+        "parameters": [
+          {
+            "name": "auditRetentionDays",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "historyRetentionDays",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/ui/v1/admin/secrets": {
       "get": {
         "operationId": "readSecretsHealth",
@@ -11359,7 +11488,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -11586,7 +11715,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -11756,7 +11885,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -12026,7 +12155,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -12266,7 +12395,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -12496,7 +12625,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -12672,7 +12801,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -12901,7 +13030,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -13077,7 +13206,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -13333,7 +13462,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -13563,7 +13692,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -13739,7 +13868,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -14000,7 +14129,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -14201,7 +14330,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -14490,7 +14619,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -14719,7 +14848,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -15024,7 +15153,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -15200,7 +15329,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -15461,7 +15590,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -15799,7 +15928,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -16071,7 +16200,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -16272,7 +16401,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -16545,7 +16674,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -16774,7 +16903,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -17079,7 +17208,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -17255,7 +17384,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -17516,7 +17645,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -17854,7 +17983,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -18126,7 +18255,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -18327,7 +18456,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -18600,7 +18729,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -18829,7 +18958,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -19134,7 +19263,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -19310,7 +19439,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -19571,7 +19700,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -19909,7 +20038,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -20181,7 +20310,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -20382,7 +20511,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -20611,7 +20740,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -20858,7 +20987,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -21034,7 +21163,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -21282,7 +21411,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -21543,7 +21672,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -21822,7 +21951,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -22094,7 +22223,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -22295,7 +22424,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -22592,7 +22721,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -22890,7 +23019,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -23187,7 +23316,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -23474,7 +23603,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -23771,7 +23900,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -24076,7 +24205,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "range",
@@ -24315,7 +24444,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "range",
@@ -24500,7 +24629,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "page",
@@ -24747,7 +24876,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "page",
@@ -24941,7 +25070,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -25202,7 +25331,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "id",
@@ -25403,7 +25532,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "file",
@@ -25651,7 +25780,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           },
           {
             "name": "file",
@@ -27036,7 +27165,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Gateway product version. Major.minor must match, except that 2.0.x and 1.19.x are compatible. Missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
+            "description": "Gateway product version. The gateway and node must have the same major version, and the gateway's minor version must be at least the node's minor version. A missing, malformed or incompatible version returns 409 before authentication. Patch version is ignored."
           }
         ],
         "responses": {
@@ -33274,6 +33403,16 @@
           },
           "actionFilter": {
             "type": "string"
+          },
+          "lastCleanup": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RetentionCleanup"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         }
       },
@@ -33357,6 +33496,16 @@
               "showDetails": {
                 "const": true,
                 "type": "boolean"
+              },
+              "lastCleanup": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RetentionCleanup"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             }
           }
@@ -33480,6 +33629,9 @@
           "iso": {
             "type": "string",
             "format": "date-time"
+          },
+          "previousPruned": {
+            "type": "boolean"
           }
         }
       },
@@ -34493,6 +34645,222 @@
           },
           "name": {
             "type": "string"
+          }
+        }
+      },
+      "RetentionInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "auditRetentionDays",
+          "historyRetentionDays",
+          "expectedAuditRetentionDays",
+          "expectedHistoryRetentionDays"
+        ],
+        "properties": {
+          "auditRetentionDays": {
+            "type": "string"
+          },
+          "historyRetentionDays": {
+            "type": "string"
+          },
+          "expectedAuditRetentionDays": {
+            "type": "string",
+            "description": "Value last read by this browser, empty when disabled. A changed policy returns 409."
+          },
+          "expectedHistoryRetentionDays": {
+            "type": "string",
+            "description": "Value last read by this browser, empty when disabled. A changed policy returns 409."
+          }
+        }
+      },
+      "RetentionSettingsSaved": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schedulesCleanup"
+        ],
+        "properties": {
+          "schedulesCleanup": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RetentionCleanup": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "at",
+          "deleted"
+        ],
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deleted": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "RetentionFailure": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "at",
+          "message",
+          "deleted"
+        ],
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "message": {
+            "type": "string"
+          },
+          "deleted": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "RetentionCollectionView": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "days",
+          "count",
+          "oldestAt",
+          "lastCleanup",
+          "nextRunAt",
+          "remaining",
+          "lastFailure",
+          "status"
+        ],
+        "properties": {
+          "days": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "oldestAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "lastCleanup": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RetentionCleanup"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "nextRunAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "remaining": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "lastFailure": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RetentionFailure"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "off",
+              "waiting",
+              "running",
+              "done",
+              "failed"
+            ]
+          }
+        }
+      },
+      "RetentionSettingsView": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "audit",
+          "history"
+        ],
+        "properties": {
+          "audit": {
+            "$ref": "#/components/schemas/RetentionCollectionView"
+          },
+          "history": {
+            "$ref": "#/components/schemas/RetentionCollectionView"
+          }
+        }
+      },
+      "RetentionEstimate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "cutoff",
+          "deleted"
+        ],
+        "properties": {
+          "cutoff": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deleted": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "RetentionEstimates": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "audit",
+          "history"
+        ],
+        "properties": {
+          "audit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RetentionEstimate"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "history": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RetentionEstimate"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         }
       }

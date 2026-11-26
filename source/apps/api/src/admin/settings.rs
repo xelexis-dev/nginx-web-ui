@@ -5,15 +5,17 @@
 //! Change vs TS (stricter): `metricsRetentionDays` accepts decimal integers only (TS `Number()`
 //! also took `1e2`).
 
+use chrono::{DateTime, Utc};
 use serde::Serialize;
 use serde_json::{Value, json};
 
-use super::{AdminResult, field, unavailable};
+use super::{AdminError, AdminResult, field, unavailable};
 use crate::auth::audit::{self, AuditEntry};
 use crate::auth::principal::{SessionPrincipal, UserPrincipal};
 use crate::contracts::FormInput;
 use crate::crypto::js_trim;
 use crate::request_context::RequestContext;
+use crate::retention::{self, Collection};
 use crate::state::AppState;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
@@ -112,4 +114,148 @@ pub async fn update_metrics(state: &AppState, actor: &UserPrincipal, ctx: &Reque
         None => "보존 기간을 무제한으로 설정했습니다.".to_owned(),
         Some(days) => format!("보존 기간을 {days}일로 설정했습니다."),
     })
+}
+
+
+fn retention_days(collection: Collection, raw: &str) -> AdminResult<Option<i32>> {
+    let raw = js_trim(raw);
+    if raw.is_empty() {
+        return Ok(None);
+    }
+    let days = raw.bytes().all(|b| b.is_ascii_digit())
+        .then(|| raw.parse::<i32>().ok()).flatten()
+        .filter(|d| (collection.minimum()..=3650).contains(d));
+    days.map(Some).ok_or_else(|| field(collection.field(), format!(
+        "{} 보존 기간은 {} 이상 3650 이하의 정수여야 합니다(비우면 무제한).",
+        collection.label(), collection.minimum(),
+    )))
+}
+
+pub async fn retention_view(state: &AppState) -> AdminResult<Value> {
+    let mut client = state.db.get().await.map_err(unavailable)?;
+    let tx = client.build_transaction()
+        .isolation_level(tokio_postgres::IsolationLevel::RepeatableRead)
+        .read_only(true).start().await.map_err(unavailable)?;
+    let mut view = json!({});
+    for collection in Collection::ALL {
+        let table = collection.table();
+        let policy = collection.policy();
+        let sql = format!(
+            "SELECT s.{policy}, (SELECT count(*) FROM {table}), (SELECT min(created_at) FROM {table}),
+                 r.last_cleanup_at, r.last_cleanup_count, r.next_run_at, r.failure_at, r.failure_message, r.failure_count,
+                 r.first_run_pending, r.run_started_at > now()-interval '5 minutes', r.last_run_at, now()-make_interval(days=>s.{policy})
+             FROM retention_state r LEFT JOIN app_settings s ON s.id='current' WHERE r.collection=$1"
+        );
+        let row = tx.query_one(&sql, &[&collection.key()]).await.map_err(unavailable)?;
+        let days: Option<i32> = row.get(0);
+        let cutoff: Option<DateTime<Utc>> = row.get(12);
+        let remaining = match cutoff {
+            Some(at) => collection.count(&*tx, at).await.map_err(unavailable)?,
+            None => 0,
+        };
+        let failure_at: Option<DateTime<Utc>> = row.get(6);
+        let last_run_at: Option<DateTime<Utc>> = row.get(11);
+        let status = if days.is_none() { "off" }
+            else if row.get::<_, bool>(9) { "waiting" }
+            else if row.get::<_, Option<bool>>(10) == Some(true) { "running" }
+            else if failure_at > last_run_at { "failed" }
+            else if remaining > 0 && last_run_at.is_some() { "running" }
+            else { "done" };
+        view[collection.key()] = json!({
+            "days": days, "count": row.get::<_, i64>(1), "oldestAt": row.get::<_, Option<DateTime<Utc>>>(2),
+            "lastCleanup": row.get::<_, Option<DateTime<Utc>>>(3).map(|at| retention::Cleanup { at, deleted: row.get(4) }),
+            "nextRunAt": row.get::<_, Option<DateTime<Utc>>>(5), "remaining": remaining,
+            "lastFailure": failure_at.map(|at| json!({"at": at, "message": row.get::<_, String>(7), "deleted": row.get::<_, i64>(8)})),
+            "status": status,
+        });
+    }
+    Ok(view)
+}
+
+async fn retention_policies(client: &impl tokio_postgres::GenericClient) -> AdminResult<[Option<i32>; 2]> {
+    Ok(client.query_opt(
+        "SELECT audit_retention_days, history_retention_days FROM app_settings WHERE id='current'",
+        &[],
+    ).await.map_err(unavailable)?.map_or([None, None], |row| [row.get(0), row.get(1)]))
+}
+
+pub async fn estimate_retention(state: &AppState, query: &std::collections::BTreeMap<String, String>) -> AdminResult<Value> {
+    let days = Collection::ALL.map(|c| retention_days(c, query.get(c.field()).map_or("", String::as_str)));
+    let [audit_days, history_days] = days;
+    let proposed = [audit_days?, history_days?];
+    let mut client = state.db.get().await.map_err(unavailable)?;
+    let tx = client.build_transaction()
+        .isolation_level(tokio_postgres::IsolationLevel::RepeatableRead)
+        .read_only(true).start().await.map_err(unavailable)?;
+    let saved = retention_policies(&*tx).await?;
+    let settings_change = Collection::ALL.into_iter().zip(proposed).zip(saved)
+        .any(|((collection, proposed), saved)| query.contains_key(collection.field()) && proposed != saved);
+    let mut estimates = json!({});
+    for (collection, days) in Collection::ALL.into_iter().zip(proposed) {
+        estimates[collection.key()] = match days {
+            Some(days) => retention::estimate(&*tx, collection, days, settings_change).await.map_err(unavailable)?,
+            None => Value::Null,
+        };
+    }
+    Ok(estimates)
+}
+
+pub async fn update_retention(state: &AppState, actor: &SessionPrincipal, ctx: &RequestContext, form: &FormInput) -> AdminResult<Value> {
+    let parse = |collection: Collection| {
+        retention_days(collection, form.get(collection.field())
+            .ok_or_else(|| field(collection.field(), "보존 기간 값을 입력하세요(비우면 무제한)."))?)
+    };
+    let days = [parse(Collection::Audit)?, parse(Collection::History)?];
+    let expected = |collection, name| {
+        retention_days(collection, form.get(name)
+            .ok_or_else(|| field(name, "저장하기 전에 현재 보존 기간을 확인하세요."))?)
+    };
+    let expected = [
+        expected(Collection::Audit, "expectedAuditRetentionDays")?,
+        expected(Collection::History, "expectedHistoryRetentionDays")?,
+    ];
+    let mut client = state.db.get().await.map_err(unavailable)?;
+    let tx = client.transaction().await.map_err(unavailable)?;
+    tx.batch_execute("SET LOCAL statement_timeout = '5s'").await.map_err(unavailable)?;
+    tx.query_one(&format!("SELECT pg_advisory_xact_lock({})", retention::LOCK), &[]).await.map_err(unavailable)?;
+    let prior = retention_policies(&*tx).await?;
+    if expected != prior {
+        return Err(AdminError::Refused("보존 기간이 변경되었습니다. 화면을 새로 고친 뒤 다시 저장하세요.".into()));
+    }
+    let mut schedules_cleanup = false;
+    if prior != days {
+        tx.execute(
+            "INSERT INTO app_settings (id, audit_retention_days, history_retention_days, updated_at, actor_id)
+             VALUES ('current', $1, $2, now(), $3)
+             ON CONFLICT (id) DO UPDATE SET audit_retention_days=EXCLUDED.audit_retention_days,
+                 history_retention_days=EXCLUDED.history_retention_days, updated_at=now(), actor_id=EXCLUDED.actor_id",
+            &[&days[0], &days[1], &actor.user_id],
+        ).await.map_err(unavailable)?;
+        for ((collection, old), new) in Collection::ALL.into_iter().zip(prior).zip(days) {
+            if old == new { continue; }
+            let schedule = new.is_some_and(|d| old.is_none_or(|old| d < old));
+            schedules_cleanup |= schedule;
+            tx.execute(
+                "UPDATE retention_state SET
+                    next_run_at=CASE WHEN $2 THEN NULL WHEN $3 THEN now()+interval '10 minutes' ELSE next_run_at END,
+                    first_run_pending=CASE WHEN $2 THEN false WHEN $3 THEN true ELSE first_run_pending END,
+                    run_started_at=CASE WHEN $2 OR $3 THEN NULL ELSE run_started_at END
+                 WHERE collection=$1",
+                &[&collection.key(), &new.is_none(), &schedule],
+            ).await.map_err(unavailable)?;
+        }
+        let actor = actor.actor(ctx);
+        let values = |days: [Option<i32>; 2]| json!({"auditRetentionDays":days[0],"historyRetentionDays":days[1]});
+        audit::write(&*tx, &AuditEntry {
+            actor_id: actor.id,
+            action: "settings:retention".into(),
+            before: Some(values(prior)),
+            after: Some(values(days)),
+            ip: ctx.ip.clone(),
+            via: actor.via,
+            ..AuditEntry::default()
+        }).await.map_err(unavailable)?;
+    }
+    tx.commit().await.map_err(unavailable)?;
+    Ok(json!({"schedulesCleanup": schedules_cleanup}))
 }

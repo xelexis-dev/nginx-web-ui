@@ -812,25 +812,6 @@ async fn resolve_server(client: &impl GenericClient, built: &mut Value) -> Resul
     }
     Ok(upstreams)
 }
-fn check_legacy_gateway_replacement(kind: Resource, before: &Value, built: &Value) -> Result<(), ApiError> {
-    let loses = if kind==Resource::Server {
-        let old=super::render::effective_locations(&before["config"]);
-        let new=super::render::effective_locations(&built["config"]);
-        let global_runtime_lost=before["config"]["resolveAtRuntime"]==true && built["config"]["resolveAtRuntime"]!=true
-            && !new.iter().any(|row|row["resolveAtRuntime"]==true);
-        global_runtime_lost || old.iter().any(|previous| {
-            let next=new.iter().find(|row|row["path"]==previous["path"]).unwrap_or(&Value::Null);
-            ["resolveAtRuntime","retryOtherInstances"].iter().any(|key|previous[*key]==true && next[*key]!=true)
-        })
-    } else {
-        before["resolveAtRuntime"]==true && built["resolveAtRuntime"]!=true
-    };
-    if loses {
-        return Err(ApiError::new(StatusCode::CONFLICT,"gateway_upgrade_required",
-            "이 항목은 2.0 기능을 쓰고 있어 1.19 게이트웨이에서 수정할 수 없습니다 — 게이트웨이를 2.0으로 올리세요"));
-    }
-    Ok(())
-}
 // Bounds apply to changed values, so an unrelated edit never quarantines legacy data.
 fn check_save_sizes(kind: Resource, built: &Value, before: Option<&Value>) -> Result<(), ApiError> {
     let old = before.unwrap_or(&Value::Null);
@@ -1019,20 +1000,12 @@ fn check_new_upstream_loops(
 /// Update is full validated replacement, like the former PATCH DTO, not a partial JSON merge.
 /// Missing optional config fields clear their previous value; enabled is retained separately.
 pub async fn mutate(
-    state: &AppState, kind: Resource, operation: Mutation, id: Option<&str>, raw: Value, actor: &Actor,
-) -> Result<Value, ApiError> {
-    mutate_for_gateway(state,kind,operation,id,raw,actor,None).await
-}
-
-/// Keep legacy gateways from silently clearing settings that their UI cannot represent.
-pub async fn mutate_for_gateway(
     state: &AppState,
     kind: Resource,
     operation: Mutation,
     id: Option<&str>,
     raw: Value,
     actor: &Actor,
-    gateway_version: Option<&str>,
 ) -> Result<Value, ApiError> {
     // A queued write could outlive a gateway's deadline and commit after reporting
     // failure. Reject contention before starting a transaction instead.
@@ -1120,10 +1093,6 @@ pub async fn mutate_for_gateway(
                     b
                 }
             };
-            if operation==Mutation::Update && gateway_version.and_then(crate::auth::node_version::parse_semver)
-                .is_some_and(|version| version.major==1 && version.minor==19) {
-                check_legacy_gateway_replacement(kind, before.as_ref().unwrap(), &built)?;
-            }
             check_save_sizes(kind, &built, before.as_ref())?;
             check_listener_conflicts(&*tx,kind,&built,&id,before.as_ref()).await?;
             let dynamic = if kind == Resource::Server {

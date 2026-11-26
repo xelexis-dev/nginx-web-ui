@@ -1,18 +1,18 @@
 {
   "schemaVersion": 2,
   "inputs": {
-    "apps/api/Cargo.lock": "b3aa3ed520abb767cd1367fc5c7875d77b09b9c318ec4e6e47345d5f48a58304",
+    "apps/api/Cargo.lock": "2a998011bcae3c4c88853a10e26a0bec55b86871d8f8430bafd12bdb26d42ff5",
     "docker/licenses/spdx-lock.json": "bb7bc66d0b482f11e0d66ea76f3967ffc47995c48803536d70c2f2e23bfb28ed",
-    "docker/pins/inventory/api-builder-amd64.tsv": "8665bd26ce32eda3cd9090c114b36571409f54a50c1d42d21a397bdc86a69892",
-    "docker/pins/inventory/api-builder-arm64.tsv": "eb6903409a7bec9666b1b939c7989383245a42bfbdc8c5ef74660fa6d8eadcbc",
-    "docker/pins/inventory/keyring-amd64.tsv": "1b2241077aae1e976c9571c93b6183baf890c195d4ee6f888cdec3402cd71ab1",
-    "docker/pins/inventory/keyring-arm64.tsv": "2ff60de001f6b2f4c25bfa0b12269a626e893af3c8257ade30a785c1764822bd",
-    "docker/pins/inventory/runtime-amd64.tsv": "a212b79b6c2d01d44242a04b6a1cf2e09918c2ae495ee737cb98450574dc177e",
-    "docker/pins/inventory/runtime-arm64.tsv": "09c450600575ea1fc8571bb08ebd16bab48c29b22133e9a3ec9c39867fe83c47",
+    "docker/pins/inventory/api-builder-amd64.tsv": "212f2a6c7deb81ec4b72117170969aae0702d6c121e1007783f5db74671c52c5",
+    "docker/pins/inventory/api-builder-arm64.tsv": "2ef95bd779af5df65d0325641967a21d2d845546f99a2c8fff5f4da7f7382617",
+    "docker/pins/inventory/keyring-amd64.tsv": "f2564682b63467a45f05eb1d18b4ce3ceaa10de78ef56fbc86c7e7005dc961e9",
+    "docker/pins/inventory/keyring-arm64.tsv": "3b9989b7397e269399fc448bc342ced3692373e5802b9b7dc2d7dbaef6834347",
+    "docker/pins/inventory/runtime-amd64.tsv": "a724c9e95ea4c7f7e1124b9651b714204b911b81b53221dea20f9b2ffeb887d7",
+    "docker/pins/inventory/runtime-arm64.tsv": "009306526ad24b7aae2adb526e761695cad0f6ab4b33ac9c3c9c201726d284df",
     "docker/turbo/package-lock.json": "90541d8aac02c8edc1506278f64156743e6bc4f4278be7bb0ecb28a7b3e82254",
     "package.json": "91af8c58d9fa0674485207703d6ddc2e31aa5b95192e5295da22f1ad9cfe7731",
     "yarn.lock": "52e904d286c71d11a978d7c41d712fd594824517e16cda67dcf0ed7fd7da113d",
-    "Dockerfile:ARG": "f4d74197bc5fd3bbf3c2767c43c9f8e9a3ee5468844558a7d4f707f9ba530823"
+    "Dockerfile:ARG": "02591a8eb313b55bedb2bfbc8c914851ba8e46be125bd6f683bca6d93b573a48"
   },
   "entries": [
     {
@@ -3853,47 +3853,47 @@
       ]
     },
     {
-      "id": "cargo:form_urlencoded=1.2.2",
+      "id": "cargo:form_urlencoded=1.2.3",
       "name": "form_urlencoded",
-      "version": "1.2.2",
+      "version": "1.2.3",
       "ecosystem": "cargo",
       "arch": "all",
       "coverage": "source/build/runtime-superset",
-      "lockedChecksum": "cb4cb245038516f5f85277875cdaa4f7d2c9a0fa0468de06ed190163b1581fcf",
+      "lockedChecksum": "afa489199eaffb1211795df1c6236ce1ad0d41a6fa45250add73e3b02420f06e",
       "spdx": "MIT OR Apache-2.0",
-      "archiveSha256": "cb4cb245038516f5f85277875cdaa4f7d2c9a0fa0468de06ed190163b1581fcf",
+      "archiveSha256": "afa489199eaffb1211795df1c6236ce1ad0d41a6fa45250add73e3b02420f06e",
       "upstreamArchives": [],
       "encodings": [
         {
-          "archiveSha256": "cb4cb245038516f5f85277875cdaa4f7d2c9a0fa0468de06ed190163b1581fcf",
-          "source": "form_urlencoded-1.2.2/Cargo.toml",
+          "archiveSha256": "afa489199eaffb1211795df1c6236ce1ad0d41a6fa45250add73e3b02420f06e",
+          "source": "form_urlencoded-1.2.3/Cargo.toml",
           "encoding": "utf-8",
-          "sha256": "118b1d87e862ea329b8bc84b389085a2f8e049d4c0b8b3c38ac2bffbe3501928",
+          "sha256": "47a39fced5fea0239010d6cc5e65bdd6312ef348e029be8389e4be8a14b5ce99",
           "replacementCharacters": 0
         },
         {
-          "archiveSha256": "cb4cb245038516f5f85277875cdaa4f7d2c9a0fa0468de06ed190163b1581fcf",
-          "source": "form_urlencoded-1.2.2/LICENSE-APACHE",
+          "archiveSha256": "afa489199eaffb1211795df1c6236ce1ad0d41a6fa45250add73e3b02420f06e",
+          "source": "form_urlencoded-1.2.3/LICENSE-APACHE",
           "encoding": "utf-8",
           "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
           "replacementCharacters": 0
         },
         {
-          "archiveSha256": "cb4cb245038516f5f85277875cdaa4f7d2c9a0fa0468de06ed190163b1581fcf",
-          "source": "form_urlencoded-1.2.2/LICENSE-MIT",
+          "archiveSha256": "afa489199eaffb1211795df1c6236ce1ad0d41a6fa45250add73e3b02420f06e",
+          "source": "form_urlencoded-1.2.3/LICENSE-MIT",
           "encoding": "utf-8",
           "sha256": "20c7855c364d57ea4c97889a5e8d98470a9952dade37bd9248b9a54431670e5e",
           "replacementCharacters": 0
         }
       ],
-      "textSha256": "923f5d00199b295a618f9fc2b5fa51d00a9ff523415affa896914bfdc21021f0",
+      "textSha256": "f048ccedd91085a3204695f27feaed8f4ce086513a795369e94cca2c2b5339b6",
       "parts": [
         {
-          "source": "form_urlencoded-1.2.2/LICENSE-APACHE",
+          "source": "form_urlencoded-1.2.3/LICENSE-APACHE",
           "sha256": "143368af9701a24ebaf89fe5310ad8116ca71e8e99f17415c0dd893f6a256ae4"
         },
         {
-          "source": "form_urlencoded-1.2.2/LICENSE-MIT",
+          "source": "form_urlencoded-1.2.3/LICENSE-MIT",
           "sha256": "20c7855c364d57ea4c97889a5e8d98470a9952dade37bd9248b9a54431670e5e"
         }
       ]
@@ -16338,47 +16338,47 @@
       ]
     },
     {
-      "id": "cargo:url=2.5.8",
+      "id": "cargo:url=2.5.9",
       "name": "url",
-      "version": "2.5.8",
+      "version": "2.5.9",
       "ecosystem": "cargo",
       "arch": "all",
       "coverage": "source/build/runtime-superset",
-      "lockedChecksum": "ff67a8a4397373c3ef660812acab3268222035010ab8680ec4215f38ba3d0eed",
+      "lockedChecksum": "f00cd2407bb42c0ef17be88d4cf020f5cceffd121665bac9b8b9493a369b3b1a",
       "spdx": "MIT OR Apache-2.0",
-      "archiveSha256": "ff67a8a4397373c3ef660812acab3268222035010ab8680ec4215f38ba3d0eed",
+      "archiveSha256": "f00cd2407bb42c0ef17be88d4cf020f5cceffd121665bac9b8b9493a369b3b1a",
       "upstreamArchives": [],
       "encodings": [
         {
-          "archiveSha256": "ff67a8a4397373c3ef660812acab3268222035010ab8680ec4215f38ba3d0eed",
-          "source": "url-2.5.8/Cargo.toml",
+          "archiveSha256": "f00cd2407bb42c0ef17be88d4cf020f5cceffd121665bac9b8b9493a369b3b1a",
+          "source": "url-2.5.9/Cargo.toml",
           "encoding": "utf-8",
-          "sha256": "7003e5562b5ab8454b9d78376303151af79011f5dd684c1891e0f46bc9112016",
+          "sha256": "8f084b776440d30dd3c1334d0a35126ecf2d2fa8ef18d3ac6c4318ec747adbbd",
           "replacementCharacters": 0
         },
         {
-          "archiveSha256": "ff67a8a4397373c3ef660812acab3268222035010ab8680ec4215f38ba3d0eed",
-          "source": "url-2.5.8/LICENSE-APACHE",
+          "archiveSha256": "f00cd2407bb42c0ef17be88d4cf020f5cceffd121665bac9b8b9493a369b3b1a",
+          "source": "url-2.5.9/LICENSE-APACHE",
           "encoding": "utf-8",
           "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
           "replacementCharacters": 0
         },
         {
-          "archiveSha256": "ff67a8a4397373c3ef660812acab3268222035010ab8680ec4215f38ba3d0eed",
-          "source": "url-2.5.8/LICENSE-MIT",
+          "archiveSha256": "f00cd2407bb42c0ef17be88d4cf020f5cceffd121665bac9b8b9493a369b3b1a",
+          "source": "url-2.5.9/LICENSE-MIT",
           "encoding": "utf-8",
           "sha256": "b38f11f6096706e6de553dabe2a7ed142d59b6fa8c97e290c67496154745cdd5",
           "replacementCharacters": 0
         }
       ],
-      "textSha256": "5a526eff399b816be008e6a168d80103a574937c5b7da6bf70ad8bce94fb2516",
+      "textSha256": "6e7431d84a3d86cfc0a2231115054612f0024f6e5b01c94dfa2f16b88705e4b5",
       "parts": [
         {
-          "source": "url-2.5.8/LICENSE-APACHE",
+          "source": "url-2.5.9/LICENSE-APACHE",
           "sha256": "143368af9701a24ebaf89fe5310ad8116ca71e8e99f17415c0dd893f6a256ae4"
         },
         {
-          "source": "url-2.5.8/LICENSE-MIT",
+          "source": "url-2.5.9/LICENSE-MIT",
           "sha256": "b38f11f6096706e6de553dabe2a7ed142d59b6fa8c97e290c67496154745cdd5"
         }
       ]
@@ -30911,19 +30911,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-amd64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u1",
+      "id": "deb:api-builder-amd64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u2",
       "name": "libgssapi-krb5-2",
       "arch": "amd64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -31135,19 +31135,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-amd64.tsv:libk5crypto3=1.21.3-5+deb13u1",
+      "id": "deb:api-builder-amd64.tsv:libk5crypto3=1.21.3-5+deb13u2",
       "name": "libk5crypto3",
       "arch": "amd64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -31191,19 +31191,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-amd64.tsv:libkrb5-3=1.21.3-5+deb13u1",
+      "id": "deb:api-builder-amd64.tsv:libkrb5-3=1.21.3-5+deb13u2",
       "name": "libkrb5-3",
       "arch": "amd64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -31219,19 +31219,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-amd64.tsv:libkrb5support0=1.21.3-5+deb13u1",
+      "id": "deb:api-builder-amd64.tsv:libkrb5support0=1.21.3-5+deb13u2",
       "name": "libkrb5support0",
       "arch": "amd64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -35720,19 +35720,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-arm64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u1",
+      "id": "deb:api-builder-arm64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u2",
       "name": "libgssapi-krb5-2",
       "arch": "arm64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -35944,19 +35944,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-arm64.tsv:libk5crypto3=1.21.3-5+deb13u1",
+      "id": "deb:api-builder-arm64.tsv:libk5crypto3=1.21.3-5+deb13u2",
       "name": "libk5crypto3",
       "arch": "arm64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -36000,19 +36000,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-arm64.tsv:libkrb5-3=1.21.3-5+deb13u1",
+      "id": "deb:api-builder-arm64.tsv:libkrb5-3=1.21.3-5+deb13u2",
       "name": "libkrb5-3",
       "arch": "arm64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -36028,19 +36028,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-arm64.tsv:libkrb5support0=1.21.3-5+deb13u1",
+      "id": "deb:api-builder-arm64.tsv:libkrb5support0=1.21.3-5+deb13u2",
       "name": "libkrb5support0",
       "arch": "arm64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -39794,19 +39794,19 @@
       ]
     },
     {
-      "id": "deb:keyring-amd64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u1",
+      "id": "deb:keyring-amd64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u2",
       "name": "libgssapi-krb5-2",
       "arch": "amd64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -39878,19 +39878,19 @@
       ]
     },
     {
-      "id": "deb:keyring-amd64.tsv:libk5crypto3=1.21.3-5+deb13u1",
+      "id": "deb:keyring-amd64.tsv:libk5crypto3=1.21.3-5+deb13u2",
       "name": "libk5crypto3",
       "arch": "amd64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -39934,19 +39934,19 @@
       ]
     },
     {
-      "id": "deb:keyring-amd64.tsv:libkrb5-3=1.21.3-5+deb13u1",
+      "id": "deb:keyring-amd64.tsv:libkrb5-3=1.21.3-5+deb13u2",
       "name": "libkrb5-3",
       "arch": "amd64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -39962,19 +39962,19 @@
       ]
     },
     {
-      "id": "deb:keyring-amd64.tsv:libkrb5support0=1.21.3-5+deb13u1",
+      "id": "deb:keyring-amd64.tsv:libkrb5support0=1.21.3-5+deb13u2",
       "name": "libkrb5support0",
       "arch": "amd64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -43168,19 +43168,19 @@
       ]
     },
     {
-      "id": "deb:keyring-arm64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u1",
+      "id": "deb:keyring-arm64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u2",
       "name": "libgssapi-krb5-2",
       "arch": "arm64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -43252,19 +43252,19 @@
       ]
     },
     {
-      "id": "deb:keyring-arm64.tsv:libk5crypto3=1.21.3-5+deb13u1",
+      "id": "deb:keyring-arm64.tsv:libk5crypto3=1.21.3-5+deb13u2",
       "name": "libk5crypto3",
       "arch": "arm64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -43308,19 +43308,19 @@
       ]
     },
     {
-      "id": "deb:keyring-arm64.tsv:libkrb5-3=1.21.3-5+deb13u1",
+      "id": "deb:keyring-arm64.tsv:libkrb5-3=1.21.3-5+deb13u2",
       "name": "libkrb5-3",
       "arch": "arm64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -43336,19 +43336,19 @@
       ]
     },
     {
-      "id": "deb:keyring-arm64.tsv:libkrb5support0=1.21.3-5+deb13u1",
+      "id": "deb:keyring-arm64.tsv:libkrb5support0=1.21.3-5+deb13u2",
       "name": "libkrb5support0",
       "arch": "arm64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -46262,19 +46262,19 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u1",
+      "id": "deb:runtime-amd64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u2",
       "name": "libgssapi-krb5-2",
       "arch": "amd64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -46430,19 +46430,19 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:libk5crypto3=1.21.3-5+deb13u1",
+      "id": "deb:runtime-amd64.tsv:libk5crypto3=1.21.3-5+deb13u2",
       "name": "libk5crypto3",
       "arch": "amd64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -46486,19 +46486,19 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:libkrb5-3=1.21.3-5+deb13u1",
+      "id": "deb:runtime-amd64.tsv:libkrb5-3=1.21.3-5+deb13u2",
       "name": "libkrb5-3",
       "arch": "amd64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -46514,19 +46514,19 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:libkrb5support0=1.21.3-5+deb13u1",
+      "id": "deb:runtime-amd64.tsv:libkrb5support0=1.21.3-5+deb13u2",
       "name": "libkrb5support0",
       "arch": "amd64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -47893,26 +47893,26 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:nginx=1.30.7-1~trixie",
+      "id": "deb:runtime-amd64.tsv:nginx=1.30.8-1~trixie",
       "name": "nginx",
       "arch": "amd64",
-      "version": "1.30.7-1~trixie",
+      "version": "1.30.8-1~trixie",
       "source": "nginx",
-      "sourceVersion": "1.30.7-1~trixie",
+      "sourceVersion": "1.30.8-1~trixie",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-e9a3a92b84c88d7cc39a9503",
-      "archiveSha256": "7e9e787849bed1fbb677868fc8ee86f8b513cd9e46ad29e41c7710cec3c8825d",
+      "archiveSha256": "923cb6e3b49bc2b6af9aac5d951eb0ba0441f76b40c51ba0986d581a08aa9af4",
       "encodings": [
         {
-          "archiveSha256": "b2c16df7b3972f192e56678e85cd7c54165434152d3f77917d9227c73e7d006d",
+          "archiveSha256": "4e4d4bc2fcaff8501fa0b93c28c26d5655b7c22931b4cc7e17de5e908656e00a",
           "source": "./control",
           "encoding": "utf-8",
-          "sha256": "ac5b97e0c831ebc364d818698c92dfe0ac042e0128a0e0ea6c0c9db35b27686f",
+          "sha256": "907df24b831db3c2f2e0b38afaac54731361544ee6cdbd9f5e026b12a207a272",
           "replacementCharacters": 0
         },
         {
-          "archiveSha256": "66a6d5449f8746de0a1ed2c8e91b24c8189fcd52dbd87bdcc4e26d74e14b8728",
+          "archiveSha256": "f62a99b5a1ca5f2ee80296c883c4fb4983e952bbbb9ae2a1329b208eca4f13cc",
           "source": "./usr/share/doc/nginx/copyright",
           "encoding": "utf-8",
           "sha256": "4f72e2bccf0bcd839dd447ab6f359336f428caa1987a9afec2bc9ade5711658a",
@@ -49839,19 +49839,19 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u1",
+      "id": "deb:runtime-arm64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u2",
       "name": "libgssapi-krb5-2",
       "arch": "arm64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -50007,19 +50007,19 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:libk5crypto3=1.21.3-5+deb13u1",
+      "id": "deb:runtime-arm64.tsv:libk5crypto3=1.21.3-5+deb13u2",
       "name": "libk5crypto3",
       "arch": "arm64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -50063,19 +50063,19 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:libkrb5-3=1.21.3-5+deb13u1",
+      "id": "deb:runtime-arm64.tsv:libkrb5-3=1.21.3-5+deb13u2",
       "name": "libkrb5-3",
       "arch": "arm64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -50091,19 +50091,19 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:libkrb5support0=1.21.3-5+deb13u1",
+      "id": "deb:runtime-arm64.tsv:libkrb5support0=1.21.3-5+deb13u2",
       "name": "libkrb5support0",
       "arch": "arm64",
-      "version": "1.21.3-5+deb13u1",
+      "version": "1.21.3-5+deb13u2",
       "source": "krb5",
-      "sourceVersion": "1.21.3-5+deb13u1",
+      "sourceVersion": "1.21.3-5+deb13u2",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-d5ec3aa131b84f40fe787293",
-      "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+      "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
       "encodings": [
         {
-          "archiveSha256": "02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4",
+          "archiveSha256": "68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "936728f4181718f42951b881c1e8f1386bf6b2723c4fbc533c374d6f42c71816",
@@ -51470,26 +51470,26 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:nginx=1.30.7-1~trixie",
+      "id": "deb:runtime-arm64.tsv:nginx=1.30.8-1~trixie",
       "name": "nginx",
       "arch": "arm64",
-      "version": "1.30.7-1~trixie",
+      "version": "1.30.8-1~trixie",
       "source": "nginx",
-      "sourceVersion": "1.30.7-1~trixie",
+      "sourceVersion": "1.30.8-1~trixie",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-e9a3a92b84c88d7cc39a9503",
-      "archiveSha256": "b32bff964b8e64e1297e6da783748b8db1117a68f3d9ad85589b41be79a38f46",
+      "archiveSha256": "2b8d7b7478a19d09a93c3beec957ddab7312f564af605eef29b933b0894e55f1",
       "encodings": [
         {
-          "archiveSha256": "d64376c498583ce94f5f980845abc9707afa513c7798795f30e50c888c4b555a",
+          "archiveSha256": "a7c4f885759b786d2904ccbe9d5862e2e5db79dc5604364d481355f3db1a077f",
           "source": "./control",
           "encoding": "utf-8",
-          "sha256": "93346738e9c2238cd4cad4ce91bf17fae1901933590be50c4a31cffe5cc5cb03",
+          "sha256": "3d07520fe75d2e7574deb9a8fe72ae53093835007544ffa799b6540af026ed3a",
           "replacementCharacters": 0
         },
         {
-          "archiveSha256": "fd800523dee839abdecfe6e38692424f68fae35aa36b0569e4f396258509aa0a",
+          "archiveSha256": "ba65287e9cdfaf9f55c9f626f5ef6a9c1382c80909b057b9b006fcf023c9f779",
           "source": "./usr/share/doc/nginx/copyright",
           "encoding": "utf-8",
           "sha256": "4f72e2bccf0bcd839dd447ab6f359336f428caa1987a9afec2bc9ade5711658a",

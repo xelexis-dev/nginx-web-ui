@@ -14,10 +14,6 @@ pub(crate) fn restored(_j:&Journal,old:&Selector,source_id:&str)->Result<(),Step
     // A restored selector outlives discard deletion and the bounded previous-attempt summaries.
     if old.active_major!=15 || old.operator_reason.as_deref()!=Some("restore-pg15") || old.generation.is_some() || old.system_identifier!=source_id {return Err(mismatch());}Ok(())
 }
-/// Pre-selector steps may preserve an authoritative restored-15 selector, never a 17 selector.
-pub(crate) fn precommit(app:&Path,j:&Journal)->Result<(),StepError> {
-    if !j.belongs_to(app){return Err(mismatch());}let path=app.join(".nwui-auto/active-v1.json");if !exists(&path)?{return Ok(());}let old=selector::read_selector(app)?;restored(j,&old,source_id(j)?)
-}
 pub(crate) fn is_committed(roots:&Roots)->Result<bool,StepError> {
     let path=roots.app.join(".nwui-auto/active-v1.json");if !exists(&path)?{return Ok(false);}Ok(selector::read_selector(&roots.app)?.active_major==17)
 }

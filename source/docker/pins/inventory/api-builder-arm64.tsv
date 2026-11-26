@@ -77,7 +77,7 @@ libgmp10	arm64	2:6.3.0+dfsg-3	gmp	2:6.3.0+dfsg-3	base
 libgnutls30t64	arm64	3.8.9-3+deb13u4	gnutls28	3.8.9-3+deb13u4	debian
 libgomp1	arm64	14.2.0-19	gcc-14	14.2.0-19	base
 libgprofng0	arm64	2.44-3	binutils	2.44-3	base
-libgssapi-krb5-2	arm64	1.21.3-5+deb13u1	krb5	1.21.3-5+deb13u1	debian
+libgssapi-krb5-2	arm64	1.21.3-5+deb13u2	krb5	1.21.3-5+deb13u2	debian-security
 libhogweed6t64	arm64	3.10.1-1	nettle	3.10.1-1	base
 libhwasan0	arm64	14.2.0-19	gcc-14	14.2.0-19	base
 libidn2-0	arm64	2.3.8-2	libidn2	2.3.8-2	base
@@ -85,10 +85,10 @@ libisl23	arm64	0.27-1	isl	0.27-1	base
 libitm1	arm64	14.2.0-19	gcc-14	14.2.0-19	base
 libjansson4	arm64	2.14-2+b3	jansson	2.14-2	base
 libjsoncpp26	arm64	1.9.6-3	libjsoncpp	1.9.6-3	debian
-libk5crypto3	arm64	1.21.3-5+deb13u1	krb5	1.21.3-5+deb13u1	debian
+libk5crypto3	arm64	1.21.3-5+deb13u2	krb5	1.21.3-5+deb13u2	debian-security
 libkeyutils1	arm64	1.6.3-6	keyutils	1.6.3-6	debian
-libkrb5-3	arm64	1.21.3-5+deb13u1	krb5	1.21.3-5+deb13u1	debian
-libkrb5support0	arm64	1.21.3-5+deb13u1	krb5	1.21.3-5+deb13u1	debian
+libkrb5-3	arm64	1.21.3-5+deb13u2	krb5	1.21.3-5+deb13u2	debian-security
+libkrb5support0	arm64	1.21.3-5+deb13u2	krb5	1.21.3-5+deb13u2	debian-security
 liblastlog2-2	arm64	2.41.5-0+deb13u1	util-linux	2.41.5-0+deb13u1	base
 libldap2	arm64	2.6.10+dfsg-1	openldap	2.6.10+dfsg-1	debian
 liblsan0	arm64	14.2.0-19	gcc-14	14.2.0-19	base

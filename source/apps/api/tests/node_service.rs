@@ -387,3 +387,83 @@ async fn stopped_node_read_preserves_the_context_bar_version() {
     assert_eq!(result["ok"],false);assert_eq!(result["node"]["lastVersion"],"2.1.0");
     assert_eq!(service::get(&db.state,"stopped").await.unwrap().last_version.as_deref(),Some("2.1.0"));
 }
+
+#[tokio::test]
+#[ignore = "requires NWUI_TEST_DATABASE_URL"]
+async fn pairing_sends_one_current_version_and_rejects_cross_major_before_auth() {
+    use axum::{
+        Json, Router, body::{Body, to_bytes}, extract::ConnectInfo,
+        http::{HeaderMap, Request, StatusCode}, routing::post,
+    };
+    use nwui_api::{contracts::Actor, nodes::client::NodeHttp, state::AppState};
+    use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
+    use tower::ServiceExt;
+
+    let db = auth_support::test_db().await;
+    let mut gateway = db.state.clone();
+    Arc::make_mut(&mut gateway.config).version = "2.2.0".into();
+    gateway.node_http = NodeHttp::new(&gateway.config.version, &gateway.config).unwrap();
+    let actor = Actor { via: None, id: None, label: Some("test".into()), ip: None };
+    for version in ["2.0.3", "2.1.2", "2.2.0"] {
+        let posts = Arc::new(AtomicUsize::new(0));
+        let hits = posts.clone();
+        let remote = Router::new().route("/api/v1/pair", post(move |headers: HeaderMap| {
+            let hits = hits.clone();
+            async move {
+                hits.fetch_add(1, Ordering::SeqCst);
+                assert_eq!(headers.get_all("x-gateway-version").iter().collect::<Vec<_>>(), ["2.2.0"]);
+                ([("x-node-version", version)], Json(json!({
+                    "token": "paired-token", "role": "editor", "instanceId": version, "semver": version,
+                })))
+            }
+        }));
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let base_url = format!("http://{}", listener.local_addr().unwrap());
+        let server = tokio::spawn(async move { axum::serve(listener, remote).await.unwrap() });
+        let id = service::pair_node(&gateway, service::NodeInput {
+            name: version.into(),
+            base_url,
+            allow_insecure_tls: false,
+            pair: Some(service::PairInput {
+                token: "pairing-token".into(), gateway_name: "gateway".into(), role: Role::Editor,
+            }),
+        }, &actor).await.unwrap().unwrap();
+        assert_eq!(posts.load(Ordering::SeqCst), 1, "{version}");
+        assert_eq!(service::get(&gateway, &id).await.unwrap().last_version.as_deref(), Some(version));
+        server.abort();
+    }
+
+    for (node_version, incompatible) in [
+        ("1.19.11", ["2.2.0", "2.0.0"]),
+        ("2.0.0", ["1.19.11", "1.19.0"]),
+        ("2.2.0", ["1.19.11", "1.19.0"]),
+    ] {
+        let mut config = (*db.state.config).clone();
+        config.version = node_version.into();
+        // A compatible request reaches the token lookup and fails on this nonexistent database.
+        let (server, _) = config.database_url.rsplit_once('/').unwrap();
+        config.database_url = format!("{server}/nwui_nonexistent_{}", uuid::Uuid::new_v4().simple());
+        let state = AppState::new(config).unwrap();
+        let app = nwui_api::app::with_request_context(nwui_api::nodes::routes::router().with_state(state), None);
+        for (method, path) in [("POST", "/api/v1/pair"), ("GET", "/api/v1/info")] {
+            for version in incompatible.into_iter().chain([node_version]) {
+                let request = Request::builder()
+                    .method(method)
+                    .uri(path)
+                    .header("host", "admin.test")
+                    .header("x-gateway-version", version)
+                    .header("authorization", "Bearer gateway-token")
+                    .extension(ConnectInfo(std::net::SocketAddr::from(([127, 0, 0, 1], 40000))))
+                    .body(Body::from(json!({"token":"pairing-token", "gatewayName":"gateway", "role":"editor"}).to_string()))
+                    .unwrap();
+                let response = app.clone().oneshot(request).await.unwrap();
+                let expected = if version == node_version { StatusCode::SERVICE_UNAVAILABLE } else { StatusCode::CONFLICT };
+                assert_eq!(response.status(), expected, "{version} -> {node_version} {path}");
+                if expected == StatusCode::CONFLICT {
+                    let body: serde_json::Value = serde_json::from_slice(&to_bytes(response.into_body(), 8192).await.unwrap()).unwrap();
+                    assert_eq!(body["error"]["code"], "version_mismatch");
+                }
+            }
+        }
+    }
+}

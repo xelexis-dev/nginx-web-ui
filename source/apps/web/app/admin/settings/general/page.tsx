@@ -1,24 +1,22 @@
 import { FormStack, Banner } from "@repo/ui";
 import layout from "@/components/page-layout.module.css";
 import { PageHeader } from "@repo/ui";
-import type { GeneralSettingsView } from "@repo/contracts";
+import type { GeneralSettingsView, RetentionSettingsView } from "@repo/contracts";
 import { readPageApi } from "@/lib/api-page";
 import { BaseUrlForm } from "./base-url-form";
 import { MetricsForm } from "./metrics-form";
+import { RetentionForm } from "./retention-form";
 
 export const runtime = "nodejs";
 // Reads live DB state on every request; must not be prerendered at build time.
 export const dynamic = "force-dynamic";
 
-/**
- * 사이트 전체에 걸리는 설정. 지금은 앱 주소 하나뿐이지만, 채널(메일·webhook) 어느
- * 한쪽에 속하지 않는 값이라 여기가 제자리다 — 원래는 webhook 목록 아래 "공통 설정"에
- * 있었는데, 메일 본문의 링크도 같은 값을 쓰므로 webhook 의 것이 아니다.
- */
+// 앱 주소와 이 설치에만 적용되는 지표 및 기록 보존 설정.
 export default async function GeneralSettingsPage() {
-  const settings = await readPageApi<GeneralSettingsView>(
-    "/api/ui/v1/admin/settings/general",
-  );
+  const [settings, retention] = await Promise.all([
+    readPageApi<GeneralSettingsView>("/api/ui/v1/admin/settings/general"),
+    readPageApi<RetentionSettingsView>("/api/ui/v1/admin/settings/retention"),
+  ]);
   const baseUrl = settings.publicBaseUrl;
 
   return (
@@ -35,6 +33,7 @@ export default async function GeneralSettingsPage() {
           }
           defaultExcludedHosts={settings?.metricsExcludedHosts ?? ""}
         />
+        <RetentionForm values={retention} />
       </FormStack>
     </section>
   );

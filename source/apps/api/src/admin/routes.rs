@@ -25,7 +25,7 @@
 //!
 //! Refusals: 400 `validation_failed` + `fieldErrors`, 409 `conflict` + the TS message, 404.
 
-use axum::extract::{Path, Request, State};
+use axum::extract::{Path, Query, Request, State};
 use axum::http::HeaderMap;
 use axum::routing::{get, post};
 use axum::{Extension, Json, Router};
@@ -70,6 +70,8 @@ pub fn router() -> Router<AppState> {
         .route("/api/ui/v1/forms/admin.oauth.delete", post(delete_provider))
         .route("/api/ui/v1/forms/admin.oauth.toggle", post(toggle_provider))
         .route("/api/ui/v1/admin/settings/general", get(general_settings))
+        .route("/api/ui/v1/admin/settings/retention", get(retention_settings).put(update_retention))
+        .route("/api/ui/v1/admin/settings/retention/estimate", get(retention_estimate))
         .route("/api/ui/v1/forms/admin.settings.updatePublicBaseUrl", post(update_public_base_url))
         .route("/api/ui/v1/forms/admin.settings.updateMetrics", post(update_metrics))
         .route("/api/ui/v1/admin/secrets", get(secrets_health))
@@ -90,6 +92,21 @@ fn message(text: String) -> Json<FormResult> {
 async fn general_settings(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, headers: HeaderMap) -> Result<Json<Value>, ApiError> {
     manager(&state, &headers, &ctx).await?;
     to_json(settings::view(&state).await?)
+}
+
+async fn retention_settings(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, headers: HeaderMap) -> Result<Json<Value>, ApiError> {
+    require_user(&state, &headers, &ctx, Some(Action::UserManage), TwoFactorGate::Enforce, Use::SessionOnly).await?;
+    Ok(Json(settings::retention_view(&state).await?))
+}
+
+async fn retention_estimate(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, headers: HeaderMap, Query(query): Query<std::collections::BTreeMap<String, String>>) -> Result<Json<Value>, ApiError> {
+    require_user(&state, &headers, &ctx, Some(Action::UserManage), TwoFactorGate::Enforce, Use::SessionOnly).await?;
+    Ok(Json(settings::estimate_retention(&state, &query).await?))
+}
+
+async fn update_retention(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<Value>, ApiError> {
+    let (actor, form) = manager_form(&state, &ctx, request).await?;
+    Ok(Json(settings::update_retention(&state, actor.session()?, &ctx, &form).await?))
 }
 
 async fn update_public_base_url(State(state): State<AppState>, Extension(ctx): Extension<RequestContext>, request: Request) -> Result<Json<FormResult>, ApiError> {

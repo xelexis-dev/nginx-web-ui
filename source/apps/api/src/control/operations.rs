@@ -247,8 +247,15 @@ pub async fn view(
         return Err(ApiError::forbidden());
     }
     let mut client = state.db.get().await.map_err(|_| db_unavailable())?;
+    let tx = client
+        .build_transaction()
+        .isolation_level(tokio_postgres::IsolationLevel::RepeatableRead)
+        .read_only(true)
+        .start()
+        .await
+        .map_err(|_| db_unavailable())?;
     if path == "/history" {
-        let rows = client
+        let rows = tx
             .query(
                 "SELECT s.id, s.created_at, s.label, u.email,
                         CASE WHEN jsonb_typeof(s.data->'upstreams') = 'array'
@@ -275,30 +282,29 @@ pub async fn view(
                 "streamCount": r.get::<_, i32>("stream_count")
             }))
             .collect();
-        return Ok(Some(json!({"data":{"items":items,"showDetails":true}})));
+        let last_cleanup = crate::retention::last_cleanup(&*tx, crate::retention::Collection::History).await.map_err(|_| db_unavailable())?;
+        return Ok(Some(json!({"data":{"items":items,"showDetails":true,"lastCleanup":last_cleanup}})));
     }
     let id = path.strip_prefix("/history/").unwrap();
     if id.is_empty() || id.contains('/') {
         return Ok(None);
     }
-    let tx = client
-        .build_transaction()
-        .isolation_level(tokio_postgres::IsolationLevel::RepeatableRead)
-        .read_only(true)
-        .start()
-        .await
-        .map_err(|_| db_unavailable())?;
     let row=tx.query_opt("SELECT s.id,s.created_at,s.label,s.data,u.email,s.actor_id FROM config_snapshots s LEFT JOIN users u ON u.id=s.actor_id WHERE s.id=$1",&[&id]).await.map_err(|_|db_unavailable())?.ok_or_else(ApiError::not_found)?;
     let created: chrono::DateTime<chrono::Utc> = row.get(1);
-    let previous=tx.query_opt("SELECT data FROM config_snapshots WHERE created_at<$1 ORDER BY created_at DESC,id DESC LIMIT 1",&[&created]).await.map_err(|_|db_unavailable())?;
+    let previous=tx.query_opt("SELECT data FROM config_snapshots WHERE (created_at,id)<($1,$2) ORDER BY created_at DESC,id DESC LIMIT 1",&[&created,&id]).await.map_err(|_|db_unavailable())?;
     let before = previous.map(|r| pending::snapshot_from_value(&r.get::<_, Value>(0)));
+    let previous_pruned = before.is_none() && tx.query_one(
+        "SELECT EXISTS (
+            SELECT 1 FROM retention_state WHERE collection='history' AND (newest_deleted_at,newest_deleted_id) < ($1,$2)
+        )", &[&created, &id],
+    ).await.map_err(|_| db_unavailable())?.get::<_, bool>(0);
     let data = pending::snapshot_from_value(&row.get::<_, Value>(3));
     let diff = pending::diff_config(before.as_ref(), &data);
     let iso = iso(created);
     let snapshot = json!({"id":row.get::<_,String>(0),"createdAt":iso,"label":row.get::<_,Option<String>>(2),"data":row.get::<_,Value>(3),"actorEmail":row.get::<_,Option<String>>(4),"actorId":row.get::<_,Option<String>>(5)});
     tx.commit().await.map_err(|_| db_unavailable())?;
     Ok(Some(
-        json!({"snapshot":snapshot,"upstreams":data.upstreams,"servers":data.servers,"streams":data.streams,"diff":diff,"isFirst":before.is_none(),"canRollback":session.can(Action::ConfigWrite)&&session.can(Action::NginxReload),"iso":iso}),
+        json!({"snapshot":snapshot,"upstreams":data.upstreams,"servers":data.servers,"streams":data.streams,"diff":diff,"isFirst":before.is_none()&&!previous_pruned,"previousPruned":previous_pruned,"canRollback":session.can(Action::ConfigWrite)&&session.can(Action::NginxReload),"iso":iso}),
     ))
 }
 
@@ -404,6 +410,11 @@ pub(crate) mod publisher_caller_tests {
             json!({"upstreams":{"a":1}, "servers":{}, "streams":{"b":[]}}),
             json!([{"servers":[{}]}]),
             json!("scalar snapshot"),
+            json!({
+                "upstreams": vec![json!({"blob": "x".repeat(4096)}); 512],
+                "servers": vec![json!({}); 256],
+                "streams": vec![json!(null); 128]
+            }),
         ];
         fixture.db.batch_execute(
             "INSERT INTO config_snapshots (id, created_at, data)
@@ -455,11 +466,11 @@ pub(crate) mod publisher_caller_tests {
             .iter()
             .map(|item| item["id"].as_str().unwrap())
             .collect();
-        let expected_ids: Vec<_> = (0..8).rev().map(|n| format!("case-{n}"))
-            .chain((9..=50).rev().map(|n| format!("tie-{n:02}")))
+        let expected_ids: Vec<_> = (0..cases.len()).rev().map(|n| format!("case-{n}"))
+            .chain((cases.len() + 1..=50).rev().map(|n| format!("tie-{n:02}")))
             .collect();
         assert_eq!(actual_ids, expected_ids, "history list ID order");
-        let expected = json!({"data":{"items":items,"showDetails":true}});
+        let expected = json!({"data":{"items":items,"showDetails":true,"lastCleanup":null}});
         assert_eq!(serde_json::to_vec(&actual).unwrap(), serde_json::to_vec(&expected).unwrap());
     }
 

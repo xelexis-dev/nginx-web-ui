@@ -140,7 +140,7 @@ pub async fn view(
             json!({"initialRange":query::range(params.get("range").map(String::as_str)).0})
         }
         "/logs" => json!({"files":["access","error"]}),
-        "/audit" => query::audit_list(state, params).await?,
+        "/audit" => query::audit_list_view(state, params, true).await?,
         "/" => dashboard(state, session).await?,
         _ => {
             let id = path.trim_start_matches("/audit/");

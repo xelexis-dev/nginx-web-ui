@@ -130,11 +130,19 @@ fn audit_row(r: &tokio_postgres::Row, detail: bool) -> Value {
     }
     v
 }
-pub async fn audit_list(
+pub async fn audit_list(state: &AppState, query: &BTreeMap<String, String>) -> Result<Value, ApiError> {
+    audit_list_view(state, query, false).await
+}
+
+pub(crate) async fn audit_list_view(
     state: &AppState,
     query: &BTreeMap<String, String>,
+    local: bool,
 ) -> Result<Value, ApiError> {
-    let client = state.db.get().await.map_err(|_| db_unavailable())?;
+    let mut connection = state.db.get().await.map_err(|_| db_unavailable())?;
+    let client = connection.build_transaction()
+        .isolation_level(tokio_postgres::IsolationLevel::RepeatableRead)
+        .read_only(true).start().await.map_err(|_| db_unavailable())?;
     let action = query
         .get("action")
         .map(|s| s.trim())
@@ -144,8 +152,6 @@ pub async fn audit_list(
         .and_then(|s| s.parse::<i64>().ok())
         .filter(|n| *n > 0 && *n <= i64::MAX / 50)
         .unwrap_or(1);
-    let offset = (page - 1) * 50;
-    let rows=client.query("SELECT a.id,a.created_at,a.action,a.target,CASE WHEN u.email IS NOT NULL THEN COALESCE(a.actor_label,u.email) END AS email,a.actor_label,a.ip,a.via FROM audit_logs a LEFT JOIN users u ON u.id=a.actor_id WHERE ($1::text IS NULL OR a.action=$1) ORDER BY a.created_at DESC,a.id DESC LIMIT 50 OFFSET $2",&[&action,&offset]).await.map_err(|_|db_unavailable())?;
     let groups = client
         .query(
             "SELECT action, count(*) FROM audit_logs GROUP BY action ORDER BY action",
@@ -162,9 +168,16 @@ pub async fn audit_list(
         }
         actions.push(name);
     }
-    Ok(
-        json!({"items":rows.iter().map(|r|audit_row(r,false)).collect::<Vec<_>>(),"total":total,"page":page,"totalPages":((total+49)/50).max(1),"actions":actions,"actionFilter":action.unwrap_or("")}),
-    )
+    let total_pages = ((total + 49) / 50).max(1);
+    let page = if local { page.min(total_pages) } else { page };
+    let offset = (page - 1) * 50;
+    let rows=client.query("SELECT a.id,a.created_at,a.action,a.target,CASE WHEN u.email IS NOT NULL THEN COALESCE(a.actor_label,u.email) END AS email,a.actor_label,a.ip,a.via FROM audit_logs a LEFT JOIN users u ON u.id=a.actor_id WHERE ($1::text IS NULL OR a.action=$1) ORDER BY a.created_at DESC,a.id DESC LIMIT 50 OFFSET $2",&[&action,&offset]).await.map_err(|_|db_unavailable())?;
+    let mut data = json!({"items":rows.iter().map(|r|audit_row(r,false)).collect::<Vec<_>>(),"total":total,"page":page,"totalPages":total_pages,"actions":actions,"actionFilter":action.unwrap_or("")});
+    if local {
+        let cleanup = crate::retention::last_cleanup(&*client, crate::retention::Collection::Audit).await.map_err(|_| db_unavailable())?;
+        data["lastCleanup"] = json!(cleanup);
+    }
+    Ok(data)
 }
 pub async fn audit_detail(state: &AppState, id: &str) -> Result<Value, ApiError> {
     let client = state.db.get().await.map_err(|_| db_unavailable())?;

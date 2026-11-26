@@ -40,6 +40,10 @@ vi.mock("../app/admin/settings/general/metrics-form", () => ({
   ),
 }));
 
+vi.mock("../app/admin/settings/general/retention-form", () => ({
+  RetentionForm: () => <div>Record retention</div>,
+}));
+
 beforeEach(() => {
   read.mockReset();
   qr.mockClear();
@@ -126,5 +130,7 @@ describe("account and settings SSR API boundary", () => {
     expect(read).toHaveBeenCalledWith("/api/ui/v1/admin/settings/general");
     expect(html).toContain("https://app.example.test");
     expect(html).toContain("Retention 30");
+    expect(read).toHaveBeenCalledWith("/api/ui/v1/admin/settings/retention");
+    expect(html.indexOf("Retention 30")).toBeLessThan(html.indexOf("Record retention"));
   });
 });

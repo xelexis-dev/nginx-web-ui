@@ -34,6 +34,7 @@ export function HistoryDetail({ data }: { data: HistoryDetailView }) {
     streams: snapStreams,
     diff,
     isFirst,
+    previousPruned,
     canRollback,
     iso,
   } = data;
@@ -93,7 +94,9 @@ export function HistoryDetail({ data }: { data: HistoryDetailView }) {
       </Surface>
 
       <Surface title="변경 사항 (이전 스냅샷 대비)">
-        {isFirst ? (
+        {previousPruned ? (
+          <EmptyState description="이전 스냅샷은 보존 기간이 지나 지워졌습니다. 비교할 수 없습니다." />
+        ) : isFirst ? (
           <EmptyState description="최초 스냅샷입니다. 비교할 이전 스냅샷이 없습니다." />
         ) : !diff.hasChanges ? (
           <EmptyState description="이전 스냅샷과 동일합니다. (변경 없음)" />

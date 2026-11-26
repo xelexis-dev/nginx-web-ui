@@ -19,12 +19,16 @@ pub struct AuditEntry {
 }
 
 pub async fn write(client: &impl tokio_postgres::GenericClient, entry: &AuditEntry) -> Result<(), tokio_postgres::Error> {
+    write_with_id(client, &uuid::Uuid::new_v4().to_string(), entry).await
+}
+
+pub(crate) async fn write_with_id(client: &impl tokio_postgres::GenericClient, id: &str, entry: &AuditEntry) -> Result<(), tokio_postgres::Error> {
     client
         .execute(
             "INSERT INTO audit_logs (id, actor_id, actor_label, action, target, before, after, ip, via) \
              VALUES ($1, $2, COALESCE($3, (SELECT email FROM users WHERE id=$2)), $4, $5, $6, $7, $8, $9)",
             &[
-                &uuid::Uuid::new_v4().to_string(),
+                &id,
                 &entry.actor_id,
                 &entry.actor_label,
                 &entry.action,

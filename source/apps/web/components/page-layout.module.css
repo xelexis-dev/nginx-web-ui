@@ -78,3 +78,11 @@
   gap: var(--sp-2);
   min-width: 0;
 }
+
+.listNote {
+  margin: var(--sp-4) 0 0;
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-xs);
+  font-variant-numeric: tabular-nums;
+}

@@ -83,21 +83,6 @@ async fn json_body(request: Request) -> Result<Value, ApiError> {
         )
     })
 }
-fn project_server_for_gateway(row: &Value, names: &std::collections::BTreeMap<String, String>, legacy: bool) -> Value {
-    let mut projected = super::location_refs::project_for_read(row, names);
-    if legacy {
-        for location in projected["config"].get_mut("locations").and_then(Value::as_array_mut).into_iter().flatten() {
-            if let Some(object) = location.as_object_mut() {
-                if let Some(Value::String(name)) = object.remove("upstreamName") {
-                    object.insert("proxyPass".into(), json!(format!("http://{name}")));
-                    object.remove("upstreamId");
-                }
-            }
-        }
-    }
-    projected
-}
-
 async fn node(
     State(state): State<AppState>,
     Extension(ctx): Extension<RequestContext>,
@@ -135,18 +120,16 @@ async fn node(
         .map_err(|_| ApiError::new(StatusCode::BAD_REQUEST, "bad_request", "잘못된 경로입니다."))?;
     let id = decoded.as_deref();
     if method == Method::GET || method == Method::HEAD {
-        let legacy = request.headers().get("x-gateway-version").and_then(|v| v.to_str().ok())
-            .and_then(crate::auth::node_version::parse_semver).is_some_and(|v| (v.major, v.minor) == (1, 19));
         let client = state.db.get().await.map_err(|_| db_unavailable())?;
         let upstreams=if kind==Resource::Server{resources::list(&**client,Resource::Upstream).await?}else{vec![]};
         let names=super::location_refs::upstream_names(&upstreams);
         let mut body = if let Some(id) = id {
             let mut row = resources::get(&**client, kind, id).await?;
-            if kind==Resource::Server{row=project_server_for_gateway(&row,&names,legacy);}
+            if kind==Resource::Server{row=super::location_refs::project_for_read(&row,&names);}
             json!({kind.singular():row})
         } else {
             let rows=resources::list(&**client,kind).await?;
-            json!({kind.plural():if kind==Resource::Server{rows.iter().map(|row|project_server_for_gateway(row,&names,legacy)).collect::<Vec<_>>()}else{rows}})
+            json!({kind.plural():if kind==Resource::Server{rows.iter().map(|row|super::location_refs::project_for_read(row,&names)).collect::<Vec<_>>()}else{rows}})
         };
         let certificates = if id.is_some() && kind != Resource::Upstream {
             Some(super::views::preview_certificates(&**client,kind,&body[kind.singular()]).await?)
@@ -166,14 +149,12 @@ async fn node(
     } else {
         Mutation::Create
     };
-    let gateway_version = request.headers().get(crate::auth::principal::GATEWAY_VERSION_HEADER)
-        .and_then(|value| value.to_str().ok()).map(str::to_owned);
     let raw = if matches!(operation, Mutation::Create | Mutation::Update) {
         json_body(request).await?
     } else {
         Value::Null
     };
-    let value = resources::mutate_for_gateway(&state, kind, operation, id, raw, &gateway.actor(&ctx), gateway_version.as_deref()).await?;
+    let value = resources::mutate(&state, kind, operation, id, raw, &gateway.actor(&ctx)).await?;
     let body = if matches!(operation, Mutation::Delete | Mutation::Toggle) {
         value
     } else {
@@ -292,14 +273,12 @@ async fn form(
 mod gateway_projection_tests {
     use super::*;
     #[test]
-    fn legacy_routes_use_urls_and_modern_projection_is_byte_identical() {
+    fn modern_projection_preserves_upstream_ids_and_direct_targets() {
         let names = std::collections::BTreeMap::from([("u".into(), "backend".into())]);
         let row = json!({"config":{"locations":[{"path":"/","upstreamId":"u"},{"path":"/direct","proxyPass":"http://app.test:9000"}]}});
         let modern = super::super::location_refs::project_for_read(&row,&names);
-        assert_eq!(serde_json::to_vec(&project_server_for_gateway(&row,&names,false)).unwrap(),serde_json::to_vec(&modern).unwrap());
-        let legacy = project_server_for_gateway(&row,&names,true);
-        assert_eq!(legacy["config"]["locations"][0],json!({"path":"/","proxyPass":"http://backend"}));
-        assert_eq!(legacy["config"]["locations"][1],row["config"]["locations"][1]);
+        assert_eq!(modern["config"]["locations"][0],json!({"path":"/","upstreamId":"u","upstreamName":"backend"}));
+        assert_eq!(modern["config"]["locations"][1],row["config"]["locations"][1]);
         assert_eq!(row["config"]["locations"][0]["upstreamId"],"u");
     }
 }

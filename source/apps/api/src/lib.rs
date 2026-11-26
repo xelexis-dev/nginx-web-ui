@@ -21,6 +21,7 @@ pub mod observability;
 pub mod notifications;
 pub mod notify;
 pub mod request_context;
+pub mod retention;
 pub mod runtime_boot;
 pub mod runtime_backfill;
 pub mod server;

@@ -10,18 +10,18 @@ are available from https://snapshot.debian.org/ at the source versions listed be
 
 ## Input SHA-256
 
-- apps/api/Cargo.lock: b3aa3ed520abb767cd1367fc5c7875d77b09b9c318ec4e6e47345d5f48a58304
+- apps/api/Cargo.lock: 2a998011bcae3c4c88853a10e26a0bec55b86871d8f8430bafd12bdb26d42ff5
 - docker/licenses/spdx-lock.json: bb7bc66d0b482f11e0d66ea76f3967ffc47995c48803536d70c2f2e23bfb28ed
-- docker/pins/inventory/api-builder-amd64.tsv: 8665bd26ce32eda3cd9090c114b36571409f54a50c1d42d21a397bdc86a69892
-- docker/pins/inventory/api-builder-arm64.tsv: eb6903409a7bec9666b1b939c7989383245a42bfbdc8c5ef74660fa6d8eadcbc
-- docker/pins/inventory/keyring-amd64.tsv: 1b2241077aae1e976c9571c93b6183baf890c195d4ee6f888cdec3402cd71ab1
-- docker/pins/inventory/keyring-arm64.tsv: 2ff60de001f6b2f4c25bfa0b12269a626e893af3c8257ade30a785c1764822bd
-- docker/pins/inventory/runtime-amd64.tsv: a212b79b6c2d01d44242a04b6a1cf2e09918c2ae495ee737cb98450574dc177e
-- docker/pins/inventory/runtime-arm64.tsv: 09c450600575ea1fc8571bb08ebd16bab48c29b22133e9a3ec9c39867fe83c47
+- docker/pins/inventory/api-builder-amd64.tsv: 212f2a6c7deb81ec4b72117170969aae0702d6c121e1007783f5db74671c52c5
+- docker/pins/inventory/api-builder-arm64.tsv: 2ef95bd779af5df65d0325641967a21d2d845546f99a2c8fff5f4da7f7382617
+- docker/pins/inventory/keyring-amd64.tsv: f2564682b63467a45f05eb1d18b4ce3ceaa10de78ef56fbc86c7e7005dc961e9
+- docker/pins/inventory/keyring-arm64.tsv: 3b9989b7397e269399fc448bc342ced3692373e5802b9b7dc2d7dbaef6834347
+- docker/pins/inventory/runtime-amd64.tsv: a724c9e95ea4c7f7e1124b9651b714204b911b81b53221dea20f9b2ffeb887d7
+- docker/pins/inventory/runtime-arm64.tsv: 009306526ad24b7aae2adb526e761695cad0f6ab4b33ac9c3c9c201726d284df
 - docker/turbo/package-lock.json: 90541d8aac02c8edc1506278f64156743e6bc4f4278be7bb0ecb28a7b3e82254
 - package.json: 91af8c58d9fa0674485207703d6ddc2e31aa5b95192e5295da22f1ad9cfe7731
 - yarn.lock: 52e904d286c71d11a978d7c41d712fd594824517e16cda67dcf0ed7fd7da113d
-- Dockerfile:ARG: f4d74197bc5fd3bbf3c2767c43c9f8e9a3ee5468844558a7d4f707f9ba530823
+- Dockerfile:ARG: 02591a8eb313b55bedb2bfbc8c914851ba8e46be125bd6f683bca6d93b573a48
 
 ## Text 000cbb5bea6f21829c8f0d9e1fe87410bd5ef0453412ffc017845982a3e19824
 
@@ -12736,7 +12736,7 @@ Applies to:
 - cargo:find-msvc-tools=0.1.13 — find-msvc-tools-0.1.13/LICENSE-APACHE
 - cargo:flate2=1.1.10 — flate2-1.1.10/LICENSE-APACHE
 - cargo:fnv=1.0.7 — fnv-1.0.7/LICENSE-APACHE
-- cargo:form_urlencoded=1.2.2 — form_urlencoded-1.2.2/LICENSE-APACHE
+- cargo:form_urlencoded=1.2.3 — form_urlencoded-1.2.3/LICENSE-APACHE
 - cargo:fraction=0.17.0 — fraction-0.17.0/LICENSE-APACHE
 - cargo:hashbrown=0.17.1 — hashbrown-0.17.1/LICENSE-APACHE
 - cargo:heck=0.5.0 — heck-0.5.0/LICENSE-APACHE
@@ -12795,7 +12795,7 @@ Applies to:
 - cargo:unicode-bidi=0.3.18 — unicode-bidi-0.3.18/LICENSE-APACHE
 - cargo:unicode-normalization=0.1.25 — unicode-normalization-0.1.25/LICENSE-APACHE
 - cargo:unicode-properties=0.1.4 — unicode-properties-0.1.4/LICENSE-APACHE
-- cargo:url=2.5.8 — url-2.5.8/LICENSE-APACHE
+- cargo:url=2.5.9 — url-2.5.9/LICENSE-APACHE
 - cargo:uuid=1.26.1 — uuid-1.26.1/LICENSE-APACHE
 - cargo:vcpkg=0.2.15 — vcpkg-0.2.15/LICENSE-APACHE
 - cargo:version_check=0.9.5 — version_check-0.9.5/LICENSE-APACHE
@@ -18432,7 +18432,7 @@ DEALINGS IN THE SOFTWARE.
 <!-- /nwui-text:20c7855c364d57ea4c97889a5e8d98470a9952dade37bd9248b9a54431670e5e -->
 
 Applies to:
-- cargo:form_urlencoded=1.2.2 — form_urlencoded-1.2.2/LICENSE-MIT
+- cargo:form_urlencoded=1.2.3 — form_urlencoded-1.2.3/LICENSE-MIT
 - component:RUST_IMAGE=rust:1.98.1-slim-trixie@sha256:4cd829461bd5c4d511c32e269da9cb8929223b666519d8004e35fc8d1d771ab7 — usr/local/rustup/toolchains/1.98.1-aarch64-unknown-linux-gnu/share/doc/rust/COPYRIGHT.html
 
 ## Text 211baff8e63e9648d977f626d4a903a09708b3265d7711c7ae4d224132363356
@@ -70716,8 +70716,8 @@ Referenced common licence texts are reproduced in the DEBIAN_COMMON_LICENSES blo
 <!-- /nwui-text:8e571b551fb2939542af97b00cb96b8b044734e8e9f42458a1485c66b3d5e6f3 -->
 
 Applies to:
-- deb:runtime-amd64.tsv:nginx=1.30.7-1~trixie — ./usr/share/doc/nginx/copyright
-- deb:runtime-arm64.tsv:nginx=1.30.7-1~trixie — ./usr/share/doc/nginx/copyright
+- deb:runtime-amd64.tsv:nginx=1.30.8-1~trixie — ./usr/share/doc/nginx/copyright
+- deb:runtime-arm64.tsv:nginx=1.30.8-1~trixie — ./usr/share/doc/nginx/copyright
 
 ## Text 8e84b6cfa932e06844118b51da9d1bacdb537e176a4231e1f29a40a23ac9f258
 
@@ -73812,30 +73812,30 @@ Referenced common licence texts are reproduced in the DEBIAN_COMMON_LICENSES blo
 <!-- /nwui-text:93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917 -->
 
 Applies to:
-- deb:api-builder-amd64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u1 — debian/copyright
-- deb:api-builder-amd64.tsv:libk5crypto3=1.21.3-5+deb13u1 — debian/copyright
-- deb:api-builder-amd64.tsv:libkrb5-3=1.21.3-5+deb13u1 — debian/copyright
-- deb:api-builder-amd64.tsv:libkrb5support0=1.21.3-5+deb13u1 — debian/copyright
-- deb:api-builder-arm64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u1 — debian/copyright
-- deb:api-builder-arm64.tsv:libk5crypto3=1.21.3-5+deb13u1 — debian/copyright
-- deb:api-builder-arm64.tsv:libkrb5-3=1.21.3-5+deb13u1 — debian/copyright
-- deb:api-builder-arm64.tsv:libkrb5support0=1.21.3-5+deb13u1 — debian/copyright
-- deb:keyring-amd64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u1 — debian/copyright
-- deb:keyring-amd64.tsv:libk5crypto3=1.21.3-5+deb13u1 — debian/copyright
-- deb:keyring-amd64.tsv:libkrb5-3=1.21.3-5+deb13u1 — debian/copyright
-- deb:keyring-amd64.tsv:libkrb5support0=1.21.3-5+deb13u1 — debian/copyright
-- deb:keyring-arm64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u1 — debian/copyright
-- deb:keyring-arm64.tsv:libk5crypto3=1.21.3-5+deb13u1 — debian/copyright
-- deb:keyring-arm64.tsv:libkrb5-3=1.21.3-5+deb13u1 — debian/copyright
-- deb:keyring-arm64.tsv:libkrb5support0=1.21.3-5+deb13u1 — debian/copyright
-- deb:runtime-amd64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u1 — debian/copyright
-- deb:runtime-amd64.tsv:libk5crypto3=1.21.3-5+deb13u1 — debian/copyright
-- deb:runtime-amd64.tsv:libkrb5-3=1.21.3-5+deb13u1 — debian/copyright
-- deb:runtime-amd64.tsv:libkrb5support0=1.21.3-5+deb13u1 — debian/copyright
-- deb:runtime-arm64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u1 — debian/copyright
-- deb:runtime-arm64.tsv:libk5crypto3=1.21.3-5+deb13u1 — debian/copyright
-- deb:runtime-arm64.tsv:libkrb5-3=1.21.3-5+deb13u1 — debian/copyright
-- deb:runtime-arm64.tsv:libkrb5support0=1.21.3-5+deb13u1 — debian/copyright
+- deb:api-builder-amd64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u2 — debian/copyright
+- deb:api-builder-amd64.tsv:libk5crypto3=1.21.3-5+deb13u2 — debian/copyright
+- deb:api-builder-amd64.tsv:libkrb5-3=1.21.3-5+deb13u2 — debian/copyright
+- deb:api-builder-amd64.tsv:libkrb5support0=1.21.3-5+deb13u2 — debian/copyright
+- deb:api-builder-arm64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u2 — debian/copyright
+- deb:api-builder-arm64.tsv:libk5crypto3=1.21.3-5+deb13u2 — debian/copyright
+- deb:api-builder-arm64.tsv:libkrb5-3=1.21.3-5+deb13u2 — debian/copyright
+- deb:api-builder-arm64.tsv:libkrb5support0=1.21.3-5+deb13u2 — debian/copyright
+- deb:keyring-amd64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u2 — debian/copyright
+- deb:keyring-amd64.tsv:libk5crypto3=1.21.3-5+deb13u2 — debian/copyright
+- deb:keyring-amd64.tsv:libkrb5-3=1.21.3-5+deb13u2 — debian/copyright
+- deb:keyring-amd64.tsv:libkrb5support0=1.21.3-5+deb13u2 — debian/copyright
+- deb:keyring-arm64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u2 — debian/copyright
+- deb:keyring-arm64.tsv:libk5crypto3=1.21.3-5+deb13u2 — debian/copyright
+- deb:keyring-arm64.tsv:libkrb5-3=1.21.3-5+deb13u2 — debian/copyright
+- deb:keyring-arm64.tsv:libkrb5support0=1.21.3-5+deb13u2 — debian/copyright
+- deb:runtime-amd64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u2 — debian/copyright
+- deb:runtime-amd64.tsv:libk5crypto3=1.21.3-5+deb13u2 — debian/copyright
+- deb:runtime-amd64.tsv:libkrb5-3=1.21.3-5+deb13u2 — debian/copyright
+- deb:runtime-amd64.tsv:libkrb5support0=1.21.3-5+deb13u2 — debian/copyright
+- deb:runtime-arm64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u2 — debian/copyright
+- deb:runtime-arm64.tsv:libk5crypto3=1.21.3-5+deb13u2 — debian/copyright
+- deb:runtime-arm64.tsv:libkrb5-3=1.21.3-5+deb13u2 — debian/copyright
+- deb:runtime-arm64.tsv:libkrb5support0=1.21.3-5+deb13u2 — debian/copyright
 
 ## Text 937230c05b5673fe216dda49dfc7c96591c63d0ea4c029e3e1b84aef3a45cbfd
 
@@ -90792,7 +90792,7 @@ DEALINGS IN THE SOFTWARE.
 Applies to:
 - cargo:idna=1.1.0 — idna-1.1.0/LICENSE-MIT
 - cargo:percent-encoding=2.3.2 — percent-encoding-2.3.2/LICENSE-MIT
-- cargo:url=2.5.8 — url-2.5.8/LICENSE-MIT
+- cargo:url=2.5.9 — url-2.5.9/LICENSE-MIT
 - component:RUST_IMAGE=rust:1.98.1-slim-trixie@sha256:4cd829461bd5c4d511c32e269da9cb8929223b666519d8004e35fc8d1d771ab7 — usr/local/rustup/toolchains/1.98.1-aarch64-unknown-linux-gnu/share/doc/rust/COPYRIGHT.html
 
 ## Text b39b7556926992260c18201e59f9478217ed593602099546581b4092a4b9e10e
@@ -127753,10 +127753,10 @@ Evidence: archive; source archive SHA-256: f6f339eb8adc052cd2ca78910fda869aefa38
 - Text a8ad31b1c3f40dca5a84119351b8fa8ddc868edd77fad8a8ebf6d8f2d16fa4ae
 - Text 333ea3aaa3cadb819f4acd9f9153f9feee060a995ca8710f32bc5bd9a4b91734
 
-### cargo:form_urlencoded=1.2.2
+### cargo:form_urlencoded=1.2.3
 
 Coverage: source/build/runtime-superset; architecture: all; licence: MIT OR Apache-2.0.
-Evidence: archive; source archive SHA-256: cb4cb245038516f5f85277875cdaa4f7d2c9a0fa0468de06ed190163b1581fcf.
+Evidence: archive; source archive SHA-256: afa489199eaffb1211795df1c6236ce1ad0d41a6fa45250add73e3b02420f06e.
 - Text 143368af9701a24ebaf89fe5310ad8116ca71e8e99f17415c0dd893f6a256ae4
 - Text 20c7855c364d57ea4c97889a5e8d98470a9952dade37bd9248b9a54431670e5e
 
@@ -129256,10 +129256,10 @@ Coverage: source/build/runtime-superset; architecture: all; licence: ISC.
 Evidence: archive; source archive SHA-256: 8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1.
 - Text 7abd9b6960dcf7d4d0a48606a5b71bfe37d472db68d70637f3a58a56785f1621
 
-### cargo:url=2.5.8
+### cargo:url=2.5.9
 
 Coverage: source/build/runtime-superset; architecture: all; licence: MIT OR Apache-2.0.
-Evidence: archive; source archive SHA-256: ff67a8a4397373c3ef660812acab3268222035010ab8680ec4215f38ba3d0eed.
+Evidence: archive; source archive SHA-256: f00cd2407bb42c0ef17be88d4cf020f5cceffd121665bac9b8b9493a369b3b1a.
 - Text 143368af9701a24ebaf89fe5310ad8116ca71e8e99f17415c0dd893f6a256ae4
 - Text b38f11f6096706e6de553dabe2a7ed142d59b6fa8c97e290c67496154745cdd5
 
@@ -132368,11 +132368,11 @@ Evidence: archive; source archive SHA-256: 555c856d6fb5a797c2692c24c3083e7b1a768
 Debian source: binutils 2.44-3.
 - Text 61a1df8bdf09b4eba31ccab0603ab7a4bf2ed92804c1d349256c731beb3a90d1
 
-### deb:api-builder-amd64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u1
+### deb:api-builder-amd64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u2
 
 Coverage: build; architecture: amd64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
 ### deb:api-builder-amd64.tsv:libhogweed6t64=3.10.1-1
@@ -132424,11 +132424,11 @@ Evidence: archive; source archive SHA-256: 12a9eecbde3e2b6fb815bce4544d3a8180b96
 Debian source: libjsoncpp 1.9.6-3.
 - Text efe2476c3f4df1cc0a7e751e816295250cbc30115e19a461466ea3ec2ec1e7cb
 
-### deb:api-builder-amd64.tsv:libk5crypto3=1.21.3-5+deb13u1
+### deb:api-builder-amd64.tsv:libk5crypto3=1.21.3-5+deb13u2
 
 Coverage: build; architecture: amd64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
 ### deb:api-builder-amd64.tsv:libkeyutils1=1.6.3-6
@@ -132438,18 +132438,18 @@ Evidence: archive; source archive SHA-256: 6fc3c1217b8e92df9dff73e4919c45dff4ada
 Debian source: keyutils 1.6.3-6.
 - Text 09495b257bc297e39c365b65d0af0d4cd0410582e042adfcbd7d4f9243a167df
 
-### deb:api-builder-amd64.tsv:libkrb5-3=1.21.3-5+deb13u1
+### deb:api-builder-amd64.tsv:libkrb5-3=1.21.3-5+deb13u2
 
 Coverage: build; architecture: amd64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
-### deb:api-builder-amd64.tsv:libkrb5support0=1.21.3-5+deb13u1
+### deb:api-builder-amd64.tsv:libkrb5support0=1.21.3-5+deb13u2
 
 Coverage: build; architecture: amd64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
 ### deb:api-builder-amd64.tsv:liblastlog2-2=2.41.5-0+deb13u1
@@ -133565,11 +133565,11 @@ Evidence: archive; source archive SHA-256: 555c856d6fb5a797c2692c24c3083e7b1a768
 Debian source: binutils 2.44-3.
 - Text 61a1df8bdf09b4eba31ccab0603ab7a4bf2ed92804c1d349256c731beb3a90d1
 
-### deb:api-builder-arm64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u1
+### deb:api-builder-arm64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u2
 
 Coverage: build; architecture: arm64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
 ### deb:api-builder-arm64.tsv:libhogweed6t64=3.10.1-1
@@ -133621,11 +133621,11 @@ Evidence: archive; source archive SHA-256: 12a9eecbde3e2b6fb815bce4544d3a8180b96
 Debian source: libjsoncpp 1.9.6-3.
 - Text efe2476c3f4df1cc0a7e751e816295250cbc30115e19a461466ea3ec2ec1e7cb
 
-### deb:api-builder-arm64.tsv:libk5crypto3=1.21.3-5+deb13u1
+### deb:api-builder-arm64.tsv:libk5crypto3=1.21.3-5+deb13u2
 
 Coverage: build; architecture: arm64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
 ### deb:api-builder-arm64.tsv:libkeyutils1=1.6.3-6
@@ -133635,18 +133635,18 @@ Evidence: archive; source archive SHA-256: 6fc3c1217b8e92df9dff73e4919c45dff4ada
 Debian source: keyutils 1.6.3-6.
 - Text 09495b257bc297e39c365b65d0af0d4cd0410582e042adfcbd7d4f9243a167df
 
-### deb:api-builder-arm64.tsv:libkrb5-3=1.21.3-5+deb13u1
+### deb:api-builder-arm64.tsv:libkrb5-3=1.21.3-5+deb13u2
 
 Coverage: build; architecture: arm64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
-### deb:api-builder-arm64.tsv:libkrb5support0=1.21.3-5+deb13u1
+### deb:api-builder-arm64.tsv:libkrb5support0=1.21.3-5+deb13u2
 
 Coverage: build; architecture: arm64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
 ### deb:api-builder-arm64.tsv:liblastlog2-2=2.41.5-0+deb13u1
@@ -134580,11 +134580,11 @@ Evidence: archive; source archive SHA-256: 9d1edd110f540c9f7163035f352836dd968ca
 Debian source: libgpg-error 1.51-4.
 - Text 8a8aac2bc43447af39454bc11251d4596edc518f2827df6e77571a561d2cc213
 
-### deb:keyring-amd64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u1
+### deb:keyring-amd64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u2
 
 Coverage: build; architecture: amd64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
 ### deb:keyring-amd64.tsv:libhogweed6t64=3.10.1-1
@@ -134601,11 +134601,11 @@ Evidence: archive; source archive SHA-256: ab95c2bab110557505ba437bc162f67a5a85f
 Debian source: libidn2 2.3.8-2.
 - Text fc038821473cd34a56d10acb8936857fe2c754ba6fadd44a215250f1915d6535
 
-### deb:keyring-amd64.tsv:libk5crypto3=1.21.3-5+deb13u1
+### deb:keyring-amd64.tsv:libk5crypto3=1.21.3-5+deb13u2
 
 Coverage: build; architecture: amd64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
 ### deb:keyring-amd64.tsv:libkeyutils1=1.6.3-6
@@ -134615,18 +134615,18 @@ Evidence: archive; source archive SHA-256: 6fc3c1217b8e92df9dff73e4919c45dff4ada
 Debian source: keyutils 1.6.3-6.
 - Text 09495b257bc297e39c365b65d0af0d4cd0410582e042adfcbd7d4f9243a167df
 
-### deb:keyring-amd64.tsv:libkrb5-3=1.21.3-5+deb13u1
+### deb:keyring-amd64.tsv:libkrb5-3=1.21.3-5+deb13u2
 
 Coverage: build; architecture: amd64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
-### deb:keyring-amd64.tsv:libkrb5support0=1.21.3-5+deb13u1
+### deb:keyring-amd64.tsv:libkrb5support0=1.21.3-5+deb13u2
 
 Coverage: build; architecture: amd64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
 ### deb:keyring-amd64.tsv:libksba8=1.6.7-2+b1
@@ -135420,11 +135420,11 @@ Evidence: archive; source archive SHA-256: 9d1edd110f540c9f7163035f352836dd968ca
 Debian source: libgpg-error 1.51-4.
 - Text 8a8aac2bc43447af39454bc11251d4596edc518f2827df6e77571a561d2cc213
 
-### deb:keyring-arm64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u1
+### deb:keyring-arm64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u2
 
 Coverage: build; architecture: arm64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
 ### deb:keyring-arm64.tsv:libhogweed6t64=3.10.1-1
@@ -135441,11 +135441,11 @@ Evidence: archive; source archive SHA-256: ab95c2bab110557505ba437bc162f67a5a85f
 Debian source: libidn2 2.3.8-2.
 - Text fc038821473cd34a56d10acb8936857fe2c754ba6fadd44a215250f1915d6535
 
-### deb:keyring-arm64.tsv:libk5crypto3=1.21.3-5+deb13u1
+### deb:keyring-arm64.tsv:libk5crypto3=1.21.3-5+deb13u2
 
 Coverage: build; architecture: arm64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
 ### deb:keyring-arm64.tsv:libkeyutils1=1.6.3-6
@@ -135455,18 +135455,18 @@ Evidence: archive; source archive SHA-256: 6fc3c1217b8e92df9dff73e4919c45dff4ada
 Debian source: keyutils 1.6.3-6.
 - Text 09495b257bc297e39c365b65d0af0d4cd0410582e042adfcbd7d4f9243a167df
 
-### deb:keyring-arm64.tsv:libkrb5-3=1.21.3-5+deb13u1
+### deb:keyring-arm64.tsv:libkrb5-3=1.21.3-5+deb13u2
 
 Coverage: build; architecture: arm64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
-### deb:keyring-arm64.tsv:libkrb5support0=1.21.3-5+deb13u1
+### deb:keyring-arm64.tsv:libkrb5support0=1.21.3-5+deb13u2
 
 Coverage: build; architecture: arm64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
 ### deb:keyring-arm64.tsv:libksba8=1.6.7-2+b1
@@ -136190,11 +136190,11 @@ Evidence: archive; source archive SHA-256: 9d1edd110f540c9f7163035f352836dd968ca
 Debian source: libgpg-error 1.51-4.
 - Text 8a8aac2bc43447af39454bc11251d4596edc518f2827df6e77571a561d2cc213
 
-### deb:runtime-amd64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u1
+### deb:runtime-amd64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u2
 
 Coverage: runtime; architecture: amd64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
 ### deb:runtime-amd64.tsv:libhogweed6t64=3.10.1-1
@@ -136232,11 +136232,11 @@ Evidence: archive; source archive SHA-256: c9992d1b78bbb7033c4df7ea126c5de65bdf3
 Debian source: libjson-perl 4.10000-1.
 - Text d5946e9db642b57acc1f396f6917d93f0cec9fec1df240723370fda290882796
 
-### deb:runtime-amd64.tsv:libk5crypto3=1.21.3-5+deb13u1
+### deb:runtime-amd64.tsv:libk5crypto3=1.21.3-5+deb13u2
 
 Coverage: runtime; architecture: amd64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
 ### deb:runtime-amd64.tsv:libkeyutils1=1.6.3-6
@@ -136246,18 +136246,18 @@ Evidence: archive; source archive SHA-256: 6fc3c1217b8e92df9dff73e4919c45dff4ada
 Debian source: keyutils 1.6.3-6.
 - Text 09495b257bc297e39c365b65d0af0d4cd0410582e042adfcbd7d4f9243a167df
 
-### deb:runtime-amd64.tsv:libkrb5-3=1.21.3-5+deb13u1
+### deb:runtime-amd64.tsv:libkrb5-3=1.21.3-5+deb13u2
 
 Coverage: runtime; architecture: amd64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
-### deb:runtime-amd64.tsv:libkrb5support0=1.21.3-5+deb13u1
+### deb:runtime-amd64.tsv:libkrb5support0=1.21.3-5+deb13u2
 
 Coverage: runtime; architecture: amd64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
 ### deb:runtime-amd64.tsv:liblastlog2-2=2.41.5-0+deb13u1
@@ -136596,11 +136596,11 @@ Evidence: archive; source archive SHA-256: 9116047aebbaa1698934052d01c6e09b4c3ae
 Debian source: netbase 6.5.
 - Text c3865976ab91396ff72c848a7c263d4065c15a1b6e334de46f1d3a91b1bdb40b
 
-### deb:runtime-amd64.tsv:nginx=1.30.7-1~trixie
+### deb:runtime-amd64.tsv:nginx=1.30.8-1~trixie
 
 Coverage: runtime; architecture: amd64; licence: LicenseRef-e9a3a92b84c88d7cc39a9503.
-Evidence: archive; source archive SHA-256: 7e9e787849bed1fbb677868fc8ee86f8b513cd9e46ad29e41c7710cec3c8825d.
-Debian source: nginx 1.30.7-1~trixie.
+Evidence: archive; source archive SHA-256: 923cb6e3b49bc2b6af9aac5d951eb0ba0441f76b40c51ba0986d581a08aa9af4.
+Debian source: nginx 1.30.8-1~trixie.
 - Text 8e571b551fb2939542af97b00cb96b8b044734e8e9f42458a1485c66b3d5e6f3
 
 ### deb:runtime-amd64.tsv:openssl-provider-legacy=3.5.7-1~deb13u3
@@ -137079,11 +137079,11 @@ Evidence: archive; source archive SHA-256: 9d1edd110f540c9f7163035f352836dd968ca
 Debian source: libgpg-error 1.51-4.
 - Text 8a8aac2bc43447af39454bc11251d4596edc518f2827df6e77571a561d2cc213
 
-### deb:runtime-arm64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u1
+### deb:runtime-arm64.tsv:libgssapi-krb5-2=1.21.3-5+deb13u2
 
 Coverage: runtime; architecture: arm64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
 ### deb:runtime-arm64.tsv:libhogweed6t64=3.10.1-1
@@ -137121,11 +137121,11 @@ Evidence: archive; source archive SHA-256: c9992d1b78bbb7033c4df7ea126c5de65bdf3
 Debian source: libjson-perl 4.10000-1.
 - Text d5946e9db642b57acc1f396f6917d93f0cec9fec1df240723370fda290882796
 
-### deb:runtime-arm64.tsv:libk5crypto3=1.21.3-5+deb13u1
+### deb:runtime-arm64.tsv:libk5crypto3=1.21.3-5+deb13u2
 
 Coverage: runtime; architecture: arm64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
 ### deb:runtime-arm64.tsv:libkeyutils1=1.6.3-6
@@ -137135,18 +137135,18 @@ Evidence: archive; source archive SHA-256: 6fc3c1217b8e92df9dff73e4919c45dff4ada
 Debian source: keyutils 1.6.3-6.
 - Text 09495b257bc297e39c365b65d0af0d4cd0410582e042adfcbd7d4f9243a167df
 
-### deb:runtime-arm64.tsv:libkrb5-3=1.21.3-5+deb13u1
+### deb:runtime-arm64.tsv:libkrb5-3=1.21.3-5+deb13u2
 
 Coverage: runtime; architecture: arm64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
-### deb:runtime-arm64.tsv:libkrb5support0=1.21.3-5+deb13u1
+### deb:runtime-arm64.tsv:libkrb5support0=1.21.3-5+deb13u2
 
 Coverage: runtime; architecture: arm64; licence: LicenseRef-d5ec3aa131b84f40fe787293.
-Evidence: archive; source archive SHA-256: 02b873b239fbe7ddf016dfe44deba4130673f4606c18c93da0622e2bc8500fb4.
-Debian source: krb5 1.21.3-5+deb13u1.
+Evidence: archive; source archive SHA-256: 68e3ce5ebfffb8c47a7378b09b36b279791b1994b9df3d9a016d5e105f42a02b.
+Debian source: krb5 1.21.3-5+deb13u2.
 - Text 93541df60e2c3dc96ecc859df8c39df3204b1c6be03e0c1905a90b9fd4cfe917
 
 ### deb:runtime-arm64.tsv:liblastlog2-2=2.41.5-0+deb13u1
@@ -137485,11 +137485,11 @@ Evidence: archive; source archive SHA-256: 9116047aebbaa1698934052d01c6e09b4c3ae
 Debian source: netbase 6.5.
 - Text c3865976ab91396ff72c848a7c263d4065c15a1b6e334de46f1d3a91b1bdb40b
 
-### deb:runtime-arm64.tsv:nginx=1.30.7-1~trixie
+### deb:runtime-arm64.tsv:nginx=1.30.8-1~trixie
 
 Coverage: runtime; architecture: arm64; licence: LicenseRef-e9a3a92b84c88d7cc39a9503.
-Evidence: archive; source archive SHA-256: b32bff964b8e64e1297e6da783748b8db1117a68f3d9ad85589b41be79a38f46.
-Debian source: nginx 1.30.7-1~trixie.
+Evidence: archive; source archive SHA-256: 2b8d7b7478a19d09a93c3beec957ddab7312f564af605eef29b933b0894e55f1.
+Debian source: nginx 1.30.8-1~trixie.
 - Text 8e571b551fb2939542af97b00cb96b8b044734e8e9f42458a1485c66b3d5e6f3
 
 ### deb:runtime-arm64.tsv:openssl-provider-legacy=3.5.7-1~deb13u3

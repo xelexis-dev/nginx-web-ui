@@ -312,55 +312,47 @@ async fn fx_a_compat_stored_duplicates_and_long_values_still_render_for_apply() 
 
 #[tokio::test]
 #[ignore="real DB: NWUI_TEST_DATABASE_URL"]
-async fn fx_a_compat_old_gateway_cannot_silently_drop_modern_route_fields() {
+async fn fx_a_compat_can_clear_modern_route_fields() {
     let db=test_db().await;
     for field in ["resolveAtRuntime","retryOtherInstances"] {
         let row=write(&db,Mutation::Create,None,server()).await.unwrap();let id=row["id"].as_str().unwrap();
         let mut cfg=row["config"].clone();cfg["locations"][0][field]=json!(true);
-        db.client.execute("UPDATE nginx_servers SET config=$2 WHERE id=$1",&[&id,&cfg]).await.unwrap();let before=resources::get(&db.client,Resource::Server,id).await.unwrap();
-        let error=resources::mutate_for_gateway(&db.state,Resource::Server,Mutation::Update,Some(id),server(),&actor(),Some("1.19.11")).await.expect_err("old gateway silently lost a 2.0 route field");
-        assert_eq!(error.status,409);assert_eq!(error.message,"이 항목은 2.0 기능을 쓰고 있어 1.19 게이트웨이에서 수정할 수 없습니다 — 게이트웨이를 2.0으로 올리세요");assert_eq!(resources::get(&db.client,Resource::Server,id).await.unwrap(),before);
-        if field=="retryOtherInstances" {
-            let mut preserved=server();preserved["locations"][0]["retryOtherInstances"]=json!(true);
-            resources::mutate_for_gateway(&db.state,Resource::Server,Mutation::Update,Some(id),preserved,&actor(),Some("1.19.11")).await.expect("a preserving old-gateway save must remain allowed");
-        }
-        // The modern UI can intentionally clear it; the protection is version-specific.
-        resources::mutate_for_gateway(&db.state,Resource::Server,Mutation::Update,Some(id),server(),&actor(),Some("2.0.0")).await.unwrap();
+        db.client.execute("UPDATE nginx_servers SET config=$2 WHERE id=$1",&[&id,&cfg]).await.unwrap();
+        let saved=write(&db,Mutation::Update,Some(id),server()).await.unwrap();
+        assert!(saved["config"]["locations"][0].get(field).is_none());
         resources::mutate(&db.state,Resource::Server,Mutation::Delete,Some(id),Value::Null,&actor()).await.unwrap();
     }
-    let ordinary=resources::mutate_for_gateway(&db.state,Resource::Server,Mutation::Create,None,server(),&actor(),Some("1.19.11")).await.unwrap();
-    resources::mutate_for_gateway(&db.state,Resource::Server,Mutation::Update,ordinary["id"].as_str(),server(),&actor(),Some("1.19.11")).await.unwrap();
+    let ordinary=write(&db,Mutation::Create,None,server()).await.unwrap();
+    write(&db,Mutation::Update,ordinary["id"].as_str(),server()).await.unwrap();
 }
 #[tokio::test]
 #[ignore="real DB: NWUI_TEST_DATABASE_URL"]
-async fn fx_a_compat_old_gateway_cannot_drop_upstream_or_stream_runtime_dns() {
+async fn fx_a_compat_can_clear_upstream_or_stream_runtime_dns() {
     let db=test_db().await;
     for (kind,body) in [(Resource::Upstream,json!({"name":"dynamic","servers":["127.0.0.1:19000"]})),(Resource::Stream,json!({"protocol":"tcp","listen":18160,"proxyPass":"127.0.0.1:19000"}))] {
         let row=resources::mutate(&db.state,kind,Mutation::Create,None,body.clone(),&actor()).await.unwrap();let id=row["id"].as_str().unwrap();
-        db.client.execute(&format!("UPDATE {} SET resolve_at_runtime=true WHERE id=$1",kind.table()),&[&id]).await.unwrap();let before=resources::get(&db.client,kind,id).await.unwrap();
-        let error=resources::mutate_for_gateway(&db.state,kind,Mutation::Update,Some(id),body.clone(),&actor(),Some("1.19.11")).await.expect_err("old gateway cleared runtime DNS");assert_eq!(error.status,409);assert_eq!(resources::get(&db.client,kind,id).await.unwrap(),before);
-        resources::mutate(&db.state,kind,Mutation::Update,Some(id),body,&actor()).await.unwrap();
+        db.client.execute(&format!("UPDATE {} SET resolve_at_runtime=true WHERE id=$1",kind.table()),&[&id]).await.unwrap();
+        let saved=resources::mutate(&db.state,kind,Mutation::Update,Some(id),body,&actor()).await.unwrap();
+        assert_ne!(saved["resolveAtRuntime"],true);
     }
 }
 
 #[tokio::test]
 #[ignore="real DB: NWUI_TEST_DATABASE_URL"]
-async fn fx_a_compat_gateway_header_reaches_guard_and_local_form_stays_unchanged() {
+async fn fx_a_compat_version_gate_and_local_form_are_independent() {
     use tower::ServiceExt;
     let db=test_db().await;insert_user(&db.client,UserRow{role:"admin",..Default::default()},None).await;
     db.client.execute("INSERT INTO gateway_tokens(id,name,token_hash,role,created_by_user_id) VALUES('compat','compat',$1,'editor','u1')",&[&nwui_api::auth::token_digest("compat-token")]).await.unwrap();
     let row=write(&db,Mutation::Create,None,server()).await.unwrap();let id=row["id"].as_str().unwrap();let mut cfg=row["config"].clone();cfg["locations"][0]["retryOtherInstances"]=json!(true);
     db.client.execute("UPDATE nginx_servers SET config=$2 WHERE id=$1",&[&id,&cfg]).await.unwrap();let before=resources::get(&db.client,Resource::Server,id).await.unwrap();
-    // Isolate request forwarding from the separately owned mixed-version auth gate.
-    let mut config=(*db.state.config).clone();config.version="1.19.11".into();let mut state=db.state.clone();state.config=std::sync::Arc::new(config);
-    let app=nwui_api::app::with_request_context(nwui_api::control::routes::router().with_state(state),None);
-    let node_request=||axum::http::Request::builder().method("PATCH").uri(format!("/api/v1/servers/{id}")).header("host","admin.example.test").header("authorization","Bearer compat-token").header("x-gateway-version","1.19.11").header("content-type","application/json").extension(axum::extract::ConnectInfo("127.0.0.1:44000".parse::<std::net::SocketAddr>().unwrap())).body(axum::body::Body::from(server().to_string())).unwrap();
-    let response=app.clone().oneshot(node_request()).await.unwrap();assert_eq!(response.status(),409);let body:Value=serde_json::from_slice(&axum::body::to_bytes(response.into_body(),1<<20).await.unwrap()).unwrap();assert_eq!(body["error"]["code"],"gateway_upgrade_required");assert_eq!(resources::get(&db.client,Resource::Server,id).await.unwrap(),before);
+    let app=nwui_api::app::with_request_context(nwui_api::control::routes::router().with_state(db.state.clone()),None);
+    let node_request=|version|axum::http::Request::builder().method("PATCH").uri(format!("/api/v1/servers/{id}")).header("host","admin.example.test").header("authorization","Bearer compat-token").header("x-gateway-version",version).header("content-type","application/json").extension(axum::extract::ConnectInfo("127.0.0.1:44000".parse::<std::net::SocketAddr>().unwrap())).body(axum::body::Body::from(server().to_string())).unwrap();
+    let response=app.clone().oneshot(node_request("1.19.11")).await.unwrap();assert_eq!(response.status(),409);let body:Value=serde_json::from_slice(&axum::body::to_bytes(response.into_body(),1<<20).await.unwrap()).unwrap();assert_eq!(body["error"]["code"],"version_mismatch");assert_eq!(resources::get(&db.client,Resource::Server,id).await.unwrap(),before);
     // No gateway header on local UI forms: an explicit local edit can clear retry.
     let fields=[("id",id),("serverName","strict.test"),("listen","18081"),("targetMode","locations"),("locations",r#"[{"path":"/","mode":"direct","proxyPass":"http://127.0.0.1:19000"}]"#)];
     let response=app.clone().oneshot(request("reverse-proxy.updateServer",&fields)).await.unwrap();assert_eq!(response.status(),200);let body:Value=serde_json::from_slice(&axum::body::to_bytes(response.into_body(),1<<20).await.unwrap()).unwrap();assert_eq!(body["result"]["ok"],true,"{body}");
     let after=resources::get(&db.client,Resource::Server,id).await.unwrap();assert!(after["config"]["locations"][0].get("retryOtherInstances").is_none());
-    assert_eq!(app.oneshot(node_request()).await.unwrap().status(),200,"ordinary old-gateway save refused");
+    assert_eq!(app.oneshot(node_request(db.state.config.version.as_str())).await.unwrap().status(),200);
 }
 
 #[test]
@@ -382,19 +374,19 @@ fn fx_a_compat_tls_null_switches_remain_off_and_malformed_values_are_refused() {
 
 #[tokio::test]
 #[ignore="real DB: NWUI_TEST_DATABASE_URL"]
-async fn fx_a_compat_old_gateway_can_rebind_upstreams_and_switch_to_direct() {
+async fn fx_a_compat_can_rebind_upstreams_and_switch_to_direct() {
     let db=test_db().await;let mut ids=Vec::new();
     for name in ["pool_a","pool_b"] {let row=resources::mutate(&db.state,Resource::Upstream,Mutation::Create,None,json!({"name":name,"servers":["127.0.0.1:19000"]}),&actor()).await.unwrap();ids.push(row["id"].as_str().unwrap().to_owned());}
     let mut body=server();body["locations"][0]=json!({"path":"/","mode":"upstream","upstreamId":ids[0]});let row=write(&db,Mutation::Create,None,body.clone()).await.unwrap();let id=row["id"].as_str().unwrap();
     body["locations"][0]["upstreamId"]=json!(ids[1]);
-    let changed=resources::mutate_for_gateway(&db.state,Resource::Server,Mutation::Update,Some(id),body,&actor(),Some("1.19.11")).await.expect("released 1.19 ID selection A to B must remain allowed");assert_eq!(changed["config"]["locations"][0]["upstreamId"],ids[1]);
-    let direct=resources::mutate_for_gateway(&db.state,Resource::Server,Mutation::Update,Some(id),server(),&actor(),Some("1.19.11")).await.expect("released 1.19 upstream to direct switch must remain allowed");assert!(direct["config"]["locations"][0].get("upstreamId").is_none());assert_eq!(direct["config"]["locations"][0]["proxyPass"],"http://127.0.0.1:19000");
+    let changed=write(&db,Mutation::Update,Some(id),body).await.expect("upstream selection A to B must remain allowed");assert_eq!(changed["config"]["locations"][0]["upstreamId"],ids[1]);
+    let direct=write(&db,Mutation::Update,Some(id),server()).await.expect("upstream to direct switch must remain allowed");assert!(direct["config"]["locations"][0].get("upstreamId").is_none());assert_eq!(direct["config"]["locations"][0]["proxyPass"],"http://127.0.0.1:19000");
 }
 #[tokio::test]
 #[ignore="real DB: NWUI_TEST_DATABASE_URL"]
-async fn fx_a_compat_old_gateway_cannot_drop_server_level_runtime_dns() {
+async fn fx_a_compat_can_clear_server_level_runtime_dns() {
     let db=test_db().await;let row=write(&db,Mutation::Create,None,server()).await.unwrap();let id=row["id"].as_str().unwrap();
-    let mut cfg=row["config"].clone();cfg["resolveAtRuntime"]=json!(true);db.client.execute("UPDATE nginx_servers SET config=$2 WHERE id=$1",&[&id,&cfg]).await.unwrap();let before=resources::get(&db.client,Resource::Server,id).await.unwrap();
-    let error=resources::mutate_for_gateway(&db.state,Resource::Server,Mutation::Update,Some(id),server(),&actor(),Some("1.19.11")).await.expect_err("legacy server-level runtime flag silently dropped");assert_eq!(error.status,409);assert_eq!(resources::get(&db.client,Resource::Server,id).await.unwrap(),before);
-    write(&db,Mutation::Update,Some(id),server()).await.expect("no-header explicit edit must remain unchanged");
+    let mut cfg=row["config"].clone();cfg["resolveAtRuntime"]=json!(true);db.client.execute("UPDATE nginx_servers SET config=$2 WHERE id=$1",&[&id,&cfg]).await.unwrap();
+    let saved=write(&db,Mutation::Update,Some(id),server()).await.unwrap();
+    assert_ne!(saved["config"]["resolveAtRuntime"],true);
 }

@@ -68,14 +68,6 @@ pub fn classify_response(status:u16,node_version:Option<String>,body:Value)->Nod
 
 #[derive(Clone)]
 pub struct NodeHttp { verified:crate::outbound::HttpClient, insecure:crate::outbound::HttpClient, version:String }
-pub fn gateway_version<'a>(local: &'a str, node: Option<&str>) -> &'a str {
-    let parsed = node.and_then(crate::auth::node_version::parse_semver);
-    if parsed.is_some_and(|v| (v.major, v.minor) == (1, 19))
-        && crate::auth::node_version::parse_semver(local).is_some_and(|v| (v.major, v.minor) == (2, 0)) {
-        "1.19.11"
-    } else { local }
-}
-
 impl NodeHttp {
     pub fn new(version:&str,config:&crate::config::RuntimeConfig)->Result<Self,reqwest::Error> {
         let builder=||Client::builder().redirect(reqwest::redirect::Policy::none()).no_proxy()
@@ -93,7 +85,7 @@ impl NodeHttp {
         if url.origin()!=base.origin() || !url.path().starts_with("/api/v1/") { return Err(bad()); }
         let client=if target.allow_insecure_tls {&self.insecure}else{&self.verified};
         let client=client.for_url(&url).map_err(|_|bad())?;
-        let mut request=client.request(method,url).header("x-gateway-version",gateway_version(&self.version,target.node_version.as_deref())).header("accept","application/json");
+        let mut request=client.request(method,url).header("x-gateway-version",&self.version).header("accept","application/json");
         if let Some(sealed)=&target.token_enc {
             let token=secrets.open(Some(sealed)).filter(|s|!s.is_empty()).ok_or_else(||NodeResult::failure(FailureKind::Unauthorized,"저장된 노드 토큰을 읽을 수 없습니다. 다시 연결하세요.",None))?;
             request=request.bearer_auth(token);
@@ -120,17 +112,10 @@ impl NodeHttp {
         match result { Ok(Ok(response))=>response,Ok(Err(error))=>error,Err(_)=>NodeResult::failure(FailureKind::Unreachable,"노드 요청 시간이 초과되었습니다.",None) }
     }
 
-    /// Retry only the authenticated info GET; both attempts share one deadline.
+    /// Probe the node and verify the reported version and instance.
     pub async fn negotiate_info(&self, secrets: &SecretBox, target: &NodeTarget, instance: &str) -> NodeResult {
         let probe = async {
-            let mut target = target.clone();
-            let mut result = self.call(secrets, &target, Method::GET, "/api/v1/info", None, PROBE_TIMEOUT).await;
-            if let NodeResult::Failure { kind: FailureKind::VersionMismatch, node_version: Some(version), .. } = &result {
-                if gateway_version(&self.version, Some(version)) != gateway_version(&self.version, target.node_version.as_deref()) {
-                    target.node_version = Some(version.clone());
-                    result = self.call(secrets, &target, Method::GET, "/api/v1/info", None, PROBE_TIMEOUT).await;
-                }
-            }
+            let mut result = self.call(secrets, target, Method::GET, "/api/v1/info", None, PROBE_TIMEOUT).await;
             if let NodeResult::Success { value, node_version, .. } = &mut result {
                 let body_version = value["semver"].as_str();
                 let version = node_version.as_deref().or(body_version);

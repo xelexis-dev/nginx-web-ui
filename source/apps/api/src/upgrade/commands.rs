@@ -310,8 +310,8 @@ mod tests {
         let locks=StorageLocks::acquire(&roots.db,&roots.app).unwrap();let mut j=Journal::begin(&roots.app,&locks,Branch::Upgrade,Candidate{revision:"0".repeat(40),pins_sha256:"1".repeat(64),migrations_sha256:"2".repeat(64)}).unwrap();j.ensure_app_pool().unwrap();
         let now=chrono::Utc::now();for _ in 0..2 {j.record_retry_failure(Step::P3Convert,"interrupted",now).unwrap();}j.set_outcome(super::super::Outcome::Restored).unwrap();
         let before=fs::read(roots.app.join(".nwui-auto/journal-v1.json")).unwrap();
-        let value=offline_status(&roots,&j.load().candidate,now).unwrap().unwrap();assert!(value.retry.next_eligible_at.is_none());assert!(value.retry.reason.is_none());assert!(value.failure.as_ref().unwrap().next_action.contains("2.0.x 최신(2.0.3 이상)"));assert!(value.backup.is_none());
-        let mut next=j.load().candidate.clone();next.revision="f".repeat(40);let value=offline_status(&roots,&next,now).unwrap().unwrap();assert!(value.retry.next_eligible_at.is_none());assert!(value.retry.reason.is_none());assert!(value.failure.unwrap().next_action.contains("2.0.x 최신(2.0.3 이상)"));
+        let value=offline_status(&roots,&j.load().candidate,now).unwrap().unwrap();assert!(value.retry.next_eligible_at.is_none());assert!(value.retry.reason.is_none());assert_eq!(value.failure.as_ref().unwrap().next_action,super::super::legacy::GUIDANCE);assert!(value.backup.is_none());
+        let mut next=j.load().candidate.clone();next.revision="f".repeat(40);let value=offline_status(&roots,&next,now).unwrap().unwrap();assert!(value.retry.next_eligible_at.is_none());assert!(value.retry.reason.is_none());assert_eq!(value.failure.unwrap().next_action,super::super::legacy::GUIDANCE);
         assert_eq!(fs::read(roots.app.join(".nwui-auto/journal-v1.json")).unwrap(),before);
     }
     #[test]
@@ -336,7 +336,8 @@ mod legacy_refusal_tests {
         let before=fs::read(app.join(".nwui-auto/journal-v1.json")).unwrap();let descriptor=t.path().join("selection.json");let status=t.path().join("status.json");
         crate::upgrade::refusal::publish_unrecorded_at(&crate::upgrade::legacy::required(),&db,&descriptor,&status,||Ok(())).unwrap();
         let text=unrecorded_status_at(&app,&status,&descriptor).unwrap().unwrap();
-        assert!(text.contains("requires_2_0_first"));assert!(text.contains("2.0.x 최신(2.0.3 이상)"));assert!(text.contains("변경하지 않았습니다"));
+        assert!(text.lines().any(|line| line == "requires_2_0_first: 1.x(PostgreSQL 15) 데이터입니다. 먼저 2.0.3 이미지에서 이전을 완료한 뒤 최신 2.x로 올리세요. 기존 데이터는 변경하지 않았습니다. 같은 볼륨을 그대로 연결해 2.0.3에서 이전을 마친 뒤 최신 2.x로 올리세요."),"{text}");
+        assert!(!text.contains("2.0.x 최신") && !text.contains("2.1로"),"{text}");
         assert_eq!(fs::read(app.join(".nwui-auto/journal-v1.json")).unwrap(),before);
         assert_eq!(crate::upgrade::status::read_at(&status).unwrap().outcome,crate::upgrade::Outcome::RefusedPreflight);
     }

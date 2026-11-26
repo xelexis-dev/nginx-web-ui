@@ -274,6 +274,7 @@
   color: var(--danger-text);
 }
 .errorTag {
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   min-height: 20px;

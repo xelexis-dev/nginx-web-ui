@@ -368,14 +368,7 @@ pub async fn pair_node(
         allow_insecure_tls: input.allow_insecure_tls,
     };
     let body = json!({"token":pair.token,"gatewayName":pair.gateway_name,"role":role_str(pair.role)});
-    let mut response=state.node_http.call(&state.secrets,&target,Method::POST,"/api/v1/pair",Some(&body),DEFAULT_TIMEOUT).await;
-    // Pairing alone may retry a POST: legacy nodes refuse it before issuing a token.
-    if let NodeResult::Failure { kind: FailureKind::VersionMismatch, node_version: Some(version), .. } = &response {
-        if super::client::gateway_version(&state.config.version, Some(version)) == "1.19.11" {
-            target.node_version = Some(version.clone());
-            response=state.node_http.call(&state.secrets,&target,Method::POST,"/api/v1/pair",Some(&body),DEFAULT_TIMEOUT).await;
-        }
-    }
+    let response=state.node_http.call(&state.secrets,&target,Method::POST,"/api/v1/pair",Some(&body),DEFAULT_TIMEOUT).await;
     let NodeResult::Success { value, node_version, .. } = response else {
         return Ok(Err(remote_failure(response, &input.base_url)));
     };

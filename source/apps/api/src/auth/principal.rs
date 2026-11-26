@@ -270,7 +270,7 @@ pub fn bearer_token(headers: &HeaderMap) -> Option<String> {
     (scheme.eq_ignore_ascii_case("bearer") && !token.is_empty()).then(|| token.to_owned())
 }
 
-/// Accept a same-major gateway (≥ 2) whose minor is at least this node’s, or 2.0 ↔ 1.19.
+/// Accept a same-major gateway (≥ 2) whose minor is at least this node’s.
 /// Major 1 keeps exact major.minor; missing or unreadable → 409.
 pub fn check_gateway_version(headers: &HeaderMap, node_version: &str) -> Result<(), ApiError> {
     // Fetch joins repeated headers with ", " — that is what TS compared (and it never parses).
@@ -453,10 +453,10 @@ mod tests {
 
     #[test]
     fn gateway_first_at_the_node() {
-        for gateway in ["2.0.0", "2.0.9", "2.1.0", "2.9.3", "1.19.0", "1.19.11"] {
+        for gateway in ["2.0.0", "2.0.9", "2.1.0", "2.9.3"] {
             assert!(check_gateway_version(&headers(&[("x-gateway-version", gateway)]), "2.0.0").is_ok(), "{gateway}");
         }
-        for gateway in [None, Some("3.0.0"), Some("1.18.9"), Some("1.20.0"), Some(""), Some("junk")] {
+        for gateway in [None, Some("3.0.0"), Some("1.18.9"), Some("1.19.0"), Some("1.19.11"), Some("1.20.0"), Some(""), Some("junk")] {
             let h = gateway.map(|g| headers(&[("x-gateway-version", g)])).unwrap_or_default();
             let err = check_gateway_version(&h, "2.0.0").unwrap_err();
             assert_eq!((err.status, err.code), (StatusCode::CONFLICT, "version_mismatch"));

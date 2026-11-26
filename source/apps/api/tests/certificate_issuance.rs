@@ -423,18 +423,25 @@ async fn issued_leaf_apply_failure_is_pending_not_success_and_retries_without_an
         .unwrap();
     let worker = jobs::start(t.state.clone()).await.unwrap();
     wait(&t, &id, "issued").await;
-    for _ in 0..100 {
-        let err: Option<String> = t
-            .client
-            .query_one("SELECT last_error FROM certificates WHERE id=$1", &[&id])
-            .await
-            .unwrap()
-            .get(0);
-        if err.is_some() {
-            break;
+    let failures = tokio::time::timeout(Duration::from_secs(20), async {
+        loop {
+            let count: i64 = t
+                .client
+                .query_one(
+                    "SELECT count(*) FROM notifications WHERE type='cert.renew_failed'",
+                    &[],
+                )
+                .await
+                .unwrap()
+                .get(0);
+            if count > 0 {
+                break count;
+            }
+            tokio::time::sleep(Duration::from_millis(20)).await;
         }
-        tokio::time::sleep(Duration::from_millis(20)).await;
-    }
+    })
+    .await
+    .expect("failed deployment must announce renewal failure");
     let success: i64 = t
         .client
         .query_one(
@@ -448,15 +455,6 @@ async fn issued_leaf_apply_failure_is_pending_not_success_and_retries_without_an
         success, 0,
         "issuance must not announce deployment success before apply succeeds"
     );
-    let failures: i64 = t
-        .client
-        .query_one(
-            "SELECT count(*) FROM notifications WHERE type='cert.renew_failed'",
-            &[],
-        )
-        .await
-        .unwrap()
-        .get(0);
     assert_eq!(failures, 1);
     let state: String = t
         .client

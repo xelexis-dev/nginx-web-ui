@@ -2,8 +2,7 @@
 
 import type { ReactNode } from "react";
 import { Button } from "./button";
-import { Modal } from "./modal";
-import styles from "./modal.module.css";
+import { Modal, modalTargetClassName } from "./modal";
 
 export interface ConfirmDialogProps {
   open: boolean;
@@ -58,7 +57,7 @@ export function ConfirmDialog({
       }
     >
       {target ? (
-        <div className={styles.target}>
+        <div className={modalTargetClassName}>
           <span>대상</span>
           <strong>{target}</strong>
         </div>

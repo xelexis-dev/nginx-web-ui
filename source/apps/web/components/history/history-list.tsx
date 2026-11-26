@@ -9,6 +9,7 @@ import {
   StatusBadge,
   PageHeader,
 } from "@repo/ui";
+import type { RetentionCleanup } from "@repo/contracts";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { HistoryTime } from "./history-time";
@@ -51,6 +52,7 @@ export interface HistoryListVM {
   items: HistoryRowVM[];
   /** true: 사용자·Upstreams·Servers·Streams 열도 그린다(로컬). false: 시간·라벨만(노드). */
   showDetails: boolean;
+  lastCleanup?: RetentionCleanup | null;
 }
 
 export interface HistoryListProps {
@@ -73,7 +75,7 @@ export function HistoryList({
   basePath,
   renderRowAction,
 }: HistoryListProps) {
-  const { items, showDetails } = data;
+  const { items, showDetails, lastCleanup } = data;
 
   return (
     <section className={layout.page}>
@@ -156,6 +158,12 @@ export function HistoryList({
             ))}
           </tbody>
         </Table>
+        {lastCleanup && (
+          <p className={layout.listNote}>
+            목록은 최근 50건까지 보여 줍니다. 그보다 오래된 이력 가운데 일부는 보존 기간이 지나 지워졌습니다. 마지막 정리{" "}
+            <HistoryTime iso={lastCleanup.at} /> · {lastCleanup.deleted.toLocaleString("ko-KR")}건
+          </p>
+        )}
       </Surface>
     </section>
   );

@@ -27,10 +27,6 @@ impl Snapshot {
     pub fn require_equivalent(&self,target:&Self)->Result<()> {if self.canonical()?!=target.canonical()?{return Err(Error{code:"baseline_changed",message:"이전 기준과 데이터가 달라졌습니다. 전환 후 데이터 변경은 정상일 수 있습니다.",exit:1,detail:None});}Ok(())}
     pub fn key_required(&self)->bool{self.data.values().any(|db|db.has_encrypted)}
     pub fn table_counts(&self)->Result<BTreeMap<String,u64>>{Ok(self.data.get(&self.application()?).ok_or_else(unsupported)?.tables.iter().map(|(name,table)|(name.clone(),table.rows)).collect())}
-    pub(super) fn needs_reindex(&self,db:&Database)->bool {
-        let stable=|locale:&str|matches!(locale,"C"|"POSIX");
-        db.provider=="i"||!stable(&db.collate)||!stable(&db.ctype)||self.collations.get(&db.name).is_some_and(|collations|collations.iter().any(|c|c.provider=="i"||(c.provider=="c"&&!c.locale.as_deref().is_some_and(stable))||c.recorded!=c.actual))
-    }
 }
 async fn template0(client:&tokio_postgres::Client,enable:bool)->Result<()> {
     if enable {
@@ -78,34 +74,4 @@ async fn inspect_inner(socket:&Path,password:&str,key:Option<&SecretBox>,fresh:b
         let (snapshot,bytes,used)=result?;largest_index_bytes=largest_index_bytes.max(bytes);data.insert(db.name.clone(),snapshot);collations.insert(db.name.clone(),used);
     }
     Ok(Snapshot{databases,roles,data,collations,largest_index_bytes})
-}
-pub async fn postprocess(socket:&Path,baseline:&Snapshot)->Result<()> {
-    let root=inspect::connect(socket,"postgres","postgres",None).await?;
-    for db in &baseline.databases {
-        if db.name=="template0"{template0(&root.client,true).await?;}
-        let result=async {
-            let connection=inspect::connect(socket,&db.name,"postgres",None).await?;let client=&connection.client;
-            client.batch_execute("SET default_transaction_read_only=off").await.map_err(|_|failed())?;
-            if baseline.needs_reindex(db){client.batch_execute(&format!("REINDEX DATABASE {}",inspect::quote(&db.name))).await.map_err(|_|failed())?;}
-            if let Some(collations)=baseline.collations.get(&db.name) {
-                for collation in collations {
-                    if collation.provider=="d"{continue;}
-                    let version:bool=client.query_one("SELECT collversion IS NOT DISTINCT FROM pg_collation_actual_version(c.oid) FROM pg_collation c JOIN pg_namespace n ON n.oid=c.collnamespace WHERE n.nspname=$1 AND c.collname=$2",&[&collation.schema,&collation.name]).await.map_err(|_|failed())?.get(0);
-                    if !version {
-                        client.batch_execute(&format!("ALTER COLLATION {}.{} REFRESH VERSION",inspect::quote(&collation.schema),inspect::quote(&collation.name))).await.map_err(|_|failed())?;
-                        let matches:bool=client.query_one("SELECT collversion IS NOT DISTINCT FROM pg_collation_actual_version(c.oid) FROM pg_collation c JOIN pg_namespace n ON n.oid=c.collnamespace WHERE n.nspname=$1 AND c.collname=$2",&[&collation.schema,&collation.name]).await.map_err(|_|failed())?.get(0);
-                        if !matches{return Err(failed());}
-                    }
-                }
-            }
-            let matches:bool=client.query_one("SELECT datcollversion IS NOT DISTINCT FROM pg_database_collation_actual_version(oid) FROM pg_database WHERE datname=current_database()",&[]).await.map_err(|_|failed())?.get(0);
-            if !matches {client.batch_execute(&format!("ALTER DATABASE {} REFRESH COLLATION VERSION",inspect::quote(&db.name))).await.map_err(|_|failed())?;}
-            let matches:bool=client.query_one("SELECT datcollversion IS NOT DISTINCT FROM pg_database_collation_actual_version(oid) FROM pg_database WHERE datname=current_database()",&[]).await.map_err(|_|failed())?.get(0);
-            if !matches{return Err(failed());}
-            client.batch_execute("ANALYZE").await.map_err(|_|failed())?;Ok::<(),Error>(())
-        }.await;
-        if db.name=="template0"{template0(&root.client,false).await?;}
-        result?;
-    }
-    Ok(())
 }

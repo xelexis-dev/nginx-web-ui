@@ -3,7 +3,7 @@
   "status": "provenance-verified-not-built",
   "interfaceCommit": "69cc8686",
   "debianSnapshot": "20261107T082527Z",
-  "debianSecuritySnapshot": "20261113T212035Z",
+  "debianSecuritySnapshot": "20261123T220438Z",
   "baseImages": {
     "node": {
       "image": "node:24.22.3-trixie-slim@sha256:af02d57b57719b9657a45199a79264a9437940cd55b3c7b3fc99615654f124a0",
@@ -86,11 +86,11 @@
     },
     {
       "file": "debian-trixie-security.InRelease",
-      "url": "https://snapshot.debian.org/archive/debian-security/20261113T212035Z/dists/trixie-security/InRelease",
-      "sha256": "9c4997c6dbb1e4304771b141a9e2c3fd564b9356db65ef219d9d19e10f186367",
+      "url": "https://snapshot.debian.org/archive/debian-security/20261123T220438Z/dists/trixie-security/InRelease",
+      "sha256": "8a396554cdf96a73116cb1212749ac1f440c209e379f55a52e5fe6af48a0e4db",
       "size": 43409,
-      "date": "Fri, 13 Nov 2026 21:16:50 UTC",
-      "validUntil": "Fri, 20 Nov 2026 21:16:50 UTC",
+      "date": "Mon, 23 Nov 2026 22:04:04 UTC",
+      "validUntil": "Mon, 30 Nov 2026 22:04:04 UTC",
       "verifiedPrimaryFingerprints": [
         "05AB90340C0C5E797F44A8C8254CF3B5AEC0A8F0",
         "5E04A1E3223A19A20706E20F9904613D4CCE68C6"
@@ -98,17 +98,17 @@
       "indexes": [
         {
           "path": "main/binary-amd64/Packages.xz",
-          "sha256": "8485847b0ef3312d768062bd90338e0f26d325b8f4b527faf9f9ad04046a6e13",
-          "size": 303376,
-          "url": "https://snapshot.debian.org/archive/debian-security/20261113T212035Z/dists/trixie-security/main/binary-amd64/Packages.xz",
+          "sha256": "ee143bedc12ecab80e20fe7bdc8666f38ad5785d691dd5d9f295b05bb0f9c96c",
+          "size": 309272,
+          "url": "https://snapshot.debian.org/archive/debian-security/20261123T220438Z/dists/trixie-security/main/binary-amd64/Packages.xz",
           "suite": "trixie-security",
           "architecture": "amd64"
         },
         {
           "path": "main/binary-arm64/Packages.xz",
-          "sha256": "d7903360740b7fa2c0aadd39e5f2510b85b2eb78c4cd34f47ac8c16133634f78",
-          "size": 304248,
-          "url": "https://snapshot.debian.org/archive/debian-security/20261113T212035Z/dists/trixie-security/main/binary-arm64/Packages.xz",
+          "sha256": "a3c5deabed21538ca8cf60d4ea1137b048f5f527703db6d854816594d1014c90",
+          "size": 310624,
+          "url": "https://snapshot.debian.org/archive/debian-security/20261123T220438Z/dists/trixie-security/main/binary-arm64/Packages.xz",
           "suite": "trixie-security",
           "architecture": "arm64"
         }
@@ -117,9 +117,9 @@
     {
       "file": "nginx.Release",
       "url": "https://nginx.org/packages/debian/dists/trixie/Release",
-      "sha256": "4f33eccd5374605e0323f14c04c7cf70c22bec92cbe91bc57e44d5bef6ca9231",
+      "sha256": "85db4b21f8cc40c3ebc55f095261d9be5294b98f03fed25c8a881c157bb9b01d",
       "size": 2354,
-      "date": "Wed, 11 Nov 2026 21:11:29 UTC",
+      "date": "Thu, 19 Nov 2026 21:13:53 UTC",
       "validUntil": null,
       "verifiedPrimaryFingerprints": [
         "8540A6F18833A80E9C1653A42FD21310B49F6B46"
@@ -127,15 +127,15 @@
       "indexes": [
         {
           "path": "nginx/binary-amd64/Packages",
-          "sha256": "4711e3c1a428fcddc940def0972836a81d5268467088b066e3466453d3f5e6fe",
-          "size": 175106,
+          "sha256": "e07c9924612240e1b56fb19d9916d56505b47360c26762b9ce7d521d88367977",
+          "size": 187167,
           "url": "https://nginx.org/packages/debian/dists/trixie/nginx/binary-amd64/Packages",
           "architecture": "amd64"
         },
         {
           "path": "nginx/binary-arm64/Packages",
-          "sha256": "419225c6441974508178fe2ee1e7b9b37a3a7af00404db0254c0e4847729054a",
-          "size": 175110,
+          "sha256": "102a999e0bfa9e5cf628e2ce0814340a072202acac294586f9022c09f32887c6",
+          "size": 187172,
           "url": "https://nginx.org/packages/debian/dists/trixie/nginx/binary-arm64/Packages",
           "architecture": "arm64"
         }
@@ -155,24 +155,24 @@
   "approvedExternalPackages": [
     {
       "Package": "nginx",
-      "Version": "1.30.7-1~trixie",
+      "Version": "1.30.8-1~trixie",
       "Architecture": "amd64",
-      "Filename": "pool/nginx/n/nginx/nginx_1.30.7-1~trixie_amd64.deb",
-      "Size": "1089144",
-      "SHA256": "7e9e787849bed1fbb677868fc8ee86f8b513cd9e46ad29e41c7710cec3c8825d",
+      "Filename": "pool/nginx/n/nginx/nginx_1.30.8-1~trixie_amd64.deb",
+      "Size": "1089588",
+      "SHA256": "923cb6e3b49bc2b6af9aac5d951eb0ba0441f76b40c51ba0986d581a08aa9af4",
       "Depends": "libc6 (>= 2.34), libcrypt1 (>= 1:4.1.0), libpcre2-8-0 (>= 10.22), libssl3t64 (>= 3.5.0), zlib1g (>= 1:1.1.4), lsb-base (>= 3.0-6)",
-      "url": "https://nginx.org/packages/debian/pool/nginx/n/nginx/nginx_1.30.7-1~trixie_amd64.deb",
+      "url": "https://nginx.org/packages/debian/pool/nginx/n/nginx/nginx_1.30.8-1~trixie_amd64.deb",
       "origin": "nginx.org"
     },
     {
       "Package": "nginx",
-      "Version": "1.30.7-1~trixie",
+      "Version": "1.30.8-1~trixie",
       "Architecture": "arm64",
-      "Filename": "pool/nginx/n/nginx/nginx_1.30.7-1~trixie_arm64.deb",
-      "Size": "1016448",
-      "SHA256": "b32bff964b8e64e1297e6da783748b8db1117a68f3d9ad85589b41be79a38f46",
+      "Filename": "pool/nginx/n/nginx/nginx_1.30.8-1~trixie_arm64.deb",
+      "Size": "1017000",
+      "SHA256": "2b8d7b7478a19d09a93c3beec957ddab7312f564af605eef29b933b0894e55f1",
       "Depends": "libc6 (>= 2.34), libcrypt1 (>= 1:4.1.0), libpcre2-8-0 (>= 10.22), libssl3t64 (>= 3.5.0), zlib1g (>= 1:1.1.4), lsb-base (>= 3.0-6)",
-      "url": "https://nginx.org/packages/debian/pool/nginx/n/nginx/nginx_1.30.7-1~trixie_arm64.deb",
+      "url": "https://nginx.org/packages/debian/pool/nginx/n/nginx/nginx_1.30.8-1~trixie_arm64.deb",
       "origin": "nginx.org"
     }
   ],
