@@ -1,6 +1,7 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { BasicFormState } from "@repo/contracts";
+import { buttonClassName } from "@repo/ui";
 const mocks = vi.hoisted(() => ({
   state: { ok: false } as BasicFormState,
   open: false,
@@ -62,9 +63,9 @@ beforeEach(() => {
 });
 it("offers reset only for another enrolled account and preserves all non-action states", () => {
   const props = { user, isSelf: false, canReset: true, passkeyCount: 2 };
-  expect(renderToStaticMarkup(<AdminTwoFactor {...props} />)).toContain(
-    "2FA 초기화</button>",
-  );
+  const enabled = renderToStaticMarkup(<AdminTwoFactor {...props} />);
+  const reset = enabled.match(/<button[^>]*>2FA 초기화<\/button>/)?.[0];
+  expect(reset).toContain(`class="${buttonClassName({ variant: "dangerOutline", size: "sm" })}"`);
   const off = renderToStaticMarkup(
     <AdminTwoFactor {...props} user={{ ...user, totpEnabled: false }} />,
   );
@@ -154,9 +155,12 @@ it("locks close, cancel and submit while resetting", () => {
 });
 
 import { EditUserForms } from "./[id]/edit/edit-user-forms";
-import { UserDetailActions } from "./[id]/detail-actions";
+import { UserDetailView } from "./user-detail";
 it("warns before password reset and account disable revoke the user's tokens", () => {
   expect(renderToStaticMarkup(<EditUserForms id="u1" email="owner@example.test" currentRole="editor" hasPassword />)).toContain("비밀번호를 재설정하면 이 사용자의 API 토큰도 모두 폐기됩니다.");
-  expect(renderToStaticMarkup(<UserDetailActions id="u1" isSelf={false} enabled />)).toContain("비활성화하면 이 사용자의 API 토큰도 모두 폐기됩니다.");
-  expect(renderToStaticMarkup(<UserDetailActions id="u1" isSelf={false} enabled={false} />)).not.toContain("API 토큰도 모두 폐기됩니다.");
+  const warning = "비활성화하면 이 사용자의 API 토큰도 모두 폐기됩니다.";
+  const active = renderToStaticMarkup(<UserDetailView user={user} isSelf={false} detailActions={null} />);
+  expect(active.split("</header>")[1]).toContain(warning);
+  expect(renderToStaticMarkup(<UserDetailView user={{ ...user, enabled: false }} isSelf={false} detailActions={null} />)).not.toContain(warning);
+  expect(renderToStaticMarkup(<UserDetailView user={user} isSelf detailActions={null} />)).not.toContain(warning);
 });

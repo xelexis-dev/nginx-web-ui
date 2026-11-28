@@ -3,7 +3,7 @@ use super::protocol::Cancellation;
 use super::{
     CertificateError,
     cloudflare::CloudflareClient,
-    protocol::{AcmeClient, DnsTxtStatus, DnsVerifier, HttpChallengeStore},
+    protocol::{AcmeClient, DnsTxtStatus, DnsVerifier, HttpChallengeStore, IssuanceTrace},
     store::{self, JobPayload},
 };
 use crate::{contracts::Actor, state::AppState};
@@ -152,7 +152,9 @@ async fn recover(state: &AppState) -> anyhow::Result<()> {
     // Only interrupted manual validations are resumable. A previous failure or
     // an unsubmitted TXT wait is not a new issuance request.
     let now = chrono::Utc::now();
-    let rows=tx.query("SELECT c.id,c.status::text,c.dns_order,c.last_attempt_at,c.created_at,EXISTS(SELECT 1 FROM certificate_jobs j WHERE j.certificate_id=c.id AND j.kind='dns_complete' AND j.state='active' AND NOT j.cancel_requested) AS interrupted FROM certificates c WHERE c.dns_order IS NOT NULL AND c.dns_provider IS NULL AND NOT EXISTS(SELECT 1 FROM certificate_jobs j WHERE j.certificate_id=c.id AND (j.state IN ('queued','cleanup') OR (j.state='active' AND (j.kind<>'dns_complete' OR j.cancel_requested)))) ORDER BY c.id FOR UPDATE OF c",&[]).await?;
+    let interrupted_jobs = tx.query("SELECT j.certificate_id,c.domains,j.payload_enc,c.dns_order FROM certificate_jobs j LEFT JOIN certificates c ON c.id=j.certificate_id WHERE j.state='active'",&[]).await?;
+    let mut expired_orders = Vec::new();
+    let rows=tx.query("SELECT c.id,c.status::text,c.dns_order,c.last_attempt_at,c.created_at,EXISTS(SELECT 1 FROM certificate_jobs j WHERE j.certificate_id=c.id AND j.kind='dns_complete' AND j.state='active' AND NOT j.cancel_requested) AS interrupted,c.domains,c.last_error FROM certificates c WHERE c.dns_order IS NOT NULL AND c.dns_provider IS NULL AND NOT EXISTS(SELECT 1 FROM certificate_jobs j WHERE j.certificate_id=c.id AND (j.state IN ('queued','cleanup') OR (j.state='active' AND (j.kind<>'dns_complete' OR j.cancel_requested)))) ORDER BY c.id FOR UPDATE OF c",&[]).await?;
     for row in rows {
         let id: String = row.get(0);
         let status: String = row.get(1);
@@ -176,12 +178,18 @@ async fn recover(state: &AppState) -> anyhow::Result<()> {
         };
         if expired {
             let message = "DNS 주문이 만료되었거나 유효기간을 확인할 수 없습니다. 다시 발급하세요.";
+            if !interrupted && status != "failed" && row.get::<_, Option<String>>(7).as_deref() != Some(DNS_RESTARTED) {
+                let names: Vec<String> = serde_json::from_value(row.get(6)).unwrap_or_default();
+                expired_orders.push(issuance_line(&id, &names, IssuanceEvent::Failure {
+                    reason: message,
+                    order_url: order["order"]["url"].as_str(),
+                }));
+            }
             tx.execute("UPDATE certificates SET dns_order=NULL,status=CASE WHEN status IN ('issuing','awaiting-dns') THEN 'failed'::cert_status ELSE status END,last_error=CASE WHEN status='failed' THEN last_error ELSE $2 END,issue_log=issue_log||$3::jsonb WHERE id=$1",&[&id,&message,&json!([{"at":now,"level":if status=="issued"{"info"}else{"error"},"msg":message}])]).await?;
         } else if status != "failed"
             && (interrupted || order.get("submittedAt").is_some_and(|v| !v.is_null()))
         {
-            let message =
-                "서버 재시작으로 검증이 중단되었습니다. TXT 레코드를 그대로 두고 다시 확인하세요.";
+            let message = DNS_RESTARTED;
             tx.execute("UPDATE certificates SET dns_order=dns_order-'submittedAt',status=CASE WHEN status='issuing' THEN 'awaiting-dns'::cert_status ELSE status END,last_error=$2,issue_log=issue_log||$3::jsonb WHERE id=$1",&[&id,&message,&json!([{"at":now,"level":"info","msg":if status=="issued"{"갱신 검증이 재시작으로 중단됨 — 기존 인증서는 그대로 유지됩니다"}else{message}}])]).await?;
         }
     }
@@ -193,6 +201,24 @@ async fn recover(state: &AppState) -> anyhow::Result<()> {
     tx.execute("UPDATE certificates c SET status='failed',last_error='API 재시작으로 발급이 중단되었습니다.',dns_order=NULL,issue_log=issue_log||$1::jsonb WHERE status='issuing' AND NOT EXISTS(SELECT 1 FROM certificate_jobs j WHERE j.certificate_id=c.id AND j.state IN ('queued','active','cleanup'))",&[&stopped_log]).await?;
     tx.execute("DELETE FROM acme_challenges a WHERE created_at<now()-interval '1 hour' AND NOT EXISTS(SELECT 1 FROM certificate_jobs j WHERE j.http_tokens ? a.token)",&[]).await?;
     tx.commit().await?;
+    for row in interrupted_jobs {
+        let id: String = row.get(0);
+        let sealed: String = row.get(2);
+        let payload: Option<JobPayload> = state.secrets.open(Some(&sealed))
+            .and_then(|value| serde_json::from_str(&value).ok());
+        let names = payload.as_ref().map(|payload| payload.domains.clone())
+            .or_else(|| serde_json::from_value(row.get::<_, Option<Value>>(1)?).ok())
+            .unwrap_or_default();
+        let stored_order: Option<Value> = row.get(3);
+        let order_url = payload.as_ref().and_then(|payload| saved_order_url(payload.dns_order.as_ref()))
+            .or_else(|| saved_order_url(stored_order.as_ref()));
+        eprintln!("{}", issuance_line(&id, &names, IssuanceEvent::Failure {
+            reason: RESTARTED, order_url,
+        }));
+    }
+    for line in expired_orders {
+        eprintln!("{line}");
+    }
     Ok(())
 }
 /// Safety net only. Every path that queues a job (create, retry, renew, DNS
@@ -285,7 +311,14 @@ async fn run_loop(
                 let db = state.db.get().await?;
                 db.execute("UPDATE certificate_jobs SET state='cleanup',updated_at=now(),error=COALESCE(error,$2) WHERE id=$1",&[&id,&SEALED_UNAVAILABLE]).await?;
                 if status != "cleanup" {
-                    db.execute("UPDATE certificates SET status=CASE WHEN status='issued' THEN status ELSE 'failed'::cert_status END,dns_order=NULL,last_error=$2,last_attempt_at=now() WHERE id=$1",&[&certificate_id,&SEALED_UNAVAILABLE]).await?;
+                    let issue_log = issue_entry("error", SEALED_UNAVAILABLE);
+                    let cert = db.query_opt("UPDATE certificates SET status=CASE WHEN status='issued' THEN status ELSE 'failed'::cert_status END,dns_order=NULL,last_error=$2,last_attempt_at=now(),issue_log=issue_log||$3::jsonb WHERE id=$1 RETURNING domains",&[&certificate_id,&SEALED_UNAVAILABLE,&issue_log]).await?;
+                    let names = cert
+                        .and_then(|row| serde_json::from_value::<Vec<String>>(row.get(0)).ok())
+                        .unwrap_or_default();
+                    eprintln!("{}", issuance_line(&certificate_id, &names, IssuanceEvent::Failure {
+                        reason: SEALED_UNAVAILABLE, order_url: None,
+                    }));
                 }
                 drop(db);
                 cleanup_attempt(state, &id, &certificate_id, None).await?;
@@ -304,12 +337,24 @@ async fn run_loop(
                 return Ok(());
             }
             let db = state.db.get().await?;
+            let cert = db.query_opt("SELECT staging,last_error FROM certificates WHERE id=$1", &[&job.certificate_id]).await?;
             db.execute("UPDATE certificate_jobs SET state='active',updated_at=now() WHERE id=$1 AND state='queued'",&[&job.id]).await?;
             drop(db);
+            let staging = cert.as_ref().is_some_and(|row| row.get(0));
+            let resumed = cert.and_then(|row| row.get::<_, Option<String>>(1)).as_deref() == Some(DNS_RESTARTED);
+            if job.kind != "dns_complete" || resumed {
+                eprintln!("{}", issuance_line(&job.certificate_id, &job.payload.domains, IssuanceEvent::Start {
+                    mode: &job.mode, staging, directory: &job.payload.directory,
+                }));
+            }
+            let mut trace = IssuanceTrace {
+                order_url: saved_order_url(job.payload.dns_order.as_ref()).map(str::to_owned),
+                ..IssuanceTrace::default()
+            };
             let cancel = Cancellation::default();
             *state.runtime.certificate_jobs.active.lock().await =
                 Some((job.certificate_id.clone(), cancel.clone()));
-            let mut work = Box::pin(execute(state, &job, &cancel));
+            let mut work = Box::pin(execute(state, &job, &cancel, &mut trace));
             let mut poll = tokio::time::interval(Duration::from_millis(200));
             let mut owner_lost = false;
             let result = loop {
@@ -328,6 +373,7 @@ async fn run_loop(
                 }
             };
             drop(work);
+            let result = result.map_err(|error| issuance_reason(&job.payload, &trace, &error.to_string()));
             let reason = if *stop.borrow() || *shutdown.borrow() {
                 Some(RESTARTED)
             } else if owner_lost {
@@ -341,7 +387,7 @@ async fn run_loop(
             let mut finish_attempt=0u32;
             let mut final_attempt=false;
             loop {
-                match finish(state, &job, &result, cancel.is_cancelled(), reason).await {
+                match finish(state, &job, &result, cancel.is_cancelled(), reason, trace.order_url.as_deref()).await {
                     Ok(())=>break,
                     Err(error)=>{
                         if lock.is_closed() || *lost.borrow() || !transient_database_error(&error) || final_attempt {return Err(error);}
@@ -513,14 +559,112 @@ enum Outcome {
 }
 const CANCELLED: &str = "요청이 중단되었습니다.";
 const RESTARTED: &str = "API 재시작으로 발급이 중단되었습니다.";
+const DNS_RESTARTED: &str = "서버 재시작으로 검증이 중단되었습니다. TXT 레코드를 그대로 두고 다시 확인하세요.";
 const OWNERSHIP_LOST: &str = "데이터베이스 연결이 끊겨 발급이 중단되었습니다. 다시 시도하세요.";
+fn issue_entry(level: &str, message: &str) -> Value {
+    json!([{"at":chrono::Utc::now(),"level":level,"msg":message}])
+}
+
+fn finish_issue_entry(message: &str, error: Option<&str>, cancelled: bool) -> Value {
+    match error {
+        Some(reason) if !cancelled => issue_entry("error", reason),
+        Some(_) => issue_entry("error", message),
+        None => issue_entry("info", message),
+    }
+}
+
+fn saved_order_url(order: Option<&Value>) -> Option<&str> {
+    order?["order"]["url"].as_str()
+}
+
+fn single_line(text: &str) -> String {
+    text.replace(char::is_control, " ")
+        .split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
+fn issuance_reason(payload: &JobPayload, trace: &IssuanceTrace, reason: &str) -> String {
+    let mut secrets = vec![payload.email.as_str(), payload.account_key.as_str()];
+    secrets.extend(payload.account_key.lines());
+    secrets.extend(payload.dns_token.as_deref());
+    secrets.extend(trace.secrets.iter().map(String::as_str));
+    if let Some(order) = &payload.dns_order {
+        secrets.extend(order["records"].as_array().into_iter().flatten()
+            .filter_map(|record| record["recordValue"].as_str()));
+    }
+    // CA and DNS provider error text can echo submitted values.
+    secrets.sort_unstable_by_key(|secret| std::cmp::Reverse(secret.len()));
+    let mut reason = reason.to_owned();
+    for secret in secrets.into_iter().filter(|secret| !secret.is_empty()) {
+        reason = reason.replace(secret, "[redacted]");
+    }
+    single_line(&reason)
+}
+
+enum IssuanceEvent<'a> {
+    Start { mode: &'a str, staging: bool, directory: &'a str },
+    Success(chrono::DateTime<chrono::Utc>),
+    Failure { reason: &'a str, order_url: Option<&'a str> },
+    DnsWait,
+}
+
+fn issuance_line(id: &str, names: &[String], event: IssuanceEvent<'_>) -> String {
+    let names = single_line(&names.join(", "));
+    let id = single_line(id);
+    let detail = match event {
+        IssuanceEvent::Start { mode, staging, directory } => {
+            let mode = if mode == "renew" { "renewal" } else { "initial" };
+            let environment = if staging { "staging" } else { "production" };
+            let directory = url::Url::parse(directory).ok();
+            let host = directory.as_ref().and_then(url::Url::host_str).unwrap_or("unknown");
+            format!("issuance started: id={id} names={names} mode={mode} ca={environment} directory_host={host}")
+        }
+        IssuanceEvent::Success(expires) => {
+            format!("issuance succeeded: id={id} names={names} expires={}", expires.to_rfc3339())
+        }
+        IssuanceEvent::Failure { reason, order_url } => {
+            let reason = single_line(reason);
+            let mut detail = format!("issuance failed: id={id} names={names} reason={reason}");
+            if let Some(mut url) = order_url.and_then(|value| url::Url::parse(value).ok())
+                .filter(|url| matches!(url.scheme(), "https" | "http") && url.username().is_empty() && url.password().is_none())
+            {
+                url.set_query(None);
+                url.set_fragment(None);
+                detail.push_str(&format!(" order_url={url}"));
+            }
+            detail
+        }
+        IssuanceEvent::DnsWait => {
+            format!("issuance waiting for DNS TXT records: id={id} names={names}")
+        }
+    };
+    format!("[certificates] {detail}")
+}
+
+pub(super) fn log_stopped_dns_wait(cert: &store::Certificate, reason: &str) {
+    let Some(order) = cert.dns_order.as_ref() else {
+        return;
+    };
+    // Submitted orders end in the worker. Recovery already ended an interrupted verification.
+    if order.get("submittedAt").is_none() && cert.last_error.as_deref() != Some(DNS_RESTARTED) {
+        eprintln!("{}", issuance_line(&cert.id, &cert.names(), IssuanceEvent::Failure {
+            reason,
+            order_url: saved_order_url(Some(order)),
+        }));
+    }
+}
+
 fn check(cancel: &Cancellation) -> anyhow::Result<()> {
     if cancel.is_cancelled() {
         anyhow::bail!(CANCELLED);
     }
     Ok(())
 }
-async fn execute(state: &AppState, job: &Job, cancel: &Cancellation) -> anyhow::Result<Outcome> {
+async fn execute(
+    state: &AppState,
+    job: &Job,
+    cancel: &Cancellation,
+    trace: &mut IssuanceTrace,
+) -> anyhow::Result<Outcome> {
     let db = state.db.get().await?;
     if db
         .query_one(
@@ -538,12 +682,13 @@ async fn execute(state: &AppState, job: &Job, cancel: &Cancellation) -> anyhow::
     if job.kind == "http" {
         let store = DatabaseChallengeStore::new(state.clone(), job.id.clone());
         let result = client
-            .issue_http(
+            .issue_http_traced(
                 &job.payload.account_key,
                 &job.payload.email,
                 &job.payload.domains,
                 &store,
                 cancel,
+                trace,
             )
             .await?;
         return Ok(Outcome::Issued {
@@ -559,11 +704,12 @@ async fn execute(state: &AppState, job: &Job, cancel: &Cancellation) -> anyhow::
             .ok_or_else(|| anyhow::anyhow!("DNS 주문이 없습니다."))?
     } else {
         let begun = client
-            .begin_dns(
+            .begin_dns_traced(
                 &job.payload.account_key,
                 &job.payload.email,
                 &job.payload.domains,
                 cancel,
+                trace,
             )
             .await?;
         json!({"order":begun.order,"csrPem":begun.csr_pem,"keyPem":state.secrets.seal(&begun.key_pem)?,"records":begun.records,"createdAt":chrono::Utc::now(),"jobId":job.id})
@@ -650,7 +796,7 @@ async fn execute(state: &AppState, job: &Job, cancel: &Cancellation) -> anyhow::
         .as_str()
         .ok_or_else(|| anyhow::anyhow!("CSR이 없습니다."))?;
     let result = client
-        .complete_dns(&job.payload.account_key, &order["order"], csr, cancel)
+        .complete_dns_traced(&job.payload.account_key, &order["order"], csr, cancel, trace)
         .await?;
     let key = state
         .secrets
@@ -667,9 +813,10 @@ async fn execute(state: &AppState, job: &Job, cancel: &Cancellation) -> anyhow::
 async fn finish(
     state: &AppState,
     job: &Job,
-    result: &anyhow::Result<Outcome>,
+    result: &Result<Outcome, String>,
     cancelled: bool,
     reason: Option<&str>,
+    order_url: Option<&str>,
 ) -> anyhow::Result<()> {
     let mut db = state.db.get().await?;
     let tx = db.transaction().await?;
@@ -739,7 +886,7 @@ async fn finish(
                 .await?;
             }
             Err(e) => {
-                error = Some(e.to_string());
+                error = Some(e.clone());
                 tx.execute("UPDATE certificates SET status=CASE WHEN status='issued' THEN status ELSE 'failed'::cert_status END,dns_order=NULL,last_error=$2,last_attempt_at=COALESCE(last_attempt_at,now()),failure_count=failure_count+1 WHERE id=$1",&[&job.certificate_id,&error]).await?;
                 store::audit(
                     &*tx,
@@ -764,7 +911,8 @@ async fn finish(
     } else {
         "인증서 발급이 중단되었거나 실패했습니다."
     };
-    tx.execute("UPDATE certificates SET issue_log=issue_log||$2::jsonb WHERE id=$1",&[&job.certificate_id,&json!([{"at":chrono::Utc::now(),"level":if error.is_some(){"error"}else{"info"},"msg":message}])]).await?;
+    let issue_log = finish_issue_entry(message, error.as_deref(), cancelled);
+    tx.execute("UPDATE certificates SET issue_log=issue_log||$2::jsonb WHERE id=$1",&[&job.certificate_id,&issue_log]).await?;
     if !cancelled && !issued {
         let kind = if pending {
             "cert.dns_awaiting"
@@ -810,8 +958,14 @@ async fn finish(
         tx.execute("INSERT INTO notifications(id,type,severity,title,body,link,data) VALUES($1,$2,$3::text::notification_severity,$4,$5,$6,$7)",&[&uuid::Uuid::new_v4().to_string(),&kind,&severity,&message,&body,&format!("/certificates/{}",job.certificate_id),&data]).await?;
     }
     tx.commit().await?;
-    drop(db);
-
+    let event = if let Some(error) = error.as_deref() {
+        IssuanceEvent::Failure { reason: error, order_url }
+    } else if let Ok(Outcome::Issued { expires, .. }) = result {
+        IssuanceEvent::Success(*expires)
+    } else {
+        IssuanceEvent::DnsWait
+    };
+    eprintln!("{}", issuance_line(&job.certificate_id, &job.payload.domains, event));
     Ok(())
 }
 // Reuse cleanup for durable deployment retries; repeated failures are deferred to avoid audit floods.
@@ -1114,10 +1268,15 @@ async fn announce_abandoned(
     let message = format!(
         "Cloudflare TXT 레코드를 지우지 못해 정리를 멈췄습니다. 레코드가 Cloudflare 에 남아 있을 수 있으니 직접 지우세요: {records}"
     );
-    let now = chrono::Utc::now();
+    let reasons: Vec<_> = left.iter().filter_map(|record| record.last_error.as_deref()).map(single_line).collect();
+    let log_message = if reasons.is_empty() {
+        message.clone()
+    } else {
+        format!("{message} — {}", reasons.join("; "))
+    };
     tx.execute(
         "UPDATE certificates SET issue_log=issue_log||$2::jsonb WHERE id=$1",
-        &[&certificate_id, &json!([{"at":now,"level":"error","msg":message}])],
+        &[&certificate_id, &issue_entry("error", &log_message)],
     )
     .await?;
     let system = Actor {
@@ -1239,7 +1398,7 @@ async fn record_renewal_error(
     error: &str,
 ) -> anyhow::Result<bool> {
     use sha2::Digest as _;
-    let now = chrono::Utc::now();
+    let error = single_line(error);
     let message = "인증서 자동 갱신을 시작하지 못했습니다.";
     let mut db = state.db.get().await?;
     let tx = db.transaction().await?;
@@ -1248,7 +1407,7 @@ async fn record_renewal_error(
         .await?
         .is_some();
     if due {
-        tx.execute("UPDATE certificates SET last_error=$2,last_attempt_at=now(),issue_log=issue_log||$3::jsonb WHERE id=$1",&[&id,&error,&json!([{"at":now,"level":"error","msg":format!("{message} {error}")}])]).await?;
+        tx.execute("UPDATE certificates SET last_error=$2,last_attempt_at=now(),issue_log=issue_log||$3::jsonb WHERE id=$1",&[&id,&error,&issue_entry("error", &format!("{message} {error}"))]).await?;
         let mut data: Value = tx.query_one("SELECT jsonb_build_object('certificateId',id,'domains',domains,'expiresAt',expires_at,'staging',staging) FROM certificates WHERE id=$1",&[&id]).await?.get(0);
         data["error"] = json!(error);
         let key = format!(
@@ -1281,5 +1440,68 @@ mod retry_tests {
     fn retry_gaps_grow_and_cap_at_sixty_seconds() {
         let actual: Vec<_> = (0..9).map(|n| retry_delay(n).as_secs()).collect();
         assert_eq!(actual, [1, 2, 4, 8, 16, 32, 60, 60, 60]);
+    }
+}
+
+#[cfg(test)]
+mod issuance_feedback_tests {
+    use super::*;
+
+    #[test]
+    fn failed_issue_entry_has_the_same_reason_and_keys() {
+        let reason = "ACME 주문 상태가 유효하지 않습니다: Invalid. 인증기관이 알려 준 이유 — example.test: dns — NXDOMAIN 인증기관이 이 도메인의 DNS 레코드를 찾지 못했습니다.";
+        let generic = "인증서 발급이 중단되었거나 실패했습니다.";
+        let entries = finish_issue_entry(generic, Some(reason), false);
+        let entry = &entries[0];
+        assert_eq!(entries.as_array().unwrap().len(), 1);
+        assert_eq!(entry.as_object().unwrap().len(), 3);
+        assert!(chrono::DateTime::parse_from_rfc3339(entry["at"].as_str().unwrap()).is_ok());
+        assert_eq!(entry["level"], "error");
+        assert_eq!(entry["msg"], reason);
+        assert_eq!(finish_issue_entry(generic, Some(CANCELLED), true)[0]["msg"], generic);
+    }
+
+    #[test]
+    fn issuance_lines_cover_start_success_failure_and_dns_wait() {
+        let payload = JobPayload {
+            directory: "https://reader:directory-secret@ca.example.test/directory?q=directory-secret".into(),
+            account_key: "private-test-key".into(),
+            email: "account@example.test".into(),
+            domains: vec!["example.test".into(), "www.example.test".into()],
+            dns_token: Some("provider-test-token".into()),
+            dns_order: Some(json!({"records":[{"recordValue":"dns-test-value"}]})),
+        };
+        let id = "cert-123";
+        let names = &payload.domains;
+        let start = issuance_line(id, names, IssuanceEvent::Start {
+            mode: "renew", staging: true, directory: &payload.directory,
+        });
+        assert_eq!(start, "[certificates] issuance started: id=cert-123 names=example.test, www.example.test mode=renewal ca=staging directory_host=ca.example.test");
+        assert!(issuance_line(id, names, IssuanceEvent::Start {
+            mode: "initial", staging: false, directory: &payload.directory,
+        }).ends_with("mode=initial ca=production directory_host=ca.example.test"));
+        let expiry = chrono::DateTime::parse_from_rfc3339("2027-02-26T00:00:00Z").unwrap().to_utc();
+        assert_eq!(issuance_line(id, names, IssuanceEvent::Success(expiry)),
+            "[certificates] issuance succeeded: id=cert-123 names=example.test, www.example.test expires=2027-02-26T00:00:00+00:00");
+        assert_eq!(issuance_line(id, names, IssuanceEvent::DnsWait),
+            "[certificates] issuance waiting for DNS TXT records: id=cert-123 names=example.test, www.example.test");
+
+        let trace = IssuanceTrace {
+            order_url: Some("https://ca.example.test/order/123?token=order-test-token".into()),
+            secrets: vec!["challenge-test-token".into(), "challenge-test-token.thumbprint".into(), "eab-test-value".into()],
+        };
+        let reason = issuance_reason(&payload, &trace, "dns — NXDOMAIN\naccount@example.test\tchallenge-test-token.thumbprint challenge-test-token eab-test-value private-test-key provider-test-token dns-test-value");
+        let failure = issuance_line(id, names, IssuanceEvent::Failure {
+            reason: &reason, order_url: trace.order_url.as_deref(),
+        });
+        assert_eq!(failure, format!("[certificates] issuance failed: id=cert-123 names=example.test, www.example.test reason={reason} order_url=https://ca.example.test/order/123"));
+        assert!(reason.starts_with("dns — NXDOMAIN "));
+        assert_eq!(failure.lines().count(), 1);
+        for secret in ["account@example.test", "challenge-test-token", "thumbprint", "eab-test-value",
+            "private-test-key", "provider-test-token", "dns-test-value", "order-test-token"] {
+            assert!(!failure.contains(secret), "leaked {secret}");
+        }
+        let failure = issuance_line(id, names, IssuanceEvent::Failure { reason: RESTARTED, order_url: None });
+        assert!(failure.ends_with(RESTARTED));
     }
 }

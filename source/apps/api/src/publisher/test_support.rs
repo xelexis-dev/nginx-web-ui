@@ -2,6 +2,8 @@
 #[cfg(all(feature = "test-support", not(debug_assertions)))]
 compile_error!("test-support must never be enabled in a release build");
 
+pub use super::identity_fixture::{FakeMaster, RegisteredMaster};
+
 /// Build the same journal-owned S4-prepare bootstrap shape used by the runner.
 pub fn prepare_store_fixture(root:&std::path::Path) -> anyhow::Result<()> {
     anyhow::ensure!(root.is_absolute(),"Test publisher root must be absolute");

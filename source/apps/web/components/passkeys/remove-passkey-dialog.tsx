@@ -15,7 +15,7 @@ export function RemovePasskeyButton({
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button variant="dangerQuiet" onClick={() => setOpen(true)}>
+      <Button variant="dangerOutline" onClick={() => setOpen(true)}>
         삭제
       </Button>
       {open ? (

@@ -99,6 +99,7 @@ export interface NodeErrorCardProps {
    * 틀린 자리만 자기 문구를 준다.
    */
   domainFailureTitle?: string;
+  nodeErrorTitle?: string;
 }
 
 /**
@@ -129,7 +130,7 @@ export const DEFAULT_DOMAIN_FAILURE_TITLE = "설정 적용 실패 — nginx -t �
  */
 /** One source for card text and apply-result toasts, including their escape links. */
 export function nodeErrorPresentation({
-  failure, nodeId, retryHref, listHref, subject,
+  failure, nodeId, retryHref, listHref, subject, nodeErrorTitle,
   domainFailureTitle = DEFAULT_DOMAIN_FAILURE_TITLE,
 }: NodeErrorCardProps): {
   title: string; body?: string; link?: string; linkLabel?: string;
@@ -152,7 +153,9 @@ export function nodeErrorPresentation({
     case "not_found":
       return { title: subject ? `${subject} 노드에서 찾을 수 없습니다` : "그 항목이 노드에 없습니다", body: "이미 지워졌을 수 있습니다.", link: listHref, linkLabel: "목록으로 돌아가기" };
     case "node_error":
-      return { title: "노드에서 오류가 발생했습니다", body: "노드의 로그를 확인하세요.", link: retryHref, linkLabel: "다시 시도" };
+      return { title: nodeErrorTitle ?? "노드에서 오류가 발생했습니다",
+        body: nodeErrorTitle ? undefined : "노드의 로그를 확인하세요.",
+        link: retryHref, linkLabel: "다시 시도" };
     case "conflict":
     case "rate_limited":
       return { title: failure.message };

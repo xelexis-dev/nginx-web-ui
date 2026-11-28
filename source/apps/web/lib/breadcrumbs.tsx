@@ -450,7 +450,7 @@ export const breadcrumbRoutes = {
     items: [
       ["설정", null],
       ["관리자", "/admin/settings/general"],
-      ["시크릿 상태", "/admin/secrets"],
+      ["저장된 비밀값", "/admin/secrets"],
     ],
   },
   "/admin/security": {
@@ -580,6 +580,12 @@ export const breadcrumbRoutes = {
   "/nodes/[id]/edit": {
     items: [],
     action: "수정",
+  },
+  "/nodes/[id]/history/[sid]": {
+    items: [["적용 이력", "/nodes/[id]/history"]],
+    name: "history",
+    source: "/nodes/[id]/history/[sid]",
+    action: "상세",
   },
   "/nodes/[id]/history": {
     items: [["적용 이력", "/nodes/[id]/history"]],
@@ -783,7 +789,7 @@ export async function renderBreadcrumbs(
         href: expand(pattern.replace(/\/edit$/, ""), params),
       });
   }
-  if (route.action && (!route.name || resource))
+  if (route.action && (!route.name || resource || pattern === "/nodes/[id]/history/[sid]"))
     items.push({ label: route.action });
   return (
     <nav aria-label="경로">

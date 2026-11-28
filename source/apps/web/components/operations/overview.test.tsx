@@ -113,3 +113,8 @@ it("frames all overview sections and keeps only records flush", () => {
     expect(html).toContain(`href="${href}"`);
   }
 });
+
+it("renders the server empty state in its centred inset", () => {
+  const html = renderToStaticMarkup(<OperationsOverview vm={vm} />);
+  expect(html).toMatch(new RegExp(`class="${styles.emptyInset}"><div[^>]*data-align="center"><p[^>]*>등록된 서버가 없습니다[.]</p>`));
+});

@@ -83,6 +83,8 @@ const readPageApiMock = vi.fn(async (path: string) => {
   };
 });
 vi.mock("@/lib/api-page", () => ({ readPageApi: readPageApiMock }));
+const apiReadMock = vi.fn();
+vi.mock("@/lib/api-client", () => ({ apiRead: apiReadMock }));
 vi.mock("@/lib/use-api-action", () => ({
   useApiAction: (action: unknown) => action,
 }));
@@ -98,7 +100,9 @@ vi.mock("next/navigation", () => ({
   notFound: notFoundMock,
 }));
 
-const { default: TokensPage } = await import("./page");
+const { default: ListPage } = await import("./page");
+const TokensPage = (revoked?: string | string[]) =>
+  ListPage({ searchParams: Promise.resolve({ revoked }) });
 const { default: NewTokenPage } = await import("./new/page");
 const { default: TokenDetailPage } = await import("./[id]/page");
 const { TokenList } = await import("./token-list");
@@ -267,6 +271,7 @@ function hrefs(html: string): string[] {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  apiReadMock.mockReset();
   actionStateOverride = undefined;
   copyStateOverride = undefined;
   signedInAs("editor");
@@ -650,15 +655,48 @@ describe("목록", () => {
       <TokenList
         rows={[]}
         basePath="/account/tokens"
-        emptyMessage="아직 만든 토큰이 없습니다."
       />,
     );
 
-    expect(bodyRows(html)).toEqual([["아직 만든 토큰이 없습니다."]]);
+    expect(bodyRows(html)).toEqual([["토큰이 없습니다."]]);
+    expect(html).toContain('data-align="center"');
   });
 });
 
 describe("목록 페이지", () => {
+  it("해지된 상세에서 확인한 이름을 성공 배너에 표시한다", async () => {
+    apiReadMock.mockResolvedValue(tokenWireFixture(row({
+      id: "receipt/id", name: "<확인된 이름>", revokedAt: new Date("2026-02-03T12:00:00.000Z"),
+    })));
+    const html = await renderPage(() => TokensPage("receipt/id"));
+
+    expect(apiReadMock).toHaveBeenCalledExactlyOnceWith("/api/ui/v1/account/tokens/receipt%2Fid");
+    expect(html).toMatch(/<div[^>]*data-tone="success"[^>]*role="status"[^>]*>/);
+    expect(html).toContain("&quot;&lt;확인된 이름&gt;&quot; 토큰을 해지했습니다.");
+    expect(html).not.toContain("receipt/id");
+    expect(html.indexOf("토큰을 해지했습니다.")).toBeGreaterThan(html.indexOf("</header>"));
+    expect(html.indexOf("토큰을 해지했습니다.")).toBeLessThan(html.indexOf("<dl"));
+  });
+
+  it.each(["missing", "active", "wrong-id", "absent", "repeated", "dot-segment"])(
+    "검증되지 않은 해지 배너 없이 목록을 표시한다 (%s)",
+    async (reason) => {
+      if (reason === "missing") apiReadMock.mockRejectedValue({ status: 404 });
+      if (reason === "active") apiReadMock.mockResolvedValue(tokenWireFixture(row({ expiresAt: null })));
+      if (reason === "wrong-id") apiReadMock.mockResolvedValue(tokenWireFixture(row({
+        id: "other", revokedAt: new Date("2026-02-03T12:00:00.000Z"),
+      })));
+      const id = reason === "absent" ? undefined : reason === "repeated" ? ["tok-1", "other"] : reason === "dot-segment" ? ".." : "tok-1";
+      const html = await renderPage(() => TokensPage(id));
+
+      expect(html).toContain("액세스 토큰");
+      expect(html).toContain("<table");
+      expect(html).not.toContain("토큰을 해지했습니다.");
+      expect(apiReadMock).toHaveBeenCalledTimes(["absent", "repeated", "dot-segment"].includes(reason) ? 0 : 1);
+    },
+  );
+
+
   it("세션 범위로만 읽고, 읽은 것을 표로 그린다", async () => {
     listTokensMock.mockResolvedValue([
       row({ lastUsedAt: null, expiresAt: null }),
@@ -674,6 +712,7 @@ describe("목록 페이지", () => {
       ["노트북 CLI", MASKED, "config:read", "사용한 적 없음", "무기한", "유효"],
     ]);
     expect(hrefs(html)).toContain("/account/tokens/tok-1");
+    expect(dlPairs(html)).toEqual({ 토큰: "1", 유효: "1", 만료됨: "0" });
   });
 
   it("요청한 액세스 토큰 설명을 표시한다", async () => {
@@ -749,6 +788,11 @@ describe("상세", () => {
     );
 
     expect(html).toContain('name="id"');
+    expect(html).toMatch(/<button[^>]*class="[^"]*dangerOutline[^"]*"[^>]*>토큰 해지<\/button>/);
+    const dialog = html.match(/<dialog[\s\S]*?<\/dialog>/)?.[0] ?? "";
+    expect(dialog).toContain("이 토큰을 해지하시겠습니까? 해지하면 되돌릴 수 없습니다.");
+    expect(dialog).toContain(`노트북 CLI · ${MASKED}`);
+    expect(html.replace(dialog, "")).not.toContain("되돌릴 수 없습니다.");
     expect(html).toContain('value="tok-7"');
     expect(html).not.toContain('name="kind"');
     expect(html).not.toContain('name="ownerUserId"');
@@ -776,6 +820,8 @@ describe("상세", () => {
 
     expect(live).toContain("토큰 해지");
     expect(dead).not.toContain("토큰 해지");
+    expect(dead).not.toContain("<form");
+    expect(dead).not.toContain("<dialog");
     expect(dlPairs(dead)["상태"]).toBe("해지됨");
     expect(dlPairs(dead)["해지"]).toBe("끊긴-시각");
   });

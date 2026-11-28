@@ -65,6 +65,14 @@ pub async fn publish_stopped(state:&AppState, config:&RuntimeConfig, store:&nwui
         Err(error) if error.kind()==std::io::ErrorKind::NotFound => None,
         Err(error) => return Err(error.into()),
     };
+    let group = pid.with_extension("group");
+    let group_bytes = if running.is_some() {
+        let bytes = std::fs::read(&group)?;
+        std::fs::remove_file(&group)?;
+        Some(bytes)
+    } else {
+        None
+    };
     let active = root.join(".fake-nginx-active-generation");
     let before = std::fs::read(&active).ok();
     let publication = nwui_api::publisher::boot::publish_live(config,store,id).await;
@@ -72,6 +80,7 @@ pub async fn publish_stopped(state:&AppState, config:&RuntimeConfig, store:&nwui
         assert!(state.config.nginx_conf_dir.join(".nwui-apply-uncertain").exists());
         assert_eq!(std::fs::read(&active).ok(),before,"boot publication must not HUP/acknowledge");
     }
+    if let Some(bytes)=group_bytes { std::fs::write(&group,bytes)?; }
     if let Some(bytes)=running { std::fs::write(&pid,bytes)?; }
     Ok(publication?)
 }

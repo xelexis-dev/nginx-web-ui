@@ -31,6 +31,40 @@ fn status_commands()->[Command;2] {
 pub(crate) fn stop_status()->Result<(),StepError> {
     let [down,confirmed]=status_commands();invoke(down,Duration::from_secs(5))?;invoke(confirmed,Duration::from_millis(5250))
 }
+fn supervisor_fields(service:&str,fields:&str)->Result<String,StepError>{
+    let mut c=command("s6-svstat");c.args(["-o",fields,service]);
+    let (out,_)=crate::db_upgrade::postgres::output(c,Duration::from_secs(1)).map_err(|_|error("activation_timeout"))?;
+    Ok(out)
+}
+pub(super) fn restore_status_responder()->Result<(),StepError>{
+    if supervisor_fields(STATUS,"up,wantedup")?.split_whitespace().eq(["false","false"])
+        && supervisor_fields("/run/service/nginx","up")?.trim()=="false" {
+        let mut up=command("s6-svc");up.args(["-u",STATUS]);
+        invoke(up,Duration::from_secs(1))?;
+    }
+    invoke(dependent_command(STATUS,true,Duration::from_secs(5)),Duration::from_millis(5250))
+}
+pub(super) async fn status_shows_refusal(expected:&super::types::StatusFailure)->bool{
+    let Ok(client)=reqwest::Client::builder()
+        .no_proxy().redirect(reqwest::redirect::Policy::none()).timeout(Duration::from_secs(2)).build() else{return false;};
+    let Ok(mut response)=client.get("http://127.0.0.1:8080/status.json").send().await else{return false;};
+    if response.status()!=reqwest::StatusCode::OK{return false;}
+    let mut bytes=Vec::new();
+    loop {
+        match response.chunk().await {
+            Ok(Some(chunk)) if bytes.len()+chunk.len()<=super::status::STATUS_MAX_BYTES=>bytes.extend_from_slice(&chunk),
+            Ok(None)=>break,
+            _=>return false,
+        }
+    }
+    serde_json::from_slice::<super::types::UpgradeStatus>(&bytes).is_ok_and(|status|
+        super::unrecorded::journal_refusal(&status)
+            && status.failure.is_some_and(|value|value.code==expected.code&&value.message==expected.message&&value.next_action==expected.next_action)
+    )
+}
+pub(super) fn halt_overlay(){
+    let _=invoke(command("/run/s6/basedir/bin/halt"),Duration::from_secs(2));
+}
 fn dependent_command(service:&str,notification:bool,bound:Duration)->Command {
     let mut c=command("s6-svwait");c.args([if notification{"-U"}else{"-u"},"-t"]).arg(bound.as_millis().max(1).to_string()).arg(service);c
 }

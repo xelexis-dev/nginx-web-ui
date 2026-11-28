@@ -46,13 +46,6 @@
 
 /* 액션 행 **안쪽**의 줄(해지 확인 등). `.detailActionsRow` 를 그대로 쓰면 그 클래스의
    `margin-top: 24px` 가 한 번 더 붙어 옆 버튼과 세로로 어긋난다(실측). */
-.inlineActions {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  flex-wrap: wrap;
-}
-
 /* ── 폼 ───────────────────────────────────────────────────────────────── */
 
 .formActions {

@@ -124,6 +124,7 @@ export type HistoryListItemView = components["schemas"]["HistoryListItemView"];
 export type HistoryView = components["schemas"]["HistoryView"];
 export type BrowserConfigSnapshot = components["schemas"]["BrowserConfigSnapshot"];
 export type HistorySnapshotView = components["schemas"]["HistorySnapshotView"];
+export type NodeHistoryDetailData = components["schemas"]["NodeHistoryDetailData"];
 export type HistoryDetailView = components["schemas"]["HistoryDetailView"];
 export type CertificateDomainView = components["schemas"]["CertificateDomainView"];
 export type CertificateListItemView = components["schemas"]["CertificateListItemView"];

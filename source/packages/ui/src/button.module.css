@@ -46,6 +46,9 @@
 :where(.dangerQuiet) { color: var(--danger-text); }
 :where(.dangerQuiet:hover:not(:disabled)) { background: var(--danger-bg); }
 :where(.dangerQuiet:active:not(:disabled)) { background: var(--danger-bg); border-color: var(--danger-line); }
+:where(.dangerOutline) { background: var(--bg-control); border-color: var(--danger-line); color: var(--danger-text); }
+:where(.dangerOutline:hover:not(:disabled)) { background: var(--danger-bg); }
+:where(.dangerOutline:active:not(:disabled)) { background: var(--danger-bg); border-color: var(--danger); }
 :where(.button:disabled) { background: var(--bg-disabled); border-color: var(--line); color: var(--text-disabled); cursor: not-allowed; }
 :where(.ghost:disabled, .dangerQuiet:disabled) { background: transparent; border-color: transparent; }
 :where(.button[aria-busy="true"]) { cursor: progress; }

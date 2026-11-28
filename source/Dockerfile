@@ -7,15 +7,18 @@
 # Trixie/PG17 runtime; 1.x data must first be migrated by the latest 2.0.x image.
 ARG NODE_IMAGE=node:24.22.3-trixie-slim@sha256:af02d57b57719b9657a45199a79264a9437940cd55b3c7b3fc99615654f124a0
 ARG RUST_IMAGE=rust:1.98.1-slim-trixie@sha256:4cd829461bd5c4d511c32e269da9cb8929223b666519d8004e35fc8d1d771ab7
-ARG DEBIAN_SNAPSHOT=20261107T082527Z
-ARG DEBIAN_SECURITY_SNAPSHOT=20261123T220438Z
+ARG DEBIAN_SNAPSHOT=20261128T084314Z
+ARG DEBIAN_SECURITY_SNAPSHOT=20261128T061319Z
 ARG OPENSSL_VERSION=3.5.7-1~deb13u3
 ARG CA_CERTIFICATES_VERSION=20250419+deb13u1
 ARG NGINX_VERSION=1.30.8-1~trixie
-ARG POSTGRES_META_VERSION=17+278
+ARG POSTGRES_META_VERSION=17+278+deb13u1
 ARG POSTGRES_SERVER_VERSION=17.12-0+deb13u1
 ARG TZDATA_VERSION=2026f-0+deb13u1
 ARG ZLIB_VERSION=1:1.3.dfsg+really1.3.1-1+deb13u1
+ARG GLIBC_VERSION=2.41-12+deb13u5
+ARG ZSTD_VERSION=1.5.7+dfsg-1+deb13u1
+ARG SHADOW_VERSION=1:4.17.4-2+deb13u1
 ARG S6_OVERLAY_VERSION=3.2.3.2
 ARG NGINX_SIGNING_FPR=8540A6F18833A80E9C1653A42FD21310B49F6B46
 ARG NGINX_SIGNING_KEY_SHA256=55385da31d198fa6a5012d40ae98ecb272a6c4e8fffffba94719ffd3e87de37a
@@ -30,6 +33,9 @@ FROM ${RUST_IMAGE} AS api-builder-os-resolved
 ARG DEBIAN_SNAPSHOT
 ARG DEBIAN_SECURITY_SNAPSHOT
 ARG OPENSSL_VERSION
+ARG GLIBC_VERSION
+ARG ZSTD_VERSION
+ARG SHADOW_VERSION
 COPY docker/pins/*.sh /opt/nwui-pins/
 RUN mkdir -p /nwui-record \
     && /opt/nwui-pins/base-inventory.sh > /nwui-record/base.tsv \
@@ -37,6 +43,8 @@ RUN mkdir -p /nwui-record \
     && /opt/nwui-pins/update.sh api-builder \
     && /opt/nwui-pins/install.sh /nwui-record/transaction.txt \
        build-essential pkg-config cmake "openssl=$OPENSSL_VERSION" "libssl3t64=$OPENSSL_VERSION" "openssl-provider-legacy=$OPENSSL_VERSION" "libssl-dev=$OPENSSL_VERSION" \
+       "libc6=$GLIBC_VERSION" "libc-bin=$GLIBC_VERSION" "libzstd1=$ZSTD_VERSION" "login.defs=$SHADOW_VERSION" "passwd=$SHADOW_VERSION" \
+       "libc6-dev=$GLIBC_VERSION" "libc-dev-bin=$GLIBC_VERSION" \
     && /opt/nwui-pins/inventory.sh api-builder /nwui-record/api-builder.tsv /nwui-record/base.tsv /nwui-record/transaction.txt \
     && rm -rf /var/lib/apt/lists/*
 
@@ -95,6 +103,9 @@ FROM ${NODE_IMAGE} AS keyring-os-resolved
 ARG DEBIAN_SNAPSHOT
 ARG DEBIAN_SECURITY_SNAPSHOT
 ARG OPENSSL_VERSION
+ARG GLIBC_VERSION
+ARG ZSTD_VERSION
+ARG SHADOW_VERSION
 ARG CA_CERTIFICATES_VERSION
 COPY docker/pins/*.sh /opt/nwui-pins/
 RUN mkdir -p /nwui-record \
@@ -103,6 +114,7 @@ RUN mkdir -p /nwui-record \
     && /opt/nwui-pins/update.sh keyring \
     && /opt/nwui-pins/install.sh /nwui-record/transaction.txt \
        curl gnupg "ca-certificates=$CA_CERTIFICATES_VERSION" "openssl=$OPENSSL_VERSION" "libssl3t64=$OPENSSL_VERSION" "openssl-provider-legacy=$OPENSSL_VERSION" \
+       "libc6=$GLIBC_VERSION" "libc-bin=$GLIBC_VERSION" "libzstd1=$ZSTD_VERSION" "login.defs=$SHADOW_VERSION" "passwd=$SHADOW_VERSION" \
     && /opt/nwui-pins/inventory.sh keyring /nwui-record/keyring.tsv /nwui-record/base.tsv /nwui-record/transaction.txt \
     && rm -rf /var/lib/apt/lists/*
 
@@ -146,6 +158,9 @@ FROM ${NODE_IMAGE} AS runtime-os-resolved
 ARG DEBIAN_SNAPSHOT
 ARG DEBIAN_SECURITY_SNAPSHOT
 ARG OPENSSL_VERSION
+ARG GLIBC_VERSION
+ARG ZSTD_VERSION
+ARG SHADOW_VERSION
 ARG CA_CERTIFICATES_VERSION
 ARG NGINX_VERSION
 ARG POSTGRES_META_VERSION
@@ -173,6 +188,8 @@ RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack 
     && chmod 755 /usr/sbin/policy-rc.d \
     && /opt/nwui-pins/install.sh /nwui-record/bootstrap.txt \
          "ca-certificates=$CA_CERTIFICATES_VERSION" "openssl=$OPENSSL_VERSION" "libssl3t64=$OPENSSL_VERSION" "openssl-provider-legacy=$OPENSSL_VERSION" "zlib1g=$ZLIB_VERSION" postgresql-common \
+         "libc6=$GLIBC_VERSION" "libc-bin=$GLIBC_VERSION" "libzstd1=$ZSTD_VERSION" "login.defs=$SHADOW_VERSION" "passwd=$SHADOW_VERSION" \
+         "libc-l10n=$GLIBC_VERSION" "locales=$GLIBC_VERSION" \
     && printf '\ncreate_main_cluster = false\n' >> /etc/postgresql-common/createcluster.conf \
     && printf '%s\n' 'deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://nginx.org/packages/debian trixie nginx' > /etc/apt/sources.list.d/nginx.list \
     && /opt/nwui-pins/update.sh runtime \
@@ -250,6 +267,9 @@ LABEL org.nginx-web-ui.distro="trixie" \
       org.nginx-web-ui.postgres-version="${POSTGRES_SERVER_VERSION}" \
       org.nginx-web-ui.tzdata-version="${TZDATA_VERSION}" \
       org.nginx-web-ui.zlib-version="${ZLIB_VERSION}" \
+      org.nginx-web-ui.glibc-version="${GLIBC_VERSION}" \
+      org.nginx-web-ui.zstd-version="${ZSTD_VERSION}" \
+      org.nginx-web-ui.shadow-version="${SHADOW_VERSION}" \
       org.nginx-web-ui.s6-version="${S6_OVERLAY_VERSION}" \
       org.nginx-web-ui.node-image="${NODE_IMAGE}" \
       org.nginx-web-ui.debian-snapshot="${DEBIAN_SNAPSHOT}" \
@@ -322,7 +342,7 @@ RUN set -eu; \
         -e "s|/var/lib/nginx-web-ui/tls/default\.key|$nginx_check_dir/default.key|g" \
         /etc/nginx/nginx.conf > "$nginx_check_dir/nginx.conf"; \
     nginx -t -c "$nginx_check_dir/nginx.conf"
-RUN chmod -R +x /etc/s6-overlay/scripts /etc/s6-overlay/s6-rc.d/postgres/run /etc/s6-overlay/s6-rc.d/nginx/run /etc/s6-overlay/s6-rc.d/web/run /etc/s6-overlay/s6-rc.d/api/run /etc/s6-overlay/s6-rc.d/dns-guard/run /etc/s6-overlay/s6-rc.d/upgrade-runner/run /etc/s6-overlay/s6-rc.d/storage-locks/run /etc/s6-overlay/s6-rc.d/upgrade-status/run /etc/s6-overlay/s6-rc.d/publisher/run
+RUN chmod -R +x /etc/s6-overlay/scripts /etc/s6-overlay/s6-rc.d/postgres/run /etc/s6-overlay/s6-rc.d/nginx/run /etc/s6-overlay/s6-rc.d/web/run /etc/s6-overlay/s6-rc.d/api/run /etc/s6-overlay/s6-rc.d/dns-guard/run /etc/s6-overlay/s6-rc.d/upgrade-runner/run /etc/s6-overlay/s6-rc.d/upgrade-runner/finish /etc/s6-overlay/s6-rc.d/storage-locks/run /etc/s6-overlay/s6-rc.d/upgrade-status/run /etc/s6-overlay/s6-rc.d/upgrade-status/finish /etc/s6-overlay/s6-rc.d/publisher/run
 # Archive modes are not an authority to make root-consumed inputs writable.
 RUN set -eu; \
     set -- /etc/nginx/nginx.conf /etc/nginx/conf.d /etc/nginx/stream.d /etc/nginx/snippets \

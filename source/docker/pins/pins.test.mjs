@@ -152,6 +152,8 @@ test('Trixie Dockerfile pins match signed provenance without PG15 inputs',()=>{
  const dockerfile=readFileSync(source+'/Dockerfile','utf8'),proof=JSON.parse(readFileSync(here+'/trixie-provenance.json','utf8'));
  const args=Object.fromEntries([...dockerfile.matchAll(/^ARG ([A-Z][A-Z0-9_]*)=(.*)$/gm)].map(m=>[m[1],m[2]]));
  assert.equal(args.NODE_IMAGE,proof.baseImages.node.image);assert.equal(args.RUST_IMAGE,proof.baseImages.rust.image);
+ assert.equal(args.DEBIAN_SNAPSHOT,proof.debianSnapshot);
+ assert.equal(args.DEBIAN_SECURITY_SNAPSHOT,proof.debianSecuritySnapshot);
  for(const [name,version] of Object.entries(proof.selectedDebianVersions))assert.equal(args[name],version);
  assert(!Object.keys(args).some(k=>k.startsWith("PG15_")));
  assert.doesNotMatch(dockerfile,/pg15-download|fetch-pg15|pg15-helper-version|postgresql\/15/);
@@ -161,6 +163,30 @@ test('Trixie Dockerfile pins match signed provenance without PG15 inputs',()=>{
  assert.match(dockerfile,/libssl3t64=\$OPENSSL_VERSION/);assert.doesNotMatch(dockerfile,/libssl3=|packages\/debian bookworm/);
  assert.match(dockerfile,/postgresql-17=\$POSTGRES_SERVER_VERSION/);
  assert.equal(readFileSync(here+'/inventory-row.schema.json','utf8').includes('"pgdg"'),true);
+});
+test('Trixie OS stages explicitly install refreshed pins and runtime exposes their labels',()=>{
+ const dockerfile=readFileSync(source+'/Dockerfile','utf8');
+ const proof=JSON.parse(readFileSync(here+'/trixie-provenance.json','utf8'));
+ const common={libc6:'GLIBC_VERSION','libc-bin':'GLIBC_VERSION',libzstd1:'ZSTD_VERSION','login.defs':'SHADOW_VERSION',passwd:'SHADOW_VERSION'};
+ const stages={
+  'api-builder':{'libc6-dev':'GLIBC_VERSION','libc-dev-bin':'GLIBC_VERSION'},
+  keyring:{},
+  runtime:{'libc-l10n':'GLIBC_VERSION',locales:'GLIBC_VERSION'},
+ };
+ for(const pin of new Set(Object.values(common))){
+  assert.ok(proof.selectedDebianVersions[pin],pin);
+  const label=pin.toLowerCase().replace('_','-');
+  assert.ok(dockerfile.includes('org.nginx-web-ui.'+label+'="${'+pin+'}"'),label);
+ }
+ for(const [name,extra] of Object.entries(stages)){
+  const stage=dockerfile.split(/^FROM /m).find(part=>part.split('\n',1)[0].endsWith(' AS '+name+'-os-resolved'));
+  assert.ok(stage,name);
+  const transactions=stage.replaceAll('\\\n','').split('\n').filter(line=>line.includes('/opt/nwui-pins/install.sh '));
+  for(const [pkg,pin] of Object.entries({...common,...extra})){
+   assert.ok(stage.split('\n').includes('ARG '+pin),name+' '+pin);
+   assert.ok(transactions.some(line=>line.includes('"'+pkg+'=$'+pin+'"')),name+' '+pkg);
+  }
+ }
 });
 test('PGDG transactions are rejected by current inventory generation',()=>fixture(root=>{
  const bin=root+'/bin';mkdirSync(bin);executable(bin+'/dpkg','echo arm64');executable(bin+'/apt-cache','echo proof');executable(bin+'/dpkg-query',`cat '${root}/rows'`);

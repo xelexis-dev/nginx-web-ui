@@ -175,7 +175,11 @@ async fn server_tokens_are_admin_only_and_pair() {
     assert_eq!(status, StatusCode::FORBIDDEN);
 
     let (status, body) = call(&app, "POST", "/api/ui/v1/forms/admin.tokens.revoke", &boss, Some(&format!("id={id}"))).await;
-    assert_eq!((status, body), (StatusCode::OK, json!({"result": {"ok": true}, "refresh": true})));
+    assert_eq!((status, body), (StatusCode::OK, json!({"result": {"ok": true}, "redirectTo": format!("/admin/tokens?revoked={id}")})));
+    let (status, list) = call(&app, "GET", "/api/ui/v1/admin/tokens", &boss, None).await;
+    assert_eq!((status, list["tokens"].clone()), (StatusCode::OK, json!([])));
+    let (status, detail) = call(&app, "GET", &format!("/api/ui/v1/admin/tokens/{id}"), &boss, None).await;
+    assert_eq!((status, detail["status"].as_str()), (StatusCode::OK, Some("revoked")));
     let (status, _) = call(&app, "POST", "/api/ui/v1/forms/admin.tokens.revoke", &boss, Some(&format!("id={id}"))).await;
     assert_eq!(status, StatusCode::CONFLICT);
 }

@@ -59,7 +59,7 @@ export function MailRecipientDetailActions({
           <input type="hidden" name="id" value={id} />
           <Button
             type="submit"
-            variant="dangerQuiet"
+            variant="dangerOutline"
             disabled={testPending || deletePending}
           >
             {deletePending ? "삭제 중..." : "삭제"}

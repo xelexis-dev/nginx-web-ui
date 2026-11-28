@@ -10,9 +10,9 @@ export default function AppNotFound() {
       title="찾는 항목이 없습니다"
       description="삭제됐거나 주소가 잘못됐습니다. 목록에서 다시 확인하세요."
       actions={[
-        { href: "/", label: "대시보드로 가기", primary: true },
-        { href: "/certificates", label: "Certificates" },
-        { href: "/reverse-proxy", label: "Reverse Proxy" },
+        { href: "/", label: "개요로 가기", primary: true },
+        { href: "/certificates", label: "인증서" },
+        { href: "/reverse-proxy", label: "리버스 프록시" },
       ]}
     />
   );

@@ -52,6 +52,86 @@ async fn transport_never_follows_redirects_and_keeps_credentials_out_of_errors()
     server.abort();
 }
 
+#[tokio::test]
+async fn log_stream_error_body_keeps_the_original_total_deadline() {
+    use axum::body::{Body, Bytes};
+    use std::{
+        convert::Infallible,
+        pin::Pin,
+        task::{Context, Poll},
+        time::Instant,
+    };
+
+    struct StalledBody;
+    impl futures_core::Stream for StalledBody {
+        type Item = Result<Bytes, Infallible>;
+
+        fn poll_next(self: Pin<&mut Self>, _: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+            Poll::Pending
+        }
+    }
+
+    let routes = Router::new()
+        .route("/api/v1/complete", get(|| async {
+            (StatusCode::FORBIDDEN, Json(json!({"error":{"message":"complete test refusal"}})))
+        }))
+        .route("/api/v1/stalled", get(|| async {
+            (StatusCode::FORBIDDEN, Body::from_stream(StalledBody))
+        }))
+        .route("/api/v1/delayed-stall", get(|| async {
+            tokio::time::sleep(Duration::from_secs(4)).await;
+            (StatusCode::FORBIDDEN, Body::from_stream(StalledBody))
+        }))
+        .route("/api/v1/late-complete", get(|| async {
+            tokio::time::sleep(Duration::from_secs(11)).await;
+            (StatusCode::FORBIDDEN, Json(json!({"error":{"message":"late test refusal"}})))
+        }));
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let target = NodeTarget {
+        base_url: format!("http://{}", listener.local_addr().unwrap()),
+        node_version: None,
+        token_enc: None,
+        allow_insecure_tls: false,
+    };
+    let server = tokio::spawn(async move { axum::serve(listener, routes).await.unwrap() });
+    let client = NodeHttp::new("2.0.0", &outbound_support::runtime_config()).unwrap();
+    let secrets = SecretBox::from_key([42; 32]);
+    let open = |path| {
+        let (client, secrets, target) = (&client, &secrets, &target);
+        async move {
+            let started = Instant::now();
+            let failure = client.open_stream(secrets, target, path, Duration::from_secs(20))
+                .await.unwrap_err();
+            (serde_json::to_value(failure).unwrap(), started.elapsed())
+        }
+    };
+    let (complete, stalled, delayed_stall, late_complete) = tokio::time::timeout(
+        Duration::from_secs(13),
+        async {
+            tokio::join!(
+                open("/api/v1/complete"),
+                open("/api/v1/stalled"),
+                open("/api/v1/delayed-stall"),
+                open("/api/v1/late-complete"),
+            )
+        },
+    )
+    .await
+    .expect("error response must stay within the old deadline once its status is known");
+    server.abort();
+    assert_eq!(complete.0["kind"], "forbidden");
+    assert_eq!(complete.0["message"], "complete test refusal");
+    for (failure, elapsed) in [stalled, delayed_stall] {
+        assert_eq!(failure["kind"], "unreachable");
+        assert_eq!(failure["message"], "노드 로그 연결 시간이 초과되었습니다.");
+        assert!(
+            (Duration::from_secs(10)..Duration::from_secs(12)).contains(&elapsed),
+            "stalled response timed out after {elapsed:?}"
+        );
+    }
+    assert_eq!(late_complete.0["kind"], "unreachable");
+}
+
 #[test]
 fn audit_e6_r2_nginx_busy_uses_the_existing_visible_conflict_banner() {
     let message="설정 적용 중입니다. 잠시 후 새로고침하세요.";

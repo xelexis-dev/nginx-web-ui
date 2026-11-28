@@ -7,6 +7,138 @@ use tower::ServiceExt;
 fn document() -> Value {
     serde_json::from_str(include_str!("../../../packages/contracts/openapi.json")).unwrap()
 }
+#[test]
+fn openapi_version_matches_product_version() {
+    let product: Value =
+        serde_json::from_str(include_str!("../../web/package.json")).unwrap();
+    assert_eq!(
+        document()["info"]["version"],
+        product["version"],
+        "OpenAPI info.version must move with the web product version"
+    );
+}
+
+#[test]
+fn documented_form_examples_pass_the_real_parsers() {
+    use nwui_api::{
+        auth::route_policy::ROUTES,
+        certificates::service::{form_input, parse_input, parse_pem_input},
+        control::{
+            reserved_ports::ReservedPorts,
+            resources::{self, Resource},
+        },
+        http_policy::parse_urlencoded_form,
+        nodes::relay,
+    };
+
+    let doc = document();
+    for route in ROUTES.iter().filter(|r| r.path.starts_with("/api/ui/v1/forms/")) {
+        let name = route.path.rsplit('/').next().unwrap();
+        let operation = &doc["paths"][route.path]["post"];
+        let request = &operation["requestBody"]["content"];
+        let urlencoded = &request["application/x-www-form-urlencoded"]["examples"];
+        let response = &operation["responses"]["200"]["content"]["application/json"]["examples"];
+        if route.usage == nwui_api::auth::principal::Use::SessionOnly {
+            assert!(operation["description"].as_str().unwrap().contains("Browser workflow only"), "{name}");
+            continue;
+        }
+        assert_eq!(urlencoded, &request["multipart/form-data"]["examples"], "{name}");
+        assert!(urlencoded["valid"]["value"].is_object(), "{name} needs a request example");
+        assert!(response["success"]["value"].is_object(), "{name} needs a success example");
+
+        for (case, example) in urlencoded.as_object().unwrap() {
+            let fields = example["value"].as_object().unwrap();
+            let mut body = url::form_urlencoded::Serializer::new(String::new());
+            for (key, values) in fields {
+                for value in values.as_array().map_or(std::slice::from_ref(values), Vec::as_slice) {
+                    body.append_pair(key, value.as_str().unwrap_or_else(|| panic!("{name}/{case}: {key} must be text")));
+                }
+            }
+            let input = parse_urlencoded_form(body.finish().as_bytes()).unwrap();
+            let args = operation["x-command-arguments"].as_array().unwrap();
+            if !matches!(name, "apply.applyConfig" | "history.rollback") || case == "valid" {
+                assert_eq!(input.args.len(), args.len(), "{name}/{case}: argument count");
+                assert!(input.args.iter().all(|s| !s.is_empty()), "{name}/{case}: empty argument");
+            }
+            let node_command = if name.starts_with("node.") {
+                match relay::command(name, &input.args[0], &input) {
+                    Ok(command) => Some(command),
+                    Err(err) => {
+                        assert_eq!(case, "invalid", "{name}/{case}: {}", err.message);
+                        assert_eq!(json!(err.message), response["invalid"]["value"]["result"]["error"], "{name}");
+                        assert_eq!(json!(err.field_errors), response["invalid"]["value"]["result"]["fieldErrors"], "{name}");
+                        continue;
+                    }
+                }
+            } else {
+                None
+            };
+
+            let parsed = match name {
+                "reverse-proxy.createServer" | "reverse-proxy.updateServer"
+                | "node.createNodeServer" | "node.updateNodeServer" => {
+                    let raw = match &node_command {
+                        Some(command) => Ok(command.body.clone().unwrap()),
+                        None => resources::form_body(Resource::Server, &input),
+                    };
+                    raw.and_then(|value| resources::parse_server(&value, &ReservedPorts::default()))
+                        .map(|server| {
+                            assert_eq!(server["serverName"], "app.example.test", "{name}");
+                            assert_eq!(
+                                server["config"]["locations"][0]["resolveAtRuntime"], true, "{name}"
+                            );
+                            if name.contains("update") {
+                                assert_eq!(server["certificateId"], "cert-1", "{name}");
+                                assert_eq!(server["config"]["ipAccess"]["mode"], "whitelist", "{name}");
+                                let tls = &server["config"]["tlsOptions"];
+                                assert_eq!(tls["http2"], true, "{name}: parsed HTTP/2");
+                                assert_eq!(tls["hsts"]["enabled"], true, "{name}: parsed HSTS");
+                                assert_eq!(tls["hsts"]["maxAge"].as_f64(), Some(31536000.0), "{name}: parsed HSTS max-age");
+                            }
+                        })
+                }
+                "certificates.createCertificate" | "certificates.updateCertificate"
+                | "node.createNodeCertificate" | "node.updateNodeCertificate" => {
+                    let raw = node_command.as_ref().map_or_else(|| form_input(&input), |cmd| cmd.body.clone().unwrap());
+                    parse_input(&raw).map(|cert| {
+                        assert_eq!(cert.domains, ["app.example.test"], "{name}");
+                        assert_eq!(cert.email, "operator@example.test", "{name}");
+                        assert!(cert.staging, "{name}");
+                    })
+                }
+                "certificates.importCertificate" | "certificates.replaceCertificate"
+                | "node.importNodeCertificate" | "node.replaceNodeCertificate" => {
+                    let raw = node_command.as_ref().map_or_else(
+                        || json!({"certPem":input.get("certPem"),"keyPem":input.get("keyPem")}),
+                        |cmd| cmd.body.clone().unwrap(),
+                    );
+                    // Only the form parser is exercised. The documented PEM values are placeholders.
+                    parse_pem_input(&raw).map(|_| ())
+                }
+                "node.applyNodeConfig" => {
+                    let command = node_command.unwrap();
+                    assert_eq!(command.path, "/api/v1/apply");
+                    assert_eq!(command.retry, input.args[1]);
+                    Ok(())
+                }
+                _ => continue,
+            };
+
+            match case.as_str() {
+                "invalid" => {
+                    let err = parsed.expect_err(&format!("{name}: invalid example was accepted"));
+                    let expected = &response["invalid"]["value"]["result"];
+                    assert_eq!(json!(err.message), expected["error"], "{name}");
+                    assert_eq!(json!(err.field_errors), expected["fieldErrors"], "{name}");
+                }
+                _ => parsed.unwrap_or_else(|err| {
+                    panic!("{name}/{case}: documented request rejected: {:?}", err.field_errors)
+                }),
+            }
+        }
+    }
+}
+
 fn validator(name: &str) -> jsonschema::Validator {
     let doc = document();
     let schema = json!({"$schema":"https://json-schema.org/draft/2020-12/schema", "$ref":format!("#/components/schemas/{name}"),"components":doc["components"]});

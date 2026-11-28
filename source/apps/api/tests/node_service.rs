@@ -395,23 +395,24 @@ async fn pairing_sends_one_current_version_and_rejects_cross_major_before_auth()
         Json, Router, body::{Body, to_bytes}, extract::ConnectInfo,
         http::{HeaderMap, Request, StatusCode}, routing::post,
     };
-    use nwui_api::{contracts::Actor, nodes::client::NodeHttp, state::AppState};
+    use nwui_api::{contracts::Actor, state::AppState};
     use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
     use tower::ServiceExt;
 
     let db = auth_support::test_db().await;
-    let mut gateway = db.state.clone();
-    Arc::make_mut(&mut gateway.config).version = "2.2.0".into();
-    gateway.node_http = NodeHttp::new(&gateway.config.version, &gateway.config).unwrap();
+    let gateway = &db.state;
+    let gateway_version = &gateway.config.version;
     let actor = Actor { via: None, id: None, label: Some("test".into()), ip: None };
-    for version in ["2.0.3", "2.1.2", "2.2.0"] {
+    for version in ["2.0.3", "2.1.2", "2.2.0", "2.2.1"] {
         let posts = Arc::new(AtomicUsize::new(0));
         let hits = posts.clone();
+        let expected_gateway_version = gateway_version.clone();
         let remote = Router::new().route("/api/v1/pair", post(move |headers: HeaderMap| {
             let hits = hits.clone();
+            let expected_gateway_version = expected_gateway_version.clone();
             async move {
                 hits.fetch_add(1, Ordering::SeqCst);
-                assert_eq!(headers.get_all("x-gateway-version").iter().collect::<Vec<_>>(), ["2.2.0"]);
+                assert_eq!(headers.get_all("x-gateway-version").iter().collect::<Vec<_>>(), [expected_gateway_version.as_str()]);
                 ([("x-node-version", version)], Json(json!({
                     "token": "paired-token", "role": "editor", "instanceId": version, "semver": version,
                 })))
@@ -420,7 +421,7 @@ async fn pairing_sends_one_current_version_and_rejects_cross_major_before_auth()
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let base_url = format!("http://{}", listener.local_addr().unwrap());
         let server = tokio::spawn(async move { axum::serve(listener, remote).await.unwrap() });
-        let id = service::pair_node(&gateway, service::NodeInput {
+        let id = service::pair_node(gateway, service::NodeInput {
             name: version.into(),
             base_url,
             allow_insecure_tls: false,
@@ -429,7 +430,7 @@ async fn pairing_sends_one_current_version_and_rejects_cross_major_before_auth()
             }),
         }, &actor).await.unwrap().unwrap();
         assert_eq!(posts.load(Ordering::SeqCst), 1, "{version}");
-        assert_eq!(service::get(&gateway, &id).await.unwrap().last_version.as_deref(), Some(version));
+        assert_eq!(service::get(gateway, &id).await.unwrap().last_version.as_deref(), Some(version));
         server.abort();
     }
 

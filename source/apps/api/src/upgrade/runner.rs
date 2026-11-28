@@ -1,5 +1,5 @@
 //! Runner restart decisions and the pre-readiness cleanup of its own /run records.
-use super::{Outcome,Step,StepError,StepState,journal::{Handoff,JournalV1}};
+use super::{Outcome,Step,StepError,StepState,journal::{Handoff,JournalV1},unrecorded::{self,Code,Marker,State}};
 use std::{fs::OpenOptions,os::{fd::AsRawFd,unix::fs::{MetadataExt,OpenOptionsExt}},path::Path};
 #[derive(Debug,PartialEq,Eq)]
 pub(crate) enum BootPlan {Phase1,Phase2,ParkedRefusal}
@@ -48,6 +48,7 @@ pub(crate) struct Startup {
     pub journal:Option<super::Journal>,
     pub identity:Option<String>,
     pub plan:BootPlan,
+    pub(super) unrecorded:Option<Marker>,
 }
 fn startup_error(code:&'static str,message:&'static str)->StepError {StepError{code,message,detail:None}}
 fn initial_journal_hint(app:&Path)->Result<Option<JournalV1>,StepError> {
@@ -70,22 +71,26 @@ fn same_plan(before:Option<&JournalV1>,after:Option<&JournalV1>,identity:Option<
     Ok(plan(after))
 }
 /// P0/P0b run before F1 can create runtime secrets.
-pub(crate) async fn start()->Result<Startup,StepError> {
+async fn start(identity:Option<String>,unrecorded:Option<Marker>)->Result<Startup,StepError> {
     super::status::log_storage_warning();
     let roots=crate::db_upgrade::layout::Roots {
         db:crate::db_upgrade::paths::PGROOT.into(),app:crate::db_upgrade::paths::APPROOT.into(),
         architecture:crate::db_upgrade::paths::architecture().map_err(|e|startup_error(e.code,e.message))?.into(),
     };
     let read_roots=roots.clone();
-    let (before,identity)=tokio::task::spawn_blocking(move|| {
+    let replay=unrecorded.is_some();
+    let before=tokio::task::spawn_blocking(move|| {
         crate::db_upgrade::paths::validate_env().map_err(|e|startup_error(e.code,e.message))?;
         crate::db_upgrade::paths::startup_data_key_file(&read_roots.app).map_err(|e|startup_error(e.code,e.message))?;
         super::preflight::startup_ports()?;
         crate::db_upgrade::layout::validate_roots_unlocked(&read_roots).map_err(|e|StepError{code:e.code,message:e.message,detail:e.detail.map(str::to_owned)})?;
-        Ok::<_,StepError>((initial_journal_hint(&read_roots.app)?,super::boot_identity::current().ok()))
+        if replay {Ok(None)} else {initial_journal_hint(&read_roots.app)}
     }).await.map_err(|_|startup_error("io_error","시작 전 검사를 완료하지 못했습니다."))??;
     let need_d=before.as_ref().map(|j|boot_plan(j,identity.as_deref())!=BootPlan::Phase2).unwrap_or(true);
     let mut custody=super::custody::Custody::acquire(roots.clone(),need_d).await?;
+    if replay {
+        return Ok(Startup{roots,custody,journal:None,identity,plan:BootPlan::ParkedRefusal,unrecorded});
+    }
     let locks=custody.locks.clone();let owned_roots=roots.clone();let saved=before.clone();let boot=identity.clone();
     let (journal,plan)=custody.during(async move {
         tokio::task::spawn_blocking(move|| {
@@ -98,7 +103,7 @@ pub(crate) async fn start()->Result<Startup,StepError> {
             Ok((journal,plan))
         }).await.map_err(|_|startup_error("io_error","잠금 아래의 복구 기록 확인을 완료하지 못했습니다."))?
     }).await?;
-    Ok(Startup{roots,custody,journal,identity,plan})
+    Ok(Startup{roots,custody,journal,identity,plan,unrecorded})
 }
 /// R4-4: resume, parked and Phase2 boots keep 2.0.0's strict root check under the locks;
 /// only Phase1 normalizes (storage_modes), then its own gates check the roots strictly.
@@ -106,15 +111,15 @@ pub(super) fn strict_roots(roots:&crate::db_upgrade::layout::Roots)->Result<(),S
     crate::db_upgrade::layout::validate_roots(roots).map_err(|e|StepError{code:e.code,message:e.message,detail:e.detail.map(str::to_owned)})
 }
 fn unsafe_run()->StepError {StepError {code:"io_error",message:"이전 실행의 상태 파일을 안전하게 정리하지 못했습니다. 서비스 시작을 보류했습니다.",detail:Some("runner_runtime_records".into())}}
-/// Only these two root-owned regular leaves belong to W1. No wildcard or recursive removal.
+/// Clean only the root-owned runtime authority and diagnostics.
 pub(crate) fn clear_runtime_records()->Result<(),StepError> {clear_runtime_records_at(Path::new("/run"))}
 fn clear_runtime_records_at(root:&Path)->Result<(),StepError> {
     crate::db_upgrade::files::real_path(root).map_err(|_|unsafe_run())?;
     let directory=OpenOptions::new().read(true).custom_flags(libc::O_NOFOLLOW|libc::O_DIRECTORY).open(root).map_err(|_|unsafe_run())?;
     let m=directory.metadata().map_err(|_|unsafe_run())?;
     if !m.is_dir() || m.uid()!=0 || m.mode()&0o022!=0 {return Err(unsafe_run());}
-    let names=[c"nwui-storage.json",c"nwui-db-upgrade.json"];
-    // Validate both first so an unsafe second leaf does not erase the first diagnostic.
+    let names=[c"nwui-storage.json",c"nwui-db-upgrade.json",c"nwui-unrecorded.json"];
+    // Validate all leaves before removing any diagnostic.
     for name in names {
         let mut stat=std::mem::MaybeUninit::<libc::stat>::uninit();
         if unsafe{libc::fstatat(directory.as_raw_fd(),name.as_ptr(),stat.as_mut_ptr(),libc::AT_SYMLINK_NOFOLLOW)}!=0 {
@@ -146,7 +151,7 @@ pub(crate) async fn prepare_and_handoff(startup:&mut Startup,current:super::jour
     let identity=startup.identity.clone().ok_or_else(preparation_error)?;
     let prepared=prepare_pg17(startup.roots.clone(),&mut startup.custody,startup.journal.take(),current,phase).await?;
     let mut journal=prepared.journal;
-    phase.set(Step::S4Activate);let result=finish_phase1(&startup.roots,&mut startup.custody,&mut journal,&prepared.selection,&prepared.privileges,&identity).await;
+    phase.set(Step::S4Activate);let result=finish_phase1(&startup.roots,&mut startup.custody,&mut journal,&prepared.selection,&prepared.privileges,&identity,phase).await;
     startup.journal=Some(journal);
     if result.is_ok(){startup.plan=BootPlan::Phase2;}
     result
@@ -192,24 +197,51 @@ fn unrecorded(app:&Path,descriptor:&Path)->bool {
         && match super::types::read_selection_at(descriptor){Ok(value)=>value.outcome!=Outcome::Pg17,Err(error)=>error.code=="postponed"}
 }
 async fn run_phases(signals:&mut super::signals::Signals)->Result<(),StepError>{
-    let policy=super::retry::Policy::startup()?;let current=super::journal::Candidate::current().await?;let mut startup=match start().await {
+    let identity=super::boot_identity::current().ok();
+    // This authority is evaluated before any journal hint or phase-1 cleanup.
+    let marker=match Marker::read_at(Path::new(unrecorded::MARKER),identity.as_deref()){
+        Ok(value)=>value.map(|(marker,_)|marker),
+        Err(_)=>control_exit("status_invalid",true),
+    };
+    let replay=marker.as_ref().map(|marker|(marker.state,marker.code));
+    let phase1_inputs=if replay.is_none(){
+        Some((super::retry::Policy::startup()?,super::journal::Candidate::current().await?))
+    }else{None};
+    let mut startup=match start(identity,marker).await {
         Ok(startup)=>startup,
+        Err(_) if replay.is_some()=>{
+            let (state,code)=replay.expect("matched replay");
+            if let Some(error)=stop_requested(){return Err(error);}
+            control_exit(code.as_str(),state==State::Refused);
+        },
         Err(error)=>{
             if Path::new(crate::db_upgrade::paths::APPROOT).join(".nwui-auto/journal-v1.json").symlink_metadata().is_ok(){
                 super::refusal::publish_readonly_refusal_at(&error,Path::new("/run/nwui-storage.json"),Path::new(super::status::STATUS_PATH),notify_readiness)?;
             }else{
-            super::refusal::publish_unrecorded_at(&error,Path::new(crate::db_upgrade::paths::PGROOT),Path::new("/run/nwui-storage.json"),Path::new(super::status::STATUS_PATH),notify_readiness)?;
+                super::refusal::publish_unrecorded_at(&error,Path::new(crate::db_upgrade::paths::PGROOT),Path::new("/run/nwui-storage.json"),Path::new(super::status::STATUS_PATH),notify_readiness)?;
             }
             return super::signals::park().await;
         },
     };
+    if let Some(marker)=startup.unrecorded.take(){
+        return signals.drain(async {
+            park_unrecordable(&mut startup,marker.code,marker.step,Some(marker.state)).await?;
+            startup.custody.during(super::signals::park()).await
+        }).await;
+    }
+    let (policy,current)=phase1_inputs.ok_or_else(preparation_error)?;
     let phase=Phase1Step::new(Step::P0b);
     signals.drain(async{
         if startup.plan==BootPlan::ParkedRefusal{resume_refusal(&startup,&current,policy.label.as_deref())?;return startup.custody.during(super::signals::park()).await;}
         if startup.plan==BootPlan::Phase2{
             resume_readiness(&startup.roots.app,&startup.custody.locks,startup.journal.as_ref().ok_or_else(preparation_error)?,startup.identity.as_deref())?;
         }else if let Err(error)=phase1(&mut startup,&current,&policy,&phase).await{
-            reconcile_failure(&mut startup,&current,&policy,phase.get(),error).await?;
+            let step=phase.get();
+            match reconcile_failure(&mut startup,&current,&policy,step,error).await {
+                Ok(())=>{},
+                Err(ReconcileError::Ordinary(error))=>return Err(error),
+                Err(ReconcileError::Unrecordable(code))=>park_unrecordable(&mut startup,code,step,None).await?,
+            }
         }
         if startup.plan==BootPlan::ParkedRefusal{return startup.custody.during(super::signals::park()).await;}
         if startup.plan!=BootPlan::Phase2{return Err(preparation_error());}
@@ -254,30 +286,119 @@ pub(super) fn committed_failure_outcome(j:&JournalV1,step:Step)->Outcome{
 fn require_recovery_journal(app:&Path,error:&StepError)->Result<(),StepError>{
     if initial_journal(app)?.is_none(){return Err(StepError{code:error.code,message:error.message,detail:error.detail.clone()});}Ok(())
 }
-async fn reconcile_failure(startup:&mut Startup,current:&super::journal::Candidate,policy:&super::retry::Policy,step:Step,error:StepError)->Result<(),StepError>{
-    // A pre-journal refusal must retain its cause; corrupt existing authority is still fatal.
-    require_recovery_journal(&startup.roots.app,&error)?;
-    let detail=error.detail.as_deref().unwrap_or("").chars().filter(|c|!c.is_control()).take(2048).collect::<String>();eprintln!("[upgrade] preparation failed: {} {detail}",error.code);
+enum ReconcileError { Ordinary(StepError), Unrecordable(Code) }
+impl From<StepError> for ReconcileError {
+    fn from(error:StepError)->Self {Self::Ordinary(error)}
+}
+fn journal_commit(result:Result<(),StepError>)->Result<(),ReconcileError> {
+    result.map_err(|error|match Code::classify(&error) {
+        Some(code)=>ReconcileError::Unrecordable(code),
+        None=>ReconcileError::Ordinary(error),
+    })
+}
+fn log_preparation_failure(error:&StepError){
+    let detail=error.detail.as_deref().unwrap_or("").chars().filter(|c|!c.is_control()).take(2048).collect::<String>();
+    eprintln!("[upgrade] preparation failed: {} {detail}",error.code);
+}
+async fn reconcile_failure(startup:&mut Startup,current:&super::journal::Candidate,policy:&super::retry::Policy,step:Step,error:StepError)->Result<(),ReconcileError>{
+    if let Some(stop)=stop_requested(){return Err(stop.into());}
+    if let Err(cause)=require_recovery_journal(&startup.roots.app,&error){
+        // There is no frame to record a failed first publication in.
+        if let Some(code)=Code::classify(&error)
+            && matches!(initial_journal(&startup.roots.app),Ok(None)) {
+            log_preparation_failure(&error);
+            return Err(ReconcileError::Unrecordable(code));
+        }
+        return Err(cause.into());
+    }
+    log_preparation_failure(&error);
     let r=startup.roots.clone();let l=startup.custody.locks.clone();
-    let(j,committed)=startup.custody.during(async move{tokio::task::spawn_blocking(move||Ok((super::Journal::open(&r.app,&l)?,super::replacement::is_committed(&r)?))).await.map_err(|_|preparation_error())?}).await?;
-    if startup.identity.as_deref().is_some_and(|identity|super::refusal::outcome(j.load(),identity).is_some()){
-        let mut j=j;let identity=startup.identity.as_deref().ok_or_else(preparation_error)?;finalize_refusal(&startup.roots,&startup.custody.locks,&mut j,identity,current,policy.label.as_deref())?;startup.journal=Some(j);startup.plan=BootPlan::ParkedRefusal;return Ok(());
-    }
-    if committed{
-        let mut j=j;
-        let Some(identity)=startup.identity.as_deref()else{j.record_retry_failure(step,error.code,chrono::Utc::now())?;super::refusal::publish_status_only(&startup.roots,&j,committed_failure_outcome(j.load(),step),current,policy.label.as_deref());return Err(error);};
-        let outcome=committed_failure_outcome(j.load(),step);j.fail_attempt_with_identity(step,&error,outcome,chrono::Utc::now(),Some(identity))?;
-        finalize_refusal(&startup.roots,&startup.custody.locks,&mut j,identity,current,policy.label.as_deref())?;
-        startup.journal=Some(j);startup.plan=BootPlan::ParkedRefusal;return Ok(());
-    }
-    let mut j={
-        let mut j=j;let identity=startup.identity.as_deref().ok_or_else(preparation_error)?;
-        if j.pre_pool()?{let space=super::refusal::status_value(&startup.roots,j.load(),j.load().outcome,current,policy.label.as_deref())?.space;if let Err(publication)=j.finish_pre_pool(identity,Some(&error),space){super::refusal::publish_status_only(&startup.roots,&j,Outcome::RefusedPreflight,current,policy.label.as_deref());return Err(publication);}}else{
+    let(mut j,committed)=startup.custody.during(async move{tokio::task::spawn_blocking(move||Ok((super::Journal::open(&r.app,&l)?,super::replacement::is_committed(&r)?))).await.map_err(|_|preparation_error())?}).await?;
+    let identity=startup.identity.as_deref();
+    if !identity.is_some_and(|identity|super::refusal::outcome(j.load(),identity).is_some()){
+        if committed {
+            let Some(identity)=identity else {
+                journal_commit(j.record_retry_failure(step,error.code,chrono::Utc::now()))?;
+                super::refusal::publish_status_only(&startup.roots,&j,committed_failure_outcome(j.load(),step),current,policy.label.as_deref());
+                return Err(error.into());
+            };
+            let outcome=committed_failure_outcome(j.load(),step);
+            journal_commit(j.fail_attempt_with_identity(step,&error,outcome,chrono::Utc::now(),Some(identity)))?;
+        }else if j.pre_pool()?{
+            let identity=identity.ok_or_else(preparation_error)?;
+            let space=super::refusal::status_value(&startup.roots,j.load(),j.load().outcome,current,policy.label.as_deref())?.space;
+            if let Err(publication)=journal_commit(j.finish_pre_pool(identity,Some(&error),space)){
+                if matches!(publication,ReconcileError::Ordinary(_)){
+                    super::refusal::publish_status_only(&startup.roots,&j,Outcome::RefusedPreflight,current,policy.label.as_deref());
+                }
+                return Err(publication);
+            }
+        }else{
             let outcome=match j.load().branch{super::Branch::Fresh=>Outcome::RefusedFresh,super::Branch::Ready=>Outcome::RefusedPrivilege,super::Branch::Upgrade=>Outcome::RefusedPreflight};
-            j.fail_attempt(step,&error,outcome,chrono::Utc::now())?;
-        }j
+            journal_commit(j.fail_attempt(step,&error,outcome,chrono::Utc::now()))?;
+        }
+    }
+    let identity=identity.ok_or_else(preparation_error)?;
+    journal_commit(super::refusal::record(&startup.roots,&startup.custody.locks,&mut j,identity))?;
+    super::refusal::publish(&startup.roots,&startup.custody.locks,&j,identity,current,policy.label.as_deref())?;
+    notify_readiness()?;
+    startup.journal=Some(j);
+    startup.plan=BootPlan::ParkedRefusal;
+    Ok(())
+}
+
+fn stop_requested()->Option<StepError> {
+    crate::db_upgrade::postgres::interrupted().map(|error|startup_error(error.code,error.message))
+}
+
+fn quiescent(startup:&Startup)->bool {
+    super::fdholder::list().is_ok_and(|ids|startup.custody.refusal_locks(&startup.roots,&ids))
+        && crate::db_upgrade::postgres::private_quiescent(&startup.roots.db.join("17/data"),Path::new("/run"))
+}
+
+fn control_exit(code:&str,readiness_may_have_been_given:bool)->! {
+    eprintln!("[upgrade] 시작 준비 기록도 실행 상태 파일도 저장하지 못해 컨테이너를 멈춥니다: {code}. 앱 데이터 볼륨과 컨테이너 디스크의 여유 공간·쓰기 가능 여부를 확인한 뒤 다시 시작하세요.");
+    if readiness_may_have_been_given {super::service::halt_overlay();}
+    std::process::exit(100)
+}
+
+async fn park_unrecordable(startup:&mut Startup,code:Code,step:Step,replay:Option<State>)->Result<(),StepError> {
+    if let Some(error)=stop_requested(){return Err(error);}
+    let was_refused=replay==Some(State::Refused);
+    let fail=|| -> ! {control_exit(code.as_str(),was_refused)};
+    let marker_path=Path::new(unrecorded::MARKER);
+    let descriptor=Path::new(unrecorded::DESCRIPTOR);
+    let Some(identity)=startup.identity.clone() else {fail()};
+    if was_refused && unrecorded::check_descriptor(descriptor).is_err(){fail();}
+    if !quiescent(startup) {
+        if replay.is_some(){fail();}
+        if Marker::new(identity,State::Restarting,code,step).write_at(marker_path).is_err(){fail();}
+        eprintln!("[upgrade] 시작 준비 기록을 저장하지 못했습니다: {}. 저장소 잠금을 다시 확보하도록 시작 준비를 한 번 다시 실행합니다.",code.as_str());
+        std::process::exit(1);
+    }
+    let marker=Marker::new(identity,State::Refused,code,step);
+    let value=match marker.publish_at(descriptor,marker_path,chrono::Utc::now().to_rfc3339()){
+        Ok(value)=>value,
+        Err(_)=>fail(),
     };
-    let identity=startup.identity.clone().ok_or_else(preparation_error)?;finalize_refusal(&startup.roots,&startup.custody.locks,&mut j,&identity,current,policy.label.as_deref())?;startup.journal=Some(j);startup.plan=BootPlan::ParkedRefusal;Ok(())
+    super::commands::publish_status(&value);
+    let expected=value.failure.expect("journal refusal has failure details");
+    let verified=startup.custody.during(async {
+        let started=tokio::task::spawn_blocking(super::service::restore_status_responder).await;
+        Ok(matches!(started,Ok(Ok(()))) && super::service::status_shows_refusal(&expected).await)
+    }).await;
+    if let Some(error)=stop_requested(){return Err(error);}
+    let routes=if matches!(verified,Ok(true)){
+        "상태 페이지(:8080)와 nwui-api auto-status에 같은 내용이 표시됩니다."
+    }else{
+        "nwui-api auto-status에 내용이 표시됩니다."
+    };
+    if verified.is_err() || !quiescent(startup){fail();}
+    if let Some(error)=stop_requested(){return Err(error);}
+    eprintln!("[upgrade] 시작 준비 기록을 저장하지 못해 서비스 시작을 멈췄습니다: {} (실패 단계: {}). {routes} 원인을 해결한 뒤 컨테이너를 다시 시작하세요.",code.as_str(),super::status::step_label(step));
+    if notify_readiness().is_err(){fail();}
+    startup.plan=BootPlan::ParkedRefusal;
+    Ok(())
 }
 
 fn read_config()->Result<crate::config::RuntimeConfig,StepError>{
@@ -422,7 +543,7 @@ fn required_live_pair(snapshot:&crate::db_upgrade::pair::Pair,live:&crate::db_up
 }
 /// Complete finite phase 1; the caller starts monitoring only after this handoff returns.
 /// No status I/O failure is fed here: informational status publication remains non-fatal.
-pub(crate) async fn finish_phase1(roots:&crate::db_upgrade::layout::Roots,custody:&mut super::custody::Custody,j:&mut super::Journal,selection:&super::StorageSelection,p:&crate::nonroot::Prepared,identity:&str)->Result<(),StepError> {
+pub(crate) async fn finish_phase1(roots:&crate::db_upgrade::layout::Roots,custody:&mut super::custody::Custody,j:&mut super::Journal,selection:&super::StorageSelection,p:&crate::nonroot::Prepared,identity:&str,phase:&Phase1Step)->Result<(),StepError> {
     handoff_inputs(roots,&custody.locks,j,selection,p,identity)?;
     let roots_check=roots.clone();let locks=custody.locks.clone();let descriptor=selection.clone();let boot_identity=identity.to_owned();
     custody.during(async move {
@@ -451,6 +572,7 @@ pub(crate) async fn finish_phase1(roots:&crate::db_upgrade::layout::Roots,custod
             super::service::stop_status()
         }).await.map_err(|_|readiness_error())?
     }).await?;
+    phase.set(Step::Handoff);
     publish_step(roots,j,Step::Handoff,0,0,None,true);custody.handoff(j,identity).await?;publish_step(roots,j,Step::Handoff,0,0,None,true);Ok(())
 }
 
@@ -463,10 +585,6 @@ pub(crate) fn resume_readiness(app:&Path,locks:&super::StorageLocks,j:&super::Jo
     notify_readiness()
 }
 
-/// Run in an awaited blocking operation under A+D custody; the receipt precedes publication.
-pub(crate) fn finalize_refusal(roots:&crate::db_upgrade::layout::Roots,locks:&super::StorageLocks,j:&mut super::Journal,identity:&str,current:&super::journal::Candidate,label:Option<&str>)->Result<(),StepError> {
-    super::refusal::record(roots,locks,j,identity)?;super::refusal::publish(roots,locks,j,identity,current,label)?;notify_readiness()
-}
 /// Same-boot replay does not append records, re-run admission or release D.
 pub(crate) fn resume_refusal(startup:&Startup,current:&super::journal::Candidate,label:Option<&str>)->Result<(),StepError> {
     if startup.plan!=BootPlan::ParkedRefusal{return Err(preparation_error());}
@@ -783,10 +901,10 @@ mod tests {
         let count=j.load().records.len();assert_eq!(prepare_privileges(&selection,&locks,&pg,&mut j,crate::publisher::boot::BootMode::Conversion).await.unwrap_err().code,"privilege_prepare_failed");assert_eq!(j.load().records.len(),count);
     }
     #[test]
-    fn w1_runner_new_boot_cleanup_removes_only_its_two_records_and_is_idempotent() {
-        let t=tempfile::tempdir().unwrap();for name in ["nwui-storage.json","nwui-db-upgrade.json","foreign.json"] {let p=t.path().join(name);fs::write(&p,"old").unwrap();fs::set_permissions(p,fs::Permissions::from_mode(0o644)).unwrap();}
+    fn w1_runner_new_boot_cleanup_removes_only_its_records_and_is_idempotent() {
+        let t=tempfile::tempdir().unwrap();for name in ["nwui-storage.json","nwui-db-upgrade.json","nwui-unrecorded.json","foreign.json"] {let p=t.path().join(name);fs::write(&p,"old").unwrap();fs::set_permissions(p,fs::Permissions::from_mode(0o644)).unwrap();}
         clear_runtime_records_at(t.path()).unwrap();clear_runtime_records_at(t.path()).unwrap();assert_eq!(fs::read(t.path().join("foreign.json")).unwrap(),b"old");
-        assert!(!t.path().join("nwui-storage.json").exists());assert!(!t.path().join("nwui-db-upgrade.json").exists());
+        assert!(!t.path().join("nwui-storage.json").exists());assert!(!t.path().join("nwui-db-upgrade.json").exists());assert!(!t.path().join("nwui-unrecorded.json").exists());
     }
     #[test]
     fn w1_runner_unsafe_runtime_leaf_or_parent_preserves_both_records() {

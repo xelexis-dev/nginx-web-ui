@@ -130,11 +130,17 @@ export interface EmptyStateProps {
   title?: ReactNode;
   description?: ReactNode;
   action?: ReactNode;
+  align?: "start" | "center";
 }
 
-export function EmptyState({ title, description, action }: EmptyStateProps) {
+export function EmptyState({
+  title,
+  description,
+  action,
+  align = "center",
+}: EmptyStateProps) {
   return (
-    <div className={styles.empty}>
+    <div className={styles.empty} data-align={align}>
       {title != null ? <p className={styles.emptyTitle}>{title}</p> : null}
       {description ? <p className={styles.emptyText}>{description}</p> : null}
       {action ? <div className={styles.emptyAction}>{action}</div> : null}

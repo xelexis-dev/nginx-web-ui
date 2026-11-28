@@ -87,11 +87,7 @@ impl Mutation {
     }
     pub async fn observe(&mut self,config:&RuntimeConfig,first:&str,budget:&Budget)->Result<()> {
         let witness=super::confirmation::Witness::from_config(config)?;
-        let child_store=self.store.clone();let bin=config.nginx_bin.clone();
-        witness.confirm_with(config,first,budget.ack_deadline()?,move |timeout| {
-            let store=child_store.clone();let bin=bin.clone();
-            async move {super::command::execute(store,bin,vec!["-s".into(),"reload".into()],timeout).await.map(|_|()).map_err(anyhow::Error::from)}
-        },|phase|self.operation.advance(&self.store,if phase==0 {Phase::P}else{Phase::C})).await
+        witness.confirm_with(config,first,budget.ack_deadline()?,&self.store,|phase|self.operation.advance(&self.store,if phase==0 {Phase::P}else{Phase::C})).await
     }
     #[cfg(test)]
     pub async fn acknowledge(&mut self,config:&RuntimeConfig,budget:&Budget)->Result<String> {

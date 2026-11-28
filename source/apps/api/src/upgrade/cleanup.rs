@@ -162,18 +162,18 @@ pub(crate) fn delete_entry(parent:&File,name:&str)->Result<(),StepError>{
     visit(&parent,&name_c,&scope,0,&mut seen,false,name)?;let mut seen=0;
     visit(&parent,&name_c,&scope,0,&mut seen,true,name)?;parent.sync_all().map_err(io_error)
 }
-struct Boundary{device:u64,mount:u64}
+pub(super) struct Boundary{device:u64,mount:u64}
 fn mount_id(file:&File)->Result<u64,StepError>{
     let mut text=String::new();File::open(format!("/proc/self/fdinfo/{}",file.as_raw_fd())).map_err(io_error)?.take(4097).read_to_string(&mut text).map_err(io_error)?;
     if text.len()>4096{return Err(mismatch());}let mut ids=text.lines().filter_map(|s|s.strip_prefix("mnt_id:")).map(str::trim);
     let id=ids.next().and_then(|s|s.parse::<u64>().ok()).ok_or_else(mismatch)?;if ids.next().is_some(){return Err(mismatch());}Ok(id)
 }
-fn opened(parent:&File,name:&CStr,flags:i32)->Result<Option<File>,StepError>{
+pub(super) fn opened(parent:&File,name:&CStr,flags:i32)->Result<Option<File>,StepError>{
     let fd=unsafe{libc::openat(parent.as_raw_fd(),name.as_ptr(),flags|libc::O_NOFOLLOW|libc::O_CLOEXEC|libc::O_NONBLOCK)};
     if fd>=0{return Ok(Some(unsafe{File::from_raw_fd(fd)}));}let error=std::io::Error::last_os_error();if error.kind()==std::io::ErrorKind::NotFound{Ok(None)}else{Err(io_error(error))}
 }
-fn boundary(file:&File)->Result<Boundary,StepError>{Ok(Boundary{device:file.metadata().map_err(io_error)?.dev(),mount:mount_id(file)?})}
-fn check_boundary(file:&File,scope:&Boundary)->Result<(),StepError>{
+pub(super) fn boundary(file:&File)->Result<Boundary,StepError>{Ok(Boundary{device:file.metadata().map_err(io_error)?.dev(),mount:mount_id(file)?})}
+pub(super) fn check_boundary(file:&File,scope:&Boundary)->Result<(),StepError>{
     if file.metadata().map_err(io_error)?.dev()!=scope.device||mount_id(file)?!=scope.mount{return Err(mismatch());}Ok(())
 }
 fn count(count:&mut u64)->Result<(),StepError>{*count=count.checked_add(1).ok_or_else(mismatch)?;if *count>super::backup_format::MAX_ENTRIES{return Err(mismatch());}Ok(())}
@@ -261,7 +261,7 @@ mod tests {
         let work=PathBuf::from("/run/g34").join(format!("pg-{}",uuid::Uuid::new_v4()));postgres::directory(&work).unwrap();let server=postgres::Private::start(17,&roots.db.join("17/data"),&work).unwrap();
         fs::write("/run/g34/db.json",serde_json::to_vec(&serde_json::json!({"socket":server.socket})).unwrap()).unwrap();
         if locks.holds_d(){j.handoff(Handoff::Intent,&identity).unwrap();locks.release_d();j.handoff(Handoff::Done,&identity).unwrap();}drop(bootstrap);let shared=File::open(&roots.db).unwrap();shared.lock_shared().unwrap();
-        assert!(fdholder::list().unwrap().is_empty());fdholder::store(fdholder::CustodyId::A,locks.a_fd()).unwrap();drop(locks);let custody=custody::Custody::acquire(roots.clone(),false).await.unwrap();let mut startup=runner::Startup{roots:roots.clone(),custody,journal:Some(j),identity:Some(identity.clone()),plan:runner::BootPlan::Phase2};
+        assert!(fdholder::list().unwrap().is_empty());fdholder::store(fdholder::CustodyId::A,locks.a_fd()).unwrap();drop(locks);let custody=custody::Custody::acquire(roots.clone(),false).await.unwrap();let mut startup=runner::Startup{roots:roots.clone(),custody,journal:Some(j),identity:Some(identity.clone()),plan:runner::BootPlan::Phase2,unrecorded:None};
         let deadline=||std::time::Instant::now()+std::time::Duration::from_secs(5);
         assert!(crate::control::confirmation::uncertain(&config).await);
         let nginx_before=crate::db_upgrade::files::snapshot(&config.nginx_conf_dir).unwrap();let before=startup.journal.as_ref().unwrap().load().records.len();

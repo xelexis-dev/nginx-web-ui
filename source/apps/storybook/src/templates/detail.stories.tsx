@@ -45,7 +45,7 @@ function DetailTemplate({ pending }: { pending: boolean }) {
         description="리버스 프록시 서버 2개가 이 묶음으로 요청을 보냅니다."
         actions={
           <>
-            <Button variant="dangerQuiet" data-preview-action>
+            <Button variant="dangerOutline" data-preview-action>
               삭제
             </Button>
             <a

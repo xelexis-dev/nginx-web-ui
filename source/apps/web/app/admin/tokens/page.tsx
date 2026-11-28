@@ -1,5 +1,5 @@
 import { readPageApi } from "@/lib/api-page";
-import { tokenPresentation, type TokenApiList } from "@/lib/token-api";
+import { readRevokedTokenName, tokenPresentation, type TokenApiList } from "@/lib/token-api";
 import { ServerTokensView } from "@/app/(app)/account/tokens/token-list";
 
 // Uses the authenticated Rust API view through the server-side page client.
@@ -37,7 +37,11 @@ export const runtime = "nodejs";
  * **어느 게이트웨이가 이 서버를 관리하고 있고** 언제 마지막으로 썼는지가 드러난다 —
  * 이름에 상대의 정체를 적게 되어 있기 때문이다. 읽기라고 가벼운 것이 아니다.
  */
-export default async function ServerTokensPage() {
+export default async function ServerTokensPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ revoked?: string | string[] }>;
+}) {
   /**
    * ⚠ **게이트가 `listTokens` 보다 앞이다.** `requireServerTokenActor()` 의 첫 줄이
    * `requireRole("user:manage")` 이고, 서버 범위(`{ kind: "server" }`)는 그것을
@@ -60,7 +64,6 @@ export default async function ServerTokensPage() {
    * (`actions.ts` 의 `issueErrorState`) `AccessTokenError` 를 잡아 화면에 그린다.
    */
   const { tokens } = await readPageApi<TokenApiList>("/api/ui/v1/admin/tokens");
-  const views = tokens.map(tokenPresentation);
-
-  return <ServerTokensView rows={views} />;
+  const revokedName = await readRevokedTokenName("admin", (await searchParams).revoked);
+  return <ServerTokensView rows={tokens.map(tokenPresentation)} revokedName={revokedName} />;
 }

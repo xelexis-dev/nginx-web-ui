@@ -11,6 +11,7 @@ export interface ConfirmDialogProps {
   description: ReactNode;
   target?: ReactNode;
   confirmLabel: string;
+  pendingLabel?: string;
   onConfirm: () => void;
   /** The caller owns the command, pending state and result. */
   pending?: boolean;
@@ -23,6 +24,7 @@ export function ConfirmDialog({
   description,
   target,
   confirmLabel,
+  pendingLabel = "처리 중...",
   onConfirm,
   pending = false,
 }: ConfirmDialogProps) {
@@ -51,7 +53,7 @@ export function ConfirmDialog({
             aria-busy={pending || undefined}
             onClick={onConfirm}
           >
-            {pending ? "처리 중..." : confirmLabel}
+            {pending ? pendingLabel : confirmLabel}
           </Button>
         </>
       }

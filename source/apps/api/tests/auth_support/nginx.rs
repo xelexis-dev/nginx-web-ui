@@ -21,7 +21,7 @@ pub fn witness(state: &mut AppState) {
     let active = root.join(".fake-nginx-active-generation");
     let marker = config.nginx_conf_dir.join(".nwui-generation");
     let pid = root.join(".fake-nginx.pid");
-    std::fs::write(&pid, std::process::id().to_string()).unwrap();
+    let master = nwui_api::publisher::test_support::FakeMaster::spawn(&pid, true);
     let original = if config.nginx_main_conf.starts_with(&root) {
         std::fs::read_to_string(&config.nginx_main_conf).unwrap_or_default()
     } else {
@@ -50,6 +50,7 @@ exit "$code"
     config.nginx_bin = bin;
     config.nginx_status_url = format!("http://127.0.0.1:{port}/nginx_status");
     tokio::spawn(async move {
+        let _master = master;
         loop {
             let socket = tokio::select! {
                 socket=listener.accept()=>match socket{Ok((socket,_))=>socket,Err(_)=>break},

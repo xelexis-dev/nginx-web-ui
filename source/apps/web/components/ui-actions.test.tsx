@@ -40,7 +40,7 @@ it("marks only primary actions and keeps all four sizes on buttons and links", (
     expect(html).toContain("nwui-btn-primary");
     for (const cls of buttonClassName({ size }).split(" ")) expect(html).toContain(cls);
   }
-  for (const variant of ["secondary", "ghost", "danger", "dangerQuiet"] as const) {
+  for (const variant of ["secondary", "ghost", "danger", "dangerQuiet", "dangerOutline"] as const) {
     expect(renderToStaticMarkup(<Button variant={variant}>실행</Button>)).not.toContain("nwui-btn-primary");
   }
   const html = renderToStaticMarkup(<Button aria-busy disabled><Icon name="loaderCircle" />저장 중…</Button>);
@@ -59,7 +59,7 @@ it("keeps native checkbox/file attributes and raw textarea wrapping", () => {
 });
 
 it("marks button-styled links as controls without caller attributes", () => {
-  for (const variant of ["primary", "secondary", "ghost", "danger", "dangerQuiet"] as const) {
+  for (const variant of ["primary", "secondary", "ghost", "danger", "dangerQuiet", "dangerOutline"] as const) {
     expect(buttonClassName({ variant, size: "sm" }).split(" ")).toContain("nwui-btn");
   }
   const html = renderToStaticMarkup(<a href="/history" className={buttonClassName({ variant: "secondary", size: "sm" })}>보기</a>);

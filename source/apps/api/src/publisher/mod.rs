@@ -80,6 +80,8 @@ mod publication;
 mod adoption;
 #[cfg(feature = "test-support")]
 pub mod test_support;
+#[cfg(any(test, feature = "test-support"))]
+mod identity_fixture;
 pub use boot::PublisherStore;
 pub(crate) use confirmation::{observe_current,uncertain};
 // The old in-place writer shares only this pure predicate until the private move.

@@ -248,8 +248,8 @@ function ServerHealth({ servers }: { servers: OverviewVM["servers"] }) {
       {!servers.ok ? (
         <PanelFailure value={servers} inset />
       ) : servers.data.rows.length === 0 ? (
-        <div className={styles.inset}>
-          <EmptyState title="등록된 서버가 없습니다" />
+        <div className={styles.emptyInset}>
+          <EmptyState description="등록된 서버가 없습니다." />
         </div>
       ) : (
         <>

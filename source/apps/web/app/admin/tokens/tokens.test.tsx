@@ -91,9 +91,13 @@ const readPageApiMock = vi.fn(async (path: string) => {
   return { tokens, issuableScopes: tokenScopeFixture(path.includes("/admin/") ? "server" : "user", user!.role) };
 });
 vi.mock("@/lib/api-page", () => ({ readPageApi: readPageApiMock }));
+const apiReadMock = vi.fn();
+vi.mock("@/lib/api-client", () => ({ apiRead: apiReadMock }));
 vi.mock("@/lib/use-api-action", () => ({ useApiAction: (action: unknown) => action }));
 
-const { default: ServerTokensPage } = await import("./page");
+const { default: ListPage } = await import("./page");
+const ServerTokensPage = (revoked?: string | string[]) =>
+  ListPage({ searchParams: Promise.resolve({ revoked }) });
 const { default: NewServerTokenPage } = await import("./new/page");
 const { default: ServerTokenDetailPage } = await import("./[id]/page");
 const { default: NewAccountTokenPage } = await import("@/app/(app)/account/tokens/new/page");
@@ -201,6 +205,7 @@ function hrefs(html: string): string[] {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  apiReadMock.mockReset();
   actionStateOverride = undefined;
   lastActionArg = undefined;
   signedInAs("admin");
@@ -266,11 +271,39 @@ describe("등급 게이트", () => {
 // ──────────────────────────────────────────────────────────────────────────
 
 describe("목록 페이지", () => {
-  /**
-   * ⚠ **해지된 행과 만료된 행을 섞는다.** 전부 `revokedAt: null`·`expiresAt: null`
-   * 인 픽스처는 언제나 `active` 라, 페이지가 상태를 상수로 박아도 살아남는다
-   * (Task 5 인계 9, 실측).
-   */
+  it("해지된 상세에서 확인한 이름을 성공 배너에 표시한다", async () => {
+    apiReadMock.mockResolvedValue(tokenWireFixture(row({
+      id: "receipt/id", name: "<확인된 이름>", revokedAt: new Date("2026-02-03T12:00:00.000Z"),
+    })));
+    const html = await renderPage(() => ServerTokensPage("receipt/id"));
+
+    expect(apiReadMock).toHaveBeenCalledExactlyOnceWith("/api/ui/v1/admin/tokens/receipt%2Fid");
+    expect(html).toMatch(/<div[^>]*data-tone="success"[^>]*role="status"[^>]*>/);
+    expect(html).toContain("&quot;&lt;확인된 이름&gt;&quot; 토큰을 해지했습니다.");
+    expect(html).not.toContain("receipt/id");
+    expect(html.indexOf("토큰을 해지했습니다.")).toBeGreaterThan(html.indexOf("</header>"));
+    expect(html.indexOf("토큰을 해지했습니다.")).toBeLessThan(html.indexOf("<table"));
+  });
+
+  it.each(["missing", "active", "wrong-id", "absent", "repeated", "dot-segment"])(
+    "검증되지 않은 해지 배너 없이 목록을 표시한다 (%s)",
+    async (reason) => {
+      if (reason === "missing") apiReadMock.mockRejectedValue({ status: 404 });
+      if (reason === "active") apiReadMock.mockResolvedValue(tokenWireFixture(row({ expiresAt: null })));
+      if (reason === "wrong-id") apiReadMock.mockResolvedValue(tokenWireFixture(row({
+        id: "other", revokedAt: new Date("2026-02-03T12:00:00.000Z"),
+      })));
+      const id = reason === "absent" ? undefined : reason === "repeated" ? ["tok-1", "other"] : reason === "dot-segment" ? ".." : "tok-1";
+      const html = await renderPage(() => ServerTokensPage(id));
+
+      expect(html).toContain("서버 액세스 토큰");
+      expect(html).toContain("<table");
+      expect(html).not.toContain("토큰을 해지했습니다.");
+      expect(apiReadMock).toHaveBeenCalledTimes(["absent", "repeated", "dot-segment"].includes(reason) ? 0 : 1);
+    },
+  );
+
+
   it("서버 범위로만 읽고, 읽은 것을 표로 그린다", async () => {
     listTokensMock.mockResolvedValue([
       row({ id: "tok-1", lastUsedAt: null, expiresAt: null }),
@@ -279,8 +312,7 @@ describe("목록 페이지", () => {
         name: "옛 노드 연결용",
         scopes: ["node:pair", "config:read"],
         lastUsedAt: null,
-        expiresAt: null,
-        revokedAt: new Date("2026-02-03T12:00:00.000Z"),
+        expiresAt: new Date("2026-01-01T12:00:00.000Z"),
       }),
     ]);
     const html = await renderPage(ServerTokensPage);
@@ -289,7 +321,7 @@ describe("목록 페이지", () => {
     // 날짜 문자열은 도는 곳의 TZ 를 타므로 **없을 때의 문구**로 붙든다.
     expect(bodyRows(html)).toEqual([
       ["node.example.com 연결용", MASKED, "node:pair", "사용한 적 없음", "무기한", "유효"],
-      ["옛 노드 연결용", MASKED, "node:pair config:read", "사용한 적 없음", "무기한", "해지됨"],
+      ["옛 노드 연결용", MASKED, "node:pair config:read", "사용한 적 없음", expect.stringContaining("2026"), "만료됨"],
     ]);
   });
 
@@ -319,9 +351,11 @@ describe("목록 페이지", () => {
   });
 
   it("비었으면 무엇이 없는지 말한다", async () => {
-    expect(bodyRows(await renderPage(ServerTokensPage))).toEqual([
+    const html = await renderPage(ServerTokensPage);
+    expect(html).toContain('data-align="center"');
+    expect(bodyRows(html)).toEqual([
       [
-        "아직 발급한 서버 토큰이 없습니다. 다른 게이트웨이가 이 서버에 연결하게 하려면 node:pair 권한을 가진 토큰을 발급해 그쪽에 전달하세요.",
+        "서버 토큰이 없습니다. 다른 게이트웨이가 이 서버에 연결하게 하려면 node:pair 권한을 가진 토큰을 발급해 그쪽에 전달하세요.",
       ],
     ]);
   });
@@ -589,6 +623,7 @@ describe("상세 페이지", () => {
 
     expect(dlPairs(html)["상태"]).toBe("해지됨");
     expect(html).not.toContain("토큰 해지");
+    expect(hrefs(html)).toContain("/admin/security");
   });
 
   it("해지 폼은 id 만 보낸다 — 범위를 폼에서 받지 않는다", async () => {
@@ -614,41 +649,26 @@ describe("상세 페이지", () => {
     expect(hrefs(html)).toEqual(["/admin/tokens", "/admin/security"]);
   });
 
-  /**
-   * ⚠ **이 검사가 리뷰가 찾은 사각지대다.** 이 문단을 통째로 지우거나 **정반대 뜻으로
-   * 바꿔도** 122검사가 전부 통과했다(실측). 네 리드 중 셋은 붙들려 있었고 **틀린 하나만
-   * 자유로웠다.**
-   *
-   * 무엇을 지키는가: 서버 토큰은 페어링 **한 번**에만 쓰이고, 성공하면 상대가
-   * `gateway_tokens` 로 옮겨 탄다(스펙 §5·§11). 해지는 이 토큰과 연결 기록이 있는
-   * `gateway_tokens` 행도 함께 해지한다(`apps/api/src/auth/tokens.rs` 의 revoke).
-   * 업데이트 전에 연결된 게이트웨이는 이 토큰과의 연결 정보가 없어
-   * (`0032_auth_compatibility.sql` 은 `access_token_id` 를 채우지 않는다) **남는다.**
-   * 이 문장이 「모두 끊긴다」로 바뀌면, 침해된 이전 연결을 끊으려는 운영자가 해지하고
-   * 「해지됨」을 보고 **끊었다고 믿는다** — 그리고 실제로 끊는 화면에서 멀어진다.
-   *
-   * 이 문단은 정보 아이콘이 아니라 **보이는 설명**이다(해지 버튼이 이 화면에 있다).
-   * **문단을 통째로 `toBe` 한다.** `toContain` 은 문단이 사라져도 다른 문단이 조각을
-   * 갖고 있으면 통과한다.
-   */
-  it("해지가 연결 기록이 있는 게이트웨이만 함께 끊는다고 말한다 — 업데이트 전 연결은 남는다", async () => {
+  it("게이트웨이 버튼 다음에 해지 버튼을 놓고 확인 창에서 효과를 안내한다", async () => {
     listTokensMock.mockResolvedValue([row({ id: "tok-1" })]);
     const html = await renderPage(() =>
       ServerTokenDetailPage({ params: Promise.resolve({ id: "tok-1" }) }),
     );
 
-    const lead = pTexts(html).filter((text) => text.startsWith("해지하면"));
-    expect(lead).toEqual([
-      "해지하면 이 토큰으로는 더 이상 새로 연결할 수 없습니다. " +
-        "이 토큰과 연결 기록이 있는 게이트웨이의 접근도 함께 해지됩니다. " +
-        "업데이트 전에 연결된 게이트웨이는 이 토큰과의 연결 정보가 없어 함께 해지되지 않으니, " +
-        "「보안 (2FA)」의 「연결된 게이트웨이」에서 해지하세요.",
-    ]);
-    // 보이는 설명이어야 한다: 정보 아이콘의 말풍선(role="tooltip") 안에 있으면 안 된다.
-    const tooltip = /<div[^>]*role="tooltip"[^>]*>([\s\S]*?)<\/div>/.exec(html)?.[1] ?? "";
-    expect(textOfHtml(tooltip)).not.toContain("해지하면");
-    // 말만 하고 길을 주지 않으면 반쪽이다.
-    expect(hrefs(html)).toContain("/admin/security");
+    const gateway = html.match(/<a [^>]*href="\/admin\/security"[^>]*>[\s\S]*?<\/a>/)?.[0] ?? "";
+    expect(gateway).toMatch(/class="[^"]*secondary[^"]*"/);
+    expect(gateway).toMatch(/연결된 게이트웨이<svg[^>]*width="14"[\s\S]*?<\/svg>/);
+    expect(html.indexOf(gateway)).toBeLessThan(html.indexOf("<form"));
+    expect(html).toMatch(/<button[^>]*class="[^"]*dangerOutline[^"]*"[^>]*>토큰 해지<\/button>/);
+
+    const dialog = html.match(/<dialog[\s\S]*?<\/dialog>/)?.[0] ?? "";
+    expect(dialog).toMatch(/<h2[^>]*>토큰 해지<\/h2>/);
+    expect(dialog).toContain(`대상</span><strong>${row().name} · ${MASKED}</strong>`);
+    expect(dialog).toContain(
+      "해지하면 이 토큰으로는 더 이상 새로 연결할 수 없습니다. 이 토큰과 연결 기록이 있는 게이트웨이의 접근도 함께 해지됩니다. 되돌릴 수 없습니다.",
+    );
+    expect(html.replace(dialog, "")).not.toContain("해지하면 이 토큰으로는");
+    expect(dialog).not.toContain("업데이트 전에 연결된 게이트웨이");
   });
 
   /** 위 발급 액션과 같은 이유 — 배선이 마크업에 흔적을 남기지 않는다. */

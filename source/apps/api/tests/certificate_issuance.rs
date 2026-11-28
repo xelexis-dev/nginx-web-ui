@@ -279,6 +279,12 @@ async fn failed_http_renew_preserves_issued_pair() {
     assert_eq!(cert.cert_pem.as_deref(), Some("live certificate"));
     assert_eq!(cert.key_pem.as_deref(), Some("live key"));
     assert_eq!(cert.failure_count, 1);
+    let reason = cert.last_error.as_deref().unwrap();
+    assert!(reason.contains("mock denied") && reason.lines().count() == 1);
+    let entries = cert.issue_log.as_array().unwrap();
+    assert_eq!(entries.len(), 1);
+    assert_eq!(entries[0]["msg"], reason);
+    assert_eq!(entries[0]["level"], "error");
     server.abort();
 }
 #[tokio::test]

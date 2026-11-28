@@ -12,25 +12,19 @@ vi.mock("react", async original => ({
   useActionState: () => [mock.result, () => undefined, mock.pending],
 }));
 vi.mock("@/lib/use-api-action", () => ({ useApiAction: mock.action }));
-import { NodeHistoryActions } from "./rollback-button";
+import { NodeRollbackButton } from "./rollback-button";
 
 const props = { nodeId: "n1", nodeName: "노드 A", snapshotId: "s2", label: "이전 설정",
-  iso: "2026-09-28T04:20:00Z", retryHref: "/nodes/n1/history", nodeUrl: "https://node.example.test" };
-const render = (canRollback = true) => renderToStaticMarkup(<NodeHistoryActions {...props} canRollback={canRollback} />);
+  iso: "2026-09-28T04:20:00Z", retryHref: "/nodes/n1/history/s2", listHref: "/nodes/n1/history" };
+const render = () => renderToStaticMarkup(<NodeRollbackButton {...props} />);
 beforeEach(() => { mock.result = null; mock.pending = false; mock.action.mockClear(); });
 
-it("opens the matching snapshot in an isolated tab and binds rollback to that node and snapshot", () => {
+it("binds rollback to the selected node and snapshot", () => {
   const html = render();
-  expect(html).toContain('href="https://node.example.test/history/s2" target="_blank" rel="noopener noreferrer"');
   expect(mock.action).toHaveBeenCalledWith({ id: "node.rollbackNodeSnapshot", args: ["n1", "s2"] });
   expect(html).toContain('type="submit"');
   expect(html).toContain("이 스냅샷으로 롤백");
-});
-it("keeps the external link but mounts no rollback form for a viewer", () => {
-  const html = render(false);
-  expect(html).toContain("노드에서 열기");
-  expect(html).not.toContain("<form");
-  expect(mock.action).not.toHaveBeenCalled();
+  expect(html).not.toContain("노드에서 열기");
 });
 it("disables the rollback submission while pending", () => {
   mock.pending = true;
@@ -47,12 +41,19 @@ it("keeps the node error and retry destination", () => {
   mock.result = { ok: false, kind: "node_error", message: "노드 응답 실패", nodeVersion: null };
   const html = render();
   expect(html).toContain("노드에서 오류가 발생했습니다");
-  expect(html).toContain('href="/nodes/n1/history"');
+  expect(html).toContain('href="/nodes/n1/history/s2"');
 });
 
 it.each(["요청 시간이 초과되었습니다", "API 서버에 요청을 전달하지 못했습니다"])("renders a kind-less transport failure: %s", error => {
   mock.result = {ok:false,error} as unknown as NodeResult<{output:string}>;
   const html=render();
   expect(html).toContain("노드에서 오류가 발생했습니다");
+  expect(html).toContain('href="/nodes/n1/history/s2"');
+});
+
+it("sends a deleted snapshot back to the list", () => {
+  mock.result = { ok: false, kind: "not_found", message: "snapshot missing", nodeVersion: null };
+  const html = render();
+  expect(html).toContain("그 스냅샷을 노드에서 찾을 수 없습니다");
   expect(html).toContain('href="/nodes/n1/history"');
 });

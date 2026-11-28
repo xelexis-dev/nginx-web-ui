@@ -1,6 +1,6 @@
 import layout from "@/components/page-layout.module.css";
 import Link from "next/link";
-import { PageHeader } from "@repo/ui";
+import { PageHeader, linkClassName } from "@repo/ui";
 import { readPageView } from "@/lib/api-page";
 import type { ServerOptionsView } from "@/components/reverse-proxy/control-view";
 import { ServerForm } from "@/components/reverse-proxy/server-form";
@@ -50,7 +50,7 @@ export default async function NewServerPage({
             </>
           ) : (
             <>
-              <Link href="/reverse-proxy/templates">템플릿 보기</Link>
+              <Link href="/reverse-proxy/templates" className={linkClassName()}>템플릿 보기</Link>
             </>
           )
         }

@@ -7,11 +7,17 @@ use serde_json::{Value,json};
 use std::{collections::BTreeMap,time::Duration};
 
 pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(10);
+pub(super) const LOG_STREAM_HANDSHAKE: Duration = Duration::from_secs(20);
+const _: () = assert!(
+    LOG_STREAM_HANDSHAKE.as_nanos() > crate::observability::logs::KEEPALIVE_INTERVAL.as_nanos()
+);
 pub const CONFIG_APPLY_TIMEOUT: Duration = Duration::from_secs(300);
 pub const APPLY_TIMEOUT: Duration = Duration::from_secs(120);
 pub const RENEW_TIMEOUT: Duration = Duration::from_secs(300);
 pub const PROBE_TIMEOUT: Duration = Duration::from_secs(3);
 const MAX_BODY: usize = 1024 * 1024;
+pub(super) const IDENTITY_ERROR: &str = "노드의 버전 또는 식별 정보를 확인할 수 없습니다.";
+pub(super) const RESPONSE_TOO_LARGE: &str = "노드 응답이 너무 큽니다.";
 
 #[derive(Clone)]
 pub struct NodeTarget {
@@ -100,7 +106,7 @@ impl NodeHttp {
             let mut response=request.send().await.map_err(|_|NodeResult::failure(FailureKind::Unreachable,"노드에 연결할 수 없습니다. 주소와 인증서 신뢰 설정을 확인하세요.",None))?;
             let version=response.headers().get("x-node-version").and_then(|v|v.to_str().ok()).map(str::to_owned);
             let status=response.status().as_u16();
-            let too_large=||NodeResult::failure(FailureKind::NodeError,"노드 응답이 너무 큽니다.",version.clone());
+            let too_large=||NodeResult::failure(FailureKind::NodeError,RESPONSE_TOO_LARGE,version.clone());
             if response.content_length().is_some_and(|length|length>MAX_BODY as u64){return Err(too_large())}
             let mut bytes=Vec::new();
             while let Some(chunk)=response.chunk().await.map_err(|_|NodeResult::failure(FailureKind::Unreachable,"노드 응답을 끝까지 읽지 못했습니다.",version.clone()))? {
@@ -124,7 +130,7 @@ impl NodeHttp {
                         && node_version.as_deref().is_none_or(|h| crate::auth::node_version::parse_semver(h) == crate::auth::node_version::parse_semver(v)))
                     && value["instanceId"].as_str().is_some_and(|id| !id.is_empty() && (instance.is_empty() || id == instance));
                 if !valid {
-                    return NodeResult::failure(FailureKind::NodeError, "노드의 버전 또는 식별 정보를 확인할 수 없습니다.", None);
+                    return NodeResult::failure(FailureKind::NodeError, IDENTITY_ERROR, None);
                 }
                 *node_version = version.map(str::to_owned);
             }
@@ -133,27 +139,49 @@ impl NodeHttp {
         tokio::time::timeout(PROBE_TIMEOUT, probe).await.unwrap_or_else(|_|NodeResult::failure(FailureKind::Unreachable, "노드 요청 시간이 초과되었습니다.", None))
     }
 
-    /// Only the response handshake is bounded. The caller owns the returned
-    /// streaming body and must drop it immediately on downstream disconnect.
-    pub async fn open_stream(&self,secrets:&SecretBox,target:&NodeTarget,path:&str,handshake_timeout:Duration)->Result<reqwest::Response,NodeResult> {
-        let request=self.prepare(secrets,target,Method::GET,path)?.header("accept","text/event-stream");
-        tokio::time::timeout(handshake_timeout,async {
-            let mut response=request.send().await.map_err(|_|NodeResult::failure(FailureKind::Unreachable,"노드 로그에 연결할 수 없습니다.",None))?;
-            let version=response.headers().get("x-node-version").and_then(|v|v.to_str().ok()).map(str::to_owned);
-            if !response.status().is_success() {
-                let status=response.status().as_u16();
-                let mut bytes=Vec::new();
-                while let Some(chunk)=response.chunk().await.map_err(|_|NodeResult::failure(FailureKind::Unreachable,"노드 응답을 읽지 못했습니다.",version.clone()))? {
-                    if bytes.len().saturating_add(chunk.len())>MAX_BODY {return Err(NodeResult::failure(FailureKind::NodeError,"노드 응답이 너무 큽니다.",version))}
+    /// Bound the header wait and error body. The caller owns the successful
+    /// stream and must drop it immediately on downstream disconnect.
+    pub async fn open_stream(
+        &self,
+        secrets: &SecretBox,
+        target: &NodeTarget,
+        path: &str,
+        handshake_timeout: Duration,
+    ) -> Result<reqwest::Response, NodeResult> {
+        let request = self.prepare(secrets, target, Method::GET, path)?
+            .header("accept", "text/event-stream");
+        let started = tokio::time::Instant::now();
+        let timed_out = || NodeResult::failure(FailureKind::Unreachable, "노드 로그 연결 시간이 초과되었습니다.", None);
+        let mut response = tokio::time::timeout_at(started + handshake_timeout, request.send()).await
+            .map_err(|_| timed_out())?
+            .map_err(|_| NodeResult::failure(FailureKind::Unreachable, "노드 로그에 연결할 수 없습니다.", None))?;
+        let version = response.headers().get("x-node-version")
+            .and_then(|value| value.to_str().ok()).map(str::to_owned);
+        if !response.status().is_success() {
+            // Errors keep the original total deadline, including time already spent on headers.
+            let deadline = started + handshake_timeout.min(DEFAULT_TIMEOUT);
+            if tokio::time::Instant::now() >= deadline {
+                return Err(timed_out());
+            }
+            let status = response.status().as_u16();
+            return tokio::time::timeout_at(deadline, async {
+                let mut bytes = Vec::new();
+                while let Some(chunk) = response.chunk().await.map_err(|_| NodeResult::failure(
+                    FailureKind::Unreachable, "노드 응답을 읽지 못했습니다.", version.clone(),
+                ))? {
+                    if bytes.len().saturating_add(chunk.len()) > MAX_BODY {
+                        return Err(NodeResult::failure(FailureKind::NodeError, "노드 응답이 너무 큽니다.", version));
+                    }
                     bytes.extend_from_slice(&chunk);
                 }
-                return Err(classify_response(status,version,serde_json::from_slice(&bytes).unwrap_or(Value::Null)));
-            }
-            let content_type=response.headers().get("content-type").and_then(|v|v.to_str().ok()).unwrap_or("").split(';').next().unwrap_or("").trim();
-            if !content_type.eq_ignore_ascii_case("text/event-stream") {
-                return Err(NodeResult::failure(FailureKind::NodeError,"노드가 로그 스트림 형식으로 응답하지 않았습니다.",version));
-            }
-            Ok(response)
-        }).await.unwrap_or_else(|_|Err(NodeResult::failure(FailureKind::Unreachable,"노드 로그 연결 시간이 초과되었습니다.",None)))
+                Err(classify_response(status, version, serde_json::from_slice(&bytes).unwrap_or(Value::Null)))
+            }).await.map_err(|_| timed_out())?;
+        }
+        let content_type = response.headers().get("content-type")
+            .and_then(|value| value.to_str().ok()).unwrap_or("").split(';').next().unwrap_or("").trim();
+        if !content_type.eq_ignore_ascii_case("text/event-stream") {
+            return Err(NodeResult::failure(FailureKind::NodeError, "노드가 로그 스트림 형식으로 응답하지 않았습니다.", version));
+        }
+        Ok(response)
     }
 }

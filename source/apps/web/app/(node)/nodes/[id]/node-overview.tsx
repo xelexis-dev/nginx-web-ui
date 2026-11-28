@@ -52,7 +52,7 @@ export function NodeOverview({
             {" "}
             <Link href="/nodes" className={linkClassName({ variant: "back" })}>
               <Icon name="arrowLeft" size={14} />
-              목록으로
+              노드 목록
             </Link>{" "}
           </>
         }
@@ -76,7 +76,7 @@ export function NodeOverview({
       ) : (
         <>
           <KpiRow label="노드 요약" columns={4} items={[
-            { label: "Reverse Proxy 서버", value: result.data.counts.servers, icon: <Icon name="route" /> },
+            { label: "리버스 프록시 서버", value: result.data.counts.servers, icon: <Icon name="route" /> },
             { label: "Stream", value: result.data.counts.streams, icon: <Icon name="cable" /> },
             { label: "Upstream", value: result.data.counts.upstreams, icon: <Icon name="upstreams" /> },
             { label: "인증서", value: result.data.certificates.total, icon: <Icon name="shieldCheck" /> },

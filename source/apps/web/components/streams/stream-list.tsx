@@ -149,7 +149,7 @@ export function StreamList({ data, basePath, reservedPorts }: StreamListProps) {
             {items.length === 0 ? (
               <Tr>
                 <Td colSpan={4}>
-                  <EmptyState title="등록된 stream이 없습니다" />
+                  <EmptyState description="등록된 stream이 없습니다." />
                 </Td>
               </Tr>
             ) : null}

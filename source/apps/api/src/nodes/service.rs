@@ -281,10 +281,29 @@ pub async fn probe_access(state: &AppState, access: &mut NodeAccess) -> Result<(
 }
 
 pub async fn record_probe(state: &AppState, id: &str, result: &NodeResult) -> Result<(), ApiError> {
+    if result.status().is_none() { return Ok(()); }
+    let client = state.db.get().await.map_err(|_| db_unavailable())?;
+    record_probe_on(&client, id, result).await
+}
+
+/// Skip a row being updated elsewhere and keep the database statement bounded
+/// even if the caller stops waiting for the result.
+pub(super) async fn record_history_probe(state: &AppState, id: &str, result: &NodeResult) -> Result<(), ApiError> {
+    let mut client = state.db.get().await.map_err(|_| db_unavailable())?;
+    let tx = client.transaction().await.map_err(|_| db_unavailable())?;
+    tx.batch_execute("SET LOCAL statement_timeout = '100ms'").await.map_err(|_| db_unavailable())?;
+    let available = tx.query_opt("SELECT id FROM nodes WHERE id=$1 FOR NO KEY UPDATE SKIP LOCKED", &[&id])
+        .await.map_err(|_| db_unavailable())?;
+    if available.is_some() {
+        record_probe_on(&tx, id, result).await?;
+    }
+    tx.commit().await.map_err(|_| db_unavailable())
+}
+
+async fn record_probe_on(client: &impl deadpool_postgres::GenericClient, id: &str, result: &NodeResult) -> Result<(), ApiError> {
     let Some(status) = result.status() else {
         return Ok(());
     };
-    let client = state.db.get().await.map_err(|_| db_unavailable())?;
     match result{
         NodeResult::Success{node_version,value,..}=>{
             let instance = value["instanceId"].as_str().filter(|v| !v.is_empty());

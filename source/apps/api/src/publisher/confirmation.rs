@@ -42,40 +42,122 @@ pub(super) async fn ensure_no_pending_start(config:&RuntimeConfig,guard_parent:O
 pub(crate) async fn nginx_running(config:&RuntimeConfig)->Result<NginxState> {
     nginx_state(config,None).await
 }
-pub(super) async fn nginx_state(config:&RuntimeConfig,guard_parent:Option<u32>)->Result<NginxState> {
-    let (_,pid_file)=configured_target(config)?;
-    if let Some(state)=pid_state(&pid_file)? {return Ok(state);}
-    let group=Path::new("/run/nginx-web-ui/nginx-process-group");
-    if group_pid(group)?.is_none(){return Ok(NginxState::Stopped);}
-    let admitted=crate::nonroot::admit_nginx(config).await?;
-    nginx_state_with(&pid_file,group,&admitted.master_bin,Path::new("/etc/s6-overlay/s6-rc.d/nginx/run"),guard_parent)
+pub(super) async fn nginx_state(config: &RuntimeConfig, guard_parent: Option<u32>) -> Result<NginxState> {
+    let (_, pid_file) = configured_target(config)?;
+    let identity = Identity::new(config, pid_file).await.context(IdentityUncertain)?;
+    Ok(identity.inspect(guard_parent).await?.state())
 }
-fn live(pid:i32)->Result<bool> {
-    if unsafe{libc::kill(pid,0)}==0{return Ok(true);}
-    let error=std::io::Error::last_os_error();
-    ensure!(error.raw_os_error()==Some(libc::ESRCH),"Cannot establish nginx master state: {error}");Ok(false)
+
+#[derive(Debug, thiserror::Error)]
+#[error("Cannot establish managed nginx master identity")]
+pub(super) struct IdentityUncertain;
+
+const GROUP_FILE: &str = "/run/nginx-web-ui/nginx-process-group";
+const RUN_SCRIPT: &str = "/etc/s6-overlay/s6-rc.d/nginx/run";
+const SERVICE: &str = "/run/service/nginx";
+
+fn live(pid: u32) -> Result<bool> {
+    if unsafe { libc::kill(pid as i32, 0) } == 0 {
+        return Ok(true);
+    }
+    let error = std::io::Error::last_os_error();
+    ensure!(error.raw_os_error() == Some(libc::ESRCH), "Cannot establish nginx master state: {error}");
+    Ok(false)
 }
-fn pid_state(pid_file:&Path)->Result<Option<NginxState>> {
-    let text=match std::fs::read_to_string(pid_file) {
-        Ok(text)=>text,
-        Err(error) if error.kind()==std::io::ErrorKind::NotFound=>return Ok(None),
-        Err(error)=>return Err(error.into()),
+
+#[derive(Clone, Copy)]
+enum PidRecord {
+    Configured,
+    Group,
+    StrictGroup,
+}
+
+fn read_pid(path: &Path, record: PidRecord) -> Result<Option<u32>> {
+    use std::{io::Read, os::unix::fs::{MetadataExt, OpenOptionsExt}};
+    let file = match std::fs::OpenOptions::new().read(true)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK).open(path) {
+        Ok(file) => file,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => return Err(error.into()),
     };
-    if text.is_empty(){return Ok(None);}
-    let pid=text.trim().parse::<i32>().context("Cannot establish nginx master identity")?;
-    ensure!(pid>1,"Cannot establish nginx master identity");
-    Ok(if live(pid)?{Some(NginxState::Running)}else{None})
+    let meta = file.metadata()?;
+    ensure!(meta.is_file() && meta.nlink() == 1, "Unsafe nginx PID record");
+    if !matches!(record, PidRecord::Configured) {
+        ensure!(meta.uid() == 0 && meta.mode() & 0o022 == 0, "Unsafe nginx group record");
+    }
+    let mut text = String::new();
+    file.take(33).read_to_string(&mut text)?;
+    ensure!(text.len() <= 32, "Oversize nginx PID record");
+    if text.is_empty() {
+        return Ok(None);
+    }
+    match text.trim().parse::<u32>() {
+        Ok(pid) if pid > 1 && pid <= i32::MAX as u32 => Ok(Some(pid)),
+        _ if matches!(record, PidRecord::Group) => Ok(None),
+        _ => anyhow::bail!("Invalid nginx PID record"),
+    }
 }
-fn group_pid(group_file:&Path)->Result<Option<i32>> {
-    let text=match std::fs::read_to_string(group_file) {
-        Ok(text)=>text,
-        Err(error) if error.kind()==std::io::ErrorKind::NotFound=>return Ok(None),
-        Err(error)=>return Err(error.into()),
-    };
-    let Ok(pid)=text.trim().parse::<i32>() else{return Ok(None);};
-    if pid<=1{return Ok(None);}
-    Ok(if live(pid)?{Some(pid)}else{None})
+
+fn group_pid(path: &Path) -> Result<Option<u32>> {
+    match read_pid(path, PidRecord::Group)? {
+        Some(pid) if live(pid)? => Ok(Some(pid)),
+        _ => Ok(None),
+    }
 }
+
+enum Executable {
+    Known(std::fs::Metadata),
+    Foreign,
+    Missing,
+}
+
+fn process_exe(pid: u32) -> Result<Executable> {
+    use std::io::ErrorKind::NotFound;
+    match std::fs::metadata(format!("/proc/{pid}/exe")) {
+        Ok(meta) => Ok(Executable::Known(meta)),
+        Err(error) if error.kind() == NotFound => Ok(Executable::Missing),
+        Err(error) if matches!(error.raw_os_error(), Some(libc::EACCES | libc::EPERM)) => {
+            let status = match std::fs::read_to_string(format!("/proc/{pid}/status")) {
+                Ok(status) => status,
+                Err(error) if error.kind() == NotFound => return Ok(Executable::Missing),
+                Err(error) => return Err(error.into()),
+            };
+            let name = status.lines().find_map(|line| line.strip_prefix("Name:"))
+                .map(str::trim).filter(|name| !name.is_empty()).context("Missing process name")?;
+            // A different UID can hide its executable, including an nginx worker's executable.
+            ensure!(name != "nginx", "Cannot inspect the executable of an nginx process");
+            Ok(Executable::Foreign)
+        }
+        Err(error) => Err(error.into()),
+    }
+}
+
+fn catches_hup(pid: u32) -> Result<bool> {
+    let status = std::fs::read_to_string(format!("/proc/{pid}/status"))?;
+    let mask = status.lines().find_map(|line| line.strip_prefix("SigCgt:"))
+        .context("Missing nginx signal mask")?;
+    Ok(u64::from_str_radix(mask.trim(), 16)? & 1 != 0)
+}
+
+fn supervised_pid() -> Result<Option<u32>> {
+    use std::{os::unix::process::CommandExt, process::{Command, Stdio}};
+    let mut command = Command::new("/command/s6-svstat");
+    command.args(["-o", "up,pid", SERVICE]).env_clear().stdin(Stdio::null()).process_group(0);
+    let (output, _) = crate::db_upgrade::postgres::output_with_poll(
+        command, Duration::from_secs(1), Duration::from_millis(2),
+    ).context("Could not query the nginx supervisor")?;
+    let fields: Vec<_> = output.split_whitespace().collect();
+    match fields.as_slice() {
+        ["false", "-1"] => Ok(None),
+        ["true", pid] => {
+            let pid = pid.parse::<u32>()?;
+            ensure!(pid > 1 && pid <= i32::MAX as u32, "Invalid supervised nginx PID");
+            Ok(Some(pid))
+        }
+        _ => anyhow::bail!("Invalid nginx supervisor status"),
+    }
+}
+
 fn same_inode(a:&std::fs::Metadata,b:&std::fs::Metadata)->bool {
     use std::os::unix::fs::MetadataExt;
     a.dev()==b.dev()&&a.ino()==b.ino()
@@ -94,18 +176,14 @@ fn run_script_bytes(path:&Path)->Result<Option<Vec<u8>>> {
     let mut bytes=Vec::new();file.take(MAX_RUN_SCRIPT_BYTES as u64+1).read_to_end(&mut bytes)?;
     Ok((bytes.len()<=MAX_RUN_SCRIPT_BYTES).then_some(bytes))
 }
-pub(super) fn nginx_state_with(pid_file:&Path,group_file:&Path,master:&Path,run_script:&Path,guard_parent:Option<u32>)->Result<NginxState> {
+fn group_state(pid: u32, exe: &std::fs::Metadata, master: &std::fs::Metadata, run_script: &Path, guard_parent: Option<u32>) -> Result<Option<Observation>> {
     use std::os::unix::ffi::OsStrExt;
-    if let Some(state)=pid_state(pid_file)?{return Ok(state);}
-    let Some(pid)=group_pid(group_file)? else{return Ok(NginxState::Stopped);};
-    let exe_path=format!("/proc/{pid}/exe");
-    let metadata=|path:&Path|->Result<Option<std::fs::Metadata>>{match std::fs::metadata(path){Ok(value)=>Ok(Some(value)),Err(error)if error.kind()==std::io::ErrorKind::NotFound=>Ok(None),Err(error)=>Err(error.into())}};
-    let Some(exe)=metadata(Path::new(&exe_path))? else{return Ok(NginxState::Stopped);};
-    let master=std::fs::metadata(master)?;
-    if same_inode(&exe,&master){return Ok(NginxState::Starting);}
+    if same_inode(exe, master) {
+        return Ok(Some(Observation::Starting));
+    }
     let shell=std::fs::metadata("/bin/sh")?;
-    if !same_inode(&exe,&shell){return Ok(NginxState::Stopped);}
-    let cmdline=match std::fs::read(format!("/proc/{pid}/cmdline")){Ok(value)=>value,Err(error)if error.kind()==std::io::ErrorKind::NotFound=>return Ok(NginxState::Stopped),Err(error)=>return Err(error.into())};
+    if !same_inode(exe,&shell){return Ok(None);}
+    let cmdline=match std::fs::read(format!("/proc/{pid}/cmdline")){Ok(value)=>value,Err(error)if error.kind()==std::io::ErrorKind::NotFound=>return Ok(None),Err(error)=>return Err(error.into())};
     ensure!(!cmdline.is_empty(),"Cannot establish nginx startup identity");
     let script=match cmdline.split(|byte|*byte==0).nth(1) {
         Some(arg)=>{
@@ -119,14 +197,14 @@ pub(super) fn nginx_state_with(pid_file:&Path,group_file:&Path,master:&Path,run_
         Some(path)=>match run_script_bytes(&path)? {Some(bytes)=>run_script_bytes(run_script)?.is_some_and(|expected|bytes==expected),None=>false},
         None=>false,
     };
-    let Some(after)=metadata(Path::new(&exe_path))? else{return Ok(NginxState::Stopped);};
+    let Executable::Known(after)=process_exe(pid)? else{return Ok(None);};
     // exec may happen between /proc reads; never mistake the new master for a stale shell.
-    if same_inode(&after,&master){return Ok(NginxState::Starting);}
-    ensure!(same_inode(&exe,&after),"nginx startup process changed identity");
+    if same_inode(&after,master){return Ok(Some(Observation::Starting));}
+    ensure!(same_inode(exe,&after),"nginx startup process changed identity");
     if matches_script {
-        return Ok(if guard_parent==Some(pid as u32){NginxState::Stopped}else{NginxState::Starting});
+        return Ok(Some(if guard_parent==Some(pid){Observation::Stopped}else{Observation::Starting}));
     }
-    Ok(NginxState::Stopped)
+    Ok(None)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -135,19 +213,207 @@ struct Master {
     start_ticks: u64,
 }
 impl Master {
+    fn sample(pid: u32) -> Result<Option<Self>> {
+        if !live(pid)? {
+            return Ok(None);
+        }
+        let Some(start_ticks) = super::poison::start_ticks(pid)? else {
+            return Ok(None);
+        };
+        Ok(Some(Self { pid, start_ticks }))
+    }
+
     fn read(pid_file: &Path) -> Result<Self> {
-        let pid = std::fs::read_to_string(pid_file)?.trim().parse::<u32>()?;
-        ensure!(pid > 0, "nginx master PID is missing");
-        let stat = std::fs::read_to_string(format!("/proc/{pid}/stat"))?;
-        let fields = stat.rsplit_once(") ").context("Invalid master stat")?.1;
-        let start_ticks = fields
-            .split_whitespace()
-            .nth(19)
-            .context("Missing master start ticks")?
-            .parse()?;
-        Ok(Self { pid, start_ticks })
+        let pid = read_pid(pid_file, PidRecord::Configured)?.context("nginx master PID is missing")?;
+        Self::sample(pid)?.context("nginx master is gone")
     }
 }
+
+enum Observation {
+    Running(Master),
+    Starting,
+    Stopped,
+}
+
+impl Observation {
+    fn state(&self) -> NginxState {
+        match self {
+            Self::Running(_) => NginxState::Running,
+            Self::Starting => NginxState::Starting,
+            Self::Stopped => NginxState::Stopped,
+        }
+    }
+}
+
+#[derive(Clone)]
+struct Identity {
+    pid_file: PathBuf,
+    group_file: PathBuf,
+    master_bin: Option<PathBuf>,
+    run_script: PathBuf,
+    #[cfg(any(test, feature = "test-support"))]
+    test_supervisor: Option<u32>,
+    #[cfg(any(test, feature = "test-support"))]
+    test_override: bool,
+}
+
+impl Identity {
+    async fn new(config: &RuntimeConfig, pid_file: PathBuf) -> Result<Self> {
+        #[cfg(any(test, feature = "test-support"))]
+        if let Some(fixture) = super::identity_fixture::identity_override(&pid_file) {
+            return Ok(Self {
+                test_supervisor: fixture.pid.filter(|_| fixture.group_file.exists()),
+                pid_file, group_file: fixture.group_file, master_bin: Some(fixture.executable),
+                run_script: RUN_SCRIPT.into(), test_override: true,
+            });
+        }
+        let group_file = PathBuf::from(GROUP_FILE);
+        let has_candidate = read_pid(&pid_file, PidRecord::Configured)?.map(live).transpose()?.unwrap_or(false)
+            || group_pid(&group_file)?.is_some();
+        let master_bin = if has_candidate {
+            Some(crate::nonroot::admit_nginx(config).await?.master_bin)
+        } else {
+            None
+        };
+        Ok(Self {
+            pid_file, group_file, master_bin, run_script: RUN_SCRIPT.into(),
+            #[cfg(any(test, feature = "test-support"))]
+            test_supervisor: None,
+            #[cfg(any(test, feature = "test-support"))]
+            test_override: false,
+        })
+    }
+
+    fn supervisor(&self) -> Result<Option<u32>> {
+        #[cfg(any(test, feature = "test-support"))]
+        {
+            if self.test_override {
+                return Ok(self.test_supervisor);
+            }
+            if !Path::new(SERVICE).exists() {
+                return Ok(None);
+            }
+        }
+        supervised_pid()
+    }
+
+    async fn inspect(&self, guard_parent: Option<u32>) -> Result<Observation> {
+        let identity = self.clone();
+        tokio::task::spawn_blocking(move || identity.evaluate(guard_parent, || identity.supervisor()))
+            .await.context(IdentityUncertain)?
+    }
+
+    fn evaluate(&self, guard_parent: Option<u32>, supervisor: impl Fn() -> Result<Option<u32>>) -> Result<Observation> {
+        for attempt in 0..3 {
+            if let Some(state) = self.sample(guard_parent, &supervisor).context(IdentityUncertain)? {
+                return Ok(state);
+            }
+            if attempt < 2 {
+                std::thread::sleep(Duration::from_millis(10));
+            }
+        }
+        Err(anyhow::anyhow!("nginx master changed while observed").context(IdentityUncertain))
+    }
+
+    fn sample(&self, guard_parent: Option<u32>, supervisor: impl FnOnce() -> Result<Option<u32>>) -> Result<Option<Observation>> {
+        let p = read_pid(&self.pid_file, PidRecord::Configured)?;
+        let g = group_pid(&self.group_file)?;
+        let candidate = p.map(Master::sample).transpose()?.flatten();
+        let master_metadata = || -> Result<_> {
+            Ok(std::fs::metadata(self.master_bin.as_ref().context("No admitted master binary")?)?)
+        };
+
+        if let Some(group) = g {
+            match process_exe(group)? {
+                Executable::Missing => return Ok(None),
+                Executable::Foreign => {}
+                Executable::Known(exe) => {
+                    let admitted = master_metadata()?;
+                    if let Some(candidate) = candidate.as_ref().filter(|master| master.pid == group)
+                        && same_inode(&exe, &admitted)
+                    {
+                        if !catches_hup(candidate.pid)? {
+                            return Ok(Some(Observation::Starting));
+                        }
+                        ensure!(supervisor()? == Some(candidate.pid), "nginx PID does not match its supervisor");
+                        if p != read_pid(&self.pid_file, PidRecord::Configured)? || g != group_pid(&self.group_file)?
+                            || Master::sample(candidate.pid)?.as_ref() != Some(candidate) {
+                            return Ok(None);
+                        }
+                        return Ok(Some(Observation::Running(candidate.clone())));
+                    }
+                    if let Some(state) = group_state(group, &exe, &admitted, &self.run_script, guard_parent)? {
+                        return Ok(Some(state));
+                    }
+                }
+            }
+        }
+
+        if supervisor()?.is_some() {
+            ensure!(p.is_none() && read_pid(&self.group_file, PidRecord::StrictGroup)?.is_none(),
+                "nginx records do not identify the supervised process");
+            return Ok(Some(Observation::Starting));
+        }
+        for pid in [p, g.filter(|group| Some(*group) != p)].into_iter().flatten() {
+            let before = Master::sample(pid)?;
+            if before.is_none() {
+                continue;
+            }
+            let admitted = master_metadata()?;
+            for _ in 0..2 {
+                match process_exe(pid)? {
+                    Executable::Known(exe) => {
+                        ensure!(!same_inode(&exe, &admitted), "A live nginx process is outside supervision");
+                    }
+                    Executable::Foreign => {}
+                    Executable::Missing => {
+                        ensure!(!live(pid)?, "Cannot establish the stopped nginx process identity");
+                    }
+                }
+            }
+            if Master::sample(pid)? != before {
+                return Ok(None);
+            }
+        }
+        if p != read_pid(&self.pid_file, PidRecord::Configured)? || g != group_pid(&self.group_file)?
+            || p.map(Master::sample).transpose()?.flatten() != candidate {
+            return Ok(None);
+        }
+        Ok(Some(Observation::Stopped))
+    }
+
+    async fn running(&self) -> Result<Master> {
+        match self.inspect(None).await? {
+            Observation::Running(master) => Ok(master),
+            _ => Err(anyhow::Error::new(IdentityUncertain)),
+        }
+    }
+}
+
+#[cfg(test)]
+pub(super) fn nginx_state_with(pid_file: &Path, group_file: &Path, master: &Path, run_script: &Path, guard_parent: Option<u32>) -> Result<NginxState> {
+    let identity = Identity {
+        pid_file: pid_file.into(), group_file: group_file.into(), master_bin: Some(master.into()),
+        run_script: run_script.into(), test_supervisor: None, test_override: true,
+    };
+    Ok(identity.evaluate(guard_parent, || Ok(None))?.state())
+}
+
+#[derive(Clone)]
+pub(super) struct ReloadGuard {
+    identity: Identity,
+    expected: Master,
+}
+
+impl ReloadGuard {
+    pub(super) fn check(&self) -> Result<()> {
+        match self.identity.evaluate(None, || self.identity.supervisor())? {
+            Observation::Running(master) if master == self.expected => Ok(()),
+            _ => Err(anyhow::Error::new(IdentityUncertain)),
+        }
+    }
+}
+
 fn configured_target(config: &RuntimeConfig) -> Result<(url::Url, PathBuf)> {
     use super::guard_targets::{End, statements};
     let url = url::Url::parse(&config.nginx_status_url)?;
@@ -411,20 +677,31 @@ impl Witness {
         deadline: Instant,
     ) -> Result<()> {
         let bin=config.nginx_bin.clone();
-        self.confirm_with(config,first,deadline,move |remaining| {
+        self.confirm_using(config,first,deadline,move |remaining, guard| {
             let process=super::process::NginxProcess::new(bin.clone()).with_timeout(remaining);
-            async move {process.reload().await}
+            async move { guard.check()?; process.reload().await }
         },|_|Ok(())).await
     }
-    pub(crate) async fn confirm_with<R,Fut,F>(
+    pub(super) async fn confirm_with(
+        &self, config: &RuntimeConfig, first: &str, deadline: Instant,
+        store: &super::store::PublisherStore, acknowledged: impl FnMut(usize) -> Result<()>,
+    ) -> Result<()> {
+        self.confirm_using(config, first, deadline, |timeout, guard| {
+            super::command::reload(store.clone(), config.nginx_bin.clone(), timeout, guard)
+        }, acknowledged).await
+    }
+
+    async fn confirm_using<R,Fut,F>(
         &self,config:&RuntimeConfig,first:&str,deadline:Instant,mut reload:R,mut acknowledged:F,
     )->Result<()>
-    where R:FnMut(Duration)->Fut,Fut:std::future::Future<Output=Result<()>>,F:FnMut(usize)->Result<()> {
+    where R:FnMut(Duration, ReloadGuard)->Fut,Fut:std::future::Future<Output=Result<()>>,F:FnMut(usize)->Result<()> {
         ensure!(
             tokio::fs::read(config.nginx_conf_dir.join(MARKER)).await? == marker_bytes(first)?,
             "Generation template changed after validation"
         );
-        let master = Master::read(&self.pid_file)?;
+        let identity = Identity::new(config, self.pid_file.clone()).await.context(IdentityUncertain)?;
+        let master = identity.running().await?;
+        let guard = ReloadGuard { identity, expected: master.clone() };
         for phase in 0..2 {
             let token = if phase == 0 {
                 first.to_owned()
@@ -441,7 +718,7 @@ impl Witness {
             let remaining = deadline
                 .checked_duration_since(Instant::now())
                 .context("nginx acknowledgement timed out")?;
-            reload(remaining).await?;
+            reload(remaining, guard.clone()).await?;
             self.observe(&token, deadline, &master).await?;
             acknowledged(phase)?;
         }
@@ -466,14 +743,26 @@ pub(crate) async fn observe_current(config: &RuntimeConfig, deadline: Instant) -
     }
     let witness=Witness::from_config(config)?;
     let path=config.nginx_conf_dir.join(MARKER);
+    let until = tokio::time::Instant::from_std(deadline);
     loop {
         ensure!(Instant::now()<deadline,"nginx generation remains unconfirmed");
         let token=read_marker(&path)?;
-        let before=Master::read(&witness.pid_file);
-        let observed=if before.is_ok() {witness.probe(&token,deadline).await.is_ok_and(|matched|matched)} else {false};
-        let after=Master::read(&witness.pid_file);
-        let current=read_marker(&path)?;
-        if observed && token==current && matches!((&before,&after),(Ok(before),Ok(after)) if before==after) {return Ok(());}
+        let sample = async {
+            let identity = Identity::new(config, witness.pid_file.clone()).await?;
+            let master = identity.running().await?;
+            Ok::<_, anyhow::Error>((identity, master))
+        };
+        let before = tokio::time::timeout_at(until, sample)
+            .await.context("nginx generation remains unconfirmed")?;
+        if let Ok((identity, before)) = before {
+            let observed=witness.probe(&token,deadline).await.is_ok_and(|matched|matched);
+            let after = tokio::time::timeout_at(until, identity.running())
+                .await.context("nginx generation remains unconfirmed")?;
+            if observed && token == read_marker(&path)? && after.is_ok_and(|after| before == after) {
+                ensure!(Instant::now()<deadline,"nginx generation remains unconfirmed");
+                return Ok(());
+            }
+        }
         let remaining=deadline.checked_duration_since(Instant::now()).context("nginx generation remains unconfirmed")?;
         tokio::time::sleep(remaining.min(Duration::from_millis(100))).await;
     }
@@ -694,7 +983,7 @@ mod tests {
         std::fs::write(&pid,b"").unwrap();
         assert_eq!(nginx_running(&cfg).await.unwrap(),NginxState::Stopped);assert!(pid.exists(),"the empty PID file must not be removed");assert!(Master::read(&pid).is_err(),"post-start witness stays strict");
         for invalid in ["\n","abc","1","0","-1"] {std::fs::write(&pid,invalid).unwrap();assert!(nginx_running(&cfg).await.is_err(),"must refuse {invalid:?}");}
-        std::fs::write(&pid,format!("{}\n",std::process::id())).unwrap();assert_eq!(nginx_running(&cfg).await.unwrap(),NginxState::Running);
+        std::fs::write(&pid,format!("{}\n",std::process::id())).unwrap();assert!(nginx_running(&cfg).await.unwrap_err().is::<IdentityUncertain>());
         let mut dead=std::process::Command::new("/bin/true").spawn().unwrap();let dead_pid=dead.id();dead.wait().unwrap();std::fs::write(&pid,format!("{dead_pid}\n")).unwrap();assert_eq!(nginx_running(&cfg).await.unwrap(),NginxState::Stopped);
         std::fs::remove_file(&pid).unwrap();assert_eq!(nginx_running(&cfg).await.unwrap(),NginxState::Stopped);
         std::fs::create_dir(&pid).unwrap();assert!(nginx_running(&cfg).await.is_err(),"non-NotFound read errors stay fatal");
@@ -715,7 +1004,7 @@ mod tests {
 
     fn observer_config(root:&Path,status:&str)->RuntimeConfig {
         let cfg=config(root,status);std::fs::create_dir_all(&cfg.nginx_conf_dir).unwrap();
-        let url=url::Url::parse(status).unwrap();let pid=pid_file(root);
+        let url=url::Url::parse(status).unwrap();let pid=root.join("nginx.pid");
         std::fs::write(&cfg.nginx_main_conf,format!("pid {}; events {{}} http {{ server {{ listen 127.0.0.1:{}; location = /nginx_status {{ stub_status; allow 127.0.0.3; deny all; include {}/.nwui-generation; }} }} }}",pid.display(),url.port().unwrap(),cfg.nginx_conf_dir.display())).unwrap();
         std::fs::write(&cfg.nginx_bin,b"observer must never execute this file").unwrap();
         cfg
@@ -724,6 +1013,7 @@ mod tests {
     async fn current_observer_is_read_only_and_accepts_one_owned_served_token() {
         let token=uuid::Uuid::new_v4().to_string();let server=server(Mode::Good,&token).await;
         let root=tempfile::tempdir().unwrap();let cfg=observer_config(root.path(),server.url.as_str());
+        let _master=super::super::identity_fixture::FakeMaster::spawn(&root.path().join("nginx.pid"), true);
         let marker=cfg.nginx_conf_dir.join(MARKER);std::fs::write(&marker,marker_bytes(&token).unwrap()).unwrap();
         let before=std::fs::read(&marker).unwrap();
         let main=std::fs::read(&cfg.nginx_main_conf).unwrap();
@@ -743,19 +1033,24 @@ mod tests {
             let first=uuid::Uuid::new_v4().to_string();let next=uuid::Uuid::new_v4().to_string();
             let marker=cfg.nginx_conf_dir.join(MARKER);std::fs::write(&marker,marker_bytes(&first).unwrap()).unwrap();
             let pid=root.path().join("nginx.pid");
+            let _master=super::super::identity_fixture::FakeMaster::spawn(&pid, true);
+            let foreign=super::super::identity_fixture::FakeMaster::spawn(&root.path().join("foreign.pid"), true);
+            let foreign_pid=foreign.pid();
             let task=tokio::spawn(async move {
-                for attempt in 0..2 {
+                for attempt in 0..if change_token {2} else {1} {
                     let (mut socket,_)=listener.accept().await.unwrap();let mut request=Vec::new();
                     while !request.ends_with(b"\r\n\r\n") {let mut byte=[0];socket.read_exact(&mut byte).await.unwrap();request.push(byte[0]);}
                     let token=if attempt==0 {&first}else if change_token {&next}else {&first};
                     if attempt==0 {
                         if change_token {std::fs::write(&marker,marker_bytes(&next).unwrap()).unwrap();}
-                        else {assert_ne!(std::process::id(),1);std::fs::write(&pid,b"1").unwrap();}
+                        else {std::fs::write(&pid,foreign_pid.to_string()).unwrap();}
                     }
                     socket.write_all(format!("HTTP/1.1 200 OK\r\nX-NWUI-Config-Generation: {token}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n").as_bytes()).await.unwrap();
                 }
             });
-            observe_current(&cfg,Instant::now()+Duration::from_secs(3)).await.unwrap();task.await.unwrap();
+            let result = observe_current(&cfg,Instant::now()+Duration::from_secs(1)).await;
+            assert_eq!(result.is_ok(), change_token);
+            tokio::time::timeout(Duration::from_secs(1), task).await.unwrap().unwrap();
             assert!(!cfg.nginx_conf_dir.join(UNCERTAIN).exists());
         }
     }
@@ -987,6 +1282,7 @@ mod tests {
     const FIRST_ACK_DELAY: Duration = Duration::from_secs(1);
     const SECOND_ACK_DELAY: Duration = Duration::from_secs(2);
     struct AckFixture {
+        _master: super::super::identity_fixture::FakeMaster,
         _temp: tempfile::TempDir,
         cfg: RuntimeConfig,
         witness: Witness,
@@ -1089,13 +1385,15 @@ exit 0
         let task = tokio::spawn(async move {
             axum::serve(listener, app).await.unwrap();
         });
-        let pid = pid_file(temp.path());
+        let pid = temp.path().join("nginx.pid");
+        let master = super::super::identity_fixture::FakeMaster::spawn(&pid, true);
         let witness = Witness {
             http: client().unwrap(),
             url: url::Url::parse(&format!("http://{addr}/nginx_status")).unwrap(),
             pid_file: pid,
         };
         AckFixture {
+            _master: master,
             _temp: temp,
             cfg,
             witness,
@@ -1104,6 +1402,116 @@ exit 0
             trace,
         }
     }
+    #[test]
+    fn configured_pid_permissions_do_not_weaken_the_group_record() {
+        use std::os::unix::fs::PermissionsExt;
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("pid");
+        std::fs::write(&path, b"42\n").unwrap();
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o666)).unwrap();
+        assert_eq!(read_pid(&path, PidRecord::Configured).unwrap(), Some(42));
+        assert!(read_pid(&path, PidRecord::Group).is_err());
+        assert!(read_pid(&path, PidRecord::StrictGroup).is_err());
+        std::fs::hard_link(&path, root.path().join("link")).unwrap();
+        assert!(read_pid(&path, PidRecord::Configured).is_err());
+    }
+
+    #[tokio::test]
+    async fn master_requires_the_group_executable_hup_and_supervisor() {
+        use super::super::identity_fixture::FakeMaster;
+        let root = tempfile::tempdir().unwrap();
+        let cfg = config(root.path(), "http://127.0.0.1:8080/nginx_status");
+        let pid_file = root.path().join("nginx.pid");
+        let first = FakeMaster::spawn(&pid_file, true);
+        let other = FakeMaster::spawn(&root.path().join("other.pid"), true);
+        let identity = Identity::new(&cfg, pid_file.clone()).await.unwrap();
+        let samples = AtomicUsize::new(0);
+        let valid = identity.evaluate(None, || {
+            samples.fetch_add(1, Ordering::SeqCst);
+            Ok(Some(first.pid()))
+        }).unwrap();
+        assert_eq!(valid.state(), NginxState::Running);
+        assert_eq!(samples.load(Ordering::SeqCst), 1, "s6 PID is read once");
+
+        std::fs::write(&pid_file, other.pid().to_string()).unwrap();
+        assert!(matches!(identity.evaluate(None, || Ok(Some(other.pid()))).unwrap(), Observation::Starting));
+        std::fs::write(&pid_file, first.pid().to_string()).unwrap();
+
+        let mut wrong_binary = identity.clone();
+        wrong_binary.master_bin = Some("/bin/true".into());
+        assert!(wrong_binary.evaluate(None, || Ok(Some(first.pid()))).err().unwrap().is::<IdentityUncertain>());
+        assert!(identity.evaluate(None, || Ok(Some(other.pid()))).err().unwrap().is::<IdentityUncertain>());
+        assert!(identity.evaluate(None, || anyhow::bail!("supervisor unavailable")).err().unwrap().is::<IdentityUncertain>());
+
+        let unready_pid = root.path().join("unready.pid");
+        let _unready = FakeMaster::spawn(&unready_pid, false);
+        let unready = Identity::new(&cfg, unready_pid).await.unwrap();
+        assert_eq!(unready.evaluate(None, || panic!("s6 read before SIGHUP was caught")).unwrap().state(), NginxState::Starting);
+    }
+
+    #[tokio::test]
+    async fn identity_retries_once_but_refuses_three_changes_during_the_supervisor_read() {
+        use super::super::identity_fixture::FakeMaster;
+        let root = tempfile::tempdir().unwrap();
+        let cfg = config(root.path(), "http://127.0.0.1:8080/nginx_status");
+        let pid_file = root.path().join("nginx.pid");
+        let first = FakeMaster::spawn(&pid_file, true);
+        let second = FakeMaster::spawn(&root.path().join("second.pid"), true);
+        let identity = Identity::new(&cfg, pid_file.clone()).await.unwrap();
+        for repeat in [false, true] {
+            let calls = AtomicUsize::new(0);
+            let read_supervisor = || {
+                let pid = read_pid(&pid_file, PidRecord::Configured)?.unwrap();
+                if calls.fetch_add(1, Ordering::SeqCst) == 0 || repeat {
+                    let next = if pid == first.pid() { second.pid() } else { first.pid() };
+                    std::fs::write(&pid_file, next.to_string())?;
+                    std::fs::write(&identity.group_file, next.to_string())?;
+                }
+                Ok(Some(pid))
+            };
+            let result = identity.evaluate(None, read_supervisor);
+            if repeat {
+                assert!(result.err().unwrap().is::<IdentityUncertain>());
+                assert_eq!(calls.load(Ordering::SeqCst), 3);
+            } else {
+                assert!(matches!(result.unwrap(), Observation::Running(master) if master.pid == second.pid()));
+                assert_eq!(calls.load(Ordering::SeqCst), 2);
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn replacing_the_pid_at_each_reload_boundary_prevents_the_spawn() {
+        use super::super::{command, identity_fixture::FakeMaster, recovery};
+        for phases in [["P", "C"], ["R1", "R2"]] {
+            for blocked_phase in 0..2 {
+                let f = ack_fixture(AckMode::Normal).await;
+                let (_root, _, store, _, _) = recovery::tests::durable_fixture();
+                let foreign = FakeMaster::spawn(&f._temp.path().join("foreign.pid"), true);
+                let attempted = AtomicUsize::new(0);
+                let acknowledged = AtomicUsize::new(0);
+                let result = f.witness.confirm_using(
+                    &f.cfg, &f.first, Instant::now() + Duration::from_secs(3),
+                    |remaining, guard| {
+                        let phase = attempted.fetch_add(1, Ordering::SeqCst);
+                        if phase == blocked_phase {
+                            std::fs::write(&f.witness.pid_file, foreign.pid().to_string()).unwrap();
+                        }
+                        command::reload(store.clone(), f.cfg.nginx_bin.clone(), remaining, guard)
+                    },
+                    |phase| {
+                        assert_eq!(acknowledged.fetch_add(1, Ordering::SeqCst), phase);
+                        Ok(())
+                    },
+                ).await;
+                assert!(result.is_err(), "{} must refuse the changed PID", phases[blocked_phase]);
+                assert_eq!(acknowledged.load(Ordering::SeqCst), blocked_phase);
+                let trace = std::fs::read_to_string(&f.trace).unwrap();
+                assert_eq!(trace.lines().filter(|line| line.starts_with("HUP ")).count(), blocked_phase, "{trace}");
+            }
+        }
+    }
+
     #[tokio::test]
     async fn confirmation_waits_for_p_before_c_signals_once_each_and_changes_only_the_uuid() {
         let f = ack_fixture(AckMode::Normal).await;

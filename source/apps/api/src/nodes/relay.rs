@@ -1,6 +1,9 @@
 //! Explicit remote operations. No request can supply an arbitrary method or API path.
 use super::{
-    client::{CONFIG_APPLY_TIMEOUT, APPLY_TIMEOUT, DEFAULT_TIMEOUT, FailureKind, NodeResult, RENEW_TIMEOUT},
+    client::{
+        APPLY_TIMEOUT, CONFIG_APPLY_TIMEOUT, DEFAULT_TIMEOUT, FailureKind, LOG_STREAM_HANDSHAKE,
+        NodeResult, RENEW_TIMEOUT,
+    },
     service, views,
 };
 use crate::{
@@ -189,6 +192,10 @@ pub fn stream_body(
         // Cancel the entire relay, including a send blocked by a slow consumer.
         // Dropping this read-only response closes the remote streaming request.
         let relay = async {
+            // A buffering front may wait for body bytes before forwarding headers.
+            if tx.send(Ok(Bytes::from_static(b": keepalive\n\n"))).await.is_err() {
+                return;
+            }
             loop {
                 match upstream.chunk().await {
                     Ok(Some(bytes)) => {
@@ -241,7 +248,7 @@ async fn logs(
     let checked_state = state.clone();
     let checked_headers = request.headers().clone();
     let checked_ctx = ctx.clone();
-    let shutdown = crate::auth::stream_guard::checked_shutdown(
+    let mut shutdown = crate::auth::stream_guard::checked_shutdown(
         &state, crate::auth::stream_guard::REVALIDATE_EVERY, move || {
             let state = checked_state.clone();
             let headers = checked_headers.clone();
@@ -257,11 +264,16 @@ async fn logs(
             }
         },
     );
-    match state
-        .node_http
-        .open_stream(&state.secrets, &access.target, &path, DEFAULT_TIMEOUT)
-        .await
-    {
+    let opened = tokio::select! {
+        biased;
+        _ = shutdown.wait_for(|stopping| *stopping) => {
+            return Err(ApiError::new(
+                StatusCode::SERVICE_UNAVAILABLE, "not_ready", "API 서버가 준비되지 않았습니다.",
+            ));
+        }
+        result = state.node_http.open_stream(&state.secrets, &access.target, &path, LOG_STREAM_HANDSHAKE) => result,
+    };
+    match opened {
         Err(failure) => Ok(failure_response(failure, false)),
         Ok(upstream) => Ok(Response::builder()
             .header("content-type", "text/event-stream")

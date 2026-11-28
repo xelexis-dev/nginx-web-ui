@@ -2,7 +2,7 @@ import type { ComponentProps } from "react";
 import styles from "./button.module.css";
 
 export type ButtonVariant =
-  "primary" | "secondary" | "danger" | "ghost" | "dangerQuiet";
+  "primary" | "secondary" | "danger" | "ghost" | "dangerQuiet" | "dangerOutline";
 export type ButtonSize = "md" | "sm" | "lg" | "xs";
 
 export interface ButtonProps extends ComponentProps<"button"> {

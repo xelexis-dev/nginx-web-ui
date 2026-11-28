@@ -124,6 +124,46 @@ async fn lists_are_scoped_masked_and_carry_a_status() {
 
 #[tokio::test]
 #[ignore = "real DB: set NWUI_TEST_DATABASE_URL"]
+async fn list_views_keep_expired_tokens_and_details_keep_revoked_tokens() {
+    let db = test_db().await;
+    people(&db).await;
+    let (boss, ed) = (actor("boss", Role::Admin), actor("ed", Role::Editor));
+    for (actor, scope, kind, permission) in [
+        (&ed, TokenScope::User { owner_user_id: "ed".into() }, TokenKind::User, "config:read"),
+        (&boss, TokenScope::Server, TokenKind::Server, "node:pair"),
+    ] {
+        for (name, expired, revoked) in [
+            ("active", false, false),
+            ("expired", true, false),
+            ("revoked", false, true),
+            ("expired and revoked", true, true),
+        ] {
+            let expires_at = principal::now_unix_ms() + 86_400_000;
+            let issued = tokens::issue(&db.state, actor, &ctx(), kind, value(name, &[permission], Some(expires_at))).await.unwrap();
+            if expired {
+                db.client.execute(
+                    "UPDATE access_tokens SET created_at = now() - interval '1 day', expires_at = now() - interval '1 minute' WHERE id = $1",
+                    &[&issued.id],
+                ).await.unwrap();
+            }
+            if revoked {
+                tokens::revoke(&db.state, actor, &ctx(), &scope, &issued.id).await.unwrap();
+                let detail = tokens::detail_view(&db.state, actor, &scope, &issued.id).await.unwrap();
+                assert_eq!(detail["id"], issued.id);
+                assert_eq!(detail["status"], "revoked");
+            }
+        }
+        let list = tokens::list_view(&db.state, actor, &scope).await.unwrap();
+        let mut shown: Vec<_> = list["tokens"].as_array().unwrap().iter()
+            .map(|row| (row["name"].as_str().unwrap(), row["status"].as_str().unwrap()))
+            .collect();
+        shown.sort_unstable();
+        assert_eq!(shown, [("active", "active"), ("expired", "expired")]);
+    }
+}
+
+#[tokio::test]
+#[ignore = "real DB: set NWUI_TEST_DATABASE_URL"]
 async fn revoke_is_scoped_once_and_never_says_whose() {
     let db = test_db().await;
     people(&db).await;

@@ -12,7 +12,7 @@ export default function NotFound() {
       standalone
       title="이 주소에는 아무것도 없습니다"
       description="주소를 잘못 입력했거나, 링크가 지금은 없는 화면을 가리키고 있습니다."
-      actions={[{ href: "/", label: "대시보드로 가기", primary: true }]}
+      actions={[{ href: "/", label: "개요로 가기", primary: true }]}
     />
   );
 }

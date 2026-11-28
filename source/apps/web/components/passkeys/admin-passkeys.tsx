@@ -64,7 +64,7 @@ export function AdminPasskeys({
           )}
         />
       ) : (
-        <EmptyState title="등록된 패스키가 없습니다" />
+        <EmptyState description="등록된 패스키가 없습니다." />
       )}
       {removing ? (
         <RemovePasskeyDialog

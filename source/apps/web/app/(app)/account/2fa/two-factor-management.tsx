@@ -52,7 +52,7 @@ export function TwoFactorManagement({ hasPassword }: { hasPassword: boolean }) {
                 <Link
                   href="/account/2fa/disable"
                   className={buttonClassName({
-                    variant: "dangerQuiet",
+                    variant: "dangerOutline",
                     size: "sm",
                   })}
                 >

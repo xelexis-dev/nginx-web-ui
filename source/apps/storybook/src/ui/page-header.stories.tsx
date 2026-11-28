@@ -114,7 +114,7 @@ export const Detail: Story = {
     description: "주의 · 5xx 2.8%",
     actions: (
       <>
-        <Button size="sm" variant="dangerQuiet" onClick={fn().mockName("삭제")}>
+        <Button size="sm" variant="dangerOutline" onClick={fn().mockName("삭제")}>
           삭제
         </Button>
         <a href="#edit" className={buttonClassName({ size: "sm" })}>

@@ -1,9 +1,10 @@
 //! Explicit binaries and private, socket-only PostgreSQL children running as postgres.
 use super::{control::Control,files,error::{Error,Result}};
-use std::{fs::{self,File,OpenOptions},io::Read,path::{Path,PathBuf},process::{Command,Child,Stdio},sync::atomic::{AtomicI32,Ordering},time::{Duration,Instant}};
+use std::{fs::{self,File,OpenOptions},io::Read,path::{Path,PathBuf},process::{Command,Child,Stdio},sync::atomic::{AtomicI32,AtomicUsize,Ordering},time::{Duration,Instant}};
 use std::os::fd::AsRawFd;
 use std::os::unix::{fs::{DirBuilderExt,OpenOptionsExt,MetadataExt},process::CommandExt};
 pub static SIGNAL:AtomicI32=AtomicI32::new(0);
+static LIVE_PRIVATE:AtomicUsize=AtomicUsize::new(0);
 fn failed()->Error{Error{code:"postgres_failed",message:"전용 PostgreSQL 작업을 완료하지 못했습니다. 원본과 실패한 작업은 보존했습니다. 제한된 작업 로그를 확인하세요.",exit:1,detail:None}}
 pub fn interrupted()->Option<Error>{match SIGNAL.load(Ordering::Relaxed){signal@ (2|15)=>Some(Error{code:"interrupted",message:"이전 작업이 중단됐습니다. 원본과 현재 작업을 보존했습니다.",exit:128+signal,detail:None}),_=>None}}
 pub fn command(major:u8,tool:&str)->Result<Command> {
@@ -32,7 +33,13 @@ pub fn server_command(major:u8,data:&Path,socket:&Path,config:&Path)->Result<Com
     ]{c.arg("-c").arg(setting);}Ok(c)
 }
 pub fn wait(child:Child,timeout:Duration)->Result<()> {wait_inner(child,timeout,true)}
-fn wait_inner(mut child:Child,timeout:Duration,cancellable:bool)->Result<()> {
+const DEFAULT_POLL: Duration = Duration::from_millis(50);
+
+fn wait_inner(child: Child, timeout: Duration, cancellable: bool) -> Result<()> {
+    wait_with_poll(child, timeout, cancellable, DEFAULT_POLL)
+}
+
+fn wait_with_poll(mut child:Child,timeout:Duration,cancellable:bool,poll:Duration)->Result<()> {
     let start=Instant::now();
     loop {
         match child.try_wait(){Ok(Some(status))=>return if status.success(){Ok(())}else{Err(failed())},Err(_)=>{let _=child.kill();let _=child.wait();return Err(failed());},_=>{}}
@@ -41,7 +48,7 @@ fn wait_inner(mut child:Child,timeout:Duration,cancellable:bool)->Result<()> {
             unsafe{libc::kill(-(child.id()as i32),libc::SIGKILL);}
             let _=child.kill();let _=child.wait();return Err(cancel.unwrap_or_else(failed));
         }
-        std::thread::sleep(Duration::from_millis(50));
+        std::thread::sleep(poll);
     }
 }
 pub(crate) fn postgres_ids()->Result<(u32,u32)> {
@@ -93,7 +100,7 @@ pub fn stop_working(major:u8,data:&Path)->Result<()> {
     if !metadata.is_file()||metadata.len()>65536{return Err(failed());}
     let pid=text(&path)?;let mut lines=pid.lines();let pid:i32=lines.next().ok_or_else(failed)?.parse().map_err(|_|failed())?;
     if pid<=1||lines.next()!=data.to_str(){return Err(failed());}
-    if unsafe{libc::kill(pid,0)}!=0 && std::io::Error::last_os_error().raw_os_error()==Some(libc::ESRCH){return Ok(());}
+    if (unsafe{libc::kill(pid,0)})!=0 && std::io::Error::last_os_error().raw_os_error()==Some(libc::ESRCH){return Ok(());}
     // Mac bind mounts remap file owners; bind the live process to postgres and this data dir.
     let process=Path::new("/proc").join(pid.to_string());let status=text(&process.join("status"))?;
     let uid=postgres_ids()?.0;let mut uids=status.lines().find_map(|line|line.strip_prefix("Uid:")).ok_or_else(failed)?.split_whitespace();
@@ -116,9 +123,12 @@ pub(crate) fn directory_io(path:&Path)->std::io::Result<()> {
     File::open(path.parent().ok_or_else(||std::io::Error::other(failed()))?)?.sync_all()
 }
 pub fn private_file(path:&Path,bytes:&[u8])->Result<()> {
+    create_private_file(path,bytes).map(drop)
+}
+fn create_private_file(path:&Path,bytes:&[u8])->Result<File> {
     use std::io::Write;
     let mut f=OpenOptions::new().write(true).create_new(true).mode(0o600).open(path).map_err(|_|failed())?;
-    f.write_all(bytes).and_then(|_|f.sync_all()).map_err(|_|failed())?;own(path)?;f.sync_all().map_err(|_|failed())?;File::open(path.parent().ok_or_else(failed)?).and_then(|f|f.sync_all()).map_err(|_|failed())
+    f.write_all(bytes).and_then(|_|f.sync_all()).map_err(|_|failed())?;own(path)?;f.sync_all().map_err(|_|failed())?;File::open(path.parent().ok_or_else(failed)?).and_then(|f|f.sync_all()).map_err(|_|failed())?;Ok(f)
 }
 fn logfile(path:&Path)->Result<File> {let f=OpenOptions::new().write(true).create_new(true).mode(0o600).open(path).map_err(|_|failed())?;own(path)?;Ok(f)}
 fn text(path:&Path)->Result<String> {let mut s=String::new();File::open(path).map_err(|_|failed())?.take(65537).read_to_string(&mut s).map_err(|_|failed())?;if s.len()>65536{return Err(failed());}Ok(s)}
@@ -134,14 +144,18 @@ pub fn read_control(major:u8,data:&Path)->Result<Control> {
     let mut c=command(major,"pg_controldata")?;c.arg(data);
     let(out,err)=output(c,Duration::from_secs(30))?;Control::parse(&out,&err)
 }
-pub fn output(mut command:Command,timeout:Duration)->Result<(String,String)> {
+pub fn output(command: Command, timeout: Duration) -> Result<(String, String)> {
+    output_with_poll(command, timeout, DEFAULT_POLL)
+}
+
+pub(crate) fn output_with_poll(mut command:Command,timeout:Duration,poll:Duration)->Result<(String,String)> {
     if let Some(e)=interrupted(){return Err(e);}
     command.stdout(Stdio::piped()).stderr(Stdio::piped());
     let mut child=command.spawn().map_err(|_|failed())?;
     let stdout=child.stdout.take().ok_or_else(failed)?;let stderr=child.stderr.take().ok_or_else(failed)?;
     fn read(pipe:impl Read)->std::io::Result<Vec<u8>>{let mut bytes=Vec::new();pipe.take(65537).read_to_end(&mut bytes)?;Ok(bytes)}
     let out=std::thread::spawn(move||read(stdout));let err=std::thread::spawn(move||read(stderr));
-    let status=wait(child,timeout);
+    let status=wait_with_poll(child,timeout,true,poll);
     let out=out.join().map_err(|_|failed())?.map_err(|_|failed())?;
     let err=err.join().map_err(|_|failed())?.map_err(|_|failed())?;
     status?;
@@ -183,21 +197,87 @@ impl Drop for SocketDirectory {
         let Ok(current)=fs::symlink_metadata(&self.path) else{return;};
         // Keep the original inode open so a replacement cannot reuse its identity.
         if !current.is_dir()||current.dev()!=original.dev()||current.ino()!=original.ino()||![self.owner,self.creator].contains(&current.uid())||current.mode()&0o7777!=0o700{return;}
-        let Ok(entries)=fs::read_dir(&self.path) else{return;};
-        for entry in entries {
-            let Ok(entry)=entry else{return;};let name=entry.file_name();let name=name.as_encoded_bytes();
-            if !name.starts_with(b".s.PGSQL.")||!name.ends_with(b".lock"){continue;}
-            let file=match OpenOptions::new().read(true).custom_flags(libc::O_NOFOLLOW|libc::O_NONBLOCK).open(entry.path()) {
-                Ok(file)=>file,Err(error)if error.kind()==std::io::ErrorKind::NotFound=>continue,Err(_)=>return,
-            };
-            let Ok(meta)=file.metadata() else{return;};if !meta.is_file()||meta.nlink()!=1||meta.len()>65536{return;}
-            let mut value=String::new();if file.take(65537).read_to_string(&mut value).is_err()||value.len()>65536{return;}
-            let Some(pid)=value.lines().next().and_then(|s|s.parse::<i32>().ok()).filter(|pid|*pid>1) else{return;};
-            if unsafe{libc::kill(pid,0)}==0||std::io::Error::last_os_error().raw_os_error()!=Some(libc::ESRCH){return;}
-        }
+        if !dead_socket_locks(&self.path, pid_is_gone){return;}
         // remove_dir_all does not follow child symlinks; data and logs never live here.
         if fs::remove_dir_all(&self.path).is_err(){eprintln!("전용 PostgreSQL 소켓 디렉터리를 정리하지 못했습니다.");}
     }
+}
+
+/// Unreadable or still-live lock files are evidence against cleanup or refusal.
+fn dead_socket_locks(path:&Path, inactive:impl Fn(i32)->bool)->bool {
+    let metadata=match fs::symlink_metadata(path){
+        Ok(metadata)=>metadata,
+        Err(error) if error.kind()==std::io::ErrorKind::NotFound=>return true,
+        Err(_)=>return false,
+    };
+    if !metadata.is_dir()||metadata.mode()&0o7777!=0o700{return false;}
+    fs::read_dir(path).is_ok_and(|mut entries|entries.all(|entry|{
+        let Ok(entry)=entry else{return false;};
+        let name=entry.file_name();
+        if !name.as_encoded_bytes().starts_with(b".s.PGSQL.")||!name.as_encoded_bytes().ends_with(b".lock"){return true;}
+        lock_is_inactive(&entry.path(), &inactive)
+    }))
+}
+fn lock_is_inactive(path:&Path,inactive:impl Fn(i32)->bool)->bool {
+    let file=match OpenOptions::new().read(true).custom_flags(libc::O_NOFOLLOW|libc::O_NONBLOCK).open(path) {
+        Ok(file)=>file,
+        Err(error) if error.kind()==std::io::ErrorKind::NotFound=>return true,
+        Err(_)=>return false,
+    };
+    let Ok(meta)=file.metadata() else{return false;};
+    if !meta.is_file()||meta.nlink()!=1||meta.len()>65536{return false;}
+    let mut value=String::new();
+    if file.take(65537).read_to_string(&mut value).is_err()||value.len()>65536{return false;}
+    let Some(pid)=value.lines().next().and_then(|s|s.parse::<i32>().ok()).filter(|pid|*pid>1) else{return false;};
+    inactive(pid)
+}
+fn pid_is_gone(pid:i32)->bool {
+    (unsafe{libc::kill(pid,0)})!=0 && std::io::Error::last_os_error().raw_os_error()==Some(libc::ESRCH)
+}
+fn is_not_postmaster(pid:i32)->bool {
+    if unsafe{libc::kill(pid,0)}!=0 {
+        return std::io::Error::last_os_error().raw_os_error()==Some(libc::ESRCH);
+    }
+    let Ok(status)=text(&Path::new("/proc").join(pid.to_string()).join("status")) else{return false;};
+    let Some(group)=status.lines().find_map(|s|s.strip_prefix("Tgid:")).and_then(|s|s.trim().parse::<i32>().ok()) else{return false;};
+    let Some(mut uids)=status.lines().find_map(|s|s.strip_prefix("Uid:")).map(str::split_whitespace) else{return false;};
+    let (Some(real),Some(effective))=(uids.next().and_then(|s|s.parse::<u32>().ok()),uids.next().and_then(|s|s.parse::<u32>().ok())) else{return false;};
+    let Ok((postgres,_))=postgres_ids() else{return false;};
+    group!=pid || real!=postgres || effective!=postgres
+}
+fn is_ready_work(leaf:&str)->bool{
+    let Some(value)=leaf.strip_prefix("nwui-ready-") else{return false;};
+    uuid::Uuid::parse_str(value).is_ok_and(|id|id.get_version()==Some(uuid::Version::Random)
+        && id.get_variant()==uuid::Variant::RFC4122 && value==id.hyphenated().to_string())
+}
+
+pub(crate) fn private_quiescent(data:&Path,run:&Path)->bool{
+    LIVE_PRIVATE.load(Ordering::SeqCst)==0&&lock_is_inactive(&data.join("postmaster.pid"),is_not_postmaster)
+        && bounded_run_check(run,|name,path| {
+            if name.starts_with("nwui-pg-")&&name.ends_with("-s17"){return dead_socket_locks(path,is_not_postmaster);}
+            !is_ready_work(name)||ready_work_idle(path)
+        })
+}
+
+fn bounded_run_check(run:&Path,check:impl Fn(&str,&Path)->bool)->bool{
+    fs::read_dir(run).is_ok_and(|entries|entries.enumerate().all(|(index,entry)|{
+        index<4096&&entry.is_ok_and(|entry|entry.file_name().to_str().is_none_or(|name|check(name,&entry.path())))
+    }))
+}
+fn ready_work_idle(work:&Path)->bool{
+    dead_socket_locks(&socket_path(work,"s17"),is_not_postmaster)&&dead_work_lease(work)
+}
+fn dead_work_lease(work:&Path)->bool{
+    let directory=match OpenOptions::new().read(true).custom_flags(libc::O_DIRECTORY|libc::O_NOFOLLOW).open(work){
+        Ok(directory)=>directory,
+        Err(error)=>return error.kind()==std::io::ErrorKind::NotFound,
+    };
+    let fd=unsafe{libc::openat(directory.as_raw_fd(),c"server.stderr".as_ptr(),libc::O_RDONLY|libc::O_NOFOLLOW|libc::O_CLOEXEC|libc::O_NONBLOCK)};
+    if fd<0 {return std::io::Error::last_os_error().kind()==std::io::ErrorKind::NotFound;}
+    use std::os::fd::FromRawFd;
+    let file=unsafe{File::from_raw_fd(fd)};
+    file.metadata().is_ok_and(|m|m.is_file()&&m.nlink()==1)
+        && unsafe{libc::flock(file.as_raw_fd(),libc::LOCK_EX|libc::LOCK_NB)}==0
 }
 
 #[cfg(test)]
@@ -217,6 +297,23 @@ mod socket_cleanup_tests {
             let foreign=root.join("foreign");fs::create_dir(&foreign).unwrap();fs::write(foreign.join("keep"),"keep").unwrap();
             if symlink{std::os::unix::fs::symlink(&foreign,&guard.path).unwrap();}else{fs::DirBuilder::new().mode(0o700).create(&guard.path).unwrap();fs::write(guard.path.join("keep"),"keep").unwrap();}
             let path=guard.path.clone();drop(guard);assert!(fs::symlink_metadata(path).is_ok());assert_eq!(fs::read_to_string(foreign.join("keep")).unwrap(),"keep");assert!(root.join("original").exists());
+        }
+    }
+    #[test]
+    fn a_stale_lock_reusing_a_live_root_tid_or_pid_is_quiescent() {
+        assert_eq!(unsafe{libc::geteuid()},0);
+        let t=tempfile::tempdir().unwrap();
+        let dir=t.path().join("nwui-pg-fixture-s17");
+        fs::DirBuilder::new().mode(0o700).create(&dir).unwrap();
+        let lock=dir.join(".s.PGSQL.50432.lock");
+        let tid=unsafe{libc::gettid()};
+        let pid=std::process::id() as i32;
+        assert_ne!(pid,tid);
+        // A nonleader exercises Tgid; the root leader independently exercises Uid.
+        for id in [tid,pid] {
+            assert_eq!(unsafe{libc::kill(id,0)},0);
+            fs::write(&lock,format!("{id}\n")).unwrap();
+            assert!(private_quiescent(&t.path().join("data"),t.path()),"{id}");
         }
     }
     #[test]
@@ -250,7 +347,11 @@ fn inactive_pid(data:&Path,source:bool)->Result<()> {
     if !pid_metadata(&m,postgres_ids()?.0,source,super::shared_folder::kind(&file)){return Err(Error::refusal("unsupported_layout"));}
     Ok(())
 }
-pub struct Private {child:Child,pub socket:PathBuf,data:PathBuf,major:u8,_socket_directory:SocketDirectory}
+pub(crate) type ReadyFiles=[(&'static std::ffi::CStr,File);5];
+pub struct Private {
+    child:Child,pub socket:PathBuf,data:PathBuf,major:u8,reaped:bool,
+    ready_files:Option<ReadyFiles>,_socket_directory:SocketDirectory,
+}
 impl Private {
     pub fn start(major:u8,data:&Path,work:&Path)->Result<Self> {
         Self::start_with_limits(major,data,work,Duration::from_secs(30),Duration::from_secs(900))
@@ -273,17 +374,31 @@ impl Private {
         let auto=data.join("postgresql.auto.conf");files::real_path(&auto).map_err(|_|failed())?;
         if text(&auto)?.lines().any(|line|!line.trim().is_empty()&&!line.trim_start().starts_with('#')){return Err(Error::refusal("unsupported_layout"));}
         let socket_directory=SocketDirectory::new(work,&format!("s{major}"))?;let socket=socket_directory.path.clone();
-        let config=work.join("private.conf");private_file(&config,b"# Dedicated offline postmaster\n")?;
-        private_file(&work.join("hba.conf"),b"local all postgres trust\nlocal all nginx scram-sha-256\nlocal all all reject\n")?;
-        private_file(&work.join("ident.conf"),b"")?;
+        let config=work.join("private.conf");
+        let config_file=create_private_file(&config,b"# Dedicated offline postmaster\n")?;
+        let hba=create_private_file(&work.join("hba.conf"),b"local all postgres trust\nlocal all nginx scram-sha-256\nlocal all all reject\n")?;
+        let ident=create_private_file(&work.join("ident.conf"),b"")?;
         let mut command=server_command(major,data,&socket,&config)?;
-        command.stdout(logfile(&work.join("server.stdout"))?).stderr(logfile(&work.join("server.stderr"))?);
-        let child=command.spawn().map_err(|_|failed())?;let mut pg=Self{child,socket,data:data.into(),major,_socket_directory:socket_directory};
+        let stderr=logfile(&work.join("server.stderr"))?;
+        let stdout=logfile(&work.join("server.stdout"))?;
+        let ready_files=if ready {
+            // The inherited stderr lease remains a liveness signal for B1.
+            if unsafe{libc::flock(stderr.as_raw_fd(),libc::LOCK_EX|libc::LOCK_NB)}!=0{return Err(failed());}
+            stdout.try_clone().ok().zip(stderr.try_clone().ok()).map(|(stdout,stderr)|
+                [(c"private.conf",config_file),(c"hba.conf",hba),(c"ident.conf",ident),
+                 (c"server.stdout",stdout),(c"server.stderr",stderr)])
+        }else{None};
+        command.stdout(stdout).stderr(stderr);
+        let child=command.spawn().map_err(|_|failed())?;
+        LIVE_PRIVATE.fetch_add(1,Ordering::SeqCst);
+        let mut pg=Self{child,socket,data:data.into(),major,reaped:false,ready_files,_socket_directory:socket_directory};
+        drop(command);
         let started=Instant::now();
         let normal_deadline=started+normal;let recovery_deadline=started+recovery;let mut deadline=normal_deadline;
         loop {
             if let Some(error)=interrupted(){return Err(error);}
-            if pg.child.try_wait().map_err(|_|failed())?.is_some() || Instant::now()>=deadline{return Err(failed());}
+            if pg.child.try_wait().map_err(|_|failed())?.is_some(){pg.mark_reaped();return Err(failed());}
+            if Instant::now()>=deadline{return Err(failed());}
             match probe_before(major,&pg.socket,deadline)? {
                 0=>{if Instant::now()>=deadline{return Err(failed());}return Ok(pg);},
                 1=>deadline=recovery_deadline,
@@ -296,13 +411,23 @@ impl Private {
         }
     }
     pub fn stop(mut self)->Result<()> {self.shutdown()}
+    pub(crate) fn stop_ready(mut self)->Result<Option<ReadyFiles>>{
+        self.shutdown()?;
+        Ok(self.ready_files.take())
+    }
+    fn mark_reaped(&mut self){
+        if !self.reaped {
+            self.reaped=true;
+            LIVE_PRIVATE.fetch_sub(1,Ordering::SeqCst);
+        }
+    }
     fn shutdown(&mut self)->Result<()> {
-        if let Some(status)=self.child.try_wait().map_err(|_|failed())?{return if status.success(){Ok(())}else{Err(failed())};}
+        if let Some(status)=self.child.try_wait().map_err(|_|failed())?{self.mark_reaped();return if status.success(){Ok(())}else{Err(failed())};}
         let mut c=command(self.major,"pg_ctl")?;
         c.arg("-D").arg(&self.data).args(["-m","fast","-t","30","-w","stop"]).stdout(Stdio::null()).stderr(Stdio::null());
         let result=wait_inner(c.spawn().map_err(|_|failed())?,Duration::from_secs(40),false);
         if result.is_err(){unsafe{libc::kill(-(self.child.id()as i32),libc::SIGKILL);}let _=self.child.kill();}
-        let _=self.child.wait();result
+        self.child.wait().map_err(|_|failed())?;self.mark_reaped();result
     }
 }
 fn command_probe(major:u8,socket:&Path)->Result<Command>{let mut c=command(major,"pg_isready")?;c.env("PGOPTIONS",super::settings::ROOT_OPTIONS);c.arg("-h").arg(socket).args(["-p","50432","-U","postgres","-d","postgres","-t","1"]).stdout(Stdio::null()).stderr(Stdio::null());Ok(c)}

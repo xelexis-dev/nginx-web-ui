@@ -252,8 +252,8 @@ export function ServerDetail({
       <PageHeader
         eyebrow={
           <Link href={basePath} className={linkClassName({ variant: "back" })}>
-            <Icon name="back" size={14} />
-            리버스 프록시
+            <Icon name="arrowLeft" size={14} />
+            리버스 프록시 목록
           </Link>
         }
         title={names[0] ?? data.serverName}

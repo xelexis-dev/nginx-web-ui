@@ -3,7 +3,7 @@ use axum::{
     response::{IntoResponse, Sse},
 };
 use http_body_util::BodyExt;
-use nwui_api::observability::logs::tail;
+use nwui_api::observability::logs::{response, tail};
 use std::time::Duration;
 use tokio::io::AsyncWriteExt;
 async fn event(body: &mut Body) -> String {
@@ -37,6 +37,7 @@ async fn sse_tails_only_complete_lines_and_detects_same_size_inode_rotation() {
     ))
     .into_response()
     .into_body();
+    assert_eq!(event(&mut body).await, ": keepalive\n\n");
     assert_eq!(event(&mut body).await, "data: first\n\n");
     assert!(
         tokio::time::timeout(Duration::from_millis(30), body.frame())
@@ -73,6 +74,7 @@ async fn initial_tail_is_bounded_and_missing_file_starts_at_end() {
     ))
     .into_response()
     .into_body();
+    assert_eq!(event(&mut body).await, ": keepalive\n\n");
     for n in 150..350 {
         assert_eq!(event(&mut body).await, format!("data: line{n}\n\n"));
     }
@@ -85,6 +87,7 @@ async fn initial_tail_is_bounded_and_missing_file_starts_at_end() {
     ))
     .into_response()
     .into_body();
+    assert_eq!(event(&mut body).await, ": keepalive\n\n");
     assert_eq!(event(&mut body).await, ": waiting for log file\n\n");
     tokio::fs::write(&missing, "historical\n").await.unwrap();
     assert!(event(&mut body).await.contains("log file found"));
@@ -105,6 +108,7 @@ async fn oversized_live_line_is_discarded_without_losing_following_record() {
     ))
     .into_response()
     .into_body();
+    assert_eq!(event(&mut body).await, ": keepalive\n\n");
     assert!(event(&mut body).await.contains("ready"));
     append(&path, &format!("{}\nnext\n", "x".repeat(256 * 1024))).await;
     assert_eq!(event(&mut body).await, "data: next\n\n");
@@ -125,6 +129,7 @@ async fn initial_window_ending_exactly_on_oversized_line_boundary_keeps_next_lin
     ))
     .into_response()
     .into_body();
+    assert_eq!(event(&mut body).await, ": keepalive\n\n");
     assert!(
         tokio::time::timeout(Duration::from_millis(30), body.frame())
             .await
@@ -146,6 +151,7 @@ async fn one_poll_catches_up_with_a_burst_larger_than_one_read() {
     let mut body = Sse::new(tail(path.clone(), poll, shutdown.subscribe(), false))
         .into_response()
         .into_body();
+    assert_eq!(event(&mut body).await, ": keepalive\n\n");
     assert!(event(&mut body).await.contains("ready"));
     // Ten bounded reads' worth of complete lines, written at once.
     let line = format!("{}\n", "x".repeat(99));
@@ -172,4 +178,58 @@ async fn one_poll_catches_up_with_a_burst_larger_than_one_read() {
         started.elapsed(),
         poll * 10
     );
+}
+
+#[tokio::test(start_paused = true)]
+async fn empty_log_sends_one_immediate_comment_then_waits_fifteen_seconds() {
+    let file = tempfile::NamedTempFile::new().unwrap();
+    let (shutdown, _) = tokio::sync::watch::channel(false);
+    let mut body = response(file.path().to_owned(), shutdown.subscribe(), true)
+        .into_response()
+        .into_body();
+    let first = tokio::time::timeout(Duration::from_secs(1), event(&mut body))
+        .await
+        .expect("initial keepalive");
+    assert_eq!(first, ": keepalive\n\n");
+    let started = tokio::time::Instant::now();
+
+    assert!(
+        tokio::time::timeout(Duration::from_secs(2), body.frame())
+            .await
+            .is_err(),
+        "only one initial keepalive"
+    );
+    assert!(
+        tokio::time::timeout(Duration::from_secs(12), body.frame())
+            .await
+            .is_err(),
+        "the periodic keepalive must not arrive early"
+    );
+    assert_eq!(event(&mut body).await, first);
+    assert!(
+        (Duration::from_secs(15)..Duration::from_secs(16)).contains(&started.elapsed()),
+        "periodic keepalive arrived after {:?}",
+        started.elapsed()
+    );
+}
+
+#[tokio::test]
+async fn error_log_sends_the_initial_comment_before_offset_and_tail() {
+    let file = tempfile::NamedTempFile::new().unwrap();
+    let first = "2026/11/17 18:40:14 [error] first";
+    let second = "2026/11/17 18:40:14 [warn] second";
+    tokio::fs::write(file.path(), format!("{first}\n{second}\n"))
+        .await
+        .unwrap();
+    let (shutdown, _) = tokio::sync::watch::channel(false);
+    let mut body = response(file.path().to_owned(), shutdown.subscribe(), true)
+        .into_response()
+        .into_body();
+
+    assert_eq!(event(&mut body).await, ": keepalive\n\n");
+    let offset = event(&mut body).await;
+    assert!(offset.strip_prefix("event: offset\ndata: ")
+        .and_then(|value| value.trim_end().parse::<i32>().ok()).is_some(), "{offset:?}");
+    assert_eq!(event(&mut body).await, format!("data: {first}\n\n"));
+    assert_eq!(event(&mut body).await, format!("data: {second}\n\n"));
 }

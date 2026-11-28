@@ -57,7 +57,7 @@ export default async function AppLayout({
         data={shellData}
         crumbs={crumbs}
       >
-        <ErrorBoundary homeHref="/" homeLabel="대시보드로">
+        <ErrorBoundary homeHref="/" homeLabel="개요로">
           {children}
         </ErrorBoundary>
       </OperationsShell>

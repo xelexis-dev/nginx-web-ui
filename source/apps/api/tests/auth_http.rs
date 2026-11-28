@@ -248,9 +248,11 @@ async fn account_tokens_issue_once_list_own_and_revoke() {
     assert_eq!((reply.status, reply.body["error"]["message"].as_str()), (StatusCode::CONFLICT, Some("해지할 항목이 없습니다 — 이미 해지되었거나 없는 토큰입니다.")));
 
     let reply = post_form(&app, "/api/ui/v1/forms/account.tokens.revoke", &format!("id={id}"), Some(&vi)).await;
-    assert_eq!((reply.status, reply.body.clone()), (StatusCode::OK, json!({"result": {"ok": true}, "refresh": true})));
+    assert_eq!((reply.status, reply.body.clone()), (StatusCode::OK, json!({"result": {"ok": true}, "redirectTo": format!("/account/tokens?revoked={id}")})));
     let reply = send(&app, request("GET", "/api/ui/v1/account/tokens").header("cookie", &vi).body(Body::empty()).unwrap()).await;
-    assert_eq!(reply.body["tokens"][0]["status"], "revoked");
+    assert_eq!((reply.status, reply.body["tokens"].clone()), (StatusCode::OK, json!([])));
+    let reply = send(&app, request("GET", &format!("/api/ui/v1/account/tokens/{id}")).header("cookie", &vi).body(Body::empty()).unwrap()).await;
+    assert_eq!((reply.status, reply.body["status"].as_str()), (StatusCode::OK, Some("revoked")));
     // Sign-in is required.
     let reply = send(&app, request("GET", "/api/ui/v1/account/tokens").body(Body::empty()).unwrap()).await;
     assert_eq!(reply.status, StatusCode::UNAUTHORIZED);

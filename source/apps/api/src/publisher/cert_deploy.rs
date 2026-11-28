@@ -43,12 +43,20 @@ async fn deploy_core(
             operation.advance(store,Phase::Done)?;
             return Ok(applied);
         }
-        if let Err(error)=super::vocab::validate(&state.config,&live.conf,&live.stream) {
-            let output=error.to_string();apply::set_completion_timeout(&tx,budget).await?;
+        let refusal = match super::vocab::validate(&state.config, &live.conf, &live.stream) {
+            Err(error) => Some((error.to_string(), true)),
+            Ok(()) if !matches!(confirmation::nginx_running(&state.config).await, Ok(confirmation::NginxState::Running)) =>
+                Some(("nginx 프로세스를 확인하지 못해 인증서를 적용하지 않았습니다. 잠시 후 다시 시도하세요.".into(), false)),
+            Ok(()) => None,
+        };
+        if let Some((output, vocabulary_rejected)) = refusal {
+            apply::set_completion_timeout(&tx,budget).await?;
             let applied=model::ApplyResult{ok:false,output,rolled_back_to:None};
             apply::certificate_audit(&tx,actor,id,false,&applied.output).await?;audit_submitted=true;
             save_result(store,operation,successful_result(&applied,previous_uncertain))?;commit(tx,budget).await?;
-            operation.advance(store,Phase::Done)?;
+            if vocabulary_rejected {
+                operation.advance(store,Phase::Done)?;
+            }
             return Ok(applied);
         }
         apply::certificate_activation_notice(&tx,id,digest,linked).await?;
@@ -85,11 +93,8 @@ async fn deploy_core(
         let first=uuid::Uuid::new_v4().to_string();confirmation::publish(&state.config,&first).await?;
         let output=super::command::execute(store.clone(),state.config.nginx_bin.clone(),vec!["-t".into()],budget.remaining().saturating_sub(confirmation::RESTORE_RESERVE).min(Duration::from_secs(30))).await.map_err(command_error)?;
         operation.advance(store,Phase::Validated)?;
-        let witness=confirmation::Witness::from_config(&state.config)?;let child_store=store.clone();let bin=state.config.nginx_bin.clone();
-        witness.confirm_with(&state.config,&first,budget.ack_deadline()?,move |remaining| {
-            let store=child_store.clone();let bin=bin.clone();
-            async move {super::command::execute(store,bin,vec!["-s".into(),"reload".into()],remaining).await.map(|_|()).map_err(command_error)}
-        },|phase|operation.advance(store,if phase==0{Phase::P}else{Phase::C})).await?;
+        let witness=confirmation::Witness::from_config(&state.config)?;
+        witness.confirm_with(&state.config,&first,budget.ack_deadline()?,store,|phase|operation.advance(store,if phase==0{Phase::P}else{Phase::C})).await?;
         notices=target_notices_core(state,#[cfg(test)] resolve).await;
         let mut output=output;for notice in &notices{output.push_str(&format!("\n\n{notice}"));}
         let applied=model::ApplyResult{ok:true,output,rolled_back_to:None};
@@ -311,6 +316,75 @@ mod tests {
         assert_eq!(f.client.query_one("SELECT count(*) FROM notifications WHERE type='config.apply-needed'",&[]).await.unwrap().get::<_,i64>(0),0,"rejected live vocabulary must not commit the rolled-back activation notice");
         f.restart_preserves_result(&op).await;
     }
+    #[tokio::test]
+    #[ignore = "requires disposable NWUI_TEST_DATABASE_URL"]
+    async fn foreign_pid_refuses_apply_without_writing_or_fencing() {
+        use super::super::{dispatcher::Dispatcher, protocol::{Actor, Op, OpResult, Request}};
+        use std::{os::unix::process::CommandExt, sync::atomic::Ordering};
+        let f = Fixture::new(true).await;
+        let foreign = std::process::Command::new("/bin/sleep").arg("30").process_group(0).spawn().unwrap();
+        let foreign = super::super::nginx_start_tests::Process(foreign);
+        std::fs::write(f.temp.path().join(".fake-nginx.pid"), foreign.0.id().to_string()).unwrap();
+        let before = crate::db_upgrade::files::snapshot(&f.store.root.join("payloads")).unwrap();
+        let dispatcher = Dispatcher::new(f.state.config.as_ref().clone(), f.store.clone());
+        dispatcher.ready.store(true, Ordering::Release);
+        let id = uuid::Uuid::new_v4().to_string();
+        let request = Request {
+            v: 1, id: id.clone(), deadline_ms: 5000,
+            op: Op::ApplySaved { label: None, expected_saved_digest: None },
+            actor: Actor { via: None, user_id: None, label: Some("apply-fixture".into()), ip: None },
+        };
+        let state = f.state.clone();
+        let store = f.store.clone();
+        let result = dispatcher.dispatch(request, move |request, op, budget| async move {
+            super::super::coordinator::execute(&state, &store, request, op, budget).await
+        }).await;
+        assert!(matches!(result, OpResult::Ok { apply: Some(result), uncertain: false, .. }
+            if !result.ok && result.output == "nginx 프로세스를 확인하지 못해 설정을 적용하지 않았습니다. 잠시 후 다시 시도하세요."));
+        let op = Operation::load(&f.store, &id).unwrap();
+        assert!(op.terminal() && op.next.is_none());
+        assert!(dispatcher.ready.load(Ordering::Acquire));
+        assert_eq!(f.store.manifest().unwrap().current.as_deref(), Some(f.old.as_str()));
+        assert_eq!(crate::db_upgrade::files::snapshot(&f.store.root.join("payloads")).unwrap(), before);
+        assert_eq!(f.reloads(), 0);
+        f.unchanged().await;
+        assert_eq!(unsafe { libc::kill(foreign.0.id() as i32, 0) }, 0);
+    }
+
+    #[tokio::test]
+    #[ignore = "requires disposable NWUI_TEST_DATABASE_URL"]
+    async fn uncertain_nginx_refuses_before_staging_or_certificate_activation() {
+        let f = Fixture::new(true).await;
+        f.client.execute(
+            "INSERT INTO nginx_servers(id,server_name,listen,certificate_id,config) VALUES('draft','draft.test',18090,$1,$2)",
+            &[&f.cert, &json!({"proxyPass":"http://192.0.2.44:9000"})],
+        ).await.unwrap();
+        let foreign = super::super::identity_fixture::FakeMaster::spawn(&f.temp.path().join("foreign.pid"), true);
+        std::fs::write(f.temp.path().join(".fake-nginx.pid"), foreign.pid().to_string()).unwrap();
+
+        // With no selected previous payload, ensure_previous would create and select one.
+        let mut manifest = f.store.manifest().unwrap();
+        manifest.current = None;
+        crate::db_upgrade::files::atomic_json(&f.store.root.join("manifest.json"), &manifest).unwrap();
+        let manifest = std::fs::read(f.store.root.join("manifest.json")).unwrap();
+        let payloads = crate::db_upgrade::files::snapshot(&f.store.root.join("payloads")).unwrap();
+        let (result, op) = f.run(&f.digest).await;
+        let result = result.unwrap();
+        assert!(!result.ok);
+        assert_eq!(result.output, "nginx 프로세스를 확인하지 못해 인증서를 적용하지 않았습니다. 잠시 후 다시 시도하세요.");
+        assert_eq!(op.phase, Phase::Intent);
+        assert!(op.next.is_none());
+        f.unchanged().await;
+        assert_eq!(std::fs::read(f.store.root.join("manifest.json")).unwrap(), manifest);
+        assert_eq!(crate::db_upgrade::files::snapshot(&f.store.root.join("payloads")).unwrap(), payloads);
+        assert_eq!(f.reloads(), 0);
+        assert!(!confirmation::uncertain(&f.state.config).await);
+        let audit = f.audit().await;
+        assert_eq!(audit.len(), 1);
+        assert_eq!(audit[0].get::<_, serde_json::Value>(1)["ok"], false);
+        assert_eq!(f.client.query_one("SELECT count(*) FROM notifications WHERE type='config.apply-needed'", &[]).await.unwrap().get::<_, i64>(0), 0);
+    }
+
     #[tokio::test]
     #[ignore="requires disposable NWUI_TEST_DATABASE_URL"]
     async fn report_only_target_scan_keeps_the_config_and_records_the_warning() {

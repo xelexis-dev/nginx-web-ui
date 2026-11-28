@@ -101,19 +101,21 @@ pub(crate) async fn prepare(roots:Roots,locks:Arc<StorageLocks>,journal:Journal,
         let agreement=KeyBinding::Verified{pair_id:pair.pair_id.clone()};
         let epoch=j.load().records.last().map(|r|r.seq).unwrap_or(0).checked_add(1).ok_or_else(mismatch)?;
         let selection=StorageSelection{version:1,epoch,outcome:super::Outcome::Pg17,branch:j.load().branch,pgdata:roots.db.join("17/data"),backup_id:selected.as_ref().and_then(|s|s.backup_id.clone()),schema_profile:selected.as_ref().and_then(|s|s.profile_id.clone()).unwrap_or_else(||"none".into()),key_binding:agreement.clone()};
-        let work=std::path::Path::new("/run").join(format!("nwui-ready-{}",uuid::Uuid::new_v4()));postgres::directory(&work).map_err(map)?;
-        let server=postgres::Private::start_locked_ready(&locks,&roots,&work).map_err(map)?;
         let url:tokio_postgres::Config=config.database_url.parse().map_err(|_|mismatch())?;
-        let pg=PrivatePg{socket_dir:server.socket.clone(),port:50432,dbname:url.get_dbname().ok_or_else(mismatch)?.into(),role:url.get_user().ok_or_else(mismatch)?.into(),major:17};
+        let dbname=url.get_dbname().ok_or_else(mismatch)?.into();
+        let role=url.get_user().ok_or_else(mismatch)?.into();
+        let work=super::ready_work::ReadyWork::create(Path::new("/run"))?;
+        let server=postgres::Private::start_locked_ready(&locks,&roots,&work.path).map_err(map)?;
+        let pg=PrivatePg{socket_dir:server.socket.clone(),port:50432,dbname,role,major:17};
         // This is already-ready PG17, not a converted target; there is no V1/V2 boundary.
-        let boot_result=runtime.block_on(async {
+        let prepared=runtime.block_on(async {
             boot::migrate(&selection,&current,&config,&key.secrets,&pg,&locks,&mut j).await?;
             let notices=boot::notices(&roots,&j)?;
             boot::finish(&selection,&config,&key.secrets,&pg,&locks,&mut j,inputs,&notices,crate::publisher::boot::BootMode::Ready).await
         });
-        // Reap the private postmaster on every failure as well as success, before any handoff.
-        let stopped=server.stop().map_err(map);
-        let privileges=match boot_result{Err(e)=>{stopped?;return Err(e)},Ok(p)=>{stopped?;p}};
+        let work_files=server.stop_ready().map_err(map)?;
+        let privileges=prepared?;
+        work.clean_success(work_files);
         if selected.is_none() {
             let live:Pair=files::read_json(&roots.app.join(".nwui/pair-v1.json")).map_err(|_|mismatch())?;
             let origin=match pair.mode.as_str(){"fresh"=>Origin::Fresh,"migration"=>Origin::Manual,_=>return Err(mismatch())};

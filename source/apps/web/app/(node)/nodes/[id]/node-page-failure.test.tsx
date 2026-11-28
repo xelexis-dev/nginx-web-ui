@@ -101,8 +101,8 @@ describe("노드 화면 — §9 실패 카드는 반드시 화면까지 간다",
    * 「전부 통과」처럼 보이면서 아무것도 검사하지 않는다. **화면을 더하거나 뺄
    * 때 이 숫자를 함께 고친다** — 그게 이 검사가 요구하는 유일한 손질이다.
    */
-  it("노드 화면 인벤토리 — 21벌이 헬퍼를 지난다", () => {
-    expect(covered).toHaveLength(21);
+  it("노드 화면 인벤토리 — 22벌이 헬퍼를 지난다", () => {
+    expect(covered).toHaveLength(22);
     // 제외 목록이 낡으면(경로가 바뀌었는데 그대로면) 그 화면은 조용히 검사에서
     // 빠진다 — 제외 항목이 실제로 존재하는 파일인지 함께 확인한다.
     for (const path of EXEMPT) expect(Object.keys(discovered)).toContain(path);

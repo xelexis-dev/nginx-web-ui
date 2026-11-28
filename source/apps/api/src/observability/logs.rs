@@ -19,6 +19,8 @@ use tokio::{
 
 pub const TAIL_BYTES: usize = 64 * 1024;
 pub const TAIL_LINES: usize = 200;
+pub(crate) const KEEPALIVE_INTERVAL: Duration = Duration::from_secs(15);
+const KEEPALIVE_TEXT: &str = "keepalive";
 pub struct LogStream {
     receiver: mpsc::Receiver<Result<Event, Infallible>>,
     task: JoinHandle<()>,
@@ -42,8 +44,8 @@ pub fn response(
 ) -> impl axum::response::IntoResponse {
     Sse::new(tail(path, Duration::from_secs(1), shutdown, error)).keep_alive(
         KeepAlive::new()
-            .interval(Duration::from_secs(15))
-            .text("keepalive"),
+            .interval(KEEPALIVE_INTERVAL)
+            .text(KEEPALIVE_TEXT),
     )
 }
 pub fn tail(path: PathBuf, poll: Duration, mut shutdown: watch::Receiver<bool>, error: bool) -> LogStream {
@@ -128,6 +130,9 @@ impl Offsets {
 }
 
 async fn run(path: &Path, poll: Duration, tx: &mpsc::Sender<Result<Event, Infallible>>, error: bool) {
+    if tx.send(Ok(Event::default().comment(KEEPALIVE_TEXT))).await.is_err() {
+        return;
+    }
     let mut offsets = Offsets { resolve: error.then_some(writer_offset), last: None };
     let mut offset = 0_u64;
     let mut ino = None;

@@ -27,7 +27,7 @@ pub(super) fn wait_and_publish(locks:&StorageLocks,retain_d:bool)->Result<(),Ste
     }
     Err(last)
 }
-pub(crate) struct Custody {pub locks:Arc<StorageLocks>,watch:Option<DaemonWatch>}
+pub(crate) struct Custody {pub locks:Arc<StorageLocks>,watch:Option<DaemonWatch>,pub(super) d_deletion_attempted:bool}
 impl Custody {
     /// need_d is false only for a same-boot completed handoff (A.19), never for a new boot.
     pub(crate) async fn acquire(roots:Roots,need_d:bool)->Result<Self,StepError> {
@@ -40,10 +40,15 @@ impl Custody {
             let locks=StorageLocks::from_custody(&roots.db,&roots.app,a,d)?;
             wait_and_publish(&locks,need_d)?;Ok(locks)
         }).await?;
-        Ok(Self {locks:Arc::new(locks),watch:Some(DaemonWatch::start()?)})
+        Ok(Self {locks:Arc::new(locks),watch:Some(DaemonWatch::start()?),d_deletion_attempted:false})
+    }
+    pub(super) fn refusal_locks(&self,roots:&Roots,present:&BTreeSet<CustodyId>)->bool {
+        !self.d_deletion_attempted && Arc::strong_count(&self.locks)==1
+            && self.locks.holds_a() && self.locks.holds_d() && self.locks.matches_roots(&roots.db,&roots.app)
+            && present.contains(&CustodyId::A) && present.contains(&CustodyId::D)
     }
     async fn repopulate(&mut self)->Result<(),StepError> {
-        let locks=self.locks.clone();let retain_d=locks.holds_d();blocking(move||wait_and_publish(&locks,retain_d)).await?;
+        let locks=self.locks.clone();let retain_d=locks.holds_d()&&!self.d_deletion_attempted;blocking(move||wait_and_publish(&locks,retain_d)).await?;
         self.watch=Some(DaemonWatch::start()?);Ok(())
     }
     /// A custody fault never drops a running mutation future: finish/reap it under our own FDs.
@@ -66,6 +71,7 @@ impl Custody {
     pub(crate) async fn handoff(&mut self,j:&mut super::Journal,boot_identity:&str)->Result<(),StepError> {
         if Arc::strong_count(&self.locks)!=1 {return Err(error("storage_busy"));}
         j.handoff(super::journal::Handoff::Intent,boot_identity)?;
+        self.d_deletion_attempted=true;
         blocking(||fdholder::delete(CustodyId::D)).await?;
         // Do not re-store D after its deletion, even though our own D copy is still held.
         let locks=self.locks.clone();blocking(move||wait_and_publish(&locks,false)).await?;
@@ -80,6 +86,19 @@ mod tests {
     use std::{fs::File,os::unix::fs::PermissionsExt};
     fn fixture()->(tempfile::TempDir,Roots,StorageLocks) {
         let t=tempfile::tempdir().unwrap();let roots=Roots {db:t.path().join("db"),app:t.path().join("app"),architecture:"arm64".into()};for p in [&roots.db,&roots.app] {std::fs::create_dir(p).unwrap();std::fs::set_permissions(p,std::fs::Permissions::from_mode(0o700)).unwrap();}let locks=StorageLocks::acquire(&roots.db,&roots.app).unwrap();(t,roots,locks)
+    }
+    #[test]
+    fn refusal_requires_both_daemon_locks_and_no_d_deletion_attempt() {
+        let (_t,roots,locks)=fixture();
+        let mut custody=Custody{locks:Arc::new(locks),watch:None,d_deletion_attempted:false};
+        let present=BTreeSet::from([CustodyId::A,CustodyId::D]);
+        assert!(custody.refusal_locks(&roots,&present));
+        assert!(!custody.refusal_locks(&roots,&BTreeSet::from([CustodyId::A])));
+        let outstanding=custody.locks.clone();
+        assert!(!custody.refusal_locks(&roots,&present));
+        drop(outstanding);
+        custody.d_deletion_attempted=true;
+        assert!(!custody.refusal_locks(&roots,&present));
     }
     #[test]
     fn w1_custody_publication_copies_keep_a_across_delete_d_then_close_and_do_not_unlock() {

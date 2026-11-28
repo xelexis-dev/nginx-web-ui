@@ -100,7 +100,7 @@ it("mirrors every real page in every shell, without slot catch-alls or extra pag
     }
   }
   expect(Object.keys(breadcrumbRoutes).sort()).toEqual(patterns.sort());
-  expect(patterns).toHaveLength(90);
+  expect(patterns).toHaveLength(91);
 });
 
 const modules = import.meta.glob("../app/**/page.tsx");

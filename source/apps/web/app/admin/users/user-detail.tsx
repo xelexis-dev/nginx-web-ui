@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { formatServerTime } from "@/lib/format-time";
 import layout from "@/components/page-layout.module.css";
 import {
+  Banner,
   Icon,
   Surface,
   Facts,
@@ -58,7 +59,7 @@ export function UserDetailView({
               className={linkClassName({ variant: "back" })}
             >
               <Icon name="arrowLeft" size={14} />
-              목록으로
+              사용자 목록
             </Link>{" "}
           </>
         }
@@ -66,6 +67,9 @@ export function UserDetailView({
       />
 
       {result}
+      {user.enabled && !isSelf ? (
+        <Banner tone="warning" title="비활성화하면 이 사용자의 API 토큰도 모두 폐기됩니다." />
+      ) : null}
       <Surface as="div">
         <Facts
           columns={2}

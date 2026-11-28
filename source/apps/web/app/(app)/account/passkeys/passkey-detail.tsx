@@ -35,7 +35,7 @@ export function PasskeyDetailView({
         }
         eyebrow={
           <Link href="/account" className={linkClassName({ variant: "back" })}>
-            <Icon name="arrowLeft" />
+            <Icon name="arrowLeft" size={14} />
             계정
           </Link>
         }

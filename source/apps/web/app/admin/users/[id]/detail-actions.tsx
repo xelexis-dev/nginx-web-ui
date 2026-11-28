@@ -61,7 +61,7 @@ export function UserDetailActions({
         {isSelf ? (
           <Button
             type="button"
-            variant="dangerQuiet"
+            variant="dangerOutline"
             disabled
             title="본인 계정은 삭제할 수 없습니다."
           >
@@ -78,7 +78,7 @@ export function UserDetailActions({
             <input type="hidden" name="id" value={id} />
             <Button
               type="submit"
-              variant="dangerQuiet"
+              variant="dangerOutline"
               disabled={deletePending}
             >
               삭제
@@ -107,7 +107,6 @@ export function UserDetailActions({
           deleteForm.current?.requestSubmit();
         }}
       />
-      {enabled && !isSelf ? <Banner tone="warning" title="비활성화하면 이 사용자의 API 토큰도 모두 폐기됩니다." /> : null}
       {toggleState.error ? (
         <Banner tone="error" role="alert" title={toggleState.error} />
       ) : null}

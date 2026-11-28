@@ -38,7 +38,7 @@ export function UnpairButton({ id, name }: { id: string; name: string }) {
         onSubmit={(event) => { event.preventDefault(); setConfirmOpen(true); }}
       >
         <input type="hidden" name="id" value={id} />
-        <Button type="submit" variant="dangerQuiet" disabled={pending}>
+        <Button type="submit" variant="dangerOutline" disabled={pending}>
           {pending ? "해제하는 중..." : "연결 해제"}
         </Button>
       </form>

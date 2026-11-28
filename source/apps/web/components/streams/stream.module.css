@@ -88,6 +88,7 @@
 }
 .opsDetailActions .detailActionsRow {
   justify-content: flex-end;
+  gap: var(--gap-actions);
 }
 .opsDetailActions > [role] {
   box-sizing: border-box;

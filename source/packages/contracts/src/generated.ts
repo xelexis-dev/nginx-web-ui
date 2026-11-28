@@ -447,7 +447,7 @@ export interface paths {
         put?: never;
         /**
          * account.changePassword
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. It requires the browser account or session context. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_account_changePassword"];
         delete?: never;
@@ -467,7 +467,7 @@ export interface paths {
         put?: never;
         /**
          * account.disableTwoFactor
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. It requires the browser account or session context. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_account_disableTwoFactor"];
         delete?: never;
@@ -487,7 +487,7 @@ export interface paths {
         put?: never;
         /**
          * account.enableTwoFactor
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. It requires the browser account or session context. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_account_enableTwoFactor"];
         delete?: never;
@@ -507,7 +507,7 @@ export interface paths {
         put?: never;
         /**
          * account.finishTwoFactorSetup
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. It requires the browser account or session context. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_account_finishTwoFactorSetup"];
         delete?: never;
@@ -527,7 +527,7 @@ export interface paths {
         put?: never;
         /**
          * account.startLink
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo is an absolute configured OIDC provider authorization endpoint; use full document navigation.
+         * @description Browser workflow only. User API tokens cannot call this action. It requires the browser account or session context. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo is an absolute configured OIDC provider authorization endpoint; use full document navigation.
          */
         post: operations["form_account_startLink"];
         delete?: never;
@@ -547,7 +547,7 @@ export interface paths {
         put?: never;
         /**
          * account.tokens.issue
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. It requires the browser account or session context. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_account_tokens_issue"];
         delete?: never;
@@ -567,7 +567,7 @@ export interface paths {
         put?: never;
         /**
          * account.tokens.revoke
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. It requires the browser account or session context. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_account_tokens_revoke"];
         delete?: never;
@@ -587,7 +587,7 @@ export interface paths {
         put?: never;
         /**
          * account.unlink
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. It requires the browser account or session context. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_account_unlink"];
         delete?: never;
@@ -607,7 +607,11 @@ export interface paths {
         put?: never;
         /**
          * admin.mailRecipients.create
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Create a mail recipient.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_admin_mailRecipients_create"];
         delete?: never;
@@ -627,7 +631,11 @@ export interface paths {
         put?: never;
         /**
          * admin.mailRecipients.delete
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Delete a mail recipient.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_admin_mailRecipients_delete"];
         delete?: never;
@@ -647,7 +655,11 @@ export interface paths {
         put?: never;
         /**
          * admin.mailRecipients.test
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Send a test message to the given address using the configured mail transport.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_admin_mailRecipients_test"];
         delete?: never;
@@ -667,7 +679,11 @@ export interface paths {
         put?: never;
         /**
          * admin.mailRecipients.update
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Replace a mail recipient’s settings.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_admin_mailRecipients_update"];
         delete?: never;
@@ -687,7 +703,7 @@ export interface paths {
         put?: never;
         /**
          * admin.oauth.create
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_admin_oauth_create"];
         delete?: never;
@@ -707,7 +723,7 @@ export interface paths {
         put?: never;
         /**
          * admin.oauth.delete
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_admin_oauth_delete"];
         delete?: never;
@@ -727,7 +743,7 @@ export interface paths {
         put?: never;
         /**
          * admin.oauth.toggle
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_admin_oauth_toggle"];
         delete?: never;
@@ -747,7 +763,7 @@ export interface paths {
         put?: never;
         /**
          * admin.oauth.update
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_admin_oauth_update"];
         delete?: never;
@@ -767,7 +783,11 @@ export interface paths {
         put?: never;
         /**
          * admin.pending.approve
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. User tokens cannot change an admin target or grant admin. Role changes, approval and enabling require every resulting role action to be allowed by the token. Disabling and rejecting non-admin targets remain permitted. Browser sessions retain their existing authority.
+         * @description Approve a pending account and assign its initial role.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_admin_pending_approve"];
         delete?: never;
@@ -787,7 +807,11 @@ export interface paths {
         put?: never;
         /**
          * admin.pending.reject
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. User tokens cannot change an admin target or grant admin. Role changes, approval and enabling require every resulting role action to be allowed by the token. Disabling and rejecting non-admin targets remain permitted. Browser sessions retain their existing authority.
+         * @description Reject a pending account.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_admin_pending_reject"];
         delete?: never;
@@ -807,7 +831,7 @@ export interface paths {
         put?: never;
         /**
          * admin.security.revokeGateway
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_admin_security_revokeGateway"];
         delete?: never;
@@ -827,7 +851,7 @@ export interface paths {
         put?: never;
         /**
          * admin.security.updateTwoFactorPolicy
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_admin_security_updateTwoFactorPolicy"];
         delete?: never;
@@ -847,7 +871,11 @@ export interface paths {
         put?: never;
         /**
          * admin.settings.updateMetrics
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Set metrics retention and excluded hosts.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_admin_settings_updateMetrics"];
         delete?: never;
@@ -867,7 +895,7 @@ export interface paths {
         put?: never;
         /**
          * admin.settings.updatePublicBaseUrl
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_admin_settings_updatePublicBaseUrl"];
         delete?: never;
@@ -887,7 +915,7 @@ export interface paths {
         put?: never;
         /**
          * admin.smtp.test
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. Session-only: testing sends secrets with submitted connection parameters.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. Session-only: testing sends secrets with submitted connection parameters.
          */
         post: operations["form_admin_smtp_test"];
         delete?: never;
@@ -907,7 +935,7 @@ export interface paths {
         put?: never;
         /**
          * admin.smtp.update
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_admin_smtp_update"];
         delete?: never;
@@ -927,7 +955,7 @@ export interface paths {
         put?: never;
         /**
          * admin.tokens.issue
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_admin_tokens_issue"];
         delete?: never;
@@ -947,7 +975,7 @@ export interface paths {
         put?: never;
         /**
          * admin.tokens.revoke
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_admin_tokens_revoke"];
         delete?: never;
@@ -967,7 +995,7 @@ export interface paths {
         put?: never;
         /**
          * admin.users.create
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_admin_users_create"];
         delete?: never;
@@ -987,7 +1015,7 @@ export interface paths {
         put?: never;
         /**
          * admin.users.delete
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_admin_users_delete"];
         delete?: never;
@@ -1007,7 +1035,7 @@ export interface paths {
         put?: never;
         /**
          * admin.users.resetPassword
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_admin_users_resetPassword"];
         delete?: never;
@@ -1027,7 +1055,11 @@ export interface paths {
         put?: never;
         /**
          * admin.users.toggle
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. User tokens cannot change an admin target or grant admin. Role changes, approval and enabling require every resulting role action to be allowed by the token. Disabling and rejecting non-admin targets remain permitted. Browser sessions retain their existing authority.
+         * @description Toggle an account’s enabled state. A user token cannot alter an administrator account.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_admin_users_toggle"];
         delete?: never;
@@ -1047,7 +1079,11 @@ export interface paths {
         put?: never;
         /**
          * admin.users.updateRole
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After. User tokens cannot change an admin target or grant admin. Role changes, approval and enabling require every resulting role action to be allowed by the token. Disabling and rejecting non-admin targets remain permitted. Browser sessions retain their existing authority.
+         * @description Change the role of a non-admin account as a user-token caller.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_admin_users_updateRole"];
         delete?: never;
@@ -1067,7 +1103,7 @@ export interface paths {
         put?: never;
         /**
          * admin.webhooks.create
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_admin_webhooks_create"];
         delete?: never;
@@ -1087,7 +1123,7 @@ export interface paths {
         put?: never;
         /**
          * admin.webhooks.delete
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_admin_webhooks_delete"];
         delete?: never;
@@ -1107,7 +1143,7 @@ export interface paths {
         put?: never;
         /**
          * admin.webhooks.test
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. Session-only: testing sends secrets with submitted connection parameters.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. Session-only: testing sends secrets with submitted connection parameters.
          */
         post: operations["form_admin_webhooks_test"];
         delete?: never;
@@ -1127,7 +1163,7 @@ export interface paths {
         put?: never;
         /**
          * admin.webhooks.update
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_admin_webhooks_update"];
         delete?: never;
@@ -1147,7 +1183,13 @@ export interface paths {
         put?: never;
         /**
          * apply.applyConfig
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Apply saved settings to this instance. Each successful container start publishes the saved settings. A restart can therefore activate saved pending changes without an explicit apply. Review pending changes before apply. The reverse-proxy and stream list views expose pending locally and data.pending for a paired node. The paired gateway can read GET /api/v1/pending directly. Pending compares saved settings with the last applied baseline and returns a count, hasBaseline and a field-level diff. Server and stream detail includes preview, containing rendered nginx config or a rendering error and, where available, unresolvedPaths. Review it before applying. Preview uses no live target lookups or certificate material and can differ from the applied configuration. Inspect result.output after apply even if result.ok is true. The output can list omitted settings or changes that could not replace the previous configuration. A short hint follows a name that could not be resolved.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     No form fields are required apart from any arguments specified above.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_apply_applyConfig"];
         delete?: never;
@@ -1167,7 +1209,11 @@ export interface paths {
         put?: never;
         /**
          * certificates.createCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Create an ACME certificate record and queue issuance.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_certificates_createCertificate"];
         delete?: never;
@@ -1187,7 +1233,11 @@ export interface paths {
         put?: never;
         /**
          * certificates.deleteCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Delete an unreferenced certificate.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_certificates_deleteCertificate"];
         delete?: never;
@@ -1207,7 +1257,11 @@ export interface paths {
         put?: never;
         /**
          * certificates.importCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Import a PEM certificate and matching key.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_certificates_importCertificate"];
         delete?: never;
@@ -1227,7 +1281,11 @@ export interface paths {
         put?: never;
         /**
          * certificates.renewCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Renew an eligible HTTP-01 certificate.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_certificates_renewCertificate"];
         delete?: never;
@@ -1247,7 +1305,11 @@ export interface paths {
         put?: never;
         /**
          * certificates.renewDnsCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Start renewal of an eligible DNS-01 certificate.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_certificates_renewDnsCertificate"];
         delete?: never;
@@ -1267,7 +1329,13 @@ export interface paths {
         put?: never;
         /**
          * certificates.replaceCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Replace the PEM material of an existing certificate and apply it. A redirect can include an uncovered query parameter naming linked hosts that the replacement does not cover.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
+         *
+         *     Requires both config:write and nginx:reload for a user token.
          */
         post: operations["form_certificates_replaceCertificate"];
         delete?: never;
@@ -1287,7 +1355,11 @@ export interface paths {
         put?: never;
         /**
          * certificates.retryCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Queue another issuance attempt for an eligible certificate.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_certificates_retryCertificate"];
         delete?: never;
@@ -1307,7 +1379,11 @@ export interface paths {
         put?: never;
         /**
          * certificates.submitDnsChallengeAction
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Check manual DNS-01 TXT records and submit them for validation once they have propagated.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_certificates_submitDnsChallengeAction"];
         delete?: never;
@@ -1327,7 +1403,11 @@ export interface paths {
         put?: never;
         /**
          * certificates.updateCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Replace editable ACME settings on an existing certificate. Retry or renew separately to issue with the new settings.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_certificates_updateCertificate"];
         delete?: never;
@@ -1347,7 +1427,15 @@ export interface paths {
         put?: never;
         /**
          * history.rollback
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Restore a saved configuration snapshot and apply it. Obtain the snapshot ID from the history view.
+         *
+         *     Required ordered arguments: snapshotId.
+         *
+         *     No form fields are required apart from any arguments specified above.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
+         *
+         *     Requires both config:write and nginx:reload for a user token.
          */
         post: operations["form_history_rollback"];
         delete?: never;
@@ -1367,7 +1455,7 @@ export interface paths {
         put?: never;
         /**
          * login.loginAction
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. It is part of interactive sign-in or first-run setup. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_login_loginAction"];
         delete?: never;
@@ -1387,7 +1475,7 @@ export interface paths {
         put?: never;
         /**
          * login.oauthSignIn
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo is an absolute configured OIDC provider authorization endpoint; use full document navigation.
+         * @description Browser workflow only. User API tokens cannot call this action. It is part of interactive sign-in or first-run setup. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo is an absolute configured OIDC provider authorization endpoint; use full document navigation.
          */
         post: operations["form_login_oauthSignIn"];
         delete?: never;
@@ -1407,7 +1495,15 @@ export interface paths {
         put?: never;
         /**
          * node.applyNodeConfig
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Apply saved settings on a paired node. Each successful start of the node container publishes the saved settings. A restart can therefore activate saved pending changes without an explicit apply. The base path determines retry and list navigation on failure. Use the node ID from the gateway list as the first argument. Use that ID as a percent-encoded path segment in the base path. The base must be exactly /nodes/<id>/reverse-proxy or /nodes/<id>/stream. Review pending changes before apply. The reverse-proxy and stream list views expose pending locally and data.pending for a paired node. The paired gateway can read GET /api/v1/pending directly. Pending compares saved settings with the last applied baseline and returns a count, hasBaseline and a field-level diff. Inspect result.output after apply even if result.ok is true. The output can list omitted settings or changes that could not replace the previous configuration. A short hint follows a name that could not be resolved.
+         *
+         *     Required ordered arguments: nodeId, basePath.
+         *
+         *     No form fields are required apart from any arguments specified above.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
+         *
+         *     An optional nodeVersionFamily field accepts 1.19 or 2.0. API callers can omit it.
          */
         post: operations["form_node_applyNodeConfig"];
         delete?: never;
@@ -1427,7 +1523,13 @@ export interface paths {
         put?: never;
         /**
          * node.createNodeCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Create an ACME certificate record and queue issuance.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
+         *
+         *     An optional nodeVersionFamily field accepts 1.19 or 2.0. API callers can omit it.
          */
         post: operations["form_node_createNodeCertificate"];
         delete?: never;
@@ -1447,7 +1549,15 @@ export interface paths {
         put?: never;
         /**
          * node.createNodeServer
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Create saved server settings. Apply separately to activate them. Static name resolution is the default. Nginx resolves a static name while applying configuration. When a static name cannot be resolved, apply can omit the affected configuration unit while applying unrelated settings. Runtime name resolution follows DNS changes while nginx runs. It requires a DNS hostname and a port, and the service can remain unreachable until DNS has an address.
+         *
+         *     To look up a local server by name, GET /api/ui/v1/views?path=%2Freverse-proxy and filter servers with row.serverName === desiredName. For a node use the corresponding /nodes/<id>/reverse-proxy view and filter data.servers after checking ok. Server names can repeat. If there are no matches, stop. If there are several, use listen and other settings to disambiguate, or ask for the desired ID. Only then use the selected row ID.
+         *
+         *     A runtime-resolved HTTP(S) direct target on port 8080 gets automatic X-Real-IP and X-Forwarded-Proto forwarding headers. Attempting to override them with conflicting values makes the save fail. The port alone does not impose this rule on static external targets.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_node_createNodeServer"];
         delete?: never;
@@ -1467,7 +1577,11 @@ export interface paths {
         put?: never;
         /**
          * node.createNodeStream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Create saved stream settings. Apply separately to activate them. Static name resolution is the default. Nginx resolves a static name while applying configuration. When a static name cannot be resolved, apply can omit the affected configuration unit while applying unrelated settings. Runtime name resolution follows DNS changes while nginx runs. It requires a DNS hostname and a port, and the service can remain unreachable until DNS has an address.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_node_createNodeStream"];
         delete?: never;
@@ -1487,7 +1601,11 @@ export interface paths {
         put?: never;
         /**
          * node.createNodeUpstream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Create saved upstream settings. Apply separately to activate them. Static name resolution is the default. Nginx resolves a static name while applying configuration. When a static name cannot be resolved, apply can omit the affected configuration unit while applying unrelated settings. Runtime resolution follows DNS changes for named upstream members. IPv4 literals remain static.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_node_createNodeUpstream"];
         delete?: never;
@@ -1507,7 +1625,13 @@ export interface paths {
         put?: never;
         /**
          * node.deleteNodeCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Delete an unreferenced certificate.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
+         *
+         *     An optional nodeVersionFamily field accepts 1.19 or 2.0. API callers can omit it.
          */
         post: operations["form_node_deleteNodeCertificate"];
         delete?: never;
@@ -1527,7 +1651,13 @@ export interface paths {
         put?: never;
         /**
          * node.deleteNodeServer
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Remove a saved server. Apply separately to activate the change.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
+         *
+         *     An optional nodeVersionFamily field accepts 1.19 or 2.0. API callers can omit it.
          */
         post: operations["form_node_deleteNodeServer"];
         delete?: never;
@@ -1547,7 +1677,13 @@ export interface paths {
         put?: never;
         /**
          * node.deleteNodeStream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Remove a saved stream. Apply separately to activate the change.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
+         *
+         *     An optional nodeVersionFamily field accepts 1.19 or 2.0. API callers can omit it.
          */
         post: operations["form_node_deleteNodeStream"];
         delete?: never;
@@ -1567,7 +1703,13 @@ export interface paths {
         put?: never;
         /**
          * node.deleteNodeUpstream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Remove a saved upstream. Apply separately to activate the change.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
+         *
+         *     An optional nodeVersionFamily field accepts 1.19 or 2.0. API callers can omit it.
          */
         post: operations["form_node_deleteNodeUpstream"];
         delete?: never;
@@ -1587,7 +1729,13 @@ export interface paths {
         put?: never;
         /**
          * node.importNodeCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Import a PEM certificate and matching key.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
+         *
+         *     An optional nodeVersionFamily field accepts 1.19 or 2.0. API callers can omit it.
          */
         post: operations["form_node_importNodeCertificate"];
         delete?: never;
@@ -1607,7 +1755,13 @@ export interface paths {
         put?: never;
         /**
          * node.renewDnsNodeCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Start renewal of an eligible DNS-01 certificate.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
+         *
+         *     An optional nodeVersionFamily field accepts 1.19 or 2.0. API callers can omit it.
          */
         post: operations["form_node_renewDnsNodeCertificate"];
         delete?: never;
@@ -1627,7 +1781,13 @@ export interface paths {
         put?: never;
         /**
          * node.renewNodeCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Renew an eligible HTTP-01 certificate.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
+         *
+         *     An optional nodeVersionFamily field accepts 1.19 or 2.0. API callers can omit it.
          */
         post: operations["form_node_renewNodeCertificate"];
         delete?: never;
@@ -1647,7 +1807,15 @@ export interface paths {
         put?: never;
         /**
          * node.replaceNodeCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Replace the PEM material of an existing certificate and apply it. A redirect can include an uncovered query parameter naming linked hosts that the replacement does not cover.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
+         *
+         *     Requires both config:write and nginx:reload on the gateway and node.
+         *
+         *     An optional nodeVersionFamily field accepts 1.19 or 2.0. API callers can omit it.
          */
         post: operations["form_node_replaceNodeCertificate"];
         delete?: never;
@@ -1667,7 +1835,13 @@ export interface paths {
         put?: never;
         /**
          * node.retryNodeCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Queue another issuance attempt for an eligible certificate.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
+         *
+         *     An optional nodeVersionFamily field accepts 1.19 or 2.0. API callers can omit it.
          */
         post: operations["form_node_retryNodeCertificate"];
         delete?: never;
@@ -1687,7 +1861,17 @@ export interface paths {
         put?: never;
         /**
          * node.rollbackNodeSnapshot
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Restore and apply a snapshot on a paired node. The result wraps the node response in value on success or returns a node failure directly.
+         *
+         *     Required ordered arguments: nodeId, snapshotId.
+         *
+         *     No form fields are required apart from any arguments specified above.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
+         *
+         *     Requires both config:write and nginx:reload on the gateway and node.
+         *
+         *     An optional nodeVersionFamily field accepts 1.19 or 2.0. API callers can omit it.
          */
         post: operations["form_node_rollbackNodeSnapshot"];
         delete?: never;
@@ -1707,7 +1891,13 @@ export interface paths {
         put?: never;
         /**
          * node.submitNodeDnsChallenge
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Check manual DNS-01 TXT records and submit them for validation once they have propagated.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
+         *
+         *     An optional nodeVersionFamily field accepts 1.19 or 2.0. API callers can omit it.
          */
         post: operations["form_node_submitNodeDnsChallenge"];
         delete?: never;
@@ -1727,7 +1917,13 @@ export interface paths {
         put?: never;
         /**
          * node.toggleNodeServer
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Toggle the enabled state of a saved server. Apply separately to activate the change.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
+         *
+         *     An optional nodeVersionFamily field accepts 1.19 or 2.0. API callers can omit it.
          */
         post: operations["form_node_toggleNodeServer"];
         delete?: never;
@@ -1747,7 +1943,13 @@ export interface paths {
         put?: never;
         /**
          * node.toggleNodeStream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Toggle the enabled state of a saved stream. Apply separately to activate the change.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
+         *
+         *     An optional nodeVersionFamily field accepts 1.19 or 2.0. API callers can omit it.
          */
         post: operations["form_node_toggleNodeStream"];
         delete?: never;
@@ -1767,7 +1969,13 @@ export interface paths {
         put?: never;
         /**
          * node.updateNodeCertificate
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Replace editable ACME settings on an existing certificate. Retry or renew separately to issue with the new settings.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
+         *
+         *     An optional nodeVersionFamily field accepts 1.19 or 2.0. API callers can omit it.
          */
         post: operations["form_node_updateNodeCertificate"];
         delete?: never;
@@ -1787,7 +1995,15 @@ export interface paths {
         put?: never;
         /**
          * node.updateNodeServer
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Update saved server settings. Apply separately to activate them. Static name resolution is the default. Nginx resolves a static name while applying configuration. When a static name cannot be resolved, apply can omit the affected configuration unit while applying unrelated settings. Runtime name resolution follows DNS changes while nginx runs. It requires a DNS hostname and a port, and the service can remain unreachable until DNS has an address.
+         *
+         *     An update replaces the whole server configuration and clears omitted optional settings. The enabled state is handled separately. Read the list to identify the server, GET the corresponding /reverse-proxy/<id>/edit view for its current settings and version, build a complete editable input from those settings, make your change and submit the current revision. A stored row is not an update body: it contains a config object and read-only fields. For a form, flatten the TLS fields, serialize JSON-in-string fields and send the ID as id. For a node JSON request, use NodeServerInput and the path ID. The version field is optional, but a stale version causes a conflict. Stop, read the latest settings, and reconcile them before retrying. A local form returns HTTP 200 with result.ok=false and a conflict message. A relayed form reports result.nodeError.failure.kind=conflict, and direct node JSON returns HTTP 409 edit_conflict.
+         *
+         *     A runtime-resolved HTTP(S) direct target on port 8080 gets automatic X-Real-IP and X-Forwarded-Proto forwarding headers. Attempting to override them with conflicting values makes the save fail. The port alone does not impose this rule on static external targets.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_node_updateNodeServer"];
         delete?: never;
@@ -1807,7 +2023,11 @@ export interface paths {
         put?: never;
         /**
          * node.updateNodeStream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Update saved stream settings. Apply separately to activate them. Static name resolution is the default. Nginx resolves a static name while applying configuration. When a static name cannot be resolved, apply can omit the affected configuration unit while applying unrelated settings. Runtime name resolution follows DNS changes while nginx runs. It requires a DNS hostname and a port, and the service can remain unreachable until DNS has an address.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_node_updateNodeStream"];
         delete?: never;
@@ -1827,7 +2047,11 @@ export interface paths {
         put?: never;
         /**
          * node.updateNodeUpstream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Update saved upstream settings. Apply separately to activate them. Static name resolution is the default. Nginx resolves a static name while applying configuration. When a static name cannot be resolved, apply can omit the affected configuration unit while applying unrelated settings. Runtime resolution follows DNS changes for named upstream members. IPv4 literals remain static.
+         *
+         *     Required ordered arguments: nodeId (ID from the gateway node list).
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_node_updateNodeUpstream"];
         delete?: never;
@@ -1847,7 +2071,7 @@ export interface paths {
         put?: never;
         /**
          * nodes.pairNode
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. Connection management requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_nodes_pairNode"];
         delete?: never;
@@ -1867,7 +2091,13 @@ export interface paths {
         put?: never;
         /**
          * nodes.refreshStatuses
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Refresh status for registered nodes.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     No form fields are required apart from any arguments specified above.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_nodes_refreshStatuses"];
         delete?: never;
@@ -1887,7 +2117,7 @@ export interface paths {
         put?: never;
         /**
          * nodes.unpairNode
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. Connection management requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_nodes_unpairNode"];
         delete?: never;
@@ -1907,7 +2137,7 @@ export interface paths {
         put?: never;
         /**
          * nodes.updateNode
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. Connection management requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_nodes_updateNode"];
         delete?: never;
@@ -1927,7 +2157,13 @@ export interface paths {
         put?: never;
         /**
          * notifications.markSeen
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Mark notifications as seen for the token owner.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     No form fields are required apart from any arguments specified above.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_notifications_markSeen"];
         delete?: never;
@@ -1947,7 +2183,15 @@ export interface paths {
         put?: never;
         /**
          * reverse-proxy.createServer
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Create saved server settings. Apply separately to activate them. Static name resolution is the default. Nginx resolves a static name while applying configuration. When a static name cannot be resolved, apply can omit the affected configuration unit while applying unrelated settings. Runtime name resolution follows DNS changes while nginx runs. It requires a DNS hostname and a port, and the service can remain unreachable until DNS has an address.
+         *
+         *     To look up a local server by name, GET /api/ui/v1/views?path=%2Freverse-proxy and filter servers with row.serverName === desiredName. For a node use the corresponding /nodes/<id>/reverse-proxy view and filter data.servers after checking ok. Server names can repeat. If there are no matches, stop. If there are several, use listen and other settings to disambiguate, or ask for the desired ID. Only then use the selected row ID.
+         *
+         *     A runtime-resolved HTTP(S) direct target on port 8080 gets automatic X-Real-IP and X-Forwarded-Proto forwarding headers. Attempting to override them with conflicting values makes the save fail. The port alone does not impose this rule on static external targets.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_reverse_proxy_createServer"];
         delete?: never;
@@ -1967,7 +2211,11 @@ export interface paths {
         put?: never;
         /**
          * reverse-proxy.deleteServer
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Remove a saved server. Apply separately to activate the change.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_reverse_proxy_deleteServer"];
         delete?: never;
@@ -1987,7 +2235,11 @@ export interface paths {
         put?: never;
         /**
          * reverse-proxy.toggleServer
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Toggle the enabled state of a saved server. Apply separately to activate the change.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_reverse_proxy_toggleServer"];
         delete?: never;
@@ -2007,7 +2259,15 @@ export interface paths {
         put?: never;
         /**
          * reverse-proxy.updateServer
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Update saved server settings. Apply separately to activate them. Static name resolution is the default. Nginx resolves a static name while applying configuration. When a static name cannot be resolved, apply can omit the affected configuration unit while applying unrelated settings. Runtime name resolution follows DNS changes while nginx runs. It requires a DNS hostname and a port, and the service can remain unreachable until DNS has an address.
+         *
+         *     An update replaces the whole server configuration and clears omitted optional settings. The enabled state is handled separately. Read the list to identify the server, GET the corresponding /reverse-proxy/<id>/edit view for its current settings and version, build a complete editable input from those settings, make your change and submit the current revision. A stored row is not an update body: it contains a config object and read-only fields. For a form, flatten the TLS fields, serialize JSON-in-string fields and send the ID as id. For a node JSON request, use NodeServerInput and the path ID. The version field is optional, but a stale version causes a conflict. Stop, read the latest settings, and reconcile them before retrying. A local form returns HTTP 200 with result.ok=false and a conflict message. A relayed form reports result.nodeError.failure.kind=conflict, and direct node JSON returns HTTP 409 edit_conflict.
+         *
+         *     A runtime-resolved HTTP(S) direct target on port 8080 gets automatic X-Real-IP and X-Forwarded-Proto forwarding headers. Attempting to override them with conflicting values makes the save fail. The port alone does not impose this rule on static external targets.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_reverse_proxy_updateServer"];
         delete?: never;
@@ -2027,7 +2287,7 @@ export interface paths {
         put?: never;
         /**
          * session.signOut
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. It requires the browser account or session context. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_session_signOut"];
         delete?: never;
@@ -2047,7 +2307,7 @@ export interface paths {
         put?: never;
         /**
          * setup.createFirstAdmin
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. It is part of interactive sign-in or first-run setup. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_setup_createFirstAdmin"];
         delete?: never;
@@ -2067,7 +2327,11 @@ export interface paths {
         put?: never;
         /**
          * stream.createStream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Create saved stream settings. Apply separately to activate them. Static name resolution is the default. Nginx resolves a static name while applying configuration. When a static name cannot be resolved, apply can omit the affected configuration unit while applying unrelated settings. Runtime name resolution follows DNS changes while nginx runs. It requires a DNS hostname and a port, and the service can remain unreachable until DNS has an address.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_stream_createStream"];
         delete?: never;
@@ -2087,7 +2351,11 @@ export interface paths {
         put?: never;
         /**
          * stream.deleteStream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Remove a saved stream. Apply separately to activate the change.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_stream_deleteStream"];
         delete?: never;
@@ -2107,7 +2375,11 @@ export interface paths {
         put?: never;
         /**
          * stream.toggleStream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Toggle the enabled state of a saved stream. Apply separately to activate the change.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_stream_toggleStream"];
         delete?: never;
@@ -2127,7 +2399,11 @@ export interface paths {
         put?: never;
         /**
          * stream.updateStream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Update saved stream settings. Apply separately to activate them. Static name resolution is the default. Nginx resolves a static name while applying configuration. When a static name cannot be resolved, apply can omit the affected configuration unit while applying unrelated settings. Runtime name resolution follows DNS changes while nginx runs. It requires a DNS hostname and a port, and the service can remain unreachable until DNS has an address.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_stream_updateStream"];
         delete?: never;
@@ -2147,7 +2423,11 @@ export interface paths {
         put?: never;
         /**
          * upstreams.createUpstream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Create saved upstream settings. Apply separately to activate them. Static name resolution is the default. Nginx resolves a static name while applying configuration. When a static name cannot be resolved, apply can omit the affected configuration unit while applying unrelated settings. Runtime resolution follows DNS changes for named upstream members. IPv4 literals remain static.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_upstreams_createUpstream"];
         delete?: never;
@@ -2167,7 +2447,11 @@ export interface paths {
         put?: never;
         /**
          * upstreams.deleteUpstream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Remove a saved upstream. Apply separately to activate the change.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_upstreams_deleteUpstream"];
         delete?: never;
@@ -2187,7 +2471,11 @@ export interface paths {
         put?: never;
         /**
          * upstreams.updateUpstream
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         * @description Update saved upstream settings. Apply separately to activate them. Static name resolution is the default. Nginx resolves a static name while applying configuration. When a static name cannot be resolved, apply can omit the affected configuration unit while applying unrelated settings. Runtime resolution follows DNS changes for named upstream members. IPv4 literals remain static.
+         *
+         *     Omit _apiArgs or send the JSON text [] to supply no arguments.
+         *
+         *     HTTP 200 can carry a form failure. See the API overview for error envelopes and user-token permissions.
          */
         post: operations["form_upstreams_updateUpstream"];
         delete?: never;
@@ -2255,6 +2543,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description Review pending changes before apply. The reverse-proxy and stream list views expose pending locally and data.pending for a paired node. The paired gateway can read GET /api/v1/pending directly. Pending compares saved settings with the last applied baseline and returns a count, hasBaseline and a field-level diff. */
         get: operations["readNodePending"];
         put?: never;
         post?: never;
@@ -2358,6 +2647,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description Server and stream detail includes preview, containing rendered nginx config or a rendering error and, where available, unresolvedPaths. Review it before applying. Preview uses no live target lookups or certificate material and can differ from the applied configuration. */
         get: operations["readNodeServer"];
         put?: never;
         post?: never;
@@ -2365,7 +2655,7 @@ export interface paths {
         options?: never;
         /** @description Same authorization and handler as GET, with an empty response body on success and error (RFC 9110 section 9.3.2). */
         head: operations["headReadNodeServer"];
-        /** @description Full validated editable-field update; unknown fields ignored. enabled is preserved. */
+        /** @description An update replaces the whole server configuration and clears omitted optional settings. The enabled state is handled separately. Read the list or detail to identify the server, read its current settings and version, build a complete editable input from those settings, make your change and submit the current revision. A stored row is not an update body: it contains a config object and read-only fields. For a form, flatten the TLS fields, serialize JSON-in-string fields and send the ID as id. For a node JSON request, use NodeServerInput and the path ID. The version field is optional, but a stale version causes a conflict. Stop, read the latest settings, and reconcile them before retrying. A local form returns HTTP 200 with result.ok=false and a conflict message. A relayed form reports result.nodeError.failure.kind=conflict, and direct node JSON returns HTTP 409 edit_conflict. */
         patch: operations["updateNodeServer"];
         trace?: never;
     };
@@ -2409,6 +2699,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description Server and stream detail includes preview, containing rendered nginx config or a rendering error and, where available, unresolvedPaths. Review it before applying. Preview uses no live target lookups or certificate material and can differ from the applied configuration. */
         get: operations["readNodeStream"];
         put?: never;
         post?: never;
@@ -2701,6 +2992,12 @@ export interface paths {
         /**
          * Read an authorized browser page projection
          * @description Fresh database-validated browser session with MFA enforcement. Each static view applies its own role gate. Response shape is selected by the path query parameter using x-view-registry; no credentials, PEM keys, sealed values or token hashes are returned. Local views have fixed schemas; remote data remains untrusted JSON. User API tokens require the listed scopes and the current owner role. Invalid tokens return 401 invalid_token (Bearer challenge); un-enrolled owners return 403 two_factor_required; scope denials return 403 insufficient_scope; budget denials return 429 with Retry-After.
+         *
+         *     To look up a local server by name, GET /api/ui/v1/views?path=%2Freverse-proxy and filter servers with row.serverName === desiredName. For a node use the corresponding /nodes/<id>/reverse-proxy view and filter data.servers after checking ok. Server names can repeat. If there are no matches, stop. If there are several, use listen and other settings to disambiguate, or ask for the desired ID. Only then use the selected row ID.
+         *
+         *     Server and stream detail includes preview, containing rendered nginx config or a rendering error and, where available, unresolvedPaths. Review it before applying. Preview uses no live target lookups or certificate material and can differ from the applied configuration.
+         *
+         *     Review pending changes before apply. The reverse-proxy and stream list views expose pending locally and data.pending for a paired node. The paired gateway can read GET /api/v1/pending directly. Pending compares saved settings with the last applied baseline and returns a count, hasBaseline and a field-level diff.
          */
         get: operations["readBrowserView"];
         put?: never;
@@ -2722,7 +3019,7 @@ export interface paths {
         put?: never;
         /**
          * account.verifyTwoFactor
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. It requires the browser account or session context. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_account_verifyTwoFactor"];
         delete?: never;
@@ -2742,7 +3039,7 @@ export interface paths {
         put?: never;
         /**
          * login.verifyTwoFactor
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. It is part of interactive sign-in or first-run setup. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_login_verifyTwoFactor"];
         delete?: never;
@@ -2762,7 +3059,7 @@ export interface paths {
         put?: never;
         /**
          * login.cancelTwoFactor
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. It is part of interactive sign-in or first-run setup. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_login_cancelTwoFactor"];
         delete?: never;
@@ -2782,7 +3079,7 @@ export interface paths {
         put?: never;
         /**
          * account.regenerateBackupCodes
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. It requires the browser account or session context. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_account_regenerateBackupCodes"];
         delete?: never;
@@ -2955,7 +3252,7 @@ export interface paths {
         put?: never;
         /**
          * login.passkeyStart
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. It is part of interactive sign-in or first-run setup. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_login_passkeyStart"];
         delete?: never;
@@ -2975,7 +3272,7 @@ export interface paths {
         put?: never;
         /**
          * login.passkeyFinish
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. A rejected passkey returns redirectTo=/login?error=passkey; verified disabled or pending accounts retain the existing account-status redirects.
+         * @description Browser workflow only. User API tokens cannot call this action. It is part of interactive sign-in or first-run setup. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. A rejected passkey returns redirectTo=/login?error=passkey; verified disabled or pending accounts retain the existing account-status redirects.
          */
         post: operations["form_login_passkeyFinish"];
         delete?: never;
@@ -2995,7 +3292,7 @@ export interface paths {
         put?: never;
         /**
          * account.passkeys.start
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
+         * @description Browser workflow only. User API tokens cannot call this action. It requires the browser account or session context. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path.
          */
         post: operations["form_account_passkeys_start"];
         delete?: never;
@@ -3015,7 +3312,7 @@ export interface paths {
         put?: never;
         /**
          * account.passkeys.finish
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. Successful registration returns redirectTo=/account/passkeys/{id}?added=1.
+         * @description Browser workflow only. User API tokens cannot call this action. It requires the browser account or session context. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. Successful registration returns redirectTo=/account/passkeys/{id}?added=1.
          */
         post: operations["form_account_passkeys_finish"];
         delete?: never;
@@ -3035,7 +3332,7 @@ export interface paths {
         put?: never;
         /**
          * account.passkeys.rename
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. Successful rename returns redirectTo=/account/passkeys/{id}?renamed=1.
+         * @description Browser workflow only. User API tokens cannot call this action. It requires the browser account or session context. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. Successful rename returns redirectTo=/account/passkeys/{id}?renamed=1.
          */
         post: operations["form_account_passkeys_rename"];
         delete?: never;
@@ -3055,7 +3352,7 @@ export interface paths {
         put?: never;
         /**
          * account.passkeys.remove
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. Successful removal returns redirectTo=/account?removed=1.
+         * @description Browser workflow only. User API tokens cannot call this action. It requires the browser account or session context. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. Successful removal returns redirectTo=/account?removed=1.
          */
         post: operations["form_account_passkeys_remove"];
         delete?: never;
@@ -3075,7 +3372,7 @@ export interface paths {
         put?: never;
         /**
          * admin.users.passkeys.remove
-         * @description Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. A nonempty id removes one passkey. Without an id, an explicit single all=1 is required to remove every passkey. Successful removal returns redirectTo=/admin/users/{userId}?passkeysRemoved=1.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Explicit browser command. Origin is required even for anonymous setup/login. Roles, MFA, ownership and field rules are enforced by the API. Unknown form fields are ignored. redirectTo, if present, is a local UI path. A nonempty id removes one passkey. Without an id, an explicit single all=1 is required to remove every passkey. Successful removal returns redirectTo=/admin/users/{userId}?passkeysRemoved=1.
          */
         post: operations["form_admin_users_passkeys_remove"];
         delete?: never;
@@ -3143,7 +3440,7 @@ export interface paths {
         put?: never;
         /**
          * admin.users.resetTwoFactor
-         * @description Reset another account’s two-factor authentication and delete all its passkeys atomically. Requires a verified administrator session and the administrator’s current password. Returns redirectTo=/admin/users/{id}?twoFactorReset=1 without changing the administrator cookie.
+         * @description Browser workflow only. User API tokens cannot call this action. This administration action requires a signed-in administrator. Reset another account’s two-factor authentication and delete all its passkeys atomically. Requires a verified administrator session and the administrator’s current password. Returns redirectTo=/admin/users/{id}?twoFactorReset=1 without changing the administrator cookie.
          */
         post: operations["form_admin_users_resetTwoFactor"];
         delete?: never;
@@ -3593,7 +3890,7 @@ export interface components {
             gzipEnabled?: boolean | null;
             /** @enum {string} */
             mode?: "direct" | "upstream";
-            /** @description Opt-in runtime DNS for fixed direct DNS targets; named upstream references use the group setting. Omission keeps static resolution. */
+            /** @description Opt-in runtime DNS for fixed direct DNS targets; named upstream references use the group setting. Omission keeps static resolution. Static name resolution is the default. Nginx resolves a static name while applying configuration. When a static name cannot be resolved, apply can omit the affected configuration unit while applying unrelated settings. Runtime name resolution follows DNS changes while nginx runs. It requires a DNS hostname and a port, and the service can remain unreachable until DNS has an address. */
             resolveAtRuntime?: boolean;
             /** @description Retry another instance after connect failure or 502/503/504: 2 tries, 3s retry-start window, 2s connect unless the route sets one. Never replays already-sent POST/PATCH/LOCK. Omitted or false is off; stored and returned only when true. */
             retryOtherInstances?: boolean;
@@ -3652,8 +3949,9 @@ export interface components {
         };
         NodeUpstreamInput: {
             name: string;
+            /** @description Upstream member strings. Use host:port or host:port weight=N for a DNS name or IPv4 address. Unix socket targets are supported in static mode. */
             servers: string[];
-            /** @description Resolve DNS server members at runtime; literal members retain static validation. Omission keeps static resolution. */
+            /** @description Runtime resolution follows DNS changes for named upstream members. IPv4 literals remain static. Omission keeps static name resolution for the whole upstream. */
             resolveAtRuntime?: boolean;
             /** @description Opaque decimal row revision for optimistic concurrency. On update, an omitted version preserves legacy behavior; a stale version returns 409. Reload before retrying. */
             version?: string;
@@ -3665,7 +3963,7 @@ export interface components {
             /** @enum {string} */
             protocol: "tcp" | "udp";
             proxyPass: string;
-            /** @description Opt-in runtime DNS for a fixed DNS-name:port target. An IP literal with true is rejected; omission keeps static resolution. */
+            /** @description Opt-in runtime DNS for a fixed DNS-name:port target. An IP literal with true is rejected; omission keeps static resolution. Static name resolution is the default. Nginx resolves a static name while applying configuration. When a static name cannot be resolved, apply can omit the affected configuration unit while applying unrelated settings. Runtime name resolution follows DNS changes while nginx runs. It requires a DNS hostname and a port, and the service can remain unreachable until DNS has an address. */
             resolveAtRuntime?: boolean;
             /** @description Opaque decimal row revision for optimistic concurrency. On update, an omitted version preserves legacy behavior; a stale version returns 409. Reload before retrying. */
             version?: string;
@@ -3712,7 +4010,7 @@ export interface components {
             }) | null;
             /**
              * @deprecated
-             * @description Deprecated single-target input, normalized to locations on save. Opt-in runtime DNS for fixed direct DNS targets; named upstream references use the group setting. Omission keeps static resolution.
+             * @description Deprecated single-target input, normalized to locations on save. Opt-in runtime DNS for fixed direct DNS targets; named upstream references use the group setting. Omission keeps static resolution. Static name resolution is the default. Nginx resolves a static name while applying configuration. When a static name cannot be resolved, apply can omit the affected configuration unit while applying unrelated settings. Runtime name resolution follows DNS changes while nginx runs. It requires a DNS hostname and a port, and the service can remain unreachable until DNS has an address.
              */
             resolveAtRuntime?: boolean;
             /** @description Opaque decimal row revision for optimistic concurrency. On update, an omitted version preserves legacy behavior; a stale version returns 409. Reload before retrying. */
@@ -3811,6 +4109,7 @@ export interface components {
             staging: boolean;
             failureCount: number;
             hasDnsToken: boolean;
+            /** @description Email address last used for the ACME account in the certificate’s CA directory (staging or production). It is not the original registration address and can change when another certificate uses that account. */
             acmeEmail: string | null;
             dnsRecords: {
                 domain: string | null;
@@ -4206,6 +4505,21 @@ export interface components {
             iso: string;
             previousPruned?: boolean;
         };
+        NodeHistoryDetailData: {
+            snapshot: {
+                id: string;
+                label: string | null;
+            };
+            upstreams: components["schemas"]["NodeUpstream"][];
+            servers: components["schemas"]["NodeServer"][];
+            streams: components["schemas"]["NodeStream"][];
+            diff: components["schemas"]["ConfigDiff"];
+            canRollback: boolean;
+            /** Format: date-time */
+            iso: string;
+            /** @enum {string} */
+            comparison: "compared" | "first" | "previous_deleted" | "outside_recent";
+        };
         CertificateDomainView: {
             primary: string | null;
             all: string;
@@ -4265,6 +4579,7 @@ export interface components {
             staging: boolean;
             failureCount: number;
             hasDnsToken: boolean;
+            /** @description Email address last used for the ACME account in the certificate’s CA directory (staging or production). It is not the original registration address and can change when another certificate uses that account. */
             acmeEmail: string | null;
             dnsRecords: components["schemas"]["CertificateDnsRecordView"][] | null;
             /** @description Persisted DNS order submittedAt string, copied without date parsing. */
@@ -4347,6 +4662,7 @@ export interface components {
             retryHref: string;
             listHref: string;
             subject?: string;
+            nodeErrorTitle?: string;
         };
         RemoteNodeViewSuccess: {
             /** @constant */
@@ -4369,6 +4685,9 @@ export interface components {
             canManage?: boolean;
         };
         RemoteNodeView: components["schemas"]["RemoteNodeViewSuccess"] | components["schemas"]["RemoteNodeViewFailure"];
+        NodeHistoryDetailView: (components["schemas"]["RemoteNodeViewSuccess"] & {
+            data: components["schemas"]["NodeHistoryDetailData"];
+        }) | components["schemas"]["RemoteNodeViewFailure"];
         /** @description Availability of the filtered runtime DNS service. Targets are not resolved by this status check. */
         RuntimeDnsStatus: {
             available: boolean;
@@ -4490,6 +4809,7 @@ export interface components {
             audit: components["schemas"]["RetentionEstimate"] | null;
             history: components["schemas"]["RetentionEstimate"] | null;
         };
+        FormFieldValue: string | string[];
     };
     responses: {
         /** @description Safe public error */
@@ -5199,7 +5519,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5208,7 +5528,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5251,7 +5571,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5260,7 +5580,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5303,7 +5623,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5312,7 +5632,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5355,7 +5675,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5364,7 +5684,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5407,7 +5727,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5416,7 +5736,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5459,7 +5779,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5468,7 +5788,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5511,7 +5831,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5520,7 +5840,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5563,7 +5883,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5572,7 +5892,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5615,19 +5935,35 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required email address. */
+                    address?: components["schemas"]["FormFieldValue"];
+                    /** @description Required notification event key, repeated once per event. For example, cert.issued. */
+                    events?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional display label. Blank means no label. */
+                    label?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional. Only true enables delivery. Defaults to disabled. */
+                    enabled?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required email address. */
+                    address?: components["schemas"]["FormFieldValue"];
+                    /** @description Required notification event key, repeated once per event. For example, cert.issued. */
+                    events?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional display label. Blank means no label. */
+                    label?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional. Only true enables delivery. Defaults to disabled. */
+                    enabled?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -5643,7 +5979,15 @@ export interface operations {
                     "application/json": components["schemas"]["FormResult"];
                 };
             };
-            400: components["responses"]["ApiError"];
+            /** @description Safe public error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
@@ -5667,19 +6011,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -5719,19 +6067,27 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required destination email address. */
+                    address?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional recipient ID for the audit record. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required destination email address. */
+                    address?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional recipient ID for the audit record. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -5747,7 +6103,15 @@ export interface operations {
                     "application/json": components["schemas"]["FormResult"];
                 };
             };
-            400: components["responses"]["ApiError"];
+            /** @description Safe public error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
@@ -5771,19 +6135,39 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required email address. */
+                    address?: components["schemas"]["FormFieldValue"];
+                    /** @description Required notification event key, repeated once per event. For example, cert.issued. */
+                    events?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional display label. Blank means no label. */
+                    label?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional. Only true enables delivery. Defaults to disabled. */
+                    enabled?: components["schemas"]["FormFieldValue"];
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required email address. */
+                    address?: components["schemas"]["FormFieldValue"];
+                    /** @description Required notification event key, repeated once per event. For example, cert.issued. */
+                    events?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional display label. Blank means no label. */
+                    label?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional. Only true enables delivery. Defaults to disabled. */
+                    enabled?: components["schemas"]["FormFieldValue"];
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -5799,7 +6183,15 @@ export interface operations {
                     "application/json": components["schemas"]["FormResult"];
                 };
             };
-            400: components["responses"]["ApiError"];
+            /** @description Safe public error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
@@ -5823,7 +6215,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5832,7 +6224,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5875,7 +6267,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5884,7 +6276,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5927,7 +6319,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5936,7 +6328,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5979,7 +6371,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -5988,7 +6380,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6031,19 +6423,27 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Pending user ID from the pending-user list. An omitted or unknown ID leaves the accounts as they are. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional role string, viewer or editor for a user-token caller. Empty or unrecognized values default to viewer. The token’s permissions must cover the assigned role. */
+                    role?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Pending user ID from the pending-user list. An omitted or unknown ID leaves the accounts as they are. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional role string, viewer or editor for a user-token caller. Empty or unrecognized values default to viewer. The token’s permissions must cover the assigned role. */
+                    role?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -6083,19 +6483,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Pending user ID from the pending-user list. An omitted or unknown ID leaves the accounts as they are. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Pending user ID from the pending-user list. An omitted or unknown ID leaves the accounts as they are. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -6135,7 +6539,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6144,7 +6548,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6187,7 +6591,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6196,7 +6600,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6239,19 +6643,27 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Optional integer text from 1 to 3650 days. Blank or omitted means unlimited. */
+                    metricsRetentionDays?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional hostname list separated by commas or newlines. Omit or send empty text to clear it. */
+                    metricsExcludedHosts?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Optional integer text from 1 to 3650 days. Blank or omitted means unlimited. */
+                    metricsRetentionDays?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional hostname list separated by commas or newlines. Omit or send empty text to clear it. */
+                    metricsExcludedHosts?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -6267,7 +6679,15 @@ export interface operations {
                     "application/json": components["schemas"]["FormResult"];
                 };
             };
-            400: components["responses"]["ApiError"];
+            /** @description Safe public error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
@@ -6291,7 +6711,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6300,7 +6720,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6343,7 +6763,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6352,7 +6772,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6395,7 +6815,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6404,7 +6824,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6447,7 +6867,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6456,7 +6876,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6499,7 +6919,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6508,7 +6928,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6551,7 +6971,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6560,7 +6980,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6603,7 +7023,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6612,7 +7032,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6655,7 +7075,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6664,7 +7084,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6707,19 +7127,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -6759,19 +7183,27 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Required role string: viewer or editor for a user-token caller, granted only if its permissions cover the role. */
+                    role?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Required role string: viewer or editor for a user-token caller, granted only if its permissions cover the role. */
+                    role?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -6787,7 +7219,15 @@ export interface operations {
                     "application/json": components["schemas"]["FormResult"];
                 };
             };
-            400: components["responses"]["ApiError"];
+            /** @description Safe public error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
@@ -6811,7 +7251,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6820,7 +7260,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6863,7 +7303,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6872,7 +7312,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6915,7 +7355,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6924,7 +7364,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6967,7 +7407,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -6976,7 +7416,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -7019,7 +7459,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -7028,7 +7468,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -7047,7 +7487,15 @@ export interface operations {
                     "application/json": components["schemas"]["FormResult"];
                 };
             };
-            400: components["responses"]["ApiError"];
+            /** @description Safe public error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
@@ -7071,19 +7519,47 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required domain names, one per line. They are trimmed and lowercased. Wildcards require dns-01. */
+                    domains?: components["schemas"]["FormFieldValue"];
+                    /** @description Required ACME contact email, trimmed and lowercased. */
+                    email?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional. Only true turns on the staging CA. Defaults to false. */
+                    staging?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional http-01 or dns-01. Omitted or empty means http-01. */
+                    challengeType?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional cloudflare for automated DNS-01. Omitted or empty with dns-01 uses manual TXT records. */
+                    dnsProvider?: components["schemas"]["FormFieldValue"];
+                    /** @description Required for Cloudflare DNS-01. Use the Cloudflare API token, or __keep__ on update to retain a previously saved token. */
+                    dnsToken?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional certificate alias, at most 100 UTF-16 code units. Omit on update to keep the alias, or send empty text to clear it. */
+                    alias?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required domain names, one per line. They are trimmed and lowercased. Wildcards require dns-01. */
+                    domains?: components["schemas"]["FormFieldValue"];
+                    /** @description Required ACME contact email, trimmed and lowercased. */
+                    email?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional. Only true turns on the staging CA. Defaults to false. */
+                    staging?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional http-01 or dns-01. Omitted or empty means http-01. */
+                    challengeType?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional cloudflare for automated DNS-01. Omitted or empty with dns-01 uses manual TXT records. */
+                    dnsProvider?: components["schemas"]["FormFieldValue"];
+                    /** @description Required for Cloudflare DNS-01. Use the Cloudflare API token, or __keep__ on update to retain a previously saved token. */
+                    dnsToken?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional certificate alias, at most 100 UTF-16 code units. Omit on update to keep the alias, or send empty text to clear it. */
+                    alias?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -7123,19 +7599,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -7175,19 +7655,27 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required PEM certificate chain as a text field, maximum 64 KiB. Replace the example placeholder with your PEM text. */
+                    certPem?: components["schemas"]["FormFieldValue"];
+                    /** @description Required matching PEM private key as a text field, maximum 64 KiB. Replace the example placeholder with your PEM text. */
+                    keyPem?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required PEM certificate chain as a text field, maximum 64 KiB. Replace the example placeholder with your PEM text. */
+                    certPem?: components["schemas"]["FormFieldValue"];
+                    /** @description Required matching PEM private key as a text field, maximum 64 KiB. Replace the example placeholder with your PEM text. */
+                    keyPem?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -7227,19 +7715,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -7279,19 +7771,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -7331,19 +7827,31 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Required PEM certificate chain as a text field, maximum 64 KiB. Replace the example placeholder with your PEM text. */
+                    certPem?: components["schemas"]["FormFieldValue"];
+                    /** @description Required matching PEM private key as a text field, maximum 64 KiB. Replace the example placeholder with your PEM text. */
+                    keyPem?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Required PEM certificate chain as a text field, maximum 64 KiB. Replace the example placeholder with your PEM text. */
+                    certPem?: components["schemas"]["FormFieldValue"];
+                    /** @description Required matching PEM private key as a text field, maximum 64 KiB. Replace the example placeholder with your PEM text. */
+                    keyPem?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -7383,19 +7891,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -7435,19 +7947,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -7487,19 +8003,51 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Required domain names, one per line. They are trimmed and lowercased. Wildcards require dns-01. */
+                    domains?: components["schemas"]["FormFieldValue"];
+                    /** @description Required ACME contact email, trimmed and lowercased. */
+                    email?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional. Only true turns on the staging CA. Defaults to false. */
+                    staging?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional http-01 or dns-01. Omitted or empty means http-01. */
+                    challengeType?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional cloudflare for automated DNS-01. Omitted or empty with dns-01 uses manual TXT records. */
+                    dnsProvider?: components["schemas"]["FormFieldValue"];
+                    /** @description Required for Cloudflare DNS-01. Use the Cloudflare API token, or __keep__ on update to retain a previously saved token. */
+                    dnsToken?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional certificate alias, at most 100 UTF-16 code units. Omit on update to keep the alias, or send empty text to clear it. */
+                    alias?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Required domain names, one per line. They are trimmed and lowercased. Wildcards require dns-01. */
+                    domains?: components["schemas"]["FormFieldValue"];
+                    /** @description Required ACME contact email, trimmed and lowercased. */
+                    email?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional. Only true turns on the staging CA. Defaults to false. */
+                    staging?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional http-01 or dns-01. Omitted or empty means http-01. */
+                    challengeType?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional cloudflare for automated DNS-01. Omitted or empty with dns-01 uses manual TXT records. */
+                    dnsProvider?: components["schemas"]["FormFieldValue"];
+                    /** @description Required for Cloudflare DNS-01. Use the Cloudflare API token, or __keep__ on update to retain a previously saved token. */
+                    dnsToken?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional certificate alias, at most 100 UTF-16 code units. Omit on update to keep the alias, or send empty text to clear it. */
+                    alias?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -7539,7 +8087,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: snapshotId. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -7548,7 +8096,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: snapshotId. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -7567,7 +8115,15 @@ export interface operations {
                     "application/json": components["schemas"]["FormResult"];
                 };
             };
-            400: components["responses"]["ApiError"];
+            /** @description Safe public error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorBody"];
+                };
+            };
             401: components["responses"]["ApiError"];
             403: components["responses"]["ApiError"];
             404: components["responses"]["ApiError"];
@@ -7591,7 +8147,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -7600,7 +8156,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -7643,7 +8199,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -7652,7 +8208,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -7695,7 +8251,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId, basePath. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -7704,7 +8260,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId, basePath. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -7747,19 +8303,47 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required domain names, one per line. They are trimmed and lowercased. Wildcards require dns-01. */
+                    domains?: components["schemas"]["FormFieldValue"];
+                    /** @description Required ACME contact email, trimmed and lowercased. */
+                    email?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional. Only true turns on the staging CA. Defaults to false. */
+                    staging?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional http-01 or dns-01. Omitted or empty means http-01. */
+                    challengeType?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional cloudflare for automated DNS-01. Omitted or empty with dns-01 uses manual TXT records. */
+                    dnsProvider?: components["schemas"]["FormFieldValue"];
+                    /** @description Required for Cloudflare DNS-01. Use the Cloudflare API token, or __keep__ on update to retain a previously saved token. */
+                    dnsToken?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional certificate alias, at most 100 UTF-16 code units. Omit on update to keep the alias, or send empty text to clear it. */
+                    alias?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required domain names, one per line. They are trimmed and lowercased. Wildcards require dns-01. */
+                    domains?: components["schemas"]["FormFieldValue"];
+                    /** @description Required ACME contact email, trimmed and lowercased. */
+                    email?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional. Only true turns on the staging CA. Defaults to false. */
+                    staging?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional http-01 or dns-01. Omitted or empty means http-01. */
+                    challengeType?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional cloudflare for automated DNS-01. Omitted or empty with dns-01 uses manual TXT records. */
+                    dnsProvider?: components["schemas"]["FormFieldValue"];
+                    /** @description Required for Cloudflare DNS-01. Use the Cloudflare API token, or __keep__ on update to retain a previously saved token. */
+                    dnsToken?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional certificate alias, at most 100 UTF-16 code units. Omit on update to keep the alias, or send empty text to clear it. */
+                    alias?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -7799,19 +8383,95 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required nginx server name text. */
+                    serverName?: components["schemas"]["FormFieldValue"];
+                    /** @description Required HTTP listen port, an integer from 1 to 65535 written as text and subject to reserved-port checks. */
+                    listen?: components["schemas"]["FormFieldValue"];
+                    /** @description Use locations for multiple paths. Omit or use single for one target. */
+                    targetMode?: components["schemas"]["FormFieldValue"];
+                    /** @description In single-target mode, use direct for proxyPass. Otherwise upstreamId is read. */
+                    mode?: components["schemas"]["FormFieldValue"];
+                    /** @description Required for a single direct target. Use an HTTP(S) destination, such as http://app.example.test:9000. Runtime DNS needs a hostname and a port. */
+                    proxyPass?: components["schemas"]["FormFieldValue"];
+                    /** @description Required in single upstream mode. ID of the saved upstream. */
+                    upstreamId?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. For a single direct target only. For multiple paths, put a JSON boolean on each direct location instead. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
+                    /** @description Required with targetMode=locations. JSON text containing a non-empty array of path objects. Each has path, mode=direct and proxyPass or mode=upstream and upstreamId. Optional directives, ipAccess, cacheEnabled, gzipEnabled, resolveAtRuntime and retryOtherInstances are defined in NodeLocationInput. Outer locationDirectives is ignored in this mode. */
+                    locations?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON null, array of {name,args} directives, or editor object (addHeaders, rewrites, advanced, as permitted in server context). */
+                    serverDirectives?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON null, array of {name,args} directives, or editor object (headers, addHeaders, timeouts, bodySize, rewrites, httpVersion, buffering, advanced, as permitted in location context). For multiple paths put directives inside each location. */
+                    locationDirectives?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON object with mode whitelist or blacklist and entries, an array of IP addresses or CIDRs. Omit, leave blank or send JSON null to clear it. */
+                    ipAccess?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON real-IP trust settings. See NodeServerInput.realIp for the object fields. Empty text or JSON null omits the setting. */
+                    realIp?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON server cache settings. See NodeServerInput.cache for the object fields. Empty text or JSON null omits the setting. */
+                    cache?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON server compression settings. See NodeServerInput.gzip for the object fields. Empty text or JSON null omits the setting. */
+                    gzip?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional issued certificate ID. Omit or leave blank to save without TLS. */
+                    certificateId?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional HTTPS listen port as integer text. Defaults to 443 when a certificate is attached and must differ from listen. */
+                    tlsPort?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default true. Redirects HTTP only when TLS is configured. */
+                    redirectHttp?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON text containing the NodeTlsOptions object itself, submitted once. Its direct fields include sslProtocols, sslCiphers, preferServerCiphers, http2, and hsts. Send tlsPort and redirectHttp as separate form fields. HTTP/2 is off by default and requires a certificate and, on a paired node, a known version 2.1 or later. */
+                    tlsOptions?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional saved editor version family (1.19 or 2.0). Supply only when retaining the family recorded by the editor. */
+                    nodeVersionFamily?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required nginx server name text. */
+                    serverName?: components["schemas"]["FormFieldValue"];
+                    /** @description Required HTTP listen port, an integer from 1 to 65535 written as text and subject to reserved-port checks. */
+                    listen?: components["schemas"]["FormFieldValue"];
+                    /** @description Use locations for multiple paths. Omit or use single for one target. */
+                    targetMode?: components["schemas"]["FormFieldValue"];
+                    /** @description In single-target mode, use direct for proxyPass. Otherwise upstreamId is read. */
+                    mode?: components["schemas"]["FormFieldValue"];
+                    /** @description Required for a single direct target. Use an HTTP(S) destination, such as http://app.example.test:9000. Runtime DNS needs a hostname and a port. */
+                    proxyPass?: components["schemas"]["FormFieldValue"];
+                    /** @description Required in single upstream mode. ID of the saved upstream. */
+                    upstreamId?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. For a single direct target only. For multiple paths, put a JSON boolean on each direct location instead. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
+                    /** @description Required with targetMode=locations. JSON text containing a non-empty array of path objects. Each has path, mode=direct and proxyPass or mode=upstream and upstreamId. Optional directives, ipAccess, cacheEnabled, gzipEnabled, resolveAtRuntime and retryOtherInstances are defined in NodeLocationInput. Outer locationDirectives is ignored in this mode. */
+                    locations?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON null, array of {name,args} directives, or editor object (addHeaders, rewrites, advanced, as permitted in server context). */
+                    serverDirectives?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON null, array of {name,args} directives, or editor object (headers, addHeaders, timeouts, bodySize, rewrites, httpVersion, buffering, advanced, as permitted in location context). For multiple paths put directives inside each location. */
+                    locationDirectives?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON object with mode whitelist or blacklist and entries, an array of IP addresses or CIDRs. Omit, leave blank or send JSON null to clear it. */
+                    ipAccess?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON real-IP trust settings. See NodeServerInput.realIp for the object fields. Empty text or JSON null omits the setting. */
+                    realIp?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON server cache settings. See NodeServerInput.cache for the object fields. Empty text or JSON null omits the setting. */
+                    cache?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON server compression settings. See NodeServerInput.gzip for the object fields. Empty text or JSON null omits the setting. */
+                    gzip?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional issued certificate ID. Omit or leave blank to save without TLS. */
+                    certificateId?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional HTTPS listen port as integer text. Defaults to 443 when a certificate is attached and must differ from listen. */
+                    tlsPort?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default true. Redirects HTTP only when TLS is configured. */
+                    redirectHttp?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON text containing the NodeTlsOptions object itself, submitted once. Its direct fields include sslProtocols, sslCiphers, preferServerCiphers, http2, and hsts. Send tlsPort and redirectHttp as separate form fields. HTTP/2 is off by default and requires a certificate and, on a paired node, a known version 2.1 or later. */
+                    tlsOptions?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional saved editor version family (1.19 or 2.0). Supply only when retaining the family recorded by the editor. */
+                    nodeVersionFamily?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -7851,19 +8511,39 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required TCP or UDP listen port as integer text from 1 to 65535, subject to reserved-port checks. */
+                    listen?: components["schemas"]["FormFieldValue"];
+                    /** @description Required tcp or udp. */
+                    protocol?: components["schemas"]["FormFieldValue"];
+                    /** @description Required destination host:port, or a supported Unix socket target in static mode. */
+                    proxyPass?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. Runtime targets must use DNS hostname:port. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional saved editor version family (1.19 or 2.0). Supply only when retaining the family recorded by the editor. */
+                    nodeVersionFamily?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required TCP or UDP listen port as integer text from 1 to 65535, subject to reserved-port checks. */
+                    listen?: components["schemas"]["FormFieldValue"];
+                    /** @description Required tcp or udp. */
+                    protocol?: components["schemas"]["FormFieldValue"];
+                    /** @description Required destination host:port, or a supported Unix socket target in static mode. */
+                    proxyPass?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. Runtime targets must use DNS hostname:port. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional saved editor version family (1.19 or 2.0). Supply only when retaining the family recorded by the editor. */
+                    nodeVersionFamily?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -7903,19 +8583,35 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required upstream name. */
+                    name?: components["schemas"]["FormFieldValue"];
+                    /** @description Required upstream members, one per line. Use host:port or host:port weight=N for a DNS name or IPv4 address. Unix socket targets are supported in static mode. */
+                    servers?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. Runtime resolution follows DNS changes for named upstream members. IPv4 literals remain static. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional saved editor version family (1.19 or 2.0). Supply only when retaining the family recorded by the editor. */
+                    nodeVersionFamily?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required upstream name. */
+                    name?: components["schemas"]["FormFieldValue"];
+                    /** @description Required upstream members, one per line. Use host:port or host:port weight=N for a DNS name or IPv4 address. Unix socket targets are supported in static mode. */
+                    servers?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. Runtime resolution follows DNS changes for named upstream members. IPv4 literals remain static. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional saved editor version family (1.19 or 2.0). Supply only when retaining the family recorded by the editor. */
+                    nodeVersionFamily?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -7955,19 +8651,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -8007,19 +8707,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -8059,19 +8763,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -8111,19 +8819,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -8163,19 +8875,27 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required PEM certificate chain as a text field, maximum 64 KiB. Replace the example placeholder with your PEM text. */
+                    certPem?: components["schemas"]["FormFieldValue"];
+                    /** @description Required matching PEM private key as a text field, maximum 64 KiB. Replace the example placeholder with your PEM text. */
+                    keyPem?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required PEM certificate chain as a text field, maximum 64 KiB. Replace the example placeholder with your PEM text. */
+                    certPem?: components["schemas"]["FormFieldValue"];
+                    /** @description Required matching PEM private key as a text field, maximum 64 KiB. Replace the example placeholder with your PEM text. */
+                    keyPem?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -8215,19 +8935,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -8267,19 +8991,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -8319,19 +9047,31 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Required PEM certificate chain as a text field, maximum 64 KiB. Replace the example placeholder with your PEM text. */
+                    certPem?: components["schemas"]["FormFieldValue"];
+                    /** @description Required matching PEM private key as a text field, maximum 64 KiB. Replace the example placeholder with your PEM text. */
+                    keyPem?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Required PEM certificate chain as a text field, maximum 64 KiB. Replace the example placeholder with your PEM text. */
+                    certPem?: components["schemas"]["FormFieldValue"];
+                    /** @description Required matching PEM private key as a text field, maximum 64 KiB. Replace the example placeholder with your PEM text. */
+                    keyPem?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -8371,19 +9111,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -8423,7 +9167,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId, snapshotId. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -8432,7 +9176,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId, snapshotId. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -8475,19 +9219,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -8527,19 +9275,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -8579,19 +9331,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -8631,19 +9387,51 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Required domain names, one per line. They are trimmed and lowercased. Wildcards require dns-01. */
+                    domains?: components["schemas"]["FormFieldValue"];
+                    /** @description Required ACME contact email, trimmed and lowercased. */
+                    email?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional. Only true turns on the staging CA. Defaults to false. */
+                    staging?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional http-01 or dns-01. Omitted or empty means http-01. */
+                    challengeType?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional cloudflare for automated DNS-01. Omitted or empty with dns-01 uses manual TXT records. */
+                    dnsProvider?: components["schemas"]["FormFieldValue"];
+                    /** @description Required for Cloudflare DNS-01. Use the Cloudflare API token, or __keep__ on update to retain a previously saved token. */
+                    dnsToken?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional certificate alias, at most 100 UTF-16 code units. Omit on update to keep the alias, or send empty text to clear it. */
+                    alias?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Required domain names, one per line. They are trimmed and lowercased. Wildcards require dns-01. */
+                    domains?: components["schemas"]["FormFieldValue"];
+                    /** @description Required ACME contact email, trimmed and lowercased. */
+                    email?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional. Only true turns on the staging CA. Defaults to false. */
+                    staging?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional http-01 or dns-01. Omitted or empty means http-01. */
+                    challengeType?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional cloudflare for automated DNS-01. Omitted or empty with dns-01 uses manual TXT records. */
+                    dnsProvider?: components["schemas"]["FormFieldValue"];
+                    /** @description Required for Cloudflare DNS-01. Use the Cloudflare API token, or __keep__ on update to retain a previously saved token. */
+                    dnsToken?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional certificate alias, at most 100 UTF-16 code units. Omit on update to keep the alias, or send empty text to clear it. */
+                    alias?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -8683,19 +9471,103 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional current revision, as a positive decimal string without leading zeroes (up to signed 64-bit maximum). Omit to save without a revision check. */
+                    version?: components["schemas"]["FormFieldValue"];
+                    /** @description Required nginx server name text. */
+                    serverName?: components["schemas"]["FormFieldValue"];
+                    /** @description Required HTTP listen port, an integer from 1 to 65535 written as text and subject to reserved-port checks. */
+                    listen?: components["schemas"]["FormFieldValue"];
+                    /** @description Use locations for multiple paths. Omit or use single for one target. */
+                    targetMode?: components["schemas"]["FormFieldValue"];
+                    /** @description In single-target mode, use direct for proxyPass. Otherwise upstreamId is read. */
+                    mode?: components["schemas"]["FormFieldValue"];
+                    /** @description Required for a single direct target. Use an HTTP(S) destination, such as http://app.example.test:9000. Runtime DNS needs a hostname and a port. */
+                    proxyPass?: components["schemas"]["FormFieldValue"];
+                    /** @description Required in single upstream mode. ID of the saved upstream. */
+                    upstreamId?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. For a single direct target only. For multiple paths, put a JSON boolean on each direct location instead. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
+                    /** @description Required with targetMode=locations. JSON text containing a non-empty array of path objects. Each has path, mode=direct and proxyPass or mode=upstream and upstreamId. Optional directives, ipAccess, cacheEnabled, gzipEnabled, resolveAtRuntime and retryOtherInstances are defined in NodeLocationInput. Outer locationDirectives is ignored in this mode. */
+                    locations?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON null, array of {name,args} directives, or editor object (addHeaders, rewrites, advanced, as permitted in server context). */
+                    serverDirectives?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON null, array of {name,args} directives, or editor object (headers, addHeaders, timeouts, bodySize, rewrites, httpVersion, buffering, advanced, as permitted in location context). For multiple paths put directives inside each location. */
+                    locationDirectives?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON object with mode whitelist or blacklist and entries, an array of IP addresses or CIDRs. Omit, leave blank or send JSON null to clear it. */
+                    ipAccess?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON real-IP trust settings. See NodeServerInput.realIp for the object fields. Empty text or JSON null omits the setting. */
+                    realIp?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON server cache settings. See NodeServerInput.cache for the object fields. Empty text or JSON null omits the setting. */
+                    cache?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON server compression settings. See NodeServerInput.gzip for the object fields. Empty text or JSON null omits the setting. */
+                    gzip?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional issued certificate ID. Omit or leave blank to save without TLS. */
+                    certificateId?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional HTTPS listen port as integer text. Defaults to 443 when a certificate is attached and must differ from listen. */
+                    tlsPort?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default true. Redirects HTTP only when TLS is configured. */
+                    redirectHttp?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON text containing the NodeTlsOptions object itself, submitted once. Its direct fields include sslProtocols, sslCiphers, preferServerCiphers, http2, and hsts. Send tlsPort and redirectHttp as separate form fields. HTTP/2 is off by default and requires a certificate and, on a paired node, a known version 2.1 or later. */
+                    tlsOptions?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional saved editor version family (1.19 or 2.0). Supply only when retaining the family recorded by the editor. */
+                    nodeVersionFamily?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional current revision, as a positive decimal string without leading zeroes (up to signed 64-bit maximum). Omit to save without a revision check. */
+                    version?: components["schemas"]["FormFieldValue"];
+                    /** @description Required nginx server name text. */
+                    serverName?: components["schemas"]["FormFieldValue"];
+                    /** @description Required HTTP listen port, an integer from 1 to 65535 written as text and subject to reserved-port checks. */
+                    listen?: components["schemas"]["FormFieldValue"];
+                    /** @description Use locations for multiple paths. Omit or use single for one target. */
+                    targetMode?: components["schemas"]["FormFieldValue"];
+                    /** @description In single-target mode, use direct for proxyPass. Otherwise upstreamId is read. */
+                    mode?: components["schemas"]["FormFieldValue"];
+                    /** @description Required for a single direct target. Use an HTTP(S) destination, such as http://app.example.test:9000. Runtime DNS needs a hostname and a port. */
+                    proxyPass?: components["schemas"]["FormFieldValue"];
+                    /** @description Required in single upstream mode. ID of the saved upstream. */
+                    upstreamId?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. For a single direct target only. For multiple paths, put a JSON boolean on each direct location instead. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
+                    /** @description Required with targetMode=locations. JSON text containing a non-empty array of path objects. Each has path, mode=direct and proxyPass or mode=upstream and upstreamId. Optional directives, ipAccess, cacheEnabled, gzipEnabled, resolveAtRuntime and retryOtherInstances are defined in NodeLocationInput. Outer locationDirectives is ignored in this mode. */
+                    locations?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON null, array of {name,args} directives, or editor object (addHeaders, rewrites, advanced, as permitted in server context). */
+                    serverDirectives?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON null, array of {name,args} directives, or editor object (headers, addHeaders, timeouts, bodySize, rewrites, httpVersion, buffering, advanced, as permitted in location context). For multiple paths put directives inside each location. */
+                    locationDirectives?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON object with mode whitelist or blacklist and entries, an array of IP addresses or CIDRs. Omit, leave blank or send JSON null to clear it. */
+                    ipAccess?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON real-IP trust settings. See NodeServerInput.realIp for the object fields. Empty text or JSON null omits the setting. */
+                    realIp?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON server cache settings. See NodeServerInput.cache for the object fields. Empty text or JSON null omits the setting. */
+                    cache?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON server compression settings. See NodeServerInput.gzip for the object fields. Empty text or JSON null omits the setting. */
+                    gzip?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional issued certificate ID. Omit or leave blank to save without TLS. */
+                    certificateId?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional HTTPS listen port as integer text. Defaults to 443 when a certificate is attached and must differ from listen. */
+                    tlsPort?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default true. Redirects HTTP only when TLS is configured. */
+                    redirectHttp?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON text containing the NodeTlsOptions object itself, submitted once. Its direct fields include sslProtocols, sslCiphers, preferServerCiphers, http2, and hsts. Send tlsPort and redirectHttp as separate form fields. HTTP/2 is off by default and requires a certificate and, on a paired node, a known version 2.1 or later. */
+                    tlsOptions?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional saved editor version family (1.19 or 2.0). Supply only when retaining the family recorded by the editor. */
+                    nodeVersionFamily?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -8735,19 +9607,47 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional current revision, as a positive decimal string without leading zeroes (up to signed 64-bit maximum). Omit to save without a revision check. */
+                    version?: components["schemas"]["FormFieldValue"];
+                    /** @description Required TCP or UDP listen port as integer text from 1 to 65535, subject to reserved-port checks. */
+                    listen?: components["schemas"]["FormFieldValue"];
+                    /** @description Required tcp or udp. */
+                    protocol?: components["schemas"]["FormFieldValue"];
+                    /** @description Required destination host:port, or a supported Unix socket target in static mode. */
+                    proxyPass?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. Runtime targets must use DNS hostname:port. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional saved editor version family (1.19 or 2.0). Supply only when retaining the family recorded by the editor. */
+                    nodeVersionFamily?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional current revision, as a positive decimal string without leading zeroes (up to signed 64-bit maximum). Omit to save without a revision check. */
+                    version?: components["schemas"]["FormFieldValue"];
+                    /** @description Required TCP or UDP listen port as integer text from 1 to 65535, subject to reserved-port checks. */
+                    listen?: components["schemas"]["FormFieldValue"];
+                    /** @description Required tcp or udp. */
+                    protocol?: components["schemas"]["FormFieldValue"];
+                    /** @description Required destination host:port, or a supported Unix socket target in static mode. */
+                    proxyPass?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. Runtime targets must use DNS hostname:port. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional saved editor version family (1.19 or 2.0). Supply only when retaining the family recorded by the editor. */
+                    nodeVersionFamily?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -8787,19 +9687,43 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional current revision, as a positive decimal string without leading zeroes (up to signed 64-bit maximum). Omit to save without a revision check. */
+                    version?: components["schemas"]["FormFieldValue"];
+                    /** @description Required upstream name. */
+                    name?: components["schemas"]["FormFieldValue"];
+                    /** @description Required upstream members, one per line. Use host:port or host:port weight=N for a DNS name or IPv4 address. Unix socket targets are supported in static mode. */
+                    servers?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. Runtime resolution follows DNS changes for named upstream members. IPv4 literals remain static. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional saved editor version family (1.19 or 2.0). Supply only when retaining the family recorded by the editor. */
+                    nodeVersionFamily?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Required ordered arguments: nodeId (ID from the gateway node list). Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional current revision, as a positive decimal string without leading zeroes (up to signed 64-bit maximum). Omit to save without a revision check. */
+                    version?: components["schemas"]["FormFieldValue"];
+                    /** @description Required upstream name. */
+                    name?: components["schemas"]["FormFieldValue"];
+                    /** @description Required upstream members, one per line. Use host:port or host:port weight=N for a DNS name or IPv4 address. Unix socket targets are supported in static mode. */
+                    servers?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. Runtime resolution follows DNS changes for named upstream members. IPv4 literals remain static. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional saved editor version family (1.19 or 2.0). Supply only when retaining the family recorded by the editor. */
+                    nodeVersionFamily?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -8839,7 +9763,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -8848,7 +9772,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -8891,7 +9815,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -8900,7 +9824,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -8943,7 +9867,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -8952,7 +9876,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -8995,7 +9919,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -9004,7 +9928,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -9047,7 +9971,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -9056,7 +9980,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -9099,19 +10023,91 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required nginx server name text. */
+                    serverName?: components["schemas"]["FormFieldValue"];
+                    /** @description Required HTTP listen port, an integer from 1 to 65535 written as text and subject to reserved-port checks. */
+                    listen?: components["schemas"]["FormFieldValue"];
+                    /** @description Use locations for multiple paths. Omit or use single for one target. */
+                    targetMode?: components["schemas"]["FormFieldValue"];
+                    /** @description In single-target mode, use direct for proxyPass. Otherwise upstreamId is read. */
+                    mode?: components["schemas"]["FormFieldValue"];
+                    /** @description Required for a single direct target. Use an HTTP(S) destination, such as http://app.example.test:9000. Runtime DNS needs a hostname and a port. */
+                    proxyPass?: components["schemas"]["FormFieldValue"];
+                    /** @description Required in single upstream mode. ID of the saved upstream. */
+                    upstreamId?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. For a single direct target only. For multiple paths, put a JSON boolean on each direct location instead. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
+                    /** @description Required with targetMode=locations. JSON text containing a non-empty array of path objects. Each has path, mode=direct and proxyPass or mode=upstream and upstreamId. Optional directives, ipAccess, cacheEnabled, gzipEnabled, resolveAtRuntime and retryOtherInstances are defined in NodeLocationInput. Outer locationDirectives is ignored in this mode. */
+                    locations?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON null, array of {name,args} directives, or editor object (addHeaders, rewrites, advanced, as permitted in server context). */
+                    serverDirectives?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON null, array of {name,args} directives, or editor object (headers, addHeaders, timeouts, bodySize, rewrites, httpVersion, buffering, advanced, as permitted in location context). For multiple paths put directives inside each location. */
+                    locationDirectives?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON object with mode whitelist or blacklist and entries, an array of IP addresses or CIDRs. Omit, leave blank or send JSON null to clear it. */
+                    ipAccess?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON real-IP trust settings. See NodeServerInput.realIp for the object fields. Empty text or JSON null omits the setting. */
+                    realIp?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON server cache settings. See NodeServerInput.cache for the object fields. Empty text or JSON null omits the setting. */
+                    cache?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON server compression settings. See NodeServerInput.gzip for the object fields. Empty text or JSON null omits the setting. */
+                    gzip?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional issued certificate ID. Omit or leave blank to save without TLS. */
+                    certificateId?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional HTTPS listen port as integer text. Defaults to 443 when a certificate is attached and must differ from listen. */
+                    tlsPort?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default true. Redirects HTTP only when TLS is configured. */
+                    redirectHttp?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON text containing the NodeTlsOptions object itself, submitted once. Its direct fields include sslProtocols, sslCiphers, preferServerCiphers, http2, and hsts. Send tlsPort and redirectHttp as separate form fields. HTTP/2 is off by default and requires a certificate and, on a paired node, a known version 2.1 or later. */
+                    tlsOptions?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required nginx server name text. */
+                    serverName?: components["schemas"]["FormFieldValue"];
+                    /** @description Required HTTP listen port, an integer from 1 to 65535 written as text and subject to reserved-port checks. */
+                    listen?: components["schemas"]["FormFieldValue"];
+                    /** @description Use locations for multiple paths. Omit or use single for one target. */
+                    targetMode?: components["schemas"]["FormFieldValue"];
+                    /** @description In single-target mode, use direct for proxyPass. Otherwise upstreamId is read. */
+                    mode?: components["schemas"]["FormFieldValue"];
+                    /** @description Required for a single direct target. Use an HTTP(S) destination, such as http://app.example.test:9000. Runtime DNS needs a hostname and a port. */
+                    proxyPass?: components["schemas"]["FormFieldValue"];
+                    /** @description Required in single upstream mode. ID of the saved upstream. */
+                    upstreamId?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. For a single direct target only. For multiple paths, put a JSON boolean on each direct location instead. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
+                    /** @description Required with targetMode=locations. JSON text containing a non-empty array of path objects. Each has path, mode=direct and proxyPass or mode=upstream and upstreamId. Optional directives, ipAccess, cacheEnabled, gzipEnabled, resolveAtRuntime and retryOtherInstances are defined in NodeLocationInput. Outer locationDirectives is ignored in this mode. */
+                    locations?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON null, array of {name,args} directives, or editor object (addHeaders, rewrites, advanced, as permitted in server context). */
+                    serverDirectives?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON null, array of {name,args} directives, or editor object (headers, addHeaders, timeouts, bodySize, rewrites, httpVersion, buffering, advanced, as permitted in location context). For multiple paths put directives inside each location. */
+                    locationDirectives?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON object with mode whitelist or blacklist and entries, an array of IP addresses or CIDRs. Omit, leave blank or send JSON null to clear it. */
+                    ipAccess?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON real-IP trust settings. See NodeServerInput.realIp for the object fields. Empty text or JSON null omits the setting. */
+                    realIp?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON server cache settings. See NodeServerInput.cache for the object fields. Empty text or JSON null omits the setting. */
+                    cache?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON server compression settings. See NodeServerInput.gzip for the object fields. Empty text or JSON null omits the setting. */
+                    gzip?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional issued certificate ID. Omit or leave blank to save without TLS. */
+                    certificateId?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional HTTPS listen port as integer text. Defaults to 443 when a certificate is attached and must differ from listen. */
+                    tlsPort?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default true. Redirects HTTP only when TLS is configured. */
+                    redirectHttp?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON text containing the NodeTlsOptions object itself, submitted once. Its direct fields include sslProtocols, sslCiphers, preferServerCiphers, http2, and hsts. Send tlsPort and redirectHttp as separate form fields. HTTP/2 is off by default and requires a certificate and, on a paired node, a known version 2.1 or later. */
+                    tlsOptions?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -9151,19 +10147,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -9203,19 +10203,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -9255,19 +10259,99 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional current revision, as a positive decimal string without leading zeroes (up to signed 64-bit maximum). Omit to save without a revision check. */
+                    version?: components["schemas"]["FormFieldValue"];
+                    /** @description Required nginx server name text. */
+                    serverName?: components["schemas"]["FormFieldValue"];
+                    /** @description Required HTTP listen port, an integer from 1 to 65535 written as text and subject to reserved-port checks. */
+                    listen?: components["schemas"]["FormFieldValue"];
+                    /** @description Use locations for multiple paths. Omit or use single for one target. */
+                    targetMode?: components["schemas"]["FormFieldValue"];
+                    /** @description In single-target mode, use direct for proxyPass. Otherwise upstreamId is read. */
+                    mode?: components["schemas"]["FormFieldValue"];
+                    /** @description Required for a single direct target. Use an HTTP(S) destination, such as http://app.example.test:9000. Runtime DNS needs a hostname and a port. */
+                    proxyPass?: components["schemas"]["FormFieldValue"];
+                    /** @description Required in single upstream mode. ID of the saved upstream. */
+                    upstreamId?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. For a single direct target only. For multiple paths, put a JSON boolean on each direct location instead. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
+                    /** @description Required with targetMode=locations. JSON text containing a non-empty array of path objects. Each has path, mode=direct and proxyPass or mode=upstream and upstreamId. Optional directives, ipAccess, cacheEnabled, gzipEnabled, resolveAtRuntime and retryOtherInstances are defined in NodeLocationInput. Outer locationDirectives is ignored in this mode. */
+                    locations?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON null, array of {name,args} directives, or editor object (addHeaders, rewrites, advanced, as permitted in server context). */
+                    serverDirectives?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON null, array of {name,args} directives, or editor object (headers, addHeaders, timeouts, bodySize, rewrites, httpVersion, buffering, advanced, as permitted in location context). For multiple paths put directives inside each location. */
+                    locationDirectives?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON object with mode whitelist or blacklist and entries, an array of IP addresses or CIDRs. Omit, leave blank or send JSON null to clear it. */
+                    ipAccess?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON real-IP trust settings. See NodeServerInput.realIp for the object fields. Empty text or JSON null omits the setting. */
+                    realIp?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON server cache settings. See NodeServerInput.cache for the object fields. Empty text or JSON null omits the setting. */
+                    cache?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON server compression settings. See NodeServerInput.gzip for the object fields. Empty text or JSON null omits the setting. */
+                    gzip?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional issued certificate ID. Omit or leave blank to save without TLS. */
+                    certificateId?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional HTTPS listen port as integer text. Defaults to 443 when a certificate is attached and must differ from listen. */
+                    tlsPort?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default true. Redirects HTTP only when TLS is configured. */
+                    redirectHttp?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON text containing the NodeTlsOptions object itself, submitted once. Its direct fields include sslProtocols, sslCiphers, preferServerCiphers, http2, and hsts. Send tlsPort and redirectHttp as separate form fields. HTTP/2 is off by default and requires a certificate and, on a paired node, a known version 2.1 or later. */
+                    tlsOptions?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional current revision, as a positive decimal string without leading zeroes (up to signed 64-bit maximum). Omit to save without a revision check. */
+                    version?: components["schemas"]["FormFieldValue"];
+                    /** @description Required nginx server name text. */
+                    serverName?: components["schemas"]["FormFieldValue"];
+                    /** @description Required HTTP listen port, an integer from 1 to 65535 written as text and subject to reserved-port checks. */
+                    listen?: components["schemas"]["FormFieldValue"];
+                    /** @description Use locations for multiple paths. Omit or use single for one target. */
+                    targetMode?: components["schemas"]["FormFieldValue"];
+                    /** @description In single-target mode, use direct for proxyPass. Otherwise upstreamId is read. */
+                    mode?: components["schemas"]["FormFieldValue"];
+                    /** @description Required for a single direct target. Use an HTTP(S) destination, such as http://app.example.test:9000. Runtime DNS needs a hostname and a port. */
+                    proxyPass?: components["schemas"]["FormFieldValue"];
+                    /** @description Required in single upstream mode. ID of the saved upstream. */
+                    upstreamId?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. For a single direct target only. For multiple paths, put a JSON boolean on each direct location instead. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
+                    /** @description Required with targetMode=locations. JSON text containing a non-empty array of path objects. Each has path, mode=direct and proxyPass or mode=upstream and upstreamId. Optional directives, ipAccess, cacheEnabled, gzipEnabled, resolveAtRuntime and retryOtherInstances are defined in NodeLocationInput. Outer locationDirectives is ignored in this mode. */
+                    locations?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON null, array of {name,args} directives, or editor object (addHeaders, rewrites, advanced, as permitted in server context). */
+                    serverDirectives?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON null, array of {name,args} directives, or editor object (headers, addHeaders, timeouts, bodySize, rewrites, httpVersion, buffering, advanced, as permitted in location context). For multiple paths put directives inside each location. */
+                    locationDirectives?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON object with mode whitelist or blacklist and entries, an array of IP addresses or CIDRs. Omit, leave blank or send JSON null to clear it. */
+                    ipAccess?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON real-IP trust settings. See NodeServerInput.realIp for the object fields. Empty text or JSON null omits the setting. */
+                    realIp?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON server cache settings. See NodeServerInput.cache for the object fields. Empty text or JSON null omits the setting. */
+                    cache?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON server compression settings. See NodeServerInput.gzip for the object fields. Empty text or JSON null omits the setting. */
+                    gzip?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional issued certificate ID. Omit or leave blank to save without TLS. */
+                    certificateId?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional HTTPS listen port as integer text. Defaults to 443 when a certificate is attached and must differ from listen. */
+                    tlsPort?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default true. Redirects HTTP only when TLS is configured. */
+                    redirectHttp?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional JSON text containing the NodeTlsOptions object itself, submitted once. Its direct fields include sslProtocols, sslCiphers, preferServerCiphers, http2, and hsts. Send tlsPort and redirectHttp as separate form fields. HTTP/2 is off by default and requires a certificate and, on a paired node, a known version 2.1 or later. */
+                    tlsOptions?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -9307,7 +10391,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -9316,7 +10400,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -9359,7 +10443,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -9368,7 +10452,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -9411,19 +10495,35 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required TCP or UDP listen port as integer text from 1 to 65535, subject to reserved-port checks. */
+                    listen?: components["schemas"]["FormFieldValue"];
+                    /** @description Required tcp or udp. */
+                    protocol?: components["schemas"]["FormFieldValue"];
+                    /** @description Required destination host:port, or a supported Unix socket target in static mode. */
+                    proxyPass?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. Runtime targets must use DNS hostname:port. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required TCP or UDP listen port as integer text from 1 to 65535, subject to reserved-port checks. */
+                    listen?: components["schemas"]["FormFieldValue"];
+                    /** @description Required tcp or udp. */
+                    protocol?: components["schemas"]["FormFieldValue"];
+                    /** @description Required destination host:port, or a supported Unix socket target in static mode. */
+                    proxyPass?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. Runtime targets must use DNS hostname:port. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -9463,19 +10563,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -9515,19 +10619,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -9567,19 +10675,43 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional current revision, as a positive decimal string without leading zeroes (up to signed 64-bit maximum). Omit to save without a revision check. */
+                    version?: components["schemas"]["FormFieldValue"];
+                    /** @description Required TCP or UDP listen port as integer text from 1 to 65535, subject to reserved-port checks. */
+                    listen?: components["schemas"]["FormFieldValue"];
+                    /** @description Required tcp or udp. */
+                    protocol?: components["schemas"]["FormFieldValue"];
+                    /** @description Required destination host:port, or a supported Unix socket target in static mode. */
+                    proxyPass?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. Runtime targets must use DNS hostname:port. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional current revision, as a positive decimal string without leading zeroes (up to signed 64-bit maximum). Omit to save without a revision check. */
+                    version?: components["schemas"]["FormFieldValue"];
+                    /** @description Required TCP or UDP listen port as integer text from 1 to 65535, subject to reserved-port checks. */
+                    listen?: components["schemas"]["FormFieldValue"];
+                    /** @description Required tcp or udp. */
+                    protocol?: components["schemas"]["FormFieldValue"];
+                    /** @description Required destination host:port, or a supported Unix socket target in static mode. */
+                    proxyPass?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. Runtime targets must use DNS hostname:port. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -9619,19 +10751,31 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required upstream name. */
+                    name?: components["schemas"]["FormFieldValue"];
+                    /** @description Required upstream members, one per line. Use host:port or host:port weight=N for a DNS name or IPv4 address. Unix socket targets are supported in static mode. */
+                    servers?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. Runtime resolution follows DNS changes for named upstream members. IPv4 literals remain static. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required upstream name. */
+                    name?: components["schemas"]["FormFieldValue"];
+                    /** @description Required upstream members, one per line. Use host:port or host:port weight=N for a DNS name or IPv4 address. Unix socket targets are supported in static mode. */
+                    servers?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. Runtime resolution follows DNS changes for named upstream members. IPv4 literals remain static. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -9671,19 +10815,23 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -9723,19 +10871,39 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional current revision, as a positive decimal string without leading zeroes (up to signed 64-bit maximum). Omit to save without a revision check. */
+                    version?: components["schemas"]["FormFieldValue"];
+                    /** @description Required upstream name. */
+                    name?: components["schemas"]["FormFieldValue"];
+                    /** @description Required upstream members, one per line. Use host:port or host:port weight=N for a DNS name or IPv4 address. Unix socket targets are supported in static mode. */
+                    servers?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. Runtime resolution follows DNS changes for named upstream members. IPv4 literals remain static. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description Omit _apiArgs or send the JSON text [] to supply no arguments. Encode the array as one JSON string form value.
                      * @default []
                      */
                     _apiArgs?: string;
+                    /** @description Required existing resource ID from a list or detail view. */
+                    id?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional current revision, as a positive decimal string without leading zeroes (up to signed 64-bit maximum). Omit to save without a revision check. */
+                    version?: components["schemas"]["FormFieldValue"];
+                    /** @description Required upstream name. */
+                    name?: components["schemas"]["FormFieldValue"];
+                    /** @description Required upstream members, one per line. Use host:port or host:port weight=N for a DNS name or IPv4 address. Unix socket targets are supported in static mode. */
+                    servers?: components["schemas"]["FormFieldValue"];
+                    /** @description Optional true or false text, default false. Runtime resolution follows DNS changes for named upstream members. IPv4 literals remain static. */
+                    resolveAtRuntime?: components["schemas"]["FormFieldValue"];
                 } & {
                     [key: string]: string | string[];
                 };
@@ -16952,7 +18120,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ServerListView"] | components["schemas"]["ServerOptionsView"] | components["schemas"]["TemplateGalleryView"] | components["schemas"]["ServerDetailView"] | components["schemas"]["ServerEditView"] | components["schemas"]["UpstreamListView"] | components["schemas"]["ControlPermissionsView"] | components["schemas"]["UpstreamItemView"] | components["schemas"]["StreamListView"] | components["schemas"]["StreamOptionsView"] | components["schemas"]["StreamDetailView"] | components["schemas"]["StreamEditView"] | components["schemas"]["DashboardView"] | components["schemas"]["MetricsPageView"] | components["schemas"]["LogsPageView"] | components["schemas"]["AuditListView"] | components["schemas"]["AuditDetailView"] | components["schemas"]["HistoryView"] | components["schemas"]["HistoryDetailView"] | components["schemas"]["CertificateListView"] | components["schemas"]["CertificateNewView"] | components["schemas"]["CertificateImportView"] | components["schemas"]["CertificateDetailView"] | components["schemas"]["CertificateEditView"] | components["schemas"]["CertificateReplaceView"] | components["schemas"]["NodesListView"] | components["schemas"]["NodeNewView"] | components["schemas"]["NodeMetadataView"] | components["schemas"]["RemoteNodeView"];
+                    "application/json": components["schemas"]["ServerListView"] | components["schemas"]["ServerOptionsView"] | components["schemas"]["TemplateGalleryView"] | components["schemas"]["ServerDetailView"] | components["schemas"]["ServerEditView"] | components["schemas"]["UpstreamListView"] | components["schemas"]["ControlPermissionsView"] | components["schemas"]["UpstreamItemView"] | components["schemas"]["StreamListView"] | components["schemas"]["StreamOptionsView"] | components["schemas"]["StreamDetailView"] | components["schemas"]["StreamEditView"] | components["schemas"]["DashboardView"] | components["schemas"]["MetricsPageView"] | components["schemas"]["LogsPageView"] | components["schemas"]["AuditListView"] | components["schemas"]["AuditDetailView"] | components["schemas"]["HistoryView"] | components["schemas"]["HistoryDetailView"] | components["schemas"]["CertificateListView"] | components["schemas"]["CertificateNewView"] | components["schemas"]["CertificateImportView"] | components["schemas"]["CertificateDetailView"] | components["schemas"]["CertificateEditView"] | components["schemas"]["CertificateReplaceView"] | components["schemas"]["NodesListView"] | components["schemas"]["NodeNewView"] | components["schemas"]["NodeMetadataView"] | components["schemas"]["RemoteNodeView"] | components["schemas"]["NodeHistoryDetailView"];
                 };
             };
             400: components["responses"]["ApiError"];
@@ -16975,7 +18143,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -16984,7 +18152,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -17027,7 +18195,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -17036,7 +18204,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -17079,7 +18247,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -17088,7 +18256,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -17131,7 +18299,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -17140,7 +18308,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -17652,7 +18820,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -17661,7 +18829,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -17704,7 +18872,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -17715,7 +18883,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -17760,7 +18928,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -17771,7 +18939,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -17816,7 +18984,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -17827,7 +18995,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -17872,7 +19040,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -17883,7 +19051,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -17928,7 +19096,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -17940,7 +19108,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -17986,7 +19154,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -18004,7 +19172,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -18132,7 +19300,7 @@ export interface operations {
             content: {
                 "multipart/form-data": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;
@@ -18144,7 +19312,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 characters; never an API URL, function name or SQL.
+                     * @description JSON array of static command arguments, at most 8 strings of at most 2048 UTF-8 bytes; never an API URL, function name or SQL.
                      * @default []
                      */
                     _apiArgs?: string;

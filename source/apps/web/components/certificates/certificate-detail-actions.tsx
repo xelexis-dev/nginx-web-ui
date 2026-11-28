@@ -176,7 +176,7 @@ export function CertificateDetailActions({
           <input type="hidden" name="id" value={id} />
           <Button
             type="submit"
-            variant="dangerQuiet"
+            variant="dangerOutline"
             disabled={deletePending || linkedCount > 0}
           >
             {linkedCount > 0

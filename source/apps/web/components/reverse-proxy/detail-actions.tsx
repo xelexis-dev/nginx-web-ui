@@ -2,7 +2,7 @@
 
 import { useActionState, useRef, useState } from "react";
 import Link from "next/link";
-import { Button, Switch, Banner, buttonClassName, ConfirmDialog } from "@repo/ui";
+import { Button, Banner, buttonClassName, ConfirmDialog } from "@repo/ui";
 import { NodeErrorCard } from "@/components/node-error";
 import type { NodeActionState, NodeFormAction } from "@/lib/node-action-state";
 import { useApiAction } from "@/lib/use-api-action";
@@ -35,7 +35,7 @@ export function ServerDetailActions({
 }: {
   id: string;
   editHref: string;
-  /** 스위치의 접근 가능한 이름(「api.example.test 활성」). */
+  /** 삭제 확인 창의 서버 이름. */
   serverName: string;
   enabled: boolean;
   toggleAction: NodeFormAction;
@@ -57,17 +57,17 @@ export function ServerDetailActions({
   return (
     <div className={styles.opsDetailActions}>
       <div className={styles.detailActionsRow}>
-        {/* 스위치는 저장만 한다 — nginx 반영은 셸의 「설정 적용」이다(목록의 행 스위치와 같다). */}
+        {/* nginx 반영은 셸의 「설정 적용」에서 한다. */}
         <form action={toggleFormAction}>
           <input type="hidden" name="id" value={id} />
-          <Switch
+          <Button
             type="submit"
-            checked={enabled}
-            label={`${serverName} 활성`}
-            showState
+            variant="secondary"
             disabled={togglePending}
             aria-busy={togglePending || undefined}
-          />
+          >
+            {enabled ? "비활성화" : "활성화"}
+          </Button>
         </form>
         <form ref={deleteForm} action={deleteFormAction} onSubmit={(event) => {
           if (deletePending || approvedId.current !== id) {
@@ -79,7 +79,7 @@ export function ServerDetailActions({
           <input type="hidden" name="id" value={id} />
           <Button
             type="submit"
-            variant="dangerQuiet"
+            variant="dangerOutline"
             disabled={deletePending}
             aria-busy={deletePending || undefined}
           >

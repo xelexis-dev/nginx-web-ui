@@ -49,8 +49,8 @@ export function UpstreamDetail({
       <PageHeader
         eyebrow={
           <Link href={basePath} className={linkClassName({ variant: "back" })}>
-            <Icon name="back" size={14} />
-            Upstreams
+            <Icon name="arrowLeft" size={14} />
+            Upstream 목록
           </Link>
         }
         title={data.name}

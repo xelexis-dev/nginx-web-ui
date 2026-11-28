@@ -120,7 +120,7 @@ export function NodeList({
             {nodeRows.length === 0 ? (
               <Tr>
                 <Td colSpan={4}>
-                  <EmptyState title="연결된 노드가 없습니다." />
+                  <EmptyState description="연결된 노드가 없습니다." />
                 </Td>
               </Tr>
             ) : null}

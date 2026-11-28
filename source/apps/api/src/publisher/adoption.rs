@@ -31,11 +31,7 @@ pub(super) async fn adopt_locked(config:&RuntimeConfig,store:&PublisherStore)->R
     crate::publisher::confirmation::publish(config,&first).await.map_err(failed)?;
     super::command::execute(store.clone(),config.nginx_bin.clone(),vec!["-t".into()],std::time::Duration::from_secs(30)).await.map_err(|error|StepError{code:error.code,message:error.message,detail:Some(format!("nginx -t failed: {}",config.nginx_main_conf.display()))})?;
     let witness=crate::publisher::confirmation::Witness::from_config(config).map_err(failed)?;
-    let child_store=store.clone();let bin=config.nginx_bin.clone();
-    witness.confirm_with(config,&first,std::time::Instant::now()+std::time::Duration::from_secs(15),move |timeout| {
-        let store=child_store.clone();let bin=bin.clone();
-        async move {super::command::execute(store,bin,vec!["-s".into(),"reload".into()],timeout).await.map(|_|()).map_err(anyhow::Error::from)}
-    },|_|Ok(())).await.map_err(failed)?;
+    witness.confirm_with(config,&first,std::time::Instant::now()+std::time::Duration::from_secs(15),store,|_|Ok(())).await.map_err(failed)?;
     // A.5: clearing follows fresh observation; confirming the record follows clearing.
     crate::publisher::confirmation::clear_uncertain(config).await.map_err(failed)?;
     for operation in &mut matching {

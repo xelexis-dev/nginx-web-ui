@@ -1,7 +1,7 @@
 use super::confirmation::{nginx_state_with,NginxState};
 use std::{path::Path,process::{Child,Command},os::unix::process::CommandExt};
 
-struct Process(Child);
+pub(super) struct Process(pub(super) Child);
 impl Drop for Process {fn drop(&mut self){let _=unsafe{libc::kill(-(self.0.id()as i32),libc::SIGKILL)};let _=self.0.kill();let _=self.0.wait();}}
 fn shell(script:&Path)->Process {
     let ack=script.with_extension("ready");
@@ -11,6 +11,198 @@ fn shell(script:&Path)->Process {
     while !ack.exists(){assert!(std::time::Instant::now()<deadline,"run shell did not initialize");std::thread::sleep(std::time::Duration::from_millis(1));}
     process
 }
+
+const SERVICE: &str = "/run/service/nginx";
+const GROUP: &str = "/run/nginx-web-ui/nginx-process-group";
+
+struct Supervision(Child);
+
+impl Supervision {
+    fn start(run: &str, down: bool, configure: impl FnOnce(&mut Command)) -> Self {
+        use std::os::unix::fs::PermissionsExt;
+        assert!(!Path::new(SERVICE).exists(), "use an isolated container without s6 init");
+        std::fs::create_dir_all(SERVICE).unwrap();
+        let script = Path::new(SERVICE).join("run");
+        std::fs::write(&script, run).unwrap();
+        std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o700)).unwrap();
+        if down {
+            std::fs::write(Path::new(SERVICE).join("down"), b"").unwrap();
+        }
+        let mut supervisor = Command::new("/command/s6-supervise");
+        supervisor.arg(SERVICE);
+        configure(&mut supervisor);
+        Self(supervisor.spawn().unwrap())
+    }
+
+    fn command(&self, option: &str) {
+        assert!(Command::new("/command/s6-svc").args([option, SERVICE]).status().unwrap().success());
+    }
+
+    fn status(&self) -> String {
+        let output = Command::new("/command/s6-svstat")
+            .args(["-o", "up,pid", SERVICE]).output().unwrap();
+        String::from_utf8(output.stdout).unwrap()
+    }
+}
+
+impl Drop for Supervision {
+    fn drop(&mut self) {
+        let _ = Command::new("/command/s6-svc").args(["-dx", SERVICE]).status();
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(3);
+        while std::time::Instant::now() < deadline {
+            if self.0.try_wait().is_ok_and(|status| status.is_some()) {
+                let _ = std::fs::remove_dir_all(SERVICE);
+                return;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(10));
+        }
+        let _ = self.0.kill();
+        let _ = self.0.wait();
+    }
+}
+
+async fn wait_native(mut predicate: impl FnMut() -> bool) {
+    use std::time::Duration;
+    tokio::time::timeout(Duration::from_secs(10), async {
+        while !predicate() {
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    }).await.expect("native nginx did not reach the expected state");
+}
+
+#[tokio::test]
+#[ignore = "uses fixed nginx and s6 paths in a disposable runtime image; NWUI_C3_NATIVE_NGINX=1"]
+async fn c3_real_s6_cold_start_fifo_init_and_foreign_nginx() {
+    use super::{confirmation, recovery};
+    use std::time::{Duration, Instant};
+    if std::env::var("NWUI_C3_NATIVE_NGINX").as_deref() != Ok("1") { return; }
+    let (root, mut config, store, _, _) = recovery::tests::durable_fixture();
+    config.nginx_bin = "/usr/sbin/nginx".into();
+    config.nginx_main_conf = "/etc/nginx/nginx.conf".into();
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = listener.local_addr().unwrap().port();
+    drop(listener);
+    config.nginx_status_url = format!("http://127.0.0.1:{port}/nginx_status");
+    let pid_file = root.path().join("custom.pid");
+    let fifo = root.path().join("init.fifo");
+    use std::os::unix::ffi::OsStrExt;
+    let fifo_path = std::ffi::CString::new(fifo.as_os_str().as_bytes()).unwrap();
+    assert_eq!(unsafe { libc::mkfifo(fifo_path.as_ptr(), 0o600) }, 0);
+    let managed = format!(
+        "pid {}; error_log {} notice; events {{}} http {{ access_log off; server {{ listen 127.0.0.1:{port}; location = /nginx_status {{ stub_status; allow 127.0.0.3; deny all; include {}/.nwui-generation; }} }} }}",
+        pid_file.display(), root.path().join("nginx.log").display(), config.nginx_conf_dir.display(),
+    );
+    std::fs::write(&config.nginx_main_conf, &managed).unwrap();
+    let first = uuid::Uuid::new_v4().to_string();
+    confirmation::publish(&config, &first).await.unwrap();
+    use std::os::unix::fs::{PermissionsExt, chown};
+    let (uid, gid) = crate::db_upgrade::postgres::postgres_ids().unwrap();
+    let nonroot = |bin: &Path| {
+        let process = Process(Command::new(bin).arg("60").uid(uid).gid(gid).process_group(0).spawn().unwrap());
+        let exe = format!("/proc/{}/exe", process.0.id());
+        let error = std::fs::metadata(exe).unwrap_err();
+        assert!(matches!(error.raw_os_error(), Some(libc::EACCES | libc::EPERM)), "{error}");
+        process
+    };
+    let foreign = nonroot(Path::new("/bin/sleep"));
+    let named = tempfile::tempdir().unwrap();
+    std::fs::set_permissions(named.path(), std::fs::Permissions::from_mode(0o755)).unwrap();
+    let named_nginx = named.path().join("nginx");
+    std::fs::copy("/bin/sleep", &named_nginx).unwrap();
+    let nginx_named_foreign = nonroot(&named_nginx);
+    std::fs::write(&pid_file, nginx_named_foreign.0.id().to_string()).unwrap();
+    std::fs::create_dir_all(Path::new(GROUP).parent().unwrap()).unwrap();
+    let supervisor = Supervision::start(&format!(
+        r#"#!/bin/sh
+umask 077
+printf '%s\n' "$$" > '{GROUP}'
+printf '%s\n' "$$" > '{}'
+exec /usr/sbin/nginx -g 'daemon off;'
+"#, pid_file.display()
+    ), true, |_| {});
+    wait_native(|| supervisor.status().trim_end() == "false -1").await;
+    assert!(confirmation::nginx_running(&config).await.unwrap_err().is::<confirmation::IdentityUncertain>());
+    std::fs::write(&pid_file, foreign.0.id().to_string()).unwrap();
+    chown(&pid_file, Some(uid), Some(gid)).unwrap();
+    std::fs::set_permissions(&pid_file, std::fs::Permissions::from_mode(0o666)).unwrap();
+    assert_eq!(confirmation::nginx_running(&config).await.unwrap(), NginxState::Stopped);
+    // Admission checks regular includes; the FIFO is added only to hold the real nginx in init.
+    std::fs::write(&config.nginx_main_conf, format!("include {};\n{managed}", fifo.display())).unwrap();
+    supervisor.command("-u");
+    wait_native(|| {
+        let Ok(pid) = std::fs::read_to_string(GROUP) else { return false };
+        std::fs::metadata(format!("/proc/{}/exe", pid.trim())).ok().zip(std::fs::metadata("/usr/sbin/nginx").ok())
+            .is_some_and(|(observed, expected)| {
+                use std::os::unix::fs::MetadataExt;
+                observed.dev() == expected.dev() && observed.ino() == expected.ino()
+            })
+    }).await;
+    let live_pid = std::fs::read_to_string(GROUP).unwrap();
+    let files = super::files::capture_payload_files(&config).await.unwrap();
+    let manifest = std::fs::read(store.root.join("manifest.json")).unwrap();
+    assert_eq!(confirmation::nginx_running(&config).await.unwrap(), NginxState::Starting);
+    assert!(confirmation::ensure_nginx_stopped(&config).await.is_err());
+    let witness = confirmation::Witness::from_config(&config).unwrap();
+    assert!(witness.confirm_with(&config, &first, Instant::now() + Duration::from_secs(3), &store,
+        |_| panic!("blocked master must not acknowledge a reload")
+    ).await.is_err());
+    assert_eq!(std::fs::read(store.root.join("manifest.json")).unwrap(), manifest);
+    assert_eq!(super::files::capture_payload_files(&config).await.unwrap(), files);
+    assert_eq!(unsafe { libc::kill(live_pid.trim().parse().unwrap(), 0) }, 0);
+
+    tokio::time::timeout(Duration::from_secs(5), tokio::task::spawn_blocking(move || {
+        std::fs::OpenOptions::new().write(true).open(fifo).unwrap()
+    })).await.unwrap().unwrap();
+    tokio::time::timeout(Duration::from_secs(5), async {
+        while reqwest::get(&config.nginx_status_url).await.is_err() {
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    }).await.unwrap();
+    std::fs::write(&config.nginx_main_conf, &managed).unwrap();
+    assert_eq!(confirmation::nginx_running(&config).await.unwrap(), NginxState::Running);
+    let mut acknowledged = 0;
+    witness.confirm_with(&config, &first, Instant::now() + Duration::from_secs(10), &store,
+        |phase| { assert_eq!(phase, acknowledged); acknowledged += 1; Ok(()) }
+    ).await.unwrap();
+    assert_eq!(acknowledged, 2);
+    assert_eq!(std::fs::read_to_string(GROUP).unwrap(), live_pid);
+
+    std::fs::remove_file(&pid_file).unwrap();
+    std::fs::remove_file(GROUP).unwrap();
+    assert_eq!(confirmation::nginx_running(&config).await.unwrap(), NginxState::Starting);
+    let restore_records = async {
+        tokio::time::sleep(Duration::from_millis(150)).await;
+        std::fs::write(&pid_file, &live_pid).unwrap();
+        std::fs::write(GROUP, &live_pid).unwrap();
+    };
+    let (observed, ()) = tokio::join!(
+        confirmation::observe_current(&config, Instant::now() + Duration::from_secs(5)),
+        restore_records,
+    );
+    observed.unwrap();
+
+    let foreign_conf = root.path().join("foreign.conf");
+    let foreign_pid = root.path().join("foreign.pid");
+    std::fs::write(&foreign_conf, format!(
+        "pid {}; error_log {} notice; events {{}}",
+        foreign_pid.display(), root.path().join("foreign.log").display(),
+    )).unwrap();
+    let other = Process(Command::new(&config.nginx_bin).arg("-c").arg(&foreign_conf)
+        .args(["-g", "daemon off;"]).process_group(0).spawn().unwrap());
+    wait_native(|| foreign_pid.exists()).await;
+    for record in [&pid_file, Path::new(GROUP)] {
+        std::fs::write(record, other.0.id().to_string()).unwrap();
+    }
+    assert!(confirmation::nginx_running(&config).await.unwrap_err().is::<confirmation::IdentityUncertain>());
+    assert_eq!(unsafe { libc::kill(other.0.id() as i32, 0) }, 0);
+    assert_eq!(unsafe { libc::kill(foreign.0.id() as i32, 0) }, 0);
+    // Give the managed nginx its original PID file before s6 shuts it down.
+    std::fs::write(&pid_file, &live_pid).unwrap();
+    std::fs::write(GROUP, live_pid).unwrap();
+    drop(supervisor);
+    std::fs::remove_file(GROUP).unwrap();
+}
+
 
 #[test]
 fn g35_marker_first_blocks_a_publisher_but_exempts_only_the_waiting_guard_parent() {
@@ -40,8 +232,9 @@ fn g35_relative_run_script_is_resolved_in_the_run_shells_cwd() {
 fn g35_admitted_executable_is_starting_and_dead_or_recycled_marker_is_stopped() {
     let root=tempfile::tempdir().unwrap();let pid=root.path().join("nginx.pid");let marker=root.path().join("nginx-process-group");
     let mut old=Command::new("/bin/true").spawn().unwrap();let old_pid=old.id();old.wait().unwrap();std::fs::write(&pid,old_pid.to_string()).unwrap();
-    std::fs::write(&marker,std::process::id().to_string()).unwrap();
-    assert_eq!(nginx_state_with(&pid,&marker,&std::env::current_exe().unwrap(),Path::new("/unused/run"),None).unwrap(),NginxState::Starting);
+    let master = super::identity_fixture::FakeMaster::spawn(&root.path().join("standalone.pid"), false);
+    std::fs::write(&marker,master.pid().to_string()).unwrap();
+    assert_eq!(nginx_state_with(&pid,&marker,Path::new("/bin/bash"),Path::new("/unused/run"),None).unwrap(),NginxState::Starting);
     assert_eq!(nginx_state_with(&pid,&marker,Path::new("/bin/true"),Path::new("/unused/run"),None).unwrap(),NginxState::Stopped);
     let mut child=Command::new("/bin/true").spawn().unwrap();let dead=child.id();child.wait().unwrap();std::fs::write(&marker,dead.to_string()).unwrap();
     assert_eq!(nginx_state_with(&pid,&marker,Path::new("/bin/true"),Path::new("/unused/run"),None).unwrap(),NginxState::Stopped);
@@ -100,14 +293,16 @@ async fn g35_real_nginx_start_overlap_refuses_writes_then_uses_running_recovery(
     std::fs::set_permissions(&guard,std::fs::Permissions::from_mode(0o700)).unwrap();
     let text=include_str!("../../../../docker/s6-rc.d/nginx/run").replace("/etc/s6-overlay/scripts/nwui-gate.sh",&gate.display().to_string()).replace("/usr/local/bin/nwui-api",&guard.display().to_string());
     std::fs::write(run,text).unwrap();
-    let master=Process(Command::new("/bin/sh").arg(run).env("LD_PRELOAD",preload).env("NWUI_G35_PIDFILE",&pid).env("NWUI_G35_ACK",&ack)
+    let master = Supervision::start("#!/bin/sh\nexec /bin/sh /etc/s6-overlay/s6-rc.d/nginx/run\n", false, |command| {
+        command.env("LD_PRELOAD",preload).env("NWUI_G35_PIDFILE",&pid).env("NWUI_G35_ACK",&ack)
         .env("G35_NATIVE_STORE",store.root.parent().unwrap()).env("G35_GUARD_EXIT_ACK",root.path().join("guard-exit-ack")).env("G35_NATIVE_OP",&operation.id)
         .env("DATABASE_URL","postgres://fixture@127.0.0.1/fixture").env("AUTH_SECRET","g35-synthetic-fixture")
         .env("NGINX_BIN",&config.nginx_bin).env("NGINX_CONF",&config.nginx_main_conf).env("NGINX_CONF_D",&config.nginx_conf_dir).env("NGINX_STREAM_D",&config.nginx_stream_dir)
-        .env("CERTS_DIR",&config.certs_dir).env("NGINX_GUARD_QUARANTINE",&config.nginx_quarantine_dir).env("NGINX_STATUS_URL",&config.nginx_status_url)
-        .process_group(0).spawn().unwrap());
+        .env("CERTS_DIR",&config.certs_dir).env("NGINX_GUARD_QUARANTINE",&config.nginx_quarantine_dir).env("NGINX_STATUS_URL",&config.nginx_status_url);
+    });
     let guard_ack=root.path().join("guard-exit-ack");
     wait_for(||{let log=std::fs::read_to_string(root.path().join("guard.log")).unwrap_or_default();guard_ack.exists()&&log.contains("1 passed; 0 failed")||log.contains("FAILED")}).await;
+    let master_pid: u32 = std::fs::read_to_string(marker).unwrap().trim().parse().unwrap();
     assert!(guard_ack.exists(),"guard failed: {}",std::fs::read_to_string(root.path().join("guard.log")).unwrap_or_default());
     assert_eq!(Operation::load(&store,&operation.id).unwrap().phase,Phase::RestoreValidated,"the real guard child must restore before its waiting parent execs nginx");
     assert!(std::fs::read_to_string(root.path().join("guard.log")).unwrap().contains("1 passed; 0 failed"));
@@ -132,18 +327,19 @@ async fn g35_real_nginx_start_overlap_refuses_writes_then_uses_running_recovery(
         .stdout(log.try_clone().unwrap()).stderr(log).process_group(0);
     let fd=writer.as_raw_fd();unsafe{command.pre_exec(move||{if libc::dup2(fd,3)<0{return Err(std::io::Error::last_os_error());}Ok(())});}
     let publisher=Process(command.spawn().unwrap());drop(writer);
-    wait_for(||std::fs::read_to_string(&root_log).unwrap_or_default().contains("retrying in 2s")).await;
+    wait_for(||std::fs::read_to_string(&root_log).unwrap_or_default().contains("nginx 시작을 기다리고 있습니다. 자동으로 다시 확인합니다.")).await;
+    tokio::time::sleep(Duration::from_millis(1200)).await;
     let diagnostics=std::fs::read_to_string(&root_log).unwrap();
-    assert_eq!(diagnostics.matches("[publisher] recovery failed:").count(),1);assert!(diagnostics.contains("원인을 해결하면 자동으로 다시 시도합니다(최대 15분 간격). 컨테이너를 다시 시작해도 됩니다."));assert!(!diagnostics.contains("postgres://"));
+    assert_eq!(diagnostics.matches("nginx 시작을 기다리고 있습니다. 자동으로 다시 확인합니다.").count(),1);assert!(!diagnostics.contains("[publisher] recovery failed:"));assert!(!diagnostics.contains("postgres://"));
     use std::io::Read;let mut byte=[0];assert_eq!(ready.read(&mut byte).unwrap_err().kind(),std::io::ErrorKind::WouldBlock,"publisher must not notify while nginx is Starting");
     assert_eq!(unsafe{libc::kill(publisher.0.id()as i32,0)},0);assert_eq!(files::capture_payload_files(&config).await.unwrap(),before);assert_eq!(serde_json::to_value(Operation::load(&store,&operation.id).unwrap()).unwrap(),op);
-    assert_eq!(unsafe{libc::kill(master.0.id()as i32,libc::SIGCONT)},0);
+    assert_eq!(unsafe{libc::kill(master_pid as i32,libc::SIGCONT)},0);
     wait_for(||ack.exists()).await;
     assert!(std::fs::read(&pid).unwrap().is_empty());assert_eq!(confirmation::nginx_running(&config).await.unwrap(),NginxState::Starting);
     assert_eq!(ready.read(&mut byte).unwrap_err().kind(),std::io::ErrorKind::WouldBlock);
     assert_eq!(files::capture_payload_files(&config).await.unwrap(),before);assert_eq!(serde_json::to_value(Operation::load(&store,&operation.id).unwrap()).unwrap(),op);
-    assert_eq!(unsafe{libc::kill(master.0.id()as i32,libc::SIGCONT)},0);
-    wait_for(||std::fs::read_to_string(&pid).is_ok_and(|s|s.trim()==master.0.id().to_string())).await;
+    assert_eq!(unsafe{libc::kill(master_pid as i32,libc::SIGCONT)},0);
+    wait_for(||std::fs::read_to_string(&pid).is_ok_and(|s|s.trim()==master_pid.to_string())).await;
     assert_eq!(confirmation::nginx_running(&config).await.unwrap(),NginxState::Running);
     wait_for(||match ready.read(&mut byte){Ok(1)=>true,Err(error)if error.kind()==std::io::ErrorKind::WouldBlock=>false,other=>panic!("publisher readiness failed: {other:?}; {}",std::fs::read_to_string(&root_log).unwrap_or_default())}).await;
     assert_eq!(byte,[b'\n']);

@@ -10,30 +10,12 @@ import {
   PageHeader,
 } from "@repo/ui";
 import type { RetentionCleanup } from "@repo/contracts";
-import type { ReactNode } from "react";
 import Link from "next/link";
-import { HistoryTime } from "./history-time";
+import { HistoryTime, NodeHistoryLink } from "./history-time";
 import styles from "./history.module.css";
 
-/**
- * Body of the history list screen. Shared by the local screen
- * (`app/(app)/history/page.tsx`) and the node-context screen
- * (`app/(node)/nodes/[id]/history/page.tsx`) — both read data from a
- * different source (local DB vs. `callNode`/`loadNodePage`) but render the
- * same table. `components/` (not either route group) because both `(app)`
- * and `(node)` import it.
- *
- * Unlike audit-list.tsx (Task 3), the node response genuinely lacks columns
- * the local one has — no `data` (so no upstream/server/stream counts) and no
- * resolvable actor email (only a raw `actorId` the gateway can't turn into an
- * email). `showDetails` and `renderRowAction` let this stay one component
- * instead of two: the local page always passes `showDetails: true` and no
- * `renderRowAction` (rollback lives on its own detail page,
- * `(app)/history/[id]/page.tsx`, unchanged by this task); the node page
- * passes `showDetails: false` plus a `renderRowAction` that renders "노드에서
- * 열기" + a rollback button per row, since the node has no detail page for
- * rollback to live on (no `GET /api/v1/history/:id`).
- */
+export const NODE_HISTORY_LIST_INFO =
+  "이 노드에 설정을 적용(apply)할 때마다 저장된 스냅샷 이력입니다. 최근 100건을 표시하며, 각 항목을 열면 스냅샷 내용과 롤백 버튼을 확인할 수 있습니다.";
 
 export interface HistoryRowVM {
   id: string;
@@ -59,27 +41,20 @@ export interface HistoryListProps {
   data: HistoryListVM;
   title?: string;
   info: string;
-  /** 페이지 설명. 로컬은 안 넘긴다. */
-  notice?: string;
-  /** 있으면 시간 셀이 `${basePath}/${id}` 로 링크된다(로컬 상세 페이지). 노드는 상세가 없어 넘기지 않는다. */
   basePath?: string;
-  /** 행마다 덧붙일 조작 UI(노드: "노드에서 열기" + 롤백). 로컬은 안 넘긴다. */
-  renderRowAction?: (row: HistoryRowVM) => ReactNode;
 }
 
 export function HistoryList({
   data,
   title = "적용 이력",
   info,
-  notice,
   basePath,
-  renderRowAction,
 }: HistoryListProps) {
   const { items, showDetails, lastCleanup } = data;
 
   return (
     <section className={layout.page}>
-      <PageHeader title={<>{title}</>} info={<>{info}</>} description={notice} />
+      <PageHeader title={<>{title}</>} info={<>{info}</>} />
 
       <Surface flush>
         <Table density="comfortable" label="설정 적용 이력">
@@ -95,17 +70,12 @@ export function HistoryList({
                   <Th align="end">Streams</Th>
                 </>
               ) : null}
-              {renderRowAction ? <Th aria-label="조작" /> : null}
             </Tr>
           </thead>
           <tbody>
             {items.length === 0 ? (
               <Tr>
-                <Td
-                  colSpan={
-                    2 + (showDetails ? 4 : 0) + (renderRowAction ? 1 : 0)
-                  }
-                >
+                <Td colSpan={showDetails ? 6 : 2}>
                   <EmptyState description="적용 이력이 없습니다." />
                 </Td>
               </Tr>
@@ -115,9 +85,11 @@ export function HistoryList({
                 <Td cell="primary" wrap>
                   <div className={styles.label}>
                     {basePath ? (
-                      <Link href={`${basePath}/${row.id}`}>
-                        {row.label ?? "—"}
-                      </Link>
+                      showDetails ? (
+                        <Link href={`${basePath}/${encodeURIComponent(row.id)}`}>{row.label ?? "—"}</Link>
+                      ) : (
+                        <NodeHistoryLink href={`${basePath}/${encodeURIComponent(row.id)}`} label={row.label} iso={row.iso} />
+                      )
                     ) : (
                       <span>{row.label ?? "—"}</span>
                     )}
@@ -150,9 +122,6 @@ export function HistoryList({
                       {row.streamCount}
                     </Td>
                   </>
-                ) : null}
-                {renderRowAction ? (
-                  <Td cell="action">{renderRowAction(row)}</Td>
                 ) : null}
               </Tr>
             ))}

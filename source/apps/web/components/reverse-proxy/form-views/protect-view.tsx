@@ -191,8 +191,8 @@ function TlsFields({
                 value={tls.preferServer ? "on" : "off"}
                 onChange={(v) => tls.setPreferServer(v === "on")}
                 options={[
-                  { value: "on", label: "on" },
                   { value: "off", label: "off (권장)" },
+                  { value: "on", label: "on" },
                 ]}
               />
             </FieldGroup>
@@ -466,7 +466,7 @@ function AccessFields({
           <p className={formStyles.directiveGroupNote}>
             인증서 미연결 + 엣지 모드 → 오리진은 HTTP로 서빙되고 HTTPS는 엣지가
             종단합니다(정상). 오리진도 HTTPS로 받으려면 &quot;HTTPS&quot;
-            설정에서 인증서(예: Cloudflare Origin CA를 Certificates에서
+            설정에서 인증서(예: Cloudflare Origin CA를 인증서 메뉴에서
             가져오기)를 연결하세요.
           </p>
         ) : null}
@@ -504,7 +504,7 @@ export function ProtectView({
       <Card
         id="server-form-https"
         title="TLS"
-        info="발급 완료된 인증서를 연결하면 이 서버는 HTTPS로 서빙됩니다. 인증서는 Certificates 메뉴에서 발급합니다."
+        info="발급 완료된 인증서를 연결하면 이 서버는 HTTPS로 서빙됩니다. 인증서는 인증서 메뉴에서 발급합니다."
         errorCount={
           Object.keys(fieldErrors ?? {}).filter((key) =>
             /^(certificateId|tlsPort|tlsOptions|http2)/.test(key),

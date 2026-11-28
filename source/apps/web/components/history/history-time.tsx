@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 // 브라우저 시간대를 못 구하면 KST(한국 표준시)로 표시한다.
@@ -30,7 +31,7 @@ function format(iso: string, timeZone: string, precision: keyof typeof formats):
  * 와 같다 — `(app)/history` 와 `(node)/nodes/[id]/history` 양쪽이 이 컴포넌트를
  * 쓴다.
  */
-export function HistoryTime({ iso, precision = "full" }: { iso: string; precision?: keyof typeof formats }) {
+function useHistoryTime(iso: string, precision: keyof typeof formats) {
   const [text, setText] = useState(() => format(iso, FALLBACK_TZ, precision));
 
   useEffect(() => {
@@ -38,9 +39,20 @@ export function HistoryTime({ iso, precision = "full" }: { iso: string; precisio
     setText(format(iso, tz, precision));
   }, [iso, precision]);
 
+  return text;
+}
+
+export function HistoryTime({ iso, precision = "full" }: { iso: string; precision?: keyof typeof formats }) {
+  const text = useHistoryTime(iso, precision);
   return (
     <time dateTime={iso} suppressHydrationWarning>
       {text}
     </time>
   );
+}
+
+export function NodeHistoryLink({ href, label, iso }: { href: string; label: string | null; iso: string }) {
+  const time = useHistoryTime(iso, "full");
+  const visibleLabel = label?.trim() ? label : "—";
+  return <Link href={href} aria-label={`${visibleLabel} · ${time}`}>{visibleLabel}</Link>;
 }

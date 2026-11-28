@@ -3,16 +3,16 @@
   "inputs": {
     "apps/api/Cargo.lock": "2a998011bcae3c4c88853a10e26a0bec55b86871d8f8430bafd12bdb26d42ff5",
     "docker/licenses/spdx-lock.json": "bb7bc66d0b482f11e0d66ea76f3967ffc47995c48803536d70c2f2e23bfb28ed",
-    "docker/pins/inventory/api-builder-amd64.tsv": "212f2a6c7deb81ec4b72117170969aae0702d6c121e1007783f5db74671c52c5",
-    "docker/pins/inventory/api-builder-arm64.tsv": "2ef95bd779af5df65d0325641967a21d2d845546f99a2c8fff5f4da7f7382617",
-    "docker/pins/inventory/keyring-amd64.tsv": "f2564682b63467a45f05eb1d18b4ce3ceaa10de78ef56fbc86c7e7005dc961e9",
-    "docker/pins/inventory/keyring-arm64.tsv": "3b9989b7397e269399fc448bc342ced3692373e5802b9b7dc2d7dbaef6834347",
-    "docker/pins/inventory/runtime-amd64.tsv": "a724c9e95ea4c7f7e1124b9651b714204b911b81b53221dea20f9b2ffeb887d7",
-    "docker/pins/inventory/runtime-arm64.tsv": "009306526ad24b7aae2adb526e761695cad0f6ab4b33ac9c3c9c201726d284df",
+    "docker/pins/inventory/api-builder-amd64.tsv": "b1d23e5fcfc9649e48f9f3ce5206a0f2c83ef0bd9c328a8e6261f65166b91718",
+    "docker/pins/inventory/api-builder-arm64.tsv": "a6fa1c0f1095b95e1640b299c15344e00c3733513b43305284b7772e4527bafe",
+    "docker/pins/inventory/keyring-amd64.tsv": "fcd29d49c794ab030492cf0d59b568fbefe7e07b6f9d262fe7f34a69c33b10d8",
+    "docker/pins/inventory/keyring-arm64.tsv": "30f4189f30257813c50f72e84013f2836ec5aa4967218b3a42080fdf06275614",
+    "docker/pins/inventory/runtime-amd64.tsv": "a6d284ce805efcc9263fe536fc41e54348f2b2c3ac0a9b95c42c668f2eb9d143",
+    "docker/pins/inventory/runtime-arm64.tsv": "af17fa290528fab1a5ecf36417dce863883f1b04a32ce78324eeb6458152471d",
     "docker/turbo/package-lock.json": "90541d8aac02c8edc1506278f64156743e6bc4f4278be7bb0ecb28a7b3e82254",
     "package.json": "91af8c58d9fa0674485207703d6ddc2e31aa5b95192e5295da22f1ad9cfe7731",
     "yarn.lock": "52e904d286c71d11a978d7c41d712fd594824517e16cda67dcf0ed7fd7da113d",
-    "Dockerfile:ARG": "02591a8eb313b55bedb2bfbc8c914851ba8e46be125bd6f683bca6d93b573a48"
+    "Dockerfile:ARG": "bbe1c2fa04e2eea5388d74388eb4533c15e8ee97968aec01754b53f4c4164bac"
   },
   "entries": [
     {
@@ -30169,19 +30169,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-amd64.tsv:libc-bin=2.41-12+deb13u4",
+      "id": "deb:api-builder-amd64.tsv:libc-bin=2.41-12+deb13u5",
       "name": "libc-bin",
       "arch": "amd64",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -30197,19 +30197,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-amd64.tsv:libc-dev-bin=2.41-12+deb13u4",
+      "id": "deb:api-builder-amd64.tsv:libc-dev-bin=2.41-12+deb13u5",
       "name": "libc-dev-bin",
       "arch": "amd64",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -30225,19 +30225,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-amd64.tsv:libc6-dev=2.41-12+deb13u4",
+      "id": "deb:api-builder-amd64.tsv:libc6-dev=2.41-12+deb13u5",
       "name": "libc6-dev",
       "arch": "amd64",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -30253,19 +30253,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-amd64.tsv:libc6=2.41-12+deb13u4",
+      "id": "deb:api-builder-amd64.tsv:libc6=2.41-12+deb13u5",
       "name": "libc6",
       "arch": "amd64",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -31555,19 +31555,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-amd64.tsv:libnghttp2-14=1.64.0-1.1+deb13u1",
+      "id": "deb:api-builder-amd64.tsv:libnghttp2-14=1.64.0-1.1+deb13u2",
       "name": "libnghttp2-14",
       "arch": "amd64",
-      "version": "1.64.0-1.1+deb13u1",
+      "version": "1.64.0-1.1+deb13u2",
       "source": "nghttp2",
-      "sourceVersion": "1.64.0-1.1+deb13u1",
+      "sourceVersion": "1.64.0-1.1+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-c1dd305a9fbc35dd87dd729e",
-      "archiveSha256": "e16478701c5c007aa8761dc30c01090b2217199558bd1017b1d237db463d758c",
+      "archiveSha256": "9dacf0e0eb1870bc6bf30b03733639ef6729f402bed9482e6ac5cabb52ce2f5f",
       "encodings": [
         {
-          "archiveSha256": "e16478701c5c007aa8761dc30c01090b2217199558bd1017b1d237db463d758c",
+          "archiveSha256": "9dacf0e0eb1870bc6bf30b03733639ef6729f402bed9482e6ac5cabb52ce2f5f",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "a34ae32a5eba61e535835a8de7c398f47e420247d339bc400a3b9c618ba29a3d",
@@ -32710,19 +32710,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-amd64.tsv:libzstd1=1.5.7+dfsg-1",
+      "id": "deb:api-builder-amd64.tsv:libzstd1=1.5.7+dfsg-1+deb13u1",
       "name": "libzstd1",
       "arch": "amd64",
-      "version": "1.5.7+dfsg-1",
+      "version": "1.5.7+dfsg-1+deb13u1",
       "source": "libzstd",
-      "sourceVersion": "1.5.7+dfsg-1",
+      "sourceVersion": "1.5.7+dfsg-1+deb13u1",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-ff0948cc0b8ac49a03a3bca7",
-      "archiveSha256": "5e88424d919941291f79e1bfada6cb1a6f748671d9de7d4b7d931f361f183a15",
+      "archiveSha256": "adc44c628b74a7a4eff4fbed4681e8fdc8ffe8e4bc31aa9ea6a41a07a2281d23",
       "encodings": [
         {
-          "archiveSha256": "5e88424d919941291f79e1bfada6cb1a6f748671d9de7d4b7d931f361f183a15",
+          "archiveSha256": "adc44c628b74a7a4eff4fbed4681e8fdc8ffe8e4bc31aa9ea6a41a07a2281d23",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "5cec9fef4d3fa7e0371fbef4ec3fc416e0105dc2a9922117f84e825cb11f50f8",
@@ -32766,19 +32766,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-amd64.tsv:login.defs=1:4.17.4-2",
+      "id": "deb:api-builder-amd64.tsv:login.defs=1:4.17.4-2+deb13u1",
       "name": "login.defs",
       "arch": "all",
-      "version": "1:4.17.4-2",
+      "version": "1:4.17.4-2+deb13u1",
       "source": "shadow",
-      "sourceVersion": "1:4.17.4-2",
+      "sourceVersion": "1:4.17.4-2+deb13u1",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d0b3e8e91d796705ce2f87ca",
-      "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+      "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
       "encodings": [
         {
-          "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+          "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "305494b6f5f6bb65ead9160077d4fdf45ccdf06de7c958ff96f27a632b8729a3",
@@ -33018,19 +33018,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-amd64.tsv:passwd=1:4.17.4-2",
+      "id": "deb:api-builder-amd64.tsv:passwd=1:4.17.4-2+deb13u1",
       "name": "passwd",
       "arch": "amd64",
-      "version": "1:4.17.4-2",
+      "version": "1:4.17.4-2+deb13u1",
       "source": "shadow",
-      "sourceVersion": "1:4.17.4-2",
+      "sourceVersion": "1:4.17.4-2+deb13u1",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d0b3e8e91d796705ce2f87ca",
-      "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+      "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
       "encodings": [
         {
-          "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+          "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "305494b6f5f6bb65ead9160077d4fdf45ccdf06de7c958ff96f27a632b8729a3",
@@ -33046,19 +33046,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-amd64.tsv:patch=2.8-2",
+      "id": "deb:api-builder-amd64.tsv:patch=2.8-2+deb13u1",
       "name": "patch",
       "arch": "amd64",
-      "version": "2.8-2",
+      "version": "2.8-2+deb13u1",
       "source": "patch",
-      "sourceVersion": "2.8-2",
+      "sourceVersion": "2.8-2+deb13u1",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-a68ca8256439389187b76cda",
-      "archiveSha256": "9a740460988c910c5538e4d24df00d9961d19dee014c63e92f5d60e611fa60c4",
+      "archiveSha256": "c52f4a6086db53d8efd31485c7ec71047759a2a7a257da8643410e01ceef6587",
       "encodings": [
         {
-          "archiveSha256": "9a740460988c910c5538e4d24df00d9961d19dee014c63e92f5d60e611fa60c4",
+          "archiveSha256": "c52f4a6086db53d8efd31485c7ec71047759a2a7a257da8643410e01ceef6587",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "442ce445d7f35f171386790e8d637c1c5ae3e50bffdc9c3785a030654da2905c",
@@ -34978,19 +34978,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-arm64.tsv:libc-bin=2.41-12+deb13u4",
+      "id": "deb:api-builder-arm64.tsv:libc-bin=2.41-12+deb13u5",
       "name": "libc-bin",
       "arch": "arm64",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -35006,19 +35006,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-arm64.tsv:libc-dev-bin=2.41-12+deb13u4",
+      "id": "deb:api-builder-arm64.tsv:libc-dev-bin=2.41-12+deb13u5",
       "name": "libc-dev-bin",
       "arch": "arm64",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -35034,19 +35034,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-arm64.tsv:libc6-dev=2.41-12+deb13u4",
+      "id": "deb:api-builder-arm64.tsv:libc6-dev=2.41-12+deb13u5",
       "name": "libc6-dev",
       "arch": "arm64",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -35062,19 +35062,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-arm64.tsv:libc6=2.41-12+deb13u4",
+      "id": "deb:api-builder-arm64.tsv:libc6=2.41-12+deb13u5",
       "name": "libc6",
       "arch": "arm64",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -36364,19 +36364,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-arm64.tsv:libnghttp2-14=1.64.0-1.1+deb13u1",
+      "id": "deb:api-builder-arm64.tsv:libnghttp2-14=1.64.0-1.1+deb13u2",
       "name": "libnghttp2-14",
       "arch": "arm64",
-      "version": "1.64.0-1.1+deb13u1",
+      "version": "1.64.0-1.1+deb13u2",
       "source": "nghttp2",
-      "sourceVersion": "1.64.0-1.1+deb13u1",
+      "sourceVersion": "1.64.0-1.1+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-c1dd305a9fbc35dd87dd729e",
-      "archiveSha256": "e16478701c5c007aa8761dc30c01090b2217199558bd1017b1d237db463d758c",
+      "archiveSha256": "9dacf0e0eb1870bc6bf30b03733639ef6729f402bed9482e6ac5cabb52ce2f5f",
       "encodings": [
         {
-          "archiveSha256": "e16478701c5c007aa8761dc30c01090b2217199558bd1017b1d237db463d758c",
+          "archiveSha256": "9dacf0e0eb1870bc6bf30b03733639ef6729f402bed9482e6ac5cabb52ce2f5f",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "a34ae32a5eba61e535835a8de7c398f47e420247d339bc400a3b9c618ba29a3d",
@@ -37491,19 +37491,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-arm64.tsv:libzstd1=1.5.7+dfsg-1",
+      "id": "deb:api-builder-arm64.tsv:libzstd1=1.5.7+dfsg-1+deb13u1",
       "name": "libzstd1",
       "arch": "arm64",
-      "version": "1.5.7+dfsg-1",
+      "version": "1.5.7+dfsg-1+deb13u1",
       "source": "libzstd",
-      "sourceVersion": "1.5.7+dfsg-1",
+      "sourceVersion": "1.5.7+dfsg-1+deb13u1",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-ff0948cc0b8ac49a03a3bca7",
-      "archiveSha256": "5e88424d919941291f79e1bfada6cb1a6f748671d9de7d4b7d931f361f183a15",
+      "archiveSha256": "adc44c628b74a7a4eff4fbed4681e8fdc8ffe8e4bc31aa9ea6a41a07a2281d23",
       "encodings": [
         {
-          "archiveSha256": "5e88424d919941291f79e1bfada6cb1a6f748671d9de7d4b7d931f361f183a15",
+          "archiveSha256": "adc44c628b74a7a4eff4fbed4681e8fdc8ffe8e4bc31aa9ea6a41a07a2281d23",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "5cec9fef4d3fa7e0371fbef4ec3fc416e0105dc2a9922117f84e825cb11f50f8",
@@ -37547,19 +37547,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-arm64.tsv:login.defs=1:4.17.4-2",
+      "id": "deb:api-builder-arm64.tsv:login.defs=1:4.17.4-2+deb13u1",
       "name": "login.defs",
       "arch": "all",
-      "version": "1:4.17.4-2",
+      "version": "1:4.17.4-2+deb13u1",
       "source": "shadow",
-      "sourceVersion": "1:4.17.4-2",
+      "sourceVersion": "1:4.17.4-2+deb13u1",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d0b3e8e91d796705ce2f87ca",
-      "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+      "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
       "encodings": [
         {
-          "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+          "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "305494b6f5f6bb65ead9160077d4fdf45ccdf06de7c958ff96f27a632b8729a3",
@@ -37799,19 +37799,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-arm64.tsv:passwd=1:4.17.4-2",
+      "id": "deb:api-builder-arm64.tsv:passwd=1:4.17.4-2+deb13u1",
       "name": "passwd",
       "arch": "arm64",
-      "version": "1:4.17.4-2",
+      "version": "1:4.17.4-2+deb13u1",
       "source": "shadow",
-      "sourceVersion": "1:4.17.4-2",
+      "sourceVersion": "1:4.17.4-2+deb13u1",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d0b3e8e91d796705ce2f87ca",
-      "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+      "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
       "encodings": [
         {
-          "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+          "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "305494b6f5f6bb65ead9160077d4fdf45ccdf06de7c958ff96f27a632b8729a3",
@@ -37827,19 +37827,19 @@
       ]
     },
     {
-      "id": "deb:api-builder-arm64.tsv:patch=2.8-2",
+      "id": "deb:api-builder-arm64.tsv:patch=2.8-2+deb13u1",
       "name": "patch",
       "arch": "arm64",
-      "version": "2.8-2",
+      "version": "2.8-2+deb13u1",
       "source": "patch",
-      "sourceVersion": "2.8-2",
+      "sourceVersion": "2.8-2+deb13u1",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-a68ca8256439389187b76cda",
-      "archiveSha256": "9a740460988c910c5538e4d24df00d9961d19dee014c63e92f5d60e611fa60c4",
+      "archiveSha256": "c52f4a6086db53d8efd31485c7ec71047759a2a7a257da8643410e01ceef6587",
       "encodings": [
         {
-          "archiveSha256": "9a740460988c910c5538e4d24df00d9961d19dee014c63e92f5d60e611fa60c4",
+          "archiveSha256": "c52f4a6086db53d8efd31485c7ec71047759a2a7a257da8643410e01ceef6587",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "442ce445d7f35f171386790e8d637c1c5ae3e50bffdc9c3785a030654da2905c",
@@ -39367,19 +39367,19 @@
       ]
     },
     {
-      "id": "deb:keyring-amd64.tsv:libc-bin=2.41-12+deb13u4",
+      "id": "deb:keyring-amd64.tsv:libc-bin=2.41-12+deb13u5",
       "name": "libc-bin",
       "arch": "amd64",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -39395,19 +39395,19 @@
       ]
     },
     {
-      "id": "deb:keyring-amd64.tsv:libc6=2.41-12+deb13u4",
+      "id": "deb:keyring-amd64.tsv:libc6=2.41-12+deb13u5",
       "name": "libc6",
       "arch": "amd64",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -40242,19 +40242,19 @@
       ]
     },
     {
-      "id": "deb:keyring-amd64.tsv:libnghttp2-14=1.64.0-1.1+deb13u1",
+      "id": "deb:keyring-amd64.tsv:libnghttp2-14=1.64.0-1.1+deb13u2",
       "name": "libnghttp2-14",
       "arch": "amd64",
-      "version": "1.64.0-1.1+deb13u1",
+      "version": "1.64.0-1.1+deb13u2",
       "source": "nghttp2",
-      "sourceVersion": "1.64.0-1.1+deb13u1",
+      "sourceVersion": "1.64.0-1.1+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-c1dd305a9fbc35dd87dd729e",
-      "archiveSha256": "e16478701c5c007aa8761dc30c01090b2217199558bd1017b1d237db463d758c",
+      "archiveSha256": "9dacf0e0eb1870bc6bf30b03733639ef6729f402bed9482e6ac5cabb52ce2f5f",
       "encodings": [
         {
-          "archiveSha256": "e16478701c5c007aa8761dc30c01090b2217199558bd1017b1d237db463d758c",
+          "archiveSha256": "9dacf0e0eb1870bc6bf30b03733639ef6729f402bed9482e6ac5cabb52ce2f5f",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "a34ae32a5eba61e535835a8de7c398f47e420247d339bc400a3b9c618ba29a3d",
@@ -41117,19 +41117,19 @@
       ]
     },
     {
-      "id": "deb:keyring-amd64.tsv:libzstd1=1.5.7+dfsg-1",
+      "id": "deb:keyring-amd64.tsv:libzstd1=1.5.7+dfsg-1+deb13u1",
       "name": "libzstd1",
       "arch": "amd64",
-      "version": "1.5.7+dfsg-1",
+      "version": "1.5.7+dfsg-1+deb13u1",
       "source": "libzstd",
-      "sourceVersion": "1.5.7+dfsg-1",
+      "sourceVersion": "1.5.7+dfsg-1+deb13u1",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-ff0948cc0b8ac49a03a3bca7",
-      "archiveSha256": "5e88424d919941291f79e1bfada6cb1a6f748671d9de7d4b7d931f361f183a15",
+      "archiveSha256": "adc44c628b74a7a4eff4fbed4681e8fdc8ffe8e4bc31aa9ea6a41a07a2281d23",
       "encodings": [
         {
-          "archiveSha256": "5e88424d919941291f79e1bfada6cb1a6f748671d9de7d4b7d931f361f183a15",
+          "archiveSha256": "adc44c628b74a7a4eff4fbed4681e8fdc8ffe8e4bc31aa9ea6a41a07a2281d23",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "5cec9fef4d3fa7e0371fbef4ec3fc416e0105dc2a9922117f84e825cb11f50f8",
@@ -41145,19 +41145,19 @@
       ]
     },
     {
-      "id": "deb:keyring-amd64.tsv:login.defs=1:4.17.4-2",
+      "id": "deb:keyring-amd64.tsv:login.defs=1:4.17.4-2+deb13u1",
       "name": "login.defs",
       "arch": "all",
-      "version": "1:4.17.4-2",
+      "version": "1:4.17.4-2+deb13u1",
       "source": "shadow",
-      "sourceVersion": "1:4.17.4-2",
+      "sourceVersion": "1:4.17.4-2+deb13u1",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d0b3e8e91d796705ce2f87ca",
-      "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+      "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
       "encodings": [
         {
-          "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+          "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "305494b6f5f6bb65ead9160077d4fdf45ccdf06de7c958ff96f27a632b8729a3",
@@ -41369,19 +41369,19 @@
       ]
     },
     {
-      "id": "deb:keyring-amd64.tsv:passwd=1:4.17.4-2",
+      "id": "deb:keyring-amd64.tsv:passwd=1:4.17.4-2+deb13u1",
       "name": "passwd",
       "arch": "amd64",
-      "version": "1:4.17.4-2",
+      "version": "1:4.17.4-2+deb13u1",
       "source": "shadow",
-      "sourceVersion": "1:4.17.4-2",
+      "sourceVersion": "1:4.17.4-2+deb13u1",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d0b3e8e91d796705ce2f87ca",
-      "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+      "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
       "encodings": [
         {
-          "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+          "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "305494b6f5f6bb65ead9160077d4fdf45ccdf06de7c958ff96f27a632b8729a3",
@@ -42741,19 +42741,19 @@
       ]
     },
     {
-      "id": "deb:keyring-arm64.tsv:libc-bin=2.41-12+deb13u4",
+      "id": "deb:keyring-arm64.tsv:libc-bin=2.41-12+deb13u5",
       "name": "libc-bin",
       "arch": "arm64",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -42769,19 +42769,19 @@
       ]
     },
     {
-      "id": "deb:keyring-arm64.tsv:libc6=2.41-12+deb13u4",
+      "id": "deb:keyring-arm64.tsv:libc6=2.41-12+deb13u5",
       "name": "libc6",
       "arch": "arm64",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -43616,19 +43616,19 @@
       ]
     },
     {
-      "id": "deb:keyring-arm64.tsv:libnghttp2-14=1.64.0-1.1+deb13u1",
+      "id": "deb:keyring-arm64.tsv:libnghttp2-14=1.64.0-1.1+deb13u2",
       "name": "libnghttp2-14",
       "arch": "arm64",
-      "version": "1.64.0-1.1+deb13u1",
+      "version": "1.64.0-1.1+deb13u2",
       "source": "nghttp2",
-      "sourceVersion": "1.64.0-1.1+deb13u1",
+      "sourceVersion": "1.64.0-1.1+deb13u2",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-c1dd305a9fbc35dd87dd729e",
-      "archiveSha256": "e16478701c5c007aa8761dc30c01090b2217199558bd1017b1d237db463d758c",
+      "archiveSha256": "9dacf0e0eb1870bc6bf30b03733639ef6729f402bed9482e6ac5cabb52ce2f5f",
       "encodings": [
         {
-          "archiveSha256": "e16478701c5c007aa8761dc30c01090b2217199558bd1017b1d237db463d758c",
+          "archiveSha256": "9dacf0e0eb1870bc6bf30b03733639ef6729f402bed9482e6ac5cabb52ce2f5f",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "a34ae32a5eba61e535835a8de7c398f47e420247d339bc400a3b9c618ba29a3d",
@@ -44491,19 +44491,19 @@
       ]
     },
     {
-      "id": "deb:keyring-arm64.tsv:libzstd1=1.5.7+dfsg-1",
+      "id": "deb:keyring-arm64.tsv:libzstd1=1.5.7+dfsg-1+deb13u1",
       "name": "libzstd1",
       "arch": "arm64",
-      "version": "1.5.7+dfsg-1",
+      "version": "1.5.7+dfsg-1+deb13u1",
       "source": "libzstd",
-      "sourceVersion": "1.5.7+dfsg-1",
+      "sourceVersion": "1.5.7+dfsg-1+deb13u1",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-ff0948cc0b8ac49a03a3bca7",
-      "archiveSha256": "5e88424d919941291f79e1bfada6cb1a6f748671d9de7d4b7d931f361f183a15",
+      "archiveSha256": "adc44c628b74a7a4eff4fbed4681e8fdc8ffe8e4bc31aa9ea6a41a07a2281d23",
       "encodings": [
         {
-          "archiveSha256": "5e88424d919941291f79e1bfada6cb1a6f748671d9de7d4b7d931f361f183a15",
+          "archiveSha256": "adc44c628b74a7a4eff4fbed4681e8fdc8ffe8e4bc31aa9ea6a41a07a2281d23",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "5cec9fef4d3fa7e0371fbef4ec3fc416e0105dc2a9922117f84e825cb11f50f8",
@@ -44519,19 +44519,19 @@
       ]
     },
     {
-      "id": "deb:keyring-arm64.tsv:login.defs=1:4.17.4-2",
+      "id": "deb:keyring-arm64.tsv:login.defs=1:4.17.4-2+deb13u1",
       "name": "login.defs",
       "arch": "all",
-      "version": "1:4.17.4-2",
+      "version": "1:4.17.4-2+deb13u1",
       "source": "shadow",
-      "sourceVersion": "1:4.17.4-2",
+      "sourceVersion": "1:4.17.4-2+deb13u1",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d0b3e8e91d796705ce2f87ca",
-      "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+      "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
       "encodings": [
         {
-          "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+          "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "305494b6f5f6bb65ead9160077d4fdf45ccdf06de7c958ff96f27a632b8729a3",
@@ -44743,19 +44743,19 @@
       ]
     },
     {
-      "id": "deb:keyring-arm64.tsv:passwd=1:4.17.4-2",
+      "id": "deb:keyring-arm64.tsv:passwd=1:4.17.4-2+deb13u1",
       "name": "passwd",
       "arch": "arm64",
-      "version": "1:4.17.4-2",
+      "version": "1:4.17.4-2+deb13u1",
       "source": "shadow",
-      "sourceVersion": "1:4.17.4-2",
+      "sourceVersion": "1:4.17.4-2+deb13u1",
       "ecosystem": "deb",
       "coverage": "build",
       "spdx": "LicenseRef-d0b3e8e91d796705ce2f87ca",
-      "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+      "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
       "encodings": [
         {
-          "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+          "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "305494b6f5f6bb65ead9160077d4fdf45ccdf06de7c958ff96f27a632b8729a3",
@@ -45779,19 +45779,19 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:libc-bin=2.41-12+deb13u4",
+      "id": "deb:runtime-amd64.tsv:libc-bin=2.41-12+deb13u5",
       "name": "libc-bin",
       "arch": "amd64",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -45807,19 +45807,19 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:libc-l10n=2.41-12+deb13u4",
+      "id": "deb:runtime-amd64.tsv:libc-l10n=2.41-12+deb13u5",
       "name": "libc-l10n",
       "arch": "all",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -45835,19 +45835,19 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:libc6=2.41-12+deb13u4",
+      "id": "deb:runtime-amd64.tsv:libc6=2.41-12+deb13u5",
       "name": "libc6",
       "arch": "amd64",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -47641,19 +47641,19 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:libzstd1=1.5.7+dfsg-1",
+      "id": "deb:runtime-amd64.tsv:libzstd1=1.5.7+dfsg-1+deb13u1",
       "name": "libzstd1",
       "arch": "amd64",
-      "version": "1.5.7+dfsg-1",
+      "version": "1.5.7+dfsg-1+deb13u1",
       "source": "libzstd",
-      "sourceVersion": "1.5.7+dfsg-1",
+      "sourceVersion": "1.5.7+dfsg-1+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-ff0948cc0b8ac49a03a3bca7",
-      "archiveSha256": "5e88424d919941291f79e1bfada6cb1a6f748671d9de7d4b7d931f361f183a15",
+      "archiveSha256": "adc44c628b74a7a4eff4fbed4681e8fdc8ffe8e4bc31aa9ea6a41a07a2281d23",
       "encodings": [
         {
-          "archiveSha256": "5e88424d919941291f79e1bfada6cb1a6f748671d9de7d4b7d931f361f183a15",
+          "archiveSha256": "adc44c628b74a7a4eff4fbed4681e8fdc8ffe8e4bc31aa9ea6a41a07a2281d23",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "5cec9fef4d3fa7e0371fbef4ec3fc416e0105dc2a9922117f84e825cb11f50f8",
@@ -47669,19 +47669,19 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:locales=2.41-12+deb13u4",
+      "id": "deb:runtime-amd64.tsv:locales=2.41-12+deb13u5",
       "name": "locales",
       "arch": "all",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -47697,19 +47697,19 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:login.defs=1:4.17.4-2",
+      "id": "deb:runtime-amd64.tsv:login.defs=1:4.17.4-2+deb13u1",
       "name": "login.defs",
       "arch": "all",
-      "version": "1:4.17.4-2",
+      "version": "1:4.17.4-2+deb13u1",
       "source": "shadow",
-      "sourceVersion": "1:4.17.4-2",
+      "sourceVersion": "1:4.17.4-2+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-d0b3e8e91d796705ce2f87ca",
-      "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+      "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
       "encodings": [
         {
-          "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+          "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "305494b6f5f6bb65ead9160077d4fdf45ccdf06de7c958ff96f27a632b8729a3",
@@ -47984,19 +47984,19 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:passwd=1:4.17.4-2",
+      "id": "deb:runtime-amd64.tsv:passwd=1:4.17.4-2+deb13u1",
       "name": "passwd",
       "arch": "amd64",
-      "version": "1:4.17.4-2",
+      "version": "1:4.17.4-2+deb13u1",
       "source": "shadow",
-      "sourceVersion": "1:4.17.4-2",
+      "sourceVersion": "1:4.17.4-2+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-d0b3e8e91d796705ce2f87ca",
-      "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+      "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
       "encodings": [
         {
-          "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+          "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "305494b6f5f6bb65ead9160077d4fdf45ccdf06de7c958ff96f27a632b8729a3",
@@ -48152,19 +48152,19 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:postgresql-client-common=278",
+      "id": "deb:runtime-amd64.tsv:postgresql-client-common=278+deb13u1",
       "name": "postgresql-client-common",
       "arch": "all",
-      "version": "278",
+      "version": "278+deb13u1",
       "source": "postgresql-common",
-      "sourceVersion": "278",
+      "sourceVersion": "278+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-3336b93b3134e630a73a9a4b",
-      "archiveSha256": "fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45",
+      "archiveSha256": "e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f",
       "encodings": [
         {
-          "archiveSha256": "fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45",
+          "archiveSha256": "e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f",
           "source": "postgresql-common/debian/copyright",
           "encoding": "utf-8",
           "sha256": "292dcc67fc22ad11156da2b7a154da74b65e63e0f673f3d301a5ed6df85327fe",
@@ -48180,19 +48180,19 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:postgresql-common-dev=278",
+      "id": "deb:runtime-amd64.tsv:postgresql-common-dev=278+deb13u1",
       "name": "postgresql-common-dev",
       "arch": "all",
-      "version": "278",
+      "version": "278+deb13u1",
       "source": "postgresql-common",
-      "sourceVersion": "278",
+      "sourceVersion": "278+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-3336b93b3134e630a73a9a4b",
-      "archiveSha256": "fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45",
+      "archiveSha256": "e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f",
       "encodings": [
         {
-          "archiveSha256": "fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45",
+          "archiveSha256": "e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f",
           "source": "postgresql-common/debian/copyright",
           "encoding": "utf-8",
           "sha256": "292dcc67fc22ad11156da2b7a154da74b65e63e0f673f3d301a5ed6df85327fe",
@@ -48208,19 +48208,19 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:postgresql-common=278",
+      "id": "deb:runtime-amd64.tsv:postgresql-common=278+deb13u1",
       "name": "postgresql-common",
       "arch": "all",
-      "version": "278",
+      "version": "278+deb13u1",
       "source": "postgresql-common",
-      "sourceVersion": "278",
+      "sourceVersion": "278+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-3336b93b3134e630a73a9a4b",
-      "archiveSha256": "fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45",
+      "archiveSha256": "e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f",
       "encodings": [
         {
-          "archiveSha256": "fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45",
+          "archiveSha256": "e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f",
           "source": "postgresql-common/debian/copyright",
           "encoding": "utf-8",
           "sha256": "292dcc67fc22ad11156da2b7a154da74b65e63e0f673f3d301a5ed6df85327fe",
@@ -48236,19 +48236,19 @@
       ]
     },
     {
-      "id": "deb:runtime-amd64.tsv:postgresql=17+278",
+      "id": "deb:runtime-amd64.tsv:postgresql=17+278+deb13u1",
       "name": "postgresql",
       "arch": "all",
-      "version": "17+278",
+      "version": "17+278+deb13u1",
       "source": "postgresql-common",
-      "sourceVersion": "278",
+      "sourceVersion": "278+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-3336b93b3134e630a73a9a4b",
-      "archiveSha256": "fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45",
+      "archiveSha256": "e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f",
       "encodings": [
         {
-          "archiveSha256": "fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45",
+          "archiveSha256": "e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f",
           "source": "postgresql-common/debian/copyright",
           "encoding": "utf-8",
           "sha256": "292dcc67fc22ad11156da2b7a154da74b65e63e0f673f3d301a5ed6df85327fe",
@@ -49356,19 +49356,19 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:libc-bin=2.41-12+deb13u4",
+      "id": "deb:runtime-arm64.tsv:libc-bin=2.41-12+deb13u5",
       "name": "libc-bin",
       "arch": "arm64",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -49384,19 +49384,19 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:libc-l10n=2.41-12+deb13u4",
+      "id": "deb:runtime-arm64.tsv:libc-l10n=2.41-12+deb13u5",
       "name": "libc-l10n",
       "arch": "all",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -49412,19 +49412,19 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:libc6=2.41-12+deb13u4",
+      "id": "deb:runtime-arm64.tsv:libc6=2.41-12+deb13u5",
       "name": "libc6",
       "arch": "arm64",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -51218,19 +51218,19 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:libzstd1=1.5.7+dfsg-1",
+      "id": "deb:runtime-arm64.tsv:libzstd1=1.5.7+dfsg-1+deb13u1",
       "name": "libzstd1",
       "arch": "arm64",
-      "version": "1.5.7+dfsg-1",
+      "version": "1.5.7+dfsg-1+deb13u1",
       "source": "libzstd",
-      "sourceVersion": "1.5.7+dfsg-1",
+      "sourceVersion": "1.5.7+dfsg-1+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-ff0948cc0b8ac49a03a3bca7",
-      "archiveSha256": "5e88424d919941291f79e1bfada6cb1a6f748671d9de7d4b7d931f361f183a15",
+      "archiveSha256": "adc44c628b74a7a4eff4fbed4681e8fdc8ffe8e4bc31aa9ea6a41a07a2281d23",
       "encodings": [
         {
-          "archiveSha256": "5e88424d919941291f79e1bfada6cb1a6f748671d9de7d4b7d931f361f183a15",
+          "archiveSha256": "adc44c628b74a7a4eff4fbed4681e8fdc8ffe8e4bc31aa9ea6a41a07a2281d23",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "5cec9fef4d3fa7e0371fbef4ec3fc416e0105dc2a9922117f84e825cb11f50f8",
@@ -51246,19 +51246,19 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:locales=2.41-12+deb13u4",
+      "id": "deb:runtime-arm64.tsv:locales=2.41-12+deb13u5",
       "name": "locales",
       "arch": "all",
-      "version": "2.41-12+deb13u4",
+      "version": "2.41-12+deb13u5",
       "source": "glibc",
-      "sourceVersion": "2.41-12+deb13u4",
+      "sourceVersion": "2.41-12+deb13u5",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-dc3f0699be7b4f3b6c701e83",
-      "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+      "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
       "encodings": [
         {
-          "archiveSha256": "dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d",
+          "archiveSha256": "9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "f5788886720a2605a946e81d571e6c8162b09f58d2e2ceb8d36e5768fccd850d",
@@ -51274,19 +51274,19 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:login.defs=1:4.17.4-2",
+      "id": "deb:runtime-arm64.tsv:login.defs=1:4.17.4-2+deb13u1",
       "name": "login.defs",
       "arch": "all",
-      "version": "1:4.17.4-2",
+      "version": "1:4.17.4-2+deb13u1",
       "source": "shadow",
-      "sourceVersion": "1:4.17.4-2",
+      "sourceVersion": "1:4.17.4-2+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-d0b3e8e91d796705ce2f87ca",
-      "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+      "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
       "encodings": [
         {
-          "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+          "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "305494b6f5f6bb65ead9160077d4fdf45ccdf06de7c958ff96f27a632b8729a3",
@@ -51561,19 +51561,19 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:passwd=1:4.17.4-2",
+      "id": "deb:runtime-arm64.tsv:passwd=1:4.17.4-2+deb13u1",
       "name": "passwd",
       "arch": "arm64",
-      "version": "1:4.17.4-2",
+      "version": "1:4.17.4-2+deb13u1",
       "source": "shadow",
-      "sourceVersion": "1:4.17.4-2",
+      "sourceVersion": "1:4.17.4-2+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-d0b3e8e91d796705ce2f87ca",
-      "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+      "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
       "encodings": [
         {
-          "archiveSha256": "97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23",
+          "archiveSha256": "765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1",
           "source": "debian/copyright",
           "encoding": "utf-8",
           "sha256": "305494b6f5f6bb65ead9160077d4fdf45ccdf06de7c958ff96f27a632b8729a3",
@@ -51729,19 +51729,19 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:postgresql-client-common=278",
+      "id": "deb:runtime-arm64.tsv:postgresql-client-common=278+deb13u1",
       "name": "postgresql-client-common",
       "arch": "all",
-      "version": "278",
+      "version": "278+deb13u1",
       "source": "postgresql-common",
-      "sourceVersion": "278",
+      "sourceVersion": "278+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-3336b93b3134e630a73a9a4b",
-      "archiveSha256": "fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45",
+      "archiveSha256": "e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f",
       "encodings": [
         {
-          "archiveSha256": "fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45",
+          "archiveSha256": "e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f",
           "source": "postgresql-common/debian/copyright",
           "encoding": "utf-8",
           "sha256": "292dcc67fc22ad11156da2b7a154da74b65e63e0f673f3d301a5ed6df85327fe",
@@ -51757,19 +51757,19 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:postgresql-common-dev=278",
+      "id": "deb:runtime-arm64.tsv:postgresql-common-dev=278+deb13u1",
       "name": "postgresql-common-dev",
       "arch": "all",
-      "version": "278",
+      "version": "278+deb13u1",
       "source": "postgresql-common",
-      "sourceVersion": "278",
+      "sourceVersion": "278+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-3336b93b3134e630a73a9a4b",
-      "archiveSha256": "fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45",
+      "archiveSha256": "e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f",
       "encodings": [
         {
-          "archiveSha256": "fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45",
+          "archiveSha256": "e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f",
           "source": "postgresql-common/debian/copyright",
           "encoding": "utf-8",
           "sha256": "292dcc67fc22ad11156da2b7a154da74b65e63e0f673f3d301a5ed6df85327fe",
@@ -51785,19 +51785,19 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:postgresql-common=278",
+      "id": "deb:runtime-arm64.tsv:postgresql-common=278+deb13u1",
       "name": "postgresql-common",
       "arch": "all",
-      "version": "278",
+      "version": "278+deb13u1",
       "source": "postgresql-common",
-      "sourceVersion": "278",
+      "sourceVersion": "278+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-3336b93b3134e630a73a9a4b",
-      "archiveSha256": "fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45",
+      "archiveSha256": "e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f",
       "encodings": [
         {
-          "archiveSha256": "fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45",
+          "archiveSha256": "e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f",
           "source": "postgresql-common/debian/copyright",
           "encoding": "utf-8",
           "sha256": "292dcc67fc22ad11156da2b7a154da74b65e63e0f673f3d301a5ed6df85327fe",
@@ -51813,19 +51813,19 @@
       ]
     },
     {
-      "id": "deb:runtime-arm64.tsv:postgresql=17+278",
+      "id": "deb:runtime-arm64.tsv:postgresql=17+278+deb13u1",
       "name": "postgresql",
       "arch": "all",
-      "version": "17+278",
+      "version": "17+278+deb13u1",
       "source": "postgresql-common",
-      "sourceVersion": "278",
+      "sourceVersion": "278+deb13u1",
       "ecosystem": "deb",
       "coverage": "runtime",
       "spdx": "LicenseRef-3336b93b3134e630a73a9a4b",
-      "archiveSha256": "fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45",
+      "archiveSha256": "e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f",
       "encodings": [
         {
-          "archiveSha256": "fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45",
+          "archiveSha256": "e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f",
           "source": "postgresql-common/debian/copyright",
           "encoding": "utf-8",
           "sha256": "292dcc67fc22ad11156da2b7a154da74b65e63e0f673f3d301a5ed6df85327fe",

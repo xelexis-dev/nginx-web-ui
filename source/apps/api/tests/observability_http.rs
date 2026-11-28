@@ -189,6 +189,36 @@ async fn audit_list_metadata_matches_separate_count_and_distinct_queries() {
 
 #[tokio::test]
 #[ignore = "real DB: set NWUI_TEST_DATABASE_URL"]
+async fn local_and_node_log_routes_start_with_the_exact_keepalive() {
+    use http_body_util::BodyExt;
+    use std::time::Duration;
+
+    let log = tempfile::NamedTempFile::new().unwrap();
+    let db = test_db_with(&[("NGINX_ERROR_LOG", log.path().to_str().unwrap())]).await;
+    insert_user(&db.client, UserRow { role: "viewer", ..Default::default() }, None).await;
+    let token = "observability-synthetic-token";
+    gateway_issuer(&db.client).await;
+    db.client.execute(
+        "INSERT INTO gateway_tokens(id,name,token_hash,role,created_by_user_id) VALUES ('g','gateway',$1,'viewer','q3-gateway-issuer')",
+        &[&nwui_api::auth::token_digest(token)],
+    ).await.unwrap();
+    let app = app(&db);
+    let local = request("/api/ui/v1/logs/stream?file=error").header("cookie", cookie());
+    let node = request("/api/v1/logs/stream?file=error")
+        .header("x-gateway-version", &db.state.config.version)
+        .header("authorization", format!("Bearer {token}"));
+    for req in [local, node] {
+        let response = app.clone().oneshot(req.body(Body::empty()).unwrap()).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        let mut body = response.into_body();
+        let first = tokio::time::timeout(Duration::from_secs(1), body.frame())
+            .await.expect("initial keepalive").unwrap().unwrap();
+        assert_eq!(first.into_data().unwrap().as_ref(), b": keepalive\n\n");
+    }
+}
+
+#[tokio::test]
+#[ignore = "real DB: set NWUI_TEST_DATABASE_URL"]
 async fn audit_e6_s7_open_node_log_stream_ends_after_gateway_token_revocation() {
     use http_body_util::BodyExt;
     use std::time::Duration;
@@ -200,7 +230,7 @@ async fn audit_e6_s7_open_node_log_stream_ends_after_gateway_token_revocation() 
     db.client.execute("INSERT INTO gateway_tokens(id,name,token_hash,role,created_by_user_id) VALUES ('s7','stream',$1,'viewer','q3-gateway-issuer')",&[&nwui_api::auth::token_digest(token)]).await.unwrap();
     let response=app(&db).oneshot(request("/api/v1/logs/stream").header("x-gateway-version",&db.state.config.version).header("authorization",format!("Bearer {token}")).body(Body::empty()).unwrap()).await.unwrap();
     assert_eq!(response.status(),StatusCode::OK);let mut stream=response.into_body();
-    assert!(tokio::time::timeout(Duration::from_secs(2),stream.frame()).await.unwrap().is_some(),"a valid token must really stream first");
+    expect_log_source(&mut stream, b"data: synthetic line\n\n").await;
     db.client.execute("UPDATE gateway_tokens SET revoked_at=now() WHERE id='s7'",&[]).await.unwrap();
     let ended=tokio::time::timeout(Duration::from_secs(35),async{while stream.frame().await.is_some(){}}).await.is_ok();
     drop(stream);db.state.runtime.shutdown.send_replace(true);

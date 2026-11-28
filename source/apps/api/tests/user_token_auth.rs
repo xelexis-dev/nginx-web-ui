@@ -1034,7 +1034,8 @@ async fn relayed_token_stream_closes_on_node_lookup_database_error() {
     db.client.execute("INSERT INTO nodes(id,name,base_url,token_enc,token_role,instance_id,last_version) VALUES('node','Node',$1,$2,'admin','stream-node',$3)",&[&format!("http://{address}"),&sealed,&db.state.config.version]).await.unwrap();
     let app=nwui_api::server::router(db.state.clone());let auth=format!("Bearer {}",credential());
     let response=call(&app,"GET","/api/nodes/node/logs/stream",Some(&auth),None,&[]).await;assert_eq!(response.status(),200);
-    let mut stream=response.into_body();assert!(tokio::time::timeout(Duration::from_secs(2),stream.frame()).await.unwrap().is_some());
+    let mut stream=response.into_body();
+    auth_support::expect_log_source(&mut stream, b":hi\n\n").await;
     // User authentication still succeeds; only the node-authority query now fails.
     db.client.batch_execute("ALTER TABLE nodes RENAME COLUMN token_enc TO unavailable_token_enc").await.unwrap();assert!(user(&db).await.can(Action::ConfigRead));
     tokio::time::timeout(Duration::from_secs(35),async {while stream.frame().await.is_some(){}}).await.expect("node lookup DB failure must close the token stream");

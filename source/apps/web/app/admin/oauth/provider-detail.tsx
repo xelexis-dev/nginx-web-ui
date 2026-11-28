@@ -37,7 +37,7 @@ export function ProviderDetailView({
             className={linkClassName({ variant: "back" })}
           >
             <Icon name="arrowLeft" size={14} />
-            목록으로
+            OAuth 공급자 목록
           </Link>
         }
         actions={deleteForm}

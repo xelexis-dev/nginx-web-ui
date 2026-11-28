@@ -19,6 +19,26 @@ const steps={p0:'저장소 확인',p0b:'시작 설정 확인',f1:'새 저장소 
   's4-prepare':'서비스 권한 준비','p5-publish':'실행 파일 준비','p5-guard':'설정 검사','p5-commit':'PG17 선택',
   's4-activate':'서비스 활성화',handoff:'서비스 시작','phase2-monitor':'시작 상태 확인','p6-cleanup':'이전 데이터 정리',
   'r-restore':'원본 복원','cmd-restore-pg15':'원본 복원','cmd-remove-backup':'보관 데이터 제거','cmd-remove-discarded':'보존 데이터 제거'};
+export const journalRefusalTitle='시작 준비 기록을 저장하지 못했습니다';
+export const isJournalRefusal=value=>value.outcome==='refused-preflight'&&value.branch==='upgrade'
+  &&value.step.id==='p0'&&value.step.total===0&&isJournalRefusalCode(value.failure?.code);
+export const isJournalRefusalCode=code=>code==='journal_write_failed'||code==='reserve_exhausted';
+
+export function projectJournalRefusal(marker,updatedAt) {
+  if(!Object.hasOwn(steps,marker.step))invalid();
+  const label=steps[marker.step],space=marker.code==='reserve_exhausted';
+  const message=space
+    ? `앱 데이터 볼륨의 여유 공간이 부족해 시작 준비 기록을 저장하지 못했습니다(실패 단계: ${label}). 서비스 시작을 멈췄고 그 뒤로는 데이터와 복구 기록을 바꾸지 않았습니다.`
+    : `시작 준비 기록을 저장하지 못해 서비스 시작을 멈췄습니다(실패 단계: ${label}). 그 뒤로는 데이터와 복구 기록을 바꾸지 않았습니다.`;
+  const nextAction=space
+    ? '앱 데이터 볼륨(/var/lib/nginx-web-ui)의 여유 공간을 늘린 뒤 컨테이너를 다시 시작하세요.'
+    : '앱 데이터 볼륨(/var/lib/nginx-web-ui)의 여유 공간과 쓰기 가능 여부를 확인한 뒤 컨테이너를 다시 시작하세요.';
+  return {version:1,updatedAt,outcome:'refused-preflight',branch:'upgrade',
+    step:{id:'p0',index:0,total:0,startedAt:updatedAt,bytesDone:0,bytesTotal:0},
+    failure:{code:marker.code,class:'transient',message,nextAction},space:null,locations:[],backup:null,
+    discarded:[],cleanupPending:false,retry:{nextEligibleAt:null,reason:null}};
+}
+export const isStep=id=>typeof id==='string'&&Object.hasOwn(steps,id);
 const numberSources=new WeakMap();
 const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
 const string=value=>typeof value==='string'&&value.isWellFormed();
@@ -92,7 +112,7 @@ export function statusView(raw) {
   const percent=counted&&step.bytesTotal?Math.min(100,Math.floor(Number(step.bytesDone)/Number(step.bytesTotal)*100)):null;
   const [label,tone]=upgrading&&status.warnings?attention:Object.hasOwn(badges,status.outcome)?badges[status.outcome]:attention;
   const guidance=status.failure?.nextAction??status.retry.reason??labels[1];
-  return {warnings:(status.warnings??[]).map(w=>w.message),title:labels[0],guidance,lead:status.failure?'':guidance,
+  return {warnings:(status.warnings??[]).map(w=>w.message),title:isJournalRefusal(status)?journalRefusalTitle:labels[0],guidance,lead:status.failure?'':guidance,
     phase:counted?`${step.index} / ${step.total} 단계 · ${name}`:status.outcome==='pg17'?`완료 · ${name}`:upgrading?'단계 확인 중':'다음 조치를 기다리고 있습니다',
     badge:{label,tone},elapsedKind:counted?'step':'none',startedAt:step.startedAt,
     space:status.space?`${size(status.space.availableBytes)} / ${size(status.space.requiredBytes)} 필요 · ${inode}`:'아직 집계하지 않았습니다.',

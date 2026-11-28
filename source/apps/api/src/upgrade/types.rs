@@ -25,7 +25,7 @@ pub enum Outcome { Upgrading, Pg17, RefusedPreflight, RefusedFresh, RefusedPrivi
 #[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Debug)]
 #[serde(rename_all = "kebab-case")]
 pub enum Branch { Upgrade, Fresh, Ready }
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", tag = "state")]
 pub enum KeyBinding { Unverified, Verified { #[serde(rename="pairId")] pair_id: String } }
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -45,7 +45,7 @@ impl KeySource {
         }
     }
 }
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct StorageSelection {
     pub version: u8,

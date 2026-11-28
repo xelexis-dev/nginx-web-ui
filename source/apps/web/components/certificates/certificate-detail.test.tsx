@@ -33,7 +33,7 @@ import type { CertificateDetailVM, IssueLogLineVM } from "./certificate-vm";
  * `className` 단언은 무의미하다.
  */
 
-type AnyElement = ReactElement<{ children?: ReactNode; href?: string }>;
+type AnyElement = ReactElement<{ children?: ReactNode; href?: string; "data-tag"?: string }>;
 
 /**
  * The shared presentational components this screen is built from (@repo/ui). They are plain
@@ -322,7 +322,8 @@ describe("인증서 상세 — 값이 화면까지 가는가", () => {
     // 안에서도 참이 될 수 있다(이 검사가 처음엔 그렇게 통과했다).
     expect(dlPairs(tree)["실패 횟수"]).toBe("17");
     expect(text).toContain("acme: challenge failed");
-    expect(text).toContain("연결된 서버 (1)");
+    expect(collect(tree, (el) => el.type === "h2").map(textOf)).toContain("연결된 서버");
+    expect(collect(tree, (el) => el.type === "span" && el.props["data-tag"] === "").map(textOf)).toContain("1개");
     // 표의 두 셀이 한 행에 함께 있다.
     expect(
       rows.some((r) => r.includes("a.example.com") && r.includes("8443")),

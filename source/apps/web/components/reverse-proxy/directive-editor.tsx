@@ -338,7 +338,7 @@ export function DirectiveEditor({
                 />
                 <Button
                   type="button"
-                  variant="dangerQuiet"
+                  variant="dangerOutline"
                   aria-label="rewrite 삭제"
                   onClick={() =>
                     patch({
@@ -476,7 +476,7 @@ function KeyValueSection({
             />
             <Button
               type="button"
-              variant="dangerQuiet"
+              variant="dangerOutline"
               onClick={() => onChange(rows.filter((_, j) => j !== i))}
               aria-label="헤더 삭제"
             >

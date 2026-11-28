@@ -1772,6 +1772,7 @@ pub const VIEWS: &[(&str, &[Action])] = &[
     ("/nodes/{nodeId}/metrics", &[Action::ConfigRead]),
     ("/nodes/{nodeId}/logs", &[Action::ConfigRead]),
     ("/nodes/{nodeId}/history", &[Action::ConfigRead]),
+    ("/nodes/{nodeId}/history/{id}", &[Action::ConfigRead]),
     ("/nodes/{nodeId}/audit", &[Action::ConfigRead]),
     ("/nodes/{nodeId}/audit/{id}", &[Action::ConfigRead]),
     ("/nodes/{nodeId}/reverse-proxy", &[Action::ConfigRead]),

@@ -41,17 +41,32 @@ pub(super) async fn validate_candidate(
             args.insert(0,std::ffi::OsString::from("-t"));
             args.extend([std::ffi::OsString::from("-c"),main.into_os_string()]);
         }
-        root_capture(store,bin,args,timeout,|stdout| {
+        root_capture(store,bin,args,timeout,None,|stdout| {
             super::trusted_includes::validate_dump(std::io::BufReader::new(stdout.take((super::trusted_includes::MAX_NGINX_T_OUTPUT as u64)+1)))
         })
     }).await.map_err(|_|root_error("nginx validation worker failed"))?
 }
 
 pub(super) async fn execute(store:super::store::PublisherStore,bin:PathBuf,args:Vec<std::ffi::OsString>,timeout:Duration)->std::result::Result<String,crate::upgrade::StepError> {
+    execute_checked(store, bin, args, timeout, None).await
+}
+
+pub(super) async fn reload(
+    store: super::store::PublisherStore, bin: PathBuf, timeout: Duration,
+    guard: super::confirmation::ReloadGuard,
+) -> Result<()> {
+    execute_checked(store, bin, vec!["-s".into(), "reload".into()], timeout, Some(guard)).await?;
+    Ok(())
+}
+
+async fn execute_checked(
+    store: super::store::PublisherStore, bin: PathBuf, args: Vec<std::ffi::OsString>, timeout: Duration,
+    guard: Option<super::confirmation::ReloadGuard>,
+) -> std::result::Result<String, crate::upgrade::StepError> {
     tokio::task::spawn_blocking(move || {
         use std::io::Read;
         let stdout=std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));let captured=stdout.clone();
-        let result=root_capture(store,bin,args,timeout,move |pipe| {
+        let result=root_capture(store,bin,args,timeout,guard,move |pipe| {
             let mut bytes=Vec::new();pipe.take(65537).read_to_end(&mut bytes).map_err(|error|root_error(&error.to_string()))?;
             if bytes.len()>65536 {return Err(root_error("nginx stdout exceeds 64 KiB"));}
             *captured.lock().map_err(|_|root_error("nginx output worker failed"))?=bytes;Ok(true)
@@ -112,6 +127,7 @@ impl Drop for RootChild {
 
 fn root_capture(
     store:super::store::PublisherStore,bin:PathBuf,args:Vec<std::ffi::OsString>,timeout:Duration,
+    guard: Option<super::confirmation::ReloadGuard>,
     validate:impl FnOnce(std::process::ChildStdout)->std::result::Result<bool,crate::upgrade::StepError>+Send+'static,
 ) -> std::result::Result<CommandResult,crate::upgrade::StepError> {
     use std::{io::Read,os::unix::process::CommandExt,sync::mpsc,time::Instant};
@@ -134,7 +150,11 @@ fn root_capture(
             Ok(())
         });
     }
+    if let Some(guard) = guard {
+        guard.check().map_err(|error| root_error(&format!("{error:#}")))?;
+    }
     if Instant::now()>=deadline {return Ok(CommandResult::TimedOut);}
+    // nginx reopens its PID file while parsing the reload configuration.
     let mut child=command.spawn().map_err(|error|root_error(&error.to_string()))?;
     let pid=child.id();
     let ticks=match super::poison::start_ticks(pid) {
@@ -220,7 +240,7 @@ mod root_stream_tests {
     fn child_environment_tz_probe() {
         let Ok(expected)=std::env::var("NWUI_EXPECT_TZ") else {return;};
         let (_temp,store,bin)=fixture("/usr/bin/env >&2");
-        let result=root_capture(store,bin,vec![],Duration::from_secs(2),drain).unwrap();
+        let result=root_capture(store,bin,vec![],Duration::from_secs(2),None,drain).unwrap();
         let CommandResult::Accepted(env)=result else {panic!("{result:?}")};
         let mut lines:Vec<_>=env.lines().collect(); lines.sort();
         // /bin/sh may add PWD; the captured executable must see no injected secret.
@@ -265,7 +285,7 @@ if read value; then exit 10; fi
 printf '\377body\n'
 printf 'diagnostic\n' >&2"#);
         let count=Arc::new(AtomicU64::new(0));let observed=count.clone();
-        let output=root_capture(store,bin,vec!["-T".into(),"-c".into(),temp.path().join("wrapper with spaces").into_os_string()],Duration::from_secs(2),move |mut stdout| {
+        let output=root_capture(store,bin,vec!["-T".into(),"-c".into(),temp.path().join("wrapper with spaces").into_os_string()],Duration::from_secs(2),None,move |mut stdout| {
             let bytes=io::copy(&mut stdout,&mut io::sink()).map_err(|error|root_error(&error.to_string()))?;
             observed.store(bytes,Ordering::Relaxed);Ok(true)
         }).unwrap();
@@ -279,7 +299,7 @@ printf 'diagnostic\n' >&2"#);
 sleep 60 &
 wait"#);
         let pid=temp.path().join("pid");let started=Instant::now();
-        let result=root_capture(store,bin,vec![pid.clone().into_os_string()],Duration::from_millis(500),drain).unwrap();
+        let result=root_capture(store,bin,vec![pid.clone().into_os_string()],Duration::from_millis(500),None,drain).unwrap();
         assert_eq!(result,CommandResult::TimedOut);
         assert!(started.elapsed()<Duration::from_secs(5));
         assert_reaped(&pid);
@@ -291,7 +311,7 @@ wait"#);
 head -c 65537 /dev/zero >&2
 sleep 60"#);
         let pid=temp.path().join("pid");let started=Instant::now();
-        let error=root_capture(store,bin,vec![pid.clone().into_os_string()],Duration::from_secs(2),drain).unwrap_err();
+        let error=root_capture(store,bin,vec![pid.clone().into_os_string()],Duration::from_secs(2),None,drain).unwrap_err();
         assert!(error.detail.unwrap().contains("64 KiB"));
         assert!(started.elapsed()<Duration::from_secs(5));
         assert_reaped(&pid);
@@ -303,7 +323,7 @@ sleep 60"#);
 printf '# refused\n'
 sleep 60"#);
         let pid=temp.path().join("pid");
-        let error=root_capture(store,bin,vec![pid.clone().into_os_string()],Duration::from_secs(2),|mut stdout| {
+        let error=root_capture(store,bin,vec![pid.clone().into_os_string()],Duration::from_secs(2),None,|mut stdout| {
             use std::io::Read;
             let mut byte=[0];stdout.read_exact(&mut byte).map_err(|error|root_error(&error.to_string()))?;
             Err(crate::upgrade::StepError {code:"trusted_input_unsafe",message:"fixture",detail:Some("/fixture/include".into())})

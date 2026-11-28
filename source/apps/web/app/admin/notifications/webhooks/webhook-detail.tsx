@@ -52,7 +52,7 @@ export function WebhookDetailView({
             className={linkClassName({ variant: "back" })}
           >
             <Icon name="arrowLeft" size={14} />
-            목록
+            Webhook 수신처 목록
           </Link>
         }
         actions={detailActions}

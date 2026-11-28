@@ -205,7 +205,9 @@ async fn shutdown_finishes_relay_and_server_with_connected_downstream() {
         let (mut socket, _) = remote.accept().await.unwrap();
         let mut buf = [0; 4096];
         socket.read(&mut buf).await.unwrap();
-        socket.write_all(b"HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nTransfer-Encoding: chunked\r\n\r\n5\r\n:hi\n\n\r\n").await.unwrap();
+        socket.write_all(b"HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nTransfer-Encoding: chunked\r\n\r\n").await.unwrap();
+        tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+        socket.write_all(b"5\r\n:hi\n\n\r\n").await.unwrap();
         socket.read(&mut buf).await.unwrap()
     });
     let (shutdown, mut stopped) = tokio::sync::watch::channel(false);
@@ -230,8 +232,15 @@ async fn shutdown_finishes_relay_and_server_with_connected_downstream() {
             .await
             .unwrap();
     });
-    let mut downstream = reqwest::get(format!("http://{addr}")).await.unwrap();
-    assert_eq!(downstream.chunk().await.unwrap().unwrap(), ":hi\n\n");
+    let (mut downstream, first) = tokio::time::timeout(std::time::Duration::from_secs(1), async {
+        let mut downstream = reqwest::get(format!("http://{addr}")).await.unwrap();
+        let first = downstream.chunk().await.unwrap().unwrap();
+        (downstream, first)
+    }).await.expect("relay must send its own initial comment before the quiet node writes");
+    assert_eq!(first.as_ref(), b": keepalive\n\n");
+    let next = tokio::time::timeout(std::time::Duration::from_secs(3), downstream.chunk())
+        .await.expect("the node chunk must follow the first comment").unwrap().unwrap();
+    assert_eq!(next.as_ref(), b":hi\n\n");
     shutdown.send(true).unwrap();
     tokio::time::timeout(std::time::Duration::from_secs(2), server)
         .await
@@ -309,6 +318,125 @@ fn audit_concurrency_local_and_node_forms_forward_the_optional_version_exactly()
 
 #[tokio::test]
 #[ignore = "real DB: set NWUI_TEST_DATABASE_URL"]
+async fn log_relay_accepts_headers_after_sixteen_seconds_but_times_out_before_twenty_one() {
+    use axum::extract::Query;
+    use http_body_util::BodyExt;
+    use std::{collections::BTreeMap, time::Duration};
+
+    let db = auth_support::test_db().await;
+    auth_support::insert_user(&db.client, auth_support::UserRow::default(), None).await;
+    let listener = tokio::net::TcpListener::bind((outbound_support::peer_ip(), 0))
+        .await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let upstream = Router::new().route(
+        "/api/v1/logs/stream",
+        axum::routing::get(|Query(query): Query<BTreeMap<String, String>>| async move {
+            let delay = match query["file"].as_str() {
+                "access" => 16,
+                "error" => 21,
+                file => panic!("unexpected log file: {file}"),
+            };
+            tokio::time::sleep(Duration::from_secs(delay)).await;
+            ([("content-type", "text/event-stream")], "data: old node\n\n")
+        }),
+    );
+    let task = tokio::spawn(async move { axum::serve(listener, upstream).await.unwrap() });
+    let sealed = db.state.secrets.seal("log-handshake-fixture").unwrap();
+    db.client.execute(
+        "INSERT INTO nodes(id,name,base_url,token_enc,token_role,instance_id,last_version) VALUES('quiet','remote',$1,$2,'admin','quiet-instance','2.0.0')",
+        &[&format!("http://{addr}"), &sealed],
+    ).await.unwrap();
+    let router = nwui_api::app::with_request_context(relay::router().with_state(db.state.clone()), None);
+    let request = |file| {
+        router.clone().oneshot(Request::builder()
+            .uri(format!("/api/nodes/quiet/logs/stream?file={file}"))
+            .header("host", "admin.example.test")
+            .header("cookie", cookie())
+            .extension(ConnectInfo(SocketAddr::from(([127, 0, 0, 1], 40000))))
+            .body(Body::empty()).unwrap())
+    };
+    let (opened, timed_out) = tokio::time::timeout(Duration::from_secs(25), async {
+        tokio::join!(request("access"), request("error"))
+    }).await.expect("bounded relay handshake");
+    task.abort();
+    let mut opened = opened.unwrap();
+    assert_eq!(opened.status(), StatusCode::OK);
+    let first = opened.body_mut().frame().await.unwrap().unwrap().into_data().unwrap();
+    assert_eq!(first.as_ref(), b": keepalive\n\n");
+    let line = opened.body_mut().frame().await.unwrap().unwrap().into_data().unwrap();
+    assert_eq!(line.as_ref(), b"data: old node\n\n");
+    let timed_out = timed_out.unwrap();
+    assert_eq!(timed_out.status(), StatusCode::BAD_GATEWAY);
+    let error = body(timed_out).await;
+    assert_eq!(error["error"]["code"], "unreachable");
+    assert_eq!(error["error"]["message"], "노드 로그 연결 시간이 초과되었습니다.");
+}
+
+#[tokio::test]
+#[ignore = "real DB: set NWUI_TEST_DATABASE_URL"]
+async fn shutdown_cancels_a_log_relay_waiting_for_headers() {
+    use std::time::Duration;
+    use tokio::io::AsyncReadExt;
+
+    let db = auth_support::test_db().await;
+    auth_support::insert_user(&db.client, auth_support::UserRow::default(), None).await;
+    let remote = tokio::net::TcpListener::bind((outbound_support::peer_ip(), 0)).await.unwrap();
+    let remote_addr = remote.local_addr().unwrap();
+    let (accepted, waiting) = tokio::sync::oneshot::channel();
+    let upstream = tokio::spawn(async move {
+        let (mut socket, _) = remote.accept().await.unwrap();
+        let mut request = Vec::new();
+        let mut chunk = [0; 1024];
+        while !request.windows(4).any(|bytes| bytes == b"\r\n\r\n") {
+            let read = socket.read(&mut chunk).await.unwrap();
+            assert!(read > 0);
+            request.extend_from_slice(&chunk[..read]);
+            assert!(request.len() < 16 * 1024);
+        }
+        assert!(request.starts_with(b"GET /api/v1/logs/stream?file=access "));
+        accepted.send(()).unwrap();
+        socket.read(&mut [0_u8]).await.unwrap()
+    });
+    let sealed = db.state.secrets.seal("shutdown-stream-fixture").unwrap();
+    db.client.execute(
+        "INSERT INTO nodes(id,name,base_url,token_enc,token_role,instance_id,last_version) VALUES('quiet','remote',$1,$2,'admin','quiet-instance','2.0.0')",
+        &[&format!("http://{remote_addr}"), &sealed],
+    ).await.unwrap();
+
+    let browser_listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let browser_addr = browser_listener.local_addr().unwrap();
+    let routes = nwui_api::server::router(db.state.clone());
+    let (stop, stopping) = tokio::sync::oneshot::channel();
+    let runtime = db.state.runtime.clone();
+    let server = tokio::spawn(async move {
+        nwui_api::server::serve(browser_listener, routes, async move {
+            stopping.await.unwrap();
+            runtime.shutdown.send_replace(true);
+        }).await.unwrap();
+    });
+    let browser = tokio::spawn(async move {
+        reqwest::Client::new().get(format!("http://{browser_addr}/api/nodes/quiet/logs/stream"))
+            .header("host", "admin.example.test")
+            .header("cookie", cookie())
+            .send().await.unwrap()
+    });
+
+    tokio::time::timeout(Duration::from_secs(3), waiting)
+        .await.expect("upstream should receive the request").unwrap();
+    assert!(!browser.is_finished(), "upstream has sent no response headers");
+    stop.send(()).unwrap();
+    let (response, eof, drained) = tokio::time::timeout(Duration::from_secs(1), async {
+        tokio::join!(browser, upstream, server)
+    }).await.expect("shutdown must cancel the handshake and drain the server");
+    let response = response.unwrap();
+    assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+    assert_ne!(response.headers()["content-type"], "text/event-stream");
+    assert_eq!(eof.unwrap(), 0);
+    drained.unwrap();
+}
+
+#[tokio::test]
+#[ignore = "real DB: set NWUI_TEST_DATABASE_URL"]
 async fn audit_e6_s7_open_gateway_relay_ends_after_local_unpair() {
     use http_body_util::BodyExt;
     use tokio::io::{AsyncReadExt,AsyncWriteExt};
@@ -323,7 +451,7 @@ async fn audit_e6_s7_open_gateway_relay_ends_after_local_unpair() {
     let router=nwui_api::app::with_request_context(relay::router().with_state(db.state.clone()),None);
     let request=Request::builder().uri("/api/nodes/s7/logs/stream").header("host","admin.example.test").header("cookie",cookie()).extension(ConnectInfo(SocketAddr::from(([127,0,0,1],40000)))).body(Body::empty()).unwrap();
     let response=router.oneshot(request).await.unwrap();assert_eq!(response.status(),StatusCode::OK);let mut stream=response.into_body();
-    assert!(tokio::time::timeout(Duration::from_secs(2),stream.frame()).await.unwrap().is_some());
+    auth_support::expect_log_source(&mut stream, b":hi\n\n").await;
     db.client.execute("DELETE FROM nodes WHERE id='s7'",&[]).await.unwrap();
     let ended=tokio::time::timeout(Duration::from_secs(35),async{while stream.frame().await.is_some(){}}).await.is_ok();
     drop(stream);db.state.runtime.shutdown.send_replace(true);

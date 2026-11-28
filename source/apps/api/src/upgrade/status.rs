@@ -48,7 +48,11 @@ fn regular_or_absent(parent: &File, leaf: &CString, path: &Path) -> Result<(),St
 }
 pub fn publish_at(path: &Path, status: &UpgradeStatus) -> Result<(),StepError> {
     let bytes=serde_json::to_vec(status).map_err(|_|error("status_invalid",path))?;
-    if status.version!=1 || bytes.len()>STATUS_MAX_BYTES {return Err(error("status_invalid",path));}
+    if status.version!=1 {return Err(error("status_invalid",path));}
+    write_runtime_json(path,&bytes)
+}
+pub(super) fn write_runtime_json(path:&Path,bytes:&[u8])->Result<(),StepError> {
+    if bytes.len()>STATUS_MAX_BYTES {return Err(error("status_invalid",path));}
     if unsafe {libc::geteuid()}!=0 {return Err(error("status_unsafe",path));}
     let (directory,leaf)=parent(path)?;
     regular_or_absent(&directory,&leaf,path)?;
@@ -57,7 +61,7 @@ pub fn publish_at(path: &Path, status: &UpgradeStatus) -> Result<(),StepError> {
     let result=(|| {
         if file.metadata().map_err(|e|io_error(e,path))?.uid()!=0 {return Err(error("status_unsafe",path));}
         if unsafe {libc::fchmod(file.as_raw_fd(),0o644)}<0 {return Err(io_error(io::Error::last_os_error(),path));}
-        file.write_all(&bytes).map_err(|e|io_error(e,path))?;
+        file.write_all(bytes).map_err(|e|io_error(e,path))?;
         #[cfg(test)]
         if FAIL_AFTER_WRITE.with(|f|f.replace(false)) {return Err(io_error(io::Error::from_raw_os_error(libc::ENOSPC),path));}
         file.sync_all().map_err(|e|io_error(e,path))?;
@@ -69,23 +73,29 @@ pub fn publish_at(path: &Path, status: &UpgradeStatus) -> Result<(),StepError> {
     result
 }
 pub fn read_at(path: &Path) -> Result<UpgradeStatus,StepError> {
-    let (directory,leaf)=parent(path)?;
-    let file=open_at(&directory,&leaf,libc::O_RDONLY|libc::O_NOFOLLOW|libc::O_NONBLOCK,0).map_err(|e|match e.raw_os_error() {
-        Some(libc::ENOENT)=>error("status_missing",path), Some(libc::ELOOP|libc::ENXIO)=>error("status_unsafe",path), _=>io_error(e,path)
-    })?;
+    let file=open_runtime_json(path)?;
     read_open_file(file,path)
 }
+pub(super) fn open_runtime_json(path:&Path)->Result<File,StepError> {
+    let (directory,leaf)=parent(path)?;
+    open_at(&directory,&leaf,libc::O_RDONLY|libc::O_NOFOLLOW|libc::O_NONBLOCK,0).map_err(|e|match e.raw_os_error() {
+        Some(libc::ENOENT)=>error("status_missing",path), Some(libc::ELOOP|libc::ENXIO)=>error("status_unsafe",path), _=>io_error(e,path)
+    })
+}
 fn read_open_file(file:File,path:&Path)->Result<UpgradeStatus,StepError> {
+    let (bytes,_)=read_runtime_json(&file,path)?;
+    let status:UpgradeStatus=serde_json::from_slice(&bytes).map_err(|_|error("status_invalid",path))?;
+    if status.version!=1 {return Err(error("status_invalid",path));}
+    Ok(status)
+}
+pub(super) fn read_runtime_json(file:&File,path:&Path)->Result<(Vec<u8>,std::fs::Metadata),StepError> {
     let m=file.metadata().map_err(|e|io_error(e,path))?;
     // Atomic replacement can unlink an already-open whole publication; only extra links are unsafe.
     if !m.is_file() || m.uid()!=0 || m.mode()&0o7777!=0o644 || m.nlink()>1 {return Err(error("status_unsafe",path));}
     if m.len()>STATUS_MAX_BYTES as u64 {return Err(error("status_invalid",path));}
     let mut bytes=Vec::new();file.take(STATUS_MAX_BYTES as u64+1).read_to_end(&mut bytes).map_err(|e|io_error(e,path))?;
     if bytes.len()>STATUS_MAX_BYTES {return Err(error("status_invalid",path));}
-    let text=std::str::from_utf8(&bytes).map_err(|_|error("status_invalid",path))?;
-    let status:UpgradeStatus=serde_json::from_str(text).map_err(|_|error("status_invalid",path))?;
-    if status.version!=1 {return Err(error("status_invalid",path));}
-    Ok(status)
+    Ok((bytes,m))
 }
 pub(crate) fn source_guidance(too_old: bool) -> Option<&'static str> {
     too_old.then_some(super::legacy::GUIDANCE)
@@ -185,7 +195,7 @@ pub(crate) fn step_label(step:super::Step)->&'static str {
     }
 }
 pub fn format_human(s: &UpgradeStatus) -> String {
-    let outcome=outcome_label(s.outcome);
+    let outcome=if super::unrecorded::journal_refusal(s) {"시작 준비 기록을 저장하지 못했습니다"} else {outcome_label(s.outcome)};
     let label=step_label(s.step.id);
     let elapsed=chrono::DateTime::parse_from_rfc3339(&s.updated_at).ok().zip(chrono::DateTime::parse_from_rfc3339(&s.step.started_at).ok()).map(|(end,start)|format!("{}초",(end-start).num_seconds().max(0))).unwrap_or_else(||"확인할 수 없음".into());
     let mut lines=vec![outcome.to_string()];
@@ -400,14 +410,29 @@ pub(crate) mod tests {
  use super::*;
  #[tokio::test]
  #[ignore = "real DB: set NWUI_TEST_DATABASE_URL"]
- async fn desktop_shared_notice_dedupe_and_insert_failure_are_nonfatal(){
-  let Ok(url)=std::env::var("NWUI_TEST_DATABASE_URL")else{eprintln!("SKIP desktop_shared_notice_dedupe: database profile absent");return};
+ async fn storage_notice_dedupe_and_insert_failure_are_nonfatal(){
+  let Ok(url)=std::env::var("NWUI_TEST_DATABASE_URL")else{eprintln!("SKIP storage_notice_dedupe: database profile absent");return};
   let(mut db,connection)=tokio_postgres::connect(&url,tokio_postgres::NoTls).await.unwrap();let task=tokio::spawn(connection);
   let tx=db.transaction().await.unwrap();let schema=format!("shared_{}",uuid::Uuid::new_v4().simple());
   tx.batch_execute(&format!("CREATE SCHEMA {schema}; SET LOCAL search_path={schema}; CREATE TYPE notification_severity AS ENUM('warning'); CREATE TABLE notifications(id text,type text,severity notification_severity,title text,body text,link text,data jsonb,dedupe_key text UNIQUE)")).await.unwrap();
   let warning=warnings_for(vec!["app-log".into()]);let notice=storage_notification(&warning[0]);
   assert!(insert_notification(&tx,&notice).await.unwrap());assert!(!insert_notification(&tx,&notice).await.unwrap());
   let row=tx.query_one("SELECT count(*)::bigint FROM notifications",&[]).await.unwrap();assert_eq!(row.get::<_,i64>(0),1);
+  let mut normalized = super::super::types::StorageWarning {
+   code: super::super::storage_modes::WARNING_CODE.into(),
+   message: "시작 전에 저장소 권한을 정리했습니다. 그룹·기타 사용자의 쓰기 권한을 빼고, 비밀 값·인증서 파일과 폴더는 검사가 허용하는 권한으로 맞췄습니다. 파일 내용과 소유자는 바꾸지 않았습니다. 바뀐 항목: auth_secret 0644 → 0600. 이 권한은 1.19.11로 되돌려도 그대로 사용할 수 있습니다.".into(),
+   scopes: vec!["app".into()],
+  };
+  let historical = storage_notification(&normalized);
+  assert!(insert_notification(&tx, &historical).await.unwrap());
+  normalized.message = "시작 전에 저장소 접근 권한을 줄였습니다. 파일 내용과 소유자는 그대로입니다. 바뀐 항목: auth_secret 0644 → 0600.".into();
+  let current = storage_notification(&normalized);
+  assert!(insert_notification(&tx, &current).await.unwrap());
+  assert!(!insert_notification(&tx, &storage_notification(&normalized)).await.unwrap());
+  let rows = tx.query("SELECT body FROM notifications WHERE type = $1", &[&current.kind]).await.unwrap();
+  let bodies: std::collections::HashSet<&str> = rows.iter().map(|row| row.get(0)).collect();
+  assert_eq!(rows.len(), 2);
+  assert_eq!(bodies, [historical.body.as_str(), current.body.as_str()].into_iter().collect());
   tx.batch_execute("DROP TABLE notifications").await.unwrap();assert!(insert_notification(&tx,&notice).await.is_err());
   tx.rollback().await.unwrap();drop(db);task.await.unwrap().unwrap();
  }

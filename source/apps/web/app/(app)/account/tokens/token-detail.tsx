@@ -10,9 +10,11 @@ import {
   type Tone,
   Facts,
   Button,
+  buttonClassName,
+  ConfirmDialog,
 } from "@repo/ui";
 
-import { useActionState, useState } from "react";
+import { startTransition, useActionState, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { RevokeTokenState } from "./form-types";
 import { useApiAction, type FormAction } from "@/lib/use-api-action";
@@ -44,7 +46,7 @@ export interface TokenDetailProps {
    * 하고, 그 사실을 규칙이 아니라 **이 타입이** 지킨다.
    */
   view: TokenRowView;
-  /** 목록 경로 — 「목록으로」가 가는 곳. Task 6 은 `/admin/tokens` 를 넘긴다. */
+  /** 목록 경로. Task 6 은 `/admin/tokens` 를 넘긴다. */
   basePath: string;
   revoke: FormAction<RevokeTokenState>;
 }
@@ -61,12 +63,20 @@ export function TokenDetail({ view, basePath, revoke }: TokenDetailProps) {
     useApiAction(revoke),
     INITIAL,
   );
-  const [confirming, setConfirming] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  useEffect(() => { if (state !== INITIAL) setConfirmOpen(false); }, [state]);
 
   const server = basePath === "/admin/tokens";
-  const actions = (
+  const actions = server || !view.revoked ? (
     <div className={resourceStyles.detailActions}>
       <div className={resourceStyles.actionRow}>
+        {server ? (
+          <Link href="/admin/security" className={buttonClassName({ variant: "secondary" })}>
+            연결된 게이트웨이
+            <Icon name="arrowRight" size={14} />
+          </Link>
+        ) : null}
         {/*
          * 해지된 행에는 해지 버튼이 **없다** — 다시 누르면 처음 끊은 시각이 덮이는
          * 것이 아니라 아무 일도 일어나지 않는데(`revokeToken` 의 `isNull` 조건),
@@ -76,40 +86,42 @@ export function TokenDetail({ view, basePath, revoke }: TokenDetailProps) {
          * 되물으면 그 문구를 고치는 날 버튼이 조용히 사라지거나 되살아난다.
          */}
         {view.revoked ? null : (
-          <form action={formAction}>
-            <input type="hidden" name="id" value={view.id} />
-            {/*
-             * ⚠ **`kind` 도 `ownerUserId` 도 폼에 없다.** 해지 범위는 세션이 만든다
-             * (`token-actor.ts`) — 여기 hidden field 하나가 UPDATE 의 WHERE 를
-             * 넓혀 남의 토큰이나 서버 토큰을 끊는 수단이 된다.
-             */}
-            {confirming ? (
-              <span className={styles.inlineActions}>
-                <Button type="submit" variant="dangerQuiet" disabled={pending}>
-                  {pending ? "해지하는 중..." : "정말 해지"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setConfirming(false)}
-                  disabled={pending}
-                >
-                  취소
-                </Button>
-                <span className={styles.hintWarning}>
-                  해지하면 되돌릴 수 없습니다.
-                </span>
-              </span>
-            ) : (
-              <Button
-                type="button"
-                variant="dangerQuiet"
-                onClick={() => setConfirming(true)}
-              >
+          <>
+            <form
+              action={formAction}
+              ref={formRef}
+              onSubmit={(event) => {
+                event.preventDefault();
+                setConfirmOpen(true);
+              }}
+            >
+              <input type="hidden" name="id" value={view.id} />
+              {/*
+               * ⚠ **`kind` 도 `ownerUserId` 도 폼에 없다.** 해지 범위는 세션이 만든다
+               * (`token-actor.ts`) — 여기 hidden field 하나가 UPDATE 의 WHERE 를
+               * 넓혀 남의 토큰이나 서버 토큰을 끊는 수단이 된다.
+               */}
+              <Button type="submit" variant="dangerOutline" disabled={pending}>
                 토큰 해지
               </Button>
-            )}
-          </form>
+            </form>
+            <ConfirmDialog
+              open={confirmOpen}
+              onClose={() => setConfirmOpen(false)}
+              title="토큰 해지"
+              description={server
+                ? "해지하면 이 토큰으로는 더 이상 새로 연결할 수 없습니다. 이 토큰과 연결 기록이 있는 게이트웨이의 접근도 함께 해지됩니다. 되돌릴 수 없습니다."
+                : "이 토큰을 해지하시겠습니까? 해지하면 되돌릴 수 없습니다."}
+              target={`${view.name} · ${view.masked}`}
+              confirmLabel="토큰 해지"
+              pendingLabel="해지하는 중..."
+              pending={pending}
+              onConfirm={() => {
+                const form = formRef.current;
+                if (form && !pending) startTransition(() => formAction(new FormData(form)));
+              }}
+            />
+          </>
         )}
       </div>
       {state.error ? (
@@ -118,7 +130,7 @@ export function TokenDetail({ view, basePath, revoke }: TokenDetailProps) {
         </Banner>
       ) : null}
     </div>
-  );
+  ) : undefined;
   return (
     <section className={layout.page}>
       <PageHeader
@@ -132,7 +144,7 @@ export function TokenDetail({ view, basePath, revoke }: TokenDetailProps) {
         eyebrow={
           <Link href={basePath} className={linkClassName({ variant: "back" })}>
             <Icon name="arrowLeft" size={14} />
-            {server ? "서버 토큰 목록으로" : "토큰 목록으로"}
+            {server ? "서버 토큰 목록" : "액세스 토큰 목록"}
           </Link>
         }
         info={
@@ -147,26 +159,6 @@ export function TokenDetail({ view, basePath, revoke }: TokenDetailProps) {
               4자뿐이라 다시 볼 수 없습니다.
             </p>
           </>
-        }
-        description={
-          server ? (
-            <>
-              <p className={layout.note}>
-                해지하면 이 토큰으로는 더 이상 새로 연결할 수 없습니다. 이
-                토큰과 연결 기록이 있는 게이트웨이의 접근도 함께 해지됩니다.
-                업데이트 전에 연결된 게이트웨이는 이 토큰과의 연결 정보가 없어
-                함께 해지되지 않으니, 「보안 (2FA)」의 「연결된 게이트웨이」에서
-                해지하세요.
-              </p>
-              <Link
-                href="/admin/security"
-                className={linkClassName({ variant: "back" })}
-              >
-                연결된 게이트웨이
-                <Icon name="arrowRight" size={14} />
-              </Link>
-            </>
-          ) : undefined
         }
       />
       <Surface as="div">

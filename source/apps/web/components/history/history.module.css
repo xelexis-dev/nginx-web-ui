@@ -1,45 +1,4 @@
-/* Config history (FU-C) list: data-table of config_snapshots rows + the
-   rollback confirm/result banner. Lives in components/history/ (not
-   app/(app)/history/) because both the local screen and the node-context
-   screen (app/(node)/nodes/[id]/history/) render history-list.tsx.
-   The detail-page-only classes (definition list, JSON
-   panes, diff section) stay in app/(app)/history/history.module.css since
-   the node has no detail screen (no `GET /api/v1/history/:id` — patch
-   release can't add it). Tokens only (var(--*)) — no hardcoded hex, per
-   DESIGN.md. */
-
-/* 행마다 덧붙는 조작 UI(노드 전용) — 같은 높이의 버튼을 나란히 두고 결과는 그 아래에 표시한다. */
-.rowActions {
-  display: grid;
-  grid-template-columns: repeat(2, max-content);
-  justify-content: end;
-  align-items: center;
-  gap: var(--sp-2);
-}
-
-.rowActions > a:only-child {
-  grid-column: 2;
-}
-
-.rowFeedback {
-  grid-column: 1 / -1;
-  /* Feedback wraps inside the buttons' width rather than expanding the table. */
-  min-width: 100%;
-  max-width: 0;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-
-@media (max-width: 768px) {
-  .rowActions {
-    grid-template-columns: repeat(2, minmax(0, max-content));
-    justify-content: start;
-  }
-
-  .rowActions > a:only-child {
-    grid-column: 1;
-  }
-}
+/* Shared history label and detail rollback layout. */
 
 .rollbackCell {
   display: flex;

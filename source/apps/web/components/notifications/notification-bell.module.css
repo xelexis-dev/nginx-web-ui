@@ -7,25 +7,13 @@
 }
 
 .trigger {
-  position: relative;
   border-radius: var(--r-2);
 }
 
-.badge {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 var(--sp-1);
-  border-radius: var(--r-full);
-  background: var(--danger-solid);
-  color: var(--on-accent);
-  font-size: var(--fs-xs);
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.trigger[data-unread] {
+  width: auto;
+  padding-inline: var(--ctl-x-sm);
+  font-variant-numeric: tabular-nums;
 }
 
 .menu {
@@ -35,7 +23,7 @@
   right: var(--page-x);
   width: var(--size-toast);
   max-width: calc(100vw - var(--page-x) * 2);
-  max-height: 420px;
+  max-height: var(--size-pop-max-h);
   overflow-y: auto;
   /* Header actions stay on one line; notification text must not inherit that. */
   white-space: normal;

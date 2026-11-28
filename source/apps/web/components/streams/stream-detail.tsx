@@ -59,8 +59,8 @@ export function StreamDetail({
       <PageHeader
         eyebrow={
           <Link href={basePath} className={linkClassName({ variant: "back" })}>
-            <Icon name="back" size={14} />
-            Stream
+            <Icon name="arrowLeft" size={14} />
+            Stream 목록
           </Link>
         }
         title={`listen ${data.listen}`}

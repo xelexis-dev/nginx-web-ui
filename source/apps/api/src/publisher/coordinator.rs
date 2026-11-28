@@ -55,9 +55,9 @@ impl Readiness {
 pub(super) async fn reconcile_and_adopt(state:&AppState,store:&super::store::PublisherStore)->Result<(),StepError> {
     let _store=store.lock(Duration::from_secs(30)).await.map_err(failed)?;
     let _apply=state.runtime.apply_lock.lock().await;
-    match super::confirmation::nginx_running(&state.config).await.map_err(|error|super::store::step_error("restore_incomplete",error))? {
+    match super::confirmation::nginx_running(&state.config).await.map_err(state_error)? {
         super::confirmation::NginxState::Running=>{},
-        super::confirmation::NginxState::Starting=>return Err(StepError{code:"nginx_starting",message:"nginx 시작이 끝날 때까지 복구를 기다립니다.",detail:None}),
+        super::confirmation::NginxState::Starting=>return Err(StepError{code:"nginx_starting",message:NGINX_STARTING,detail:None}),
         super::confirmation::NginxState::Stopped=>return Err(StepError{code:"nginx_not_ready",message:"nginx 시작을 기다리고 있습니다.",detail:None}),
     }
     {
@@ -100,11 +100,11 @@ pub(super) async fn recover_before_readiness(state:&AppState,store:&super::store
     let _store=store.lock(Duration::from_secs(30)).await.map_err(failed)?;
     let _apply=state.runtime.apply_lock.lock().await;
     let _files=super::nginx_lock::acquire(&state.config).await.map_err(failed)?;
-    let running=super::confirmation::nginx_running(&state.config).await.map_err(|error|super::store::step_error("restore_incomplete",error))?;
+    let running=super::confirmation::nginx_running(&state.config).await.map_err(state_error)?;
     let recovery=match running {
         super::confirmation::NginxState::Running=>super::recovery::after_start(&state.config,store).await,
         super::confirmation::NginxState::Stopped=>super::recovery::before_start(&state.config,store).await,
-        super::confirmation::NginxState::Starting=>return Err(StepError{code:"nginx_starting",message:"nginx 시작이 끝날 때까지 복구를 기다립니다.",detail:None}),
+        super::confirmation::NginxState::Starting=>return Err(StepError{code:"nginx_starting",message:NGINX_STARTING,detail:None}),
     };
     recovery.map_err(|error|super::store::step_error("restore_incomplete",error))
 }
@@ -129,13 +129,13 @@ pub(super) async fn run(config:RuntimeConfig,readiness:Readiness)->Result<(),Ste
 async fn initial_recovery<F,Fut>(serving:&mut tokio::task::JoinHandle<anyhow::Result<()>>,mut recover:F)->Result<(),StepError>
 where F:FnMut()->Fut,Fut:std::future::Future<Output=Result<(),StepError>> {
     let mut delay=Duration::from_secs(1);
-    let mut last_failure=None;
+    let mut diagnostics = RecoveryDiagnostics::default();
     loop {
         tokio::select! {
             result=&mut *serving=>return result.map_err(failed)?.map_err(failed),
             result=recover()=>match result {
                 Ok(())=>return Ok(()),
-                Err(error)=>eprintln!("{}",recovery_message(&error,&mut last_failure,delay)),
+                Err(error)=>diagnostics.log(&error, delay),
             },
         }
         tokio::select! {
@@ -151,7 +151,7 @@ where F:FnMut()->Fut,Fut:std::future::Future<Output=Result<(),StepError>> {
     let mut adopted_once=false;
     let mut next_attempt=tokio::time::Instant::now();
     let mut retry_delay=Duration::from_secs(1);
-    let mut last_failure=None;
+    let mut diagnostics = RecoveryDiagnostics::default();
     loop {
         tokio::select! {
             result=&mut serving=>return result.map_err(failed)?.map_err(failed),
@@ -167,7 +167,7 @@ where F:FnMut()->Fut,Fut:std::future::Future<Output=Result<(),StepError>> {
                         Ok(())=>{adopted_once=true;dispatcher.ready.store(true,Ordering::Release);},
                         Err(error) if error.code=="nginx_not_ready"=>{},
                         Err(error)=>{
-                            eprintln!("{}",recovery_message(&error,&mut last_failure,retry_delay));
+                            diagnostics.log(&error, retry_delay);
                             next_attempt=tokio::time::Instant::now()+retry_delay;
                             retry_delay=(retry_delay*2).min(Duration::from_secs(15*60));
                         },
@@ -175,6 +175,46 @@ where F:FnMut()->Fut,Fut:std::future::Future<Output=Result<(),StepError>> {
                 }
             }
         }
+    }
+}
+
+const NGINX_STARTING: &str = "nginx 시작을 기다리고 있습니다. 자동으로 다시 확인합니다.";
+
+fn state_error(error: anyhow::Error) -> StepError {
+    if error.is::<super::confirmation::IdentityUncertain>() {
+        StepError {
+            code: "nginx_identity_uncertain",
+            message: "nginx 프로세스가 관리 대상인지 확인하지 못해 복구를 기다립니다.",
+            detail: Some(format!("{error:#}").chars().take(512).collect()),
+        }
+    } else {
+        super::store::step_error("restore_incomplete", error)
+    }
+}
+
+#[derive(Default)]
+struct RecoveryDiagnostics {
+    waiting_logged: bool,
+    last_failure: Option<(&'static str, Option<String>)>,
+}
+
+impl RecoveryDiagnostics {
+    fn log(&mut self, error: &StepError, delay: Duration) {
+        if let Some(message) = self.message(error, delay) {
+            eprintln!("{message}");
+        }
+    }
+
+    fn message(&mut self, error: &StepError, delay: Duration) -> Option<String> {
+        if error.code != "nginx_starting" {
+            return Some(recovery_message(error, &mut self.last_failure, delay));
+        }
+        self.last_failure = None;
+        if self.waiting_logged {
+            return None;
+        }
+        self.waiting_logged = true;
+        Some(format!("[publisher] {NGINX_STARTING}"))
     }
 }
 
@@ -222,6 +262,19 @@ mod tests {
         let detail=bounded.split(" — ").nth(1).unwrap();assert!(detail.len()<=2048);assert!(!detail.is_empty());
         assert!(!bounded.chars().any(char::is_control));
     }
+    #[test]
+    fn nginx_starting_logs_once_without_hiding_a_real_error() {
+        let mut diagnostics = RecoveryDiagnostics::default();
+        let waiting = StepError { code: "nginx_starting", message: NGINX_STARTING, detail: None };
+        let first = diagnostics.message(&waiting, Duration::from_secs(1)).unwrap();
+        assert_eq!(first, "[publisher] nginx 시작을 기다리고 있습니다. 자동으로 다시 확인합니다.");
+        let error = state_error(super::super::confirmation::IdentityUncertain.into());
+        let detailed = diagnostics.message(&error, Duration::from_secs(2)).unwrap();
+        assert!(detailed.contains("nginx_identity_uncertain: nginx 프로세스가 관리 대상인지 확인하지 못해 복구를 기다립니다."));
+        assert_eq!(diagnostics.message(&waiting, Duration::from_secs(4)), None);
+        assert!(diagnostics.message(&error, Duration::from_secs(8)).unwrap().contains("nginx_identity_uncertain:"));
+    }
+
     #[tokio::test]
     async fn g30_initial_recovery_serves_starting_without_notifying_then_adopts_in_the_same_process() {
         use super::super::protocol::{Actor,Op,OpResult,Request,Response};
@@ -340,6 +393,7 @@ mod tests {
     async fn reconciliation_cannot_claim_ready_when_the_master_is_missing() {
         let (root,state,store,_)=super::super::adoption::tests::fixture();
         std::fs::remove_file(root.path().join(".fake-nginx.pid")).unwrap();
+        std::fs::remove_file(root.path().join(".fake-nginx.group")).unwrap();
         let before=super::super::files::capture_payload_files(&state.config).await.unwrap();
         assert_eq!(reconcile_and_adopt(&state,&store).await.err().unwrap().code,"nginx_not_ready");
         assert_eq!(super::super::files::capture_payload_files(&state.config).await.unwrap(),before);
@@ -361,6 +415,7 @@ mod tests {
     async fn startup_recovery_uses_the_nginx_down_track_without_fabricating_confirmation() {
         let (root,state,store,_)=super::super::adoption::tests::fixture();
         std::fs::remove_file(root.path().join(".fake-nginx.pid")).unwrap();
+        std::fs::remove_file(root.path().join(".fake-nginx.group")).unwrap();
         super::super::confirmation::begin_uncertain(&state.config).await.unwrap();
         recover_before_readiness(&state,&store).await.unwrap();
         assert!(super::super::confirmation::uncertain(&state.config).await);

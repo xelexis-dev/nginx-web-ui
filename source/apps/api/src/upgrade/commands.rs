@@ -120,6 +120,7 @@ fn render(value:Result<UpgradeStatus,StepError>,roots:&crate::db_upgrade::layout
 fn unrecorded_status_at(app:&Path,status_path:&Path,descriptor:&Path)->Result<Option<String>,StepError>{
     use super::{Branch,Outcome,Step,KeyBinding};
     let value=match status::read_at(status_path){Ok(v)=>v,Err(e)if e.code=="status_missing"=>return Ok(None),Err(e)=>return Err(e)};
+    if super::unrecorded::journal_refusal(&value){return Ok(None);}
     let live_legacy=value.outcome==Outcome::RefusedPreflight && value.step.id==Step::P0;
     if !live_legacy && present(&app.join(".nwui-auto/journal-v1.json"))?{return Ok(None);}
     let refused=matches!((value.branch,value.outcome),(Branch::Upgrade,Outcome::RefusedPreflight)|(Branch::Fresh,Outcome::RefusedFresh)|(Branch::Ready,Outcome::RefusedPrivilege));
@@ -133,13 +134,29 @@ fn unrecorded_status_at(app:&Path,status_path:&Path,descriptor:&Path)->Result<Op
 }
 pub(crate) async fn auto_status(args:&[String])->i32 {
     if !args.is_empty(){eprintln!("invalid_arguments: auto-status에는 추가 인자가 필요하지 않습니다.");return 2;}
+    use super::unrecorded::{self,Marker,State};
+    let identity=super::boot_identity::current().ok();
+    match Marker::read_at(Path::new(unrecorded::MARKER),identity.as_deref()){
+        Ok(Some((marker,updated))) if marker.state==State::Refused=>{
+            if let Err(error)=unrecorded::check_descriptor(Path::new(unrecorded::DESCRIPTOR)){
+                eprintln!("{}: {}",error.code,error.message);return 1;
+            }
+            println!("{}",status::format_human(&marker.project(updated)));return 0;
+        },
+        Ok(Some(_))=>{println!("저장소 잠금을 다시 확인하고 있습니다.");return 0;},
+        Ok(None)=>{},
+        Err(error)=>{eprintln!("{}: {}",error.code,error.message);return 1;},
+    }
     match unrecorded_status_at(Path::new(crate::db_upgrade::paths::APPROOT),Path::new(status::STATUS_PATH),Path::new("/run/nwui-storage.json")){
         Ok(Some(text))=>{print!("{text}");return 0;},Ok(None)=>{},Err(error)=>{eprintln!("{}: {}",error.code,error.message);return 1;},
     }
     let candidate=match super::journal::Candidate::current().await {Ok(v)=>v,Err(e)=>{eprintln!("{}: {}",e.code,e.message);return 1;}};
     let result=tokio::task::spawn_blocking(move|| {
         let roots=crate::db_upgrade::storage::roots().map_err(|e|StepError{code:e.code,message:e.message,detail:None})?;
-        render(status::read(),&roots,&candidate,chrono::Utc::now())
+        let value=status::read().and_then(|value|if unrecorded::journal_refusal(&value){
+            Err(StepError{code:"status_missing",message:"현재 실행의 상태 기록이 없습니다.",detail:None})
+        }else{Ok(value)});
+        render(value,&roots,&candidate,chrono::Utc::now())
     }).await;
     match result {Ok(Ok(text))=>{print!("{text}");0},Ok(Err(error))=>{eprintln!("{}: {}",error.code,error.message);1},Err(_)=>1}
 }

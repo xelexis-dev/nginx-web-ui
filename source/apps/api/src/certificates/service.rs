@@ -118,10 +118,13 @@ pub async fn update(
         || current.staging != input.staging
         || current.challenge_type != input.challenge_type
         || current.dns_provider != provider;
-    let alias = alias_value(&input.alias, current.alias);
+    let alias = alias_value(&input.alias, current.alias.clone());
     tx.execute("UPDATE certificates SET domains=$2,alias=$3,staging=$4,challenge_type=$5::text::challenge_type,dns_provider=$6,dns_provider_token_enc=$7,dns_order=CASE WHEN $8 THEN NULL ELSE dns_order END,status=CASE WHEN $8 AND status='awaiting-dns' THEN 'failed'::cert_status ELSE status END,last_error=CASE WHEN $8 AND status='awaiting-dns' THEN '설정이 바뀌어 다시 발급해야 합니다.' WHEN $8 THEN NULL ELSE last_error END,renewal_notice_sent_at=CASE WHEN challenge_type::text<>$5 THEN NULL ELSE renewal_notice_sent_at END WHERE id=$1",&[&id,&json!(input.domains),&alias,&input.staging,&input.challenge_type,&provider,&token,&changed]).await.map_err(|_|db_unavailable())?;
     store::audit(&*tx,actor,"cert:update",id,json!({"domains":input.domains,"alias":alias,"staging":input.staging,"challengeType":input.challenge_type,"dnsProvider":provider})).await?;
     tx.commit().await.map_err(|_| db_unavailable())?;
+    if changed {
+        super::jobs::log_stopped_dns_wait(&current, "설정이 바뀌어 다시 발급해야 합니다.");
+    }
     Ok(())
 }
 pub async fn import(
@@ -274,11 +277,12 @@ pub(crate) async fn apply(state: &AppState, id: &str, digest: &str, actor: Optio
 pub async fn cancel(state: &AppState, id: &str, actor: &Actor) -> Result<(), ApiError> {
     let mut client = state.db.get().await.map_err(|_| db_unavailable())?;
     let tx = client.transaction().await.map_err(|_| db_unavailable())?;
-    store::get(&*tx, id, true).await?;
+    let cert = store::get(&*tx, id, true).await?;
     tx.execute("UPDATE certificate_jobs SET cancel_requested=true,updated_at=now() WHERE certificate_id=$1 AND state IN ('queued','active','cleanup')",&[&id]).await.map_err(|_|db_unavailable())?;
     tx.execute("UPDATE certificates SET status=CASE WHEN status IN ('issuing','awaiting-dns') THEN 'failed'::cert_status ELSE status END,dns_order=NULL,last_error=CASE WHEN status IN ('issuing','awaiting-dns') THEN '사용자가 발급을 중단했습니다.' ELSE last_error END,last_attempt_at=now() WHERE id=$1",&[&id]).await.map_err(|_|db_unavailable())?;
     store::audit(&*tx, actor, "cert:cancel", id, json!({"cancelled":true})).await?;
     tx.commit().await.map_err(|_| db_unavailable())?;
+    super::jobs::log_stopped_dns_wait(&cert, "사용자가 발급을 중단했습니다.");
     if let Some((active_id, cancel)) = &*state.runtime.certificate_jobs.active.lock().await {
         if active_id == id {
             cancel.cancel();
@@ -315,6 +319,7 @@ pub async fn remove(state: &AppState, id: &str, actor: &Actor) -> Result<(), Api
     )
     .await?;
     tx.commit().await.map_err(|_| db_unavailable())?;
+    super::jobs::log_stopped_dns_wait(&cert, "인증서가 삭제되어 발급이 중단되었습니다.");
     if let Some((active_id, cancel)) = &*state.runtime.certificate_jobs.active.lock().await {
         if active_id == id {
             cancel.cancel();

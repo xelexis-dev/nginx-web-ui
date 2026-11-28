@@ -21,7 +21,7 @@ export function ProviderDetailActions({ id, targetName = id }: { id: string; tar
         approvedId.current = null;
       }}>
         <input type="hidden" name="id" value={id} />
-        <Button type="submit" variant="dangerQuiet" disabled={pending}>공급자 삭제</Button>
+        <Button type="submit" variant="dangerOutline" disabled={pending}>삭제</Button>
       </form>
       <Link href={`/admin/oauth/${id}/edit`} className={buttonClassName({ variant: "secondary" })}>수정</Link>
     </div>

@@ -10,7 +10,7 @@ fn private(p:&Path){fs::create_dir_all(p).unwrap();fs::set_permissions(p,fs::Per
 fn read(p:&Path)->Value{serde_json::from_slice(&fs::read(p).unwrap()).unwrap()}
 struct Master(Child);
 impl Drop for Master{fn drop(&mut self){unsafe{libc::kill(self.0.id()as i32,libc::SIGQUIT);}let until=Instant::now()+Duration::from_secs(3);while Instant::now()<until{if self.0.try_wait().unwrap().is_some(){return}std::thread::sleep(Duration::from_millis(20));}let _=self.0.kill();let _=self.0.wait();}}
-struct Fixture{startup:runner::Startup,db:auth_support::TestDb,store:crate::publisher::PublisherStore,l:PathBuf,g:String,derived:String,_master:Master,services:Vec<tokio::task::JoinHandle<()>>}
+struct Fixture{startup:runner::Startup,db:auth_support::TestDb,store:crate::publisher::PublisherStore,l:PathBuf,g:String,derived:String,_master:Master,_managed:crate::publisher::test_support::RegisteredMaster,services:Vec<tokio::task::JoinHandle<()>>}
 impl Drop for Fixture{fn drop(&mut self){for service in &self.services{service.abort();}}}
 impl Fixture{
  async fn new()->Self{
@@ -43,19 +43,22 @@ impl Fixture{
   let candidate=StorageSelection{version:1,epoch:1,outcome:Outcome::Pg17,branch:Branch::Upgrade,pgdata:roots.db.join("17/data"),backup_id:Some(j.load().attempt_id.clone()),schema_profile:"legacy-28".into(),key_binding:KeyBinding::Verified{pair_id:pair.pair_id}};
   for record in crate::nonroot::fixture_prepare_records(&candidate,&j.load().attempt_id,j.load().records.last().unwrap().seq+1,false){j.record(record.step,record.state,record.data).unwrap();}
   private(&roots.app.join(".nwui-publisher"));let store=crate::publisher::PublisherStore::open(&db.state.config).unwrap();
+  let stopped=test_support::RegisteredMaster::stopped(&root.join("nginx.pid"),Path::new("/usr/sbin/nginx"));
   let staged=boot::prepare_payload(&db.state.config,&db.state.secrets,boot::PgSource::Pool(&db.state.db),&store,crate::publisher::boot::BootMode::Conversion).await.unwrap();boot::publish_live(&db.state.config,&store,&staged.id).await.unwrap_or_else(|error|panic!("publication: {error:?}; nginx={}",fs::read_to_string(root.join("nginx.log")).unwrap_or_default()));
   let publisher=roots.app.join(".nwui-publisher");let g=staged.id;let original=files::snapshot(&publisher.join("payloads").join(&g)).unwrap();let applied:Value=db.client.query_one("SELECT data FROM applied_config WHERE id='current'",&[]).await.unwrap().get(0);
   let live=conf.join(format!("server-{SERVER}.conf"));write(&live,fs::read_to_string(&live).unwrap().replace("listen 18081","listen 3001"));
   let report=boot::guard(&db.state.config,&store).await.unwrap();assert_eq!(report.reserved_files,1);let derived=read(&publisher.join("manifest.json"))["current"].as_str().unwrap().to_owned();assert_ne!(derived,g);assert_eq!(read(&publisher.join("payloads").join(&derived).join("manifest.json"))["derivedFrom"],g);assert_eq!(files::snapshot(&publisher.join("payloads").join(&g)).unwrap(),original);assert!(!live.exists());
+  drop(stopped);
   let master=Master(Command::new("/usr/sbin/nginx").arg("-c").arg(&main).args(["-g","daemon off;"]).stdout(Stdio::null()).stderr(Stdio::null()).spawn().unwrap());
   let until=Instant::now()+Duration::from_secs(5);loop{if reqwest::get("http://127.0.0.1:8080/nginx_status").await.is_ok(){break}assert!(Instant::now()<until);tokio::time::sleep(Duration::from_millis(20)).await;}
+  let managed=test_support::RegisteredMaster::new(&root.join("nginx.pid"),Path::new("/usr/sbin/nginx"),master.0.id());
   test_support::adopt_current(&db.state,&store).await.unwrap();assert!(crate::control::confirmation::uncertain(&db.state.config).await);assert!(!crate::control::pending::status(&db.state).await.unwrap().has_baseline);let after:Value=db.client.query_one("SELECT data FROM applied_config WHERE id='current'",&[]).await.unwrap().get(0);assert_eq!(after,applied);
   let api=tokio::net::TcpListener::bind("127.0.0.1:3001").await.unwrap();let router=crate::server::router(db.state.clone());
   let api=tokio::spawn(async move{axum::serve(api,router.into_make_service_with_connect_info::<std::net::SocketAddr>()).await.unwrap();});
   let web=tokio::net::TcpListener::bind("127.0.0.1:3000").await.unwrap();let web=tokio::spawn(async move{axum::serve(web,axum::Router::new().route("/",axum::routing::get(||async{"G18 web-smoke fixture"}))).await.unwrap();});
   let identity=boot_identity::current().unwrap();j.set_outcome(Outcome::Pg17).unwrap();j.handoff(Handoff::Intent,&identity).unwrap();locks.release_d();j.handoff(Handoff::Done,&identity).unwrap();drop(locks);
-  let custody=custody::Custody::acquire(roots.clone(),false).await.unwrap();let startup=runner::Startup{roots,custody,journal:Some(j),identity:Some(identity),plan:runner::BootPlan::Phase2};
-  Self{startup,db,store,l,g,derived,_master:master,services:vec![api,web]}
+  let custody=custody::Custody::acquire(roots.clone(),false).await.unwrap();let startup=runner::Startup{roots,custody,journal:Some(j),identity:Some(identity),plan:runner::BootPlan::Phase2,unrecorded:None};
+  Self{startup,db,store,l,g,derived,_master:master,_managed:managed,services:vec![api,web]}
  }
 }
 #[tokio::test]
@@ -156,4 +159,22 @@ async fn native_g34_real_guard_a8_apply_saved_and_once_only_retry(){
  assert_eq!(runner::retry_cleanup_after_handoff(&mut f.startup,&f.db.state.config,&mut retry,due,Instant::now()+Duration::from_secs(5)).await.unwrap(),Some(false));f.assert_p6_complete();
  let before=fs::read(&journal).unwrap();assert_eq!(runner::retry_cleanup_after_handoff(&mut f.startup,&f.db.state.config,&mut retry,due+Duration::from_secs(900),Instant::now()+Duration::from_secs(2)).await.unwrap(),None);assert_eq!(fs::read(&journal).unwrap(),before);assert_eq!(nginx_tree(),nginx);
  println!("G34_NATIVE_ROW real guard-derived A8, real ApplySaved via test_support::dispatch; live+offline pending, early retry none, due proof+P6, second retry none; nginx unchanged");
+}
+
+#[tokio::test]
+#[ignore="G18 native generation observer with a live worker and foreign PID"]
+async fn native_g18_foreign_pid_never_completes_phase2_or_p6() {
+    if std::env::var("NWUI_TEST_PROFILE_NATIVE").as_deref() != Ok("1") { return; }
+    let mut f = Fixture::new().await;
+    f.apply_saved().await;
+    let foreign = Master(Command::new("/bin/sleep").arg("30").spawn().unwrap());
+    let pid_file = f.db.state.config.nginx_main_conf.with_file_name("nginx.pid");
+    write(&pid_file, foreign.0.id().to_string());
+    let reply = reqwest::Client::builder().local_address(std::net::IpAddr::from([127,0,0,3]))
+        .no_proxy().build().unwrap().get("http://127.0.0.1:8080/nginx_status").send().await.unwrap();
+    assert_eq!(reply.status(), reqwest::StatusCode::OK);
+    let marker = fs::read_to_string(f.db.state.config.nginx_conf_dir.join(".nwui-generation")).unwrap();
+    assert_eq!(reply.headers()["x-nwui-config-generation"], marker.split('"').nth(1).unwrap());
+    f.assert_activation_failure().await;
+    assert_eq!(unsafe { libc::kill(foreign.0.id() as i32, 0) }, 0);
 }

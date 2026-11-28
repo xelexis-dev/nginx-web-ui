@@ -25,6 +25,9 @@ struct Ca {
     payloads: Vec<(String, Value, Value)>,
     stall: bool,
     fail_challenge: bool,
+    invalidate: bool,
+    order_problem: bool,
+    fail_authorization: bool,
 }
 async fn ca(
     State(shared): State<Arc<Mutex<Ca>>>,
@@ -77,14 +80,26 @@ async fn ca(
         }
         "/order/1" => order(&s),
         "/auth/1" => {
-            json!({"identifier":{"type":"dns","value":"example.com"},"status":if s.auth_valid {"valid"}else{"pending"},"wildcard":false,"challenges":[{"type":"dns-01","url":format!("{}/challenge/dns",s.base),"status":"pending","token":s.token},{"type":"http-01","url":format!("{}/challenge/http",s.base),"status":"pending","token":s.token}]})
+            let mut auth = json!({"identifier":order(&s)["identifiers"][0],"status":if s.auth_valid {"valid"}else{"pending"},"wildcard":false,"challenges":[{"type":"dns-01","url":format!("{}/challenge/dns",s.base),"status":"pending","token":s.token},{"type":"http-01","url":format!("{}/challenge/http",s.base),"status":"pending","token":s.token}]});
+            if s.status == "invalid" {
+                if s.fail_authorization {
+                    return (StatusCode::SERVICE_UNAVAILABLE, headers, axum::Json(denied())).into_response();
+                }
+                auth["status"] = json!("invalid");
+                auth["challenges"][1]["status"] = json!("invalid");
+                auth["challenges"][1]["error"] = json!({
+                    "type": "urn:ietf:params:acme:error:connection",
+                    "detail": "Timeout during connect"
+                });
+            }
+            auth
         }
         "/challenge/dns" | "/challenge/http" => {
             if s.fail_challenge {
                 status = StatusCode::BAD_REQUEST;
-                json!({"type":"urn:ietf:params:acme:error:unauthorized","detail":"challenge denied","status":400})
+                denied()
             } else {
-                s.status = "ready".into();
+                s.status = if s.invalidate { "invalid" } else { "ready" }.into();
                 json!({"type":"dns-01","url":format!("{}{}",s.base,uri.path()),"status":"pending","token":s.token})
             }
         }
@@ -100,8 +115,15 @@ async fn ca(
     };
     (status, headers, axum::Json(reply)).into_response()
 }
+fn denied() -> Value {
+    json!({"type":"urn:ietf:params:acme:error:unauthorized","detail":"challenge denied"})
+}
 fn order(s: &Ca) -> Value {
-    json!({"status":s.status,"expires":"2030-01-02T03:04:05Z","identifiers":[{"type":"dns","value":"example.com"}],"authorizations":[format!("{}/auth/1",s.base)],"finalize":format!("{}/finalize",s.base),"certificate":if s.status=="valid"{Some(format!("{}/cert",s.base))}else{None}})
+    let mut order = json!({"status":s.status,"expires":"2030-01-02T03:04:05Z","identifiers":[{"type":"dns","value":"example.com"}],"authorizations":[format!("{}/auth/1",s.base)],"finalize":format!("{}/finalize",s.base),"certificate":if s.status=="valid"{Some(format!("{}/cert",s.base))}else{None}});
+    if s.order_problem && s.status == "invalid" {
+        order["error"] = denied();
+    }
+    order
 }
 async fn server(token: &str) -> (AcmeClient, Arc<Mutex<Ca>>, tokio::task::JoinHandle<()>) {
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -119,6 +141,9 @@ async fn server(token: &str) -> (AcmeClient, Arc<Mutex<Ca>>, tokio::task::JoinHa
         payloads: vec![],
         stall: false,
         fail_challenge: false,
+        invalidate: false,
+        order_problem: false,
+        fail_authorization: false,
     }));
     let app = Router::new().fallback(ca).with_state(state.clone());
     let task = tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
@@ -289,6 +314,40 @@ impl HttpChallengeStore for Store {
         Ok(())
     }
 }
+#[tokio::test]
+async fn invalid_http_order_reports_challenge_problem_and_removes_token() {
+    for (order_problem, fail_authorization) in [(false, false), (true, false), (true, true), (false, true)] {
+        let (client, state, task) = server("token").await;
+        let name = {
+            let mut ca = state.lock().unwrap();
+            ca.invalidate = true;
+            ca.order_problem = order_problem;
+            ca.fail_authorization = fail_authorization;
+            order(&ca)["identifiers"][0]["value"].as_str().unwrap().to_owned()
+        };
+        let key = rcgen::KeyPair::generate().unwrap().serialize_pem();
+        let store = Store::default();
+        let result = client
+            .issue_http(&key, &format!("admin@{name}"), &[name.clone()], &store, &Cancellation::default())
+            .await;
+        task.abort();
+        let Err(CertificateError::Invalid(message)) = result else {
+            panic!("expected Invalid order error");
+        };
+        assert!(message.contains("ACME 주문 상태가 유효하지 않습니다: Invalid."));
+        if fail_authorization {
+            assert!(!message.contains("connection"));
+            if !order_problem {
+                assert!(message.contains("인증기관이 실패 이유를 알려 주지 않았습니다."));
+            }
+        } else {
+            assert!(message.contains(&format!("{name}: connection — Timeout during connect")));
+        }
+        assert_eq!(message.contains("unauthorized — challenge denied"), order_problem);
+        assert!(store.0.lock().unwrap().is_empty());
+    }
+}
+
 #[tokio::test]
 #[ignore = "golden vectors: set NWUI_CONTROL_FIXTURES"]
 async fn failed_http_challenge_is_removed_before_returning_ca_error() {

@@ -71,7 +71,3 @@
 }
 
 /* Table owns the border, scrolling and narrow reflow. */
-
-.twoFactorEmpty {
-  margin-block-start: var(--sp-4);
-}

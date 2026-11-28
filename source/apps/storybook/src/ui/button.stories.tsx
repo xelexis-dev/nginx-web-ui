@@ -3,7 +3,7 @@ import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, within } from "storybook/test";
 
-const variants: ButtonVariant[] = ["primary", "secondary", "danger", "ghost", "dangerQuiet"];
+const variants: ButtonVariant[] = ["primary", "secondary", "danger", "ghost", "dangerQuiet", "dangerOutline"];
 
 const meta = {
   title: "UI/Button",
@@ -16,7 +16,7 @@ const meta = {
         component: [
           "`@repo/ui`의 `Button`은 네이티브 `<button>`이다. 네이티브 속성(`type`, `disabled`, `onClick`, `aria-*` 등)을 그대로 넘긴다.",
           "",
-          "- **variant**: `primary`(기본, 강조색 면에 테마별 대비 글자) · `secondary`(차분한 중립 면과 옅은 테두리) · `danger`(되돌릴 수 없는 동작, 채운 오류색 면에 대비 글자) · `ghost`(테두리 없는, 표·도구 막대의 가벼운 동작) · `dangerQuiet`(화면의 조용한 삭제 동작).",
+          "- **variant**: `primary`(기본, 강조색 면에 테마별 대비 글자) · `secondary`(차분한 중립 면과 옅은 테두리) · `danger`(되돌릴 수 없는 동작, 채운 오류색 면에 대비 글자) · `ghost`(테두리 없는, 표·도구 막대의 가벼운 동작) · `dangerQuiet`(화면의 조용한 삭제 동작) · `dangerOutline`(빨간 테두리와 글자의 토큰 해지 동작).",
           "- **size**: `md`(폼·페이지, `--size-ctl` 32px, 터치도 동일) · `sm`(표·인라인, `--size-ctl-sm` 28px) · `lg`(인증 화면 40px) · `xs`(24px).",
           "- 일반 작은 버튼은 `sm`(28px)을 사용한다. 아이콘만 있는 동작은 같은 Button을 사용하는 **UI/IconButton**으로 만들며 `label`을 필수로 지정한다.",
           "- 마우스를 올리면 면이 바뀌고 누르면 면이 바뀐다. 키보드로 오면 2px 포커스 링이 2px 떨어져 보인다. 비활성은 전용 배경과 글자색을 쓴다.",
@@ -40,7 +40,7 @@ const meta = {
       options: variants,
       description: "시각적 역할",
       table: {
-        type: { summary: '"primary" | "secondary" | "danger" | "ghost" | "dangerQuiet"' },
+        type: { summary: '"primary" | "secondary" | "danger" | "ghost" | "dangerQuiet" | "dangerOutline"' },
         defaultValue: { summary: '"primary"' },
       },
     },
@@ -315,3 +315,5 @@ function LoadingWidth() {
   </main>;
 }
 export const LoadingStableWidth: Story = { render: () => <LoadingWidth /> };
+
+export const DangerOutline: Story = { args: { variant: "dangerOutline", children: "토큰 해지" } };

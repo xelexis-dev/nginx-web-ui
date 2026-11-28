@@ -1,7 +1,7 @@
 //! A.19 container start identity shared by the runner and privilege receipt.
 use super::StepError;
 use sha2::{Digest,Sha256};
-use std::{fs::OpenOptions,io::Read,os::unix::fs::OpenOptionsExt,path::Path};
+use std::{fs::OpenOptions,io::Read,os::unix::fs::OpenOptionsExt,path::Path,time::{Duration,SystemTime}};
 const MAX_INPUT:u64=65536;
 fn unavailable()->StepError {StepError {code:"boot_step_failed",message:"컨테이너 시작 정보를 확인하지 못했습니다. 이전 실행 상태를 재사용하지 않습니다.",detail:Some("boot_identity".into())}}
 fn read_input(path:&Path)->Result<String,StepError> {
@@ -13,14 +13,34 @@ fn identity(boot_id:&str,stat:&str)->Result<String,StepError> {
     if boot_id.len()as u64>MAX_INPUT || stat.len()as u64>MAX_INPUT || stat.contains('\0') {return Err(unavailable());}
     let boot_id=boot_id.trim();let id=uuid::Uuid::parse_str(boot_id).map_err(|_|unavailable())?;
     if id.hyphenated().to_string()!=boot_id {return Err(unavailable());}
+    let start=start_ticks(stat)?.to_string();
+    let mut hash=Sha256::new();hash.update(b"nwui-boot-v1\0");hash.update(boot_id.as_bytes());hash.update(b"\0");hash.update(start.as_bytes());
+    Ok(hex::encode(hash.finalize()))
+}
+fn start_ticks(stat:&str)->Result<u64,StepError>{
+    if stat.len() as u64>MAX_INPUT || stat.contains('\0'){return Err(unavailable());}
     let open=stat.find('(').ok_or_else(unavailable)?;let close=stat.rfind(')').ok_or_else(unavailable)?;
     if open>=close || stat[..open].trim()!="1" {return Err(unavailable());}
     // The suffix starts at field 3; comm can contain spaces and both parentheses.
     let start=stat[close+1..].split_whitespace().nth(19).ok_or_else(unavailable)?;
     if start.is_empty() || !start.bytes().all(|b|b.is_ascii_digit()) {return Err(unavailable());}
-    let start=start.parse::<u64>().map_err(|_|unavailable())?.to_string();
-    let mut hash=Sha256::new();hash.update(b"nwui-boot-v1\0");hash.update(boot_id.as_bytes());hash.update(b"\0");hash.update(start.as_bytes());
-    Ok(hex::encode(hash.finalize()))
+    let start=start.parse::<u64>().map_err(|_|unavailable())?;
+    Ok(start)
+}
+
+
+/// Convert the PID 1 start clock to wall time for comparison with a runtime file's mtime.
+pub(super) fn started_at()->Result<SystemTime,StepError>{
+    let ticks=start_ticks(&read_input(Path::new("/proc/1/stat"))?)?;
+    let hz=unsafe{libc::sysconf(libc::_SC_CLK_TCK)};
+    if hz<=0{return Err(unavailable());}
+    let hz=hz as u64;
+    let start=Duration::new(ticks/hz,((ticks%hz) as u128*1_000_000_000/hz as u128) as u32);
+    let wall=SystemTime::now();
+    let mut boot=libc::timespec{tv_sec:0,tv_nsec:0};
+    if unsafe{libc::clock_gettime(libc::CLOCK_BOOTTIME,&mut boot)}!=0{return Err(unavailable());}
+    let uptime=Duration::new(boot.tv_sec.try_into().map_err(|_|unavailable())?,boot.tv_nsec.try_into().map_err(|_|unavailable())?);
+    wall.checked_sub(uptime.checked_sub(start).ok_or_else(unavailable)?).ok_or_else(unavailable)
 }
 fn from_files(boot:&Path,stat:&Path)->Result<String,StepError> {identity(&read_input(boot)?,&read_input(stat)?)}
 /// Err means phase 1 for the runner; N2 maps it to privilege_prepare_failed and writes no receipt.

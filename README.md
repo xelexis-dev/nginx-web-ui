@@ -47,7 +47,7 @@ The admin UI is in Korean. This guide quotes on-screen labels in Korean, with an
 - **Supported versions:** new fixes ship for 2.1 and later. 2.0.3 is the final 2.0.x release; no further 2.0.x releases will follow 2.1.0. **1.19.11 is the last 1.x release.** There will be no further 1.x releases, security fixes included.
 - **Tested environments:** each release is tested on OrbStack on macOS (ARM64). Docker Engine on an AMD64 Linux kernel was last verified with 2.0.2. Docker Desktop on Windows and macOS has not been verified.
 - The image address is `ghcr.io/xelexis-dev/nginx-web-ui`.
-- The examples below use **2.2.0**.
+- The examples below use **2.2.1**.
 - Changes per version are in the [update history (Korean)](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPDATE.md), and new versions are announced on [Releases](https://github.com/xelexis-dev/nginx-web-ui/releases).
 
 Use the following commands to check the Docker connection, the Compose installation, and **the architecture of the Docker server that will run the container**. With a remote Docker context, the machine you type on and the machine that runs the container can differ.
@@ -61,10 +61,10 @@ docker info --format '{{.OSType}}/{{.Architecture}}'
 
 | Docker server | Image to use |
 | --- | --- |
-| `linux/x86_64` or `linux/amd64` | `ghcr.io/xelexis-dev/nginx-web-ui:2.2.0` |
-| `linux/aarch64` or `linux/arm64` | `ghcr.io/xelexis-dev/nginx-web-ui:2.2.0-arm64` |
+| `linux/x86_64` or `linux/amd64` | `ghcr.io/xelexis-dev/nginx-web-ui:2.2.1` |
+| `linux/aarch64` or `linux/arm64` | `ghcr.io/xelexis-dev/nginx-web-ui:2.2.1-arm64` |
 
-**`latest` stays on 1.19.11 and does not move across major versions.** This prevents an unplanned move from 1.x to 2.x. Install 2.2.0 with the version tags in the table above, and always pin a version tag for an installation in use. `latest` and version tags without a suffix are **AMD64 only**. For a new ARM64 installation, choose the `-arm64` tag. These are not multi-architecture tags that select the architecture for you. **When you update an existing installation, keep the architecture of the existing container's image, not the host's.** Section 6 shows how to check it.
+**`latest` stays on 1.19.11 and does not move across major versions.** This prevents an unplanned move from 1.x to 2.x. Install 2.2.1 with the version tags in the table above, and always pin a version tag for an installation in use. `latest` and version tags without a suffix are **AMD64 only**. For a new ARM64 installation, choose the `-arm64` tag. These are not multi-architecture tags that select the architecture for you. **When you update an existing installation, keep the architecture of the existing container's image, not the host's.** Section 6 shows how to check it.
 
 Before you install, check existing containers with `docker ps -a`. The example below is for a new installation. If a `nginx-web-ui` container or `nwu-*` volumes already exist, first find out whether they belong to an existing installation. Do not delete a service in use, and do not reuse its data volumes for a new installation.
 
@@ -77,12 +77,12 @@ mkdir nginx-web-ui
 cd nginx-web-ui
 ```
 
-In this folder, create a file named **`compose.yaml`** and save the following content as is. **On ARM64, change the `image` tag to `2.2.0-arm64` before you start it.**
+In this folder, create a file named **`compose.yaml`** and save the following content as is. **On ARM64, change the `image` tag to `2.2.1-arm64` before you start it.**
 
 ```yaml
 services:
   nginx-web-ui:
-    image: ghcr.io/xelexis-dev/nginx-web-ui:2.2.0
+    image: ghcr.io/xelexis-dev/nginx-web-ui:2.2.1
     container_name: nginx-web-ui
     restart: unless-stopped
     stop_grace_period: 10m
@@ -171,7 +171,7 @@ The container uses UTC unless you set `TZ`. To use another time zone, add a time
       TZ: Asia/Seoul
 ```
 
-Use a name from the time zone database, such as `Asia/Seoul` or `Europe/Berlin`. Other values fall back to UTC. If fail2ban on the host reads the nginx error log, keep `TZ` the same as the host's time zone.
+Set the container time zone with a time zone database name such as `Asia/Seoul`. Leave `/etc/localtime` from the image in place. Mounting the host file there can change how PostgreSQL and the web server display times even when their time zone is named UTC. If fail2ban on the host reads the nginx error log, keep `TZ` the same as the host's time zone.
 
 ### Host folders on macOS
 
@@ -184,7 +184,7 @@ Mac shared folders in Docker Desktop and OrbStack do not enforce file permission
 
 On shared folders, owner and group numbers can look different depending on who reads them, and a successful ownership change does not guarantee access restriction by number. Read-only storage, and mounts not confirmed as a supported sharing method, keep the existing checks. Mounting a path inside the OrbStack virtual machine directly is not confirmed as supported, so use Docker-managed volumes.
 
-To use host folders, change the `volumes` of the Compose service above as follows. Replace `/absolute/path/nwui` with the real storage path, and with Docker Desktop make it accessible under file sharing. For a new installation, create the four folders first. An existing installation keeps the same database and app folders. For PostgreSQL 15 (PG15) data, first complete migration with 2.0.3 as described in section 6; 2.2.0 will not migrate it. No other container may use the same folders at the same time.
+To use host folders, change the `volumes` of the Compose service above as follows. Replace `/absolute/path/nwui` with the real storage path, and with Docker Desktop make it accessible under file sharing. For a new installation, create the four folders first. An existing installation keeps the same database and app folders. For PostgreSQL 15 (PG15) data, first complete migration with 2.0.3 as described in section 6; 2.2.1 will not migrate it. No other container may use the same folders at the same time.
 
 ```yaml
     security_opt: ["no-new-privileges:true"]
@@ -285,6 +285,8 @@ After enrolling the account's 2단계 인증 (two-factor authentication) and com
 
 Send it as `Authorization: Bearer <token>` to allowed operations under `/api/ui/v1`, **over HTTPS only**. Each request needs permission from both the account's current role and the token's selected scopes. Password, two-factor authentication, passkey, token, OIDC-link and sign-in management; user creation/deletion and password/2FA resets; node pairing and server tokens; OAuth, SMTP and webhook setting changes and tests; changes to security settings and the public base URL; and reading or changing the 「기록 보관」 (record retention) settings require a web sign-in. A token with user-management permission still cannot change an admin account, grant admin, or grant a role with powers the token lacks.
 
+The supported API operations, form fields, and examples are in the [OpenAPI contract](https://github.com/xelexis-dev/nginx-web-ui/blob/main/source/packages/contracts/openapi.json).
+
 Limits apply per token and per account: 600 reads and 60 changes per minute, with 3 simultaneous live streams per token and 6 per account. Repeated bad tokens block that IP for 15 minutes. Open log streams re-check authorization every 30 seconds and close when revocation is detected. The audit log identifies token actions as 「email · 토큰 name」.
 
 User tokens issued before 2.1 are revoked at update; re-issue those needed. Turning off the owner's 2FA, an admin password or 2FA reset, account disable, or pending-account rejection also revokes their tokens. An own-password change alone does not. Even where 2FA is optional, an enrolled user who has not verified this sign-in must verify before opening the 2FA-disable and backup-code pages.
@@ -327,7 +329,7 @@ It prints `healthy` once nginx, the API, the database and the web UI server answ
 ### Ports and targets
 
 - The nginx worker processes run as the `nginx` user. If a target is a Unix socket mounted from the host, this user needs permission to connect to the socket and to pass through every parent folder; otherwise requests get 502.
-- In the admin UI, register upstreams (target services), set the domain, port and target of a reverse proxy, then apply. Caching and gzip compression are configured per server and can be turned on or off per path.
+- In the admin UI, register upstreams (target services), set the domain, port and target of a reverse proxy, then apply. The container also publishes saved settings at startup, so a restart can activate saved changes before an explicit apply. Caching and gzip compression are configured per server and can be turned on or off per path.
 - `localhost` and `127.0.0.1` entered as a proxy target mean **the nginx-web-ui container itself**. For other containers, connect them to the same Docker network and use the service name and internal port. For external services, use an address and port the container can reach. [Docker networking](https://docs.docker.com/engine/network/)
 - Adding a port in the admin UI does not publish it in Docker. For example, a stream that uses TCP `15432` in the container needs `"15432:15432/tcp"` under `ports`, and UDP `15353` needs `"15353:15353/udp"`. Then run `docker compose -f compose.yaml up -d` again. TCP and UDP must match as well.
 - To issue a Let's Encrypt HTTP-01 certificate, the domain's DNS A/AAAA records must point to this host, and **port 80** must be reachable from the internet. Attach the issued certificate to a proxy to serve HTTPS on **port 443**. Where HTTP-01 cannot be used, choose DNS-01 on the 「인증서」 (Certificates) page.
@@ -349,6 +351,8 @@ When you create or edit a reverse proxy path, 「**WebSocket 헤더 채우기**�
 You cannot write `resolver` or `resolver_timeout` directly in the extra directives. Use 「실행 중에 이름 확인」 instead.
 
 If you choose 「**실행 중에 이름 확인**」 for a reverse proxy's direct target or path, an upstream, or a TCP/UDP stream, the configuration can be applied even while the target is down and its name cannot be found. Once the target is ready, connections are tried again, and you do not need to apply again when the address behind the name changes. Existing items are not switched to this mode automatically.
+
+The API calls this option `resolveAtRuntime`. Set it on a single direct target, on each direct location, on an upstream, or on a TCP/UDP stream.
 
 While a name cannot be resolved or reached, HTTP requests may get 502 or 504, TCP connections may be closed, and UDP may get no response. Resolution results are kept for a short time, so a target starting or changing its address does not reach every request immediately. Do not turn this option on for a direct target that is an IP address. Paths that use an upstream registered by name follow that upstream's setting.
 
@@ -401,9 +405,9 @@ With a single target container, nothing can take requests while it restarts. Wit
 
 ## <a id="6-업데이트와-중지"></a>6. Update and stop
 
-### Coming from 1.x: first 2.0.3, then 2.2.0
+### Coming from 1.x: first 2.0.3, then 2.2.1
 
-**Do not replace a 1.x image directly with 2.2.0.** First complete the database migration with **2.0.3**, keeping the database and app volumes and settings, as the [2.0.3 installation guide](https://github.com/xelexis-dev/nginx-web-ui/blob/v2.0.3/README.md) describes. Confirm that sign-in works and proxies respond, then follow the 2.x steps below. For versions below 1.19, follow that guide's intermediate-version conditions first.
+**Do not replace a 1.x image directly with 2.2.1.** First complete the database migration with **2.0.3**, keeping the database and app volumes and settings, as the [2.0.3 installation guide](https://github.com/xelexis-dev/nginx-web-ui/blob/v2.0.3/README.md) describes. Confirm that sign-in works and proxies respond, then follow the 2.x steps below. For versions below 1.19, follow that guide's intermediate-version conditions first.
 
 With 1.x data or an unfinished migration, startup is refused with `requires_2_0_first` and the data is not changed. Do not delete the records or alter the database version files to bypass this. The 2.0.3 images remain available.
 
@@ -411,8 +415,8 @@ With 1.x data or an unfinished migration, startup is refused with `requires_2_0_
 
 1. Read the [update history (Korean)](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPDATE.md) and [upgrade path (Korean)](https://github.com/xelexis-dev/nginx-web-ui/blob/main/docs/UPGRADE_PATH.md). Stop cleanly and keep the old image, Compose and environment settings with a database and app backup pair taken at the same point in time. Follow the upgrade path's 「중지 후 DB·앱을 함께 백업하고 복원하기」 for complete backup and restore commands. A retained PG15 backup does not replace an independent backup.
 2. Keep the existing image's architecture, volume names, mounts, ports and authentication settings. Do not create empty replacement volumes or let two containers write to the same volumes.
-3. Change the existing Compose image to `2.2.0` (AMD64) or `2.2.0-arm64` (ARM64). If pinned by digest, replace the whole image address, not just the tag. Pull and start the image. 2.2.0 adds database structure for the 「기록 보관」 (record retention) settings. To go back to 2.1.x, follow the upgrade path to restore the pre-update database and app backup pair to separate storage and start it with the recorded image ID. Updating from 2.0.x also applies the 2.1 database changes; an already migrated PG17 installation needs no PG15 conversion.
-4. Wait for startup to finish, then check version **2.2.0** in the account menu, sign-in, real HTTP/HTTPS and TCP/UDP responses, certificates, notifications and nodes. If an existing installation shows first-admin setup, stop and check the mounts. User API tokens issued before 2.1 are revoked: re-issue those you need. Server and gateway tokens stay valid.
+3. Change the existing Compose image to `2.2.1` (AMD64) or `2.2.1-arm64` (ARM64). If pinned by digest, replace the whole image address, not just the tag. Pull and start the image. From 2.2.0, the update only needs an image swap. The two versions use the same database structure, so you can return to 2.2.0 with the same database and app volumes after a clean stop. When updating from 2.1.x or 2.0.x, the update applies the database changes for 「기록 보관」 (record retention) introduced in 2.2.0. To go back to 2.1.x or 2.0.x, follow the upgrade path to restore the pre-update database and app backup pair to separate storage and start it with the recorded image ID. Updating from 2.0.x also applies the 2.1 database changes; an already migrated PG17 installation needs no PG15 conversion.
+4. Wait for startup to finish, then check version **2.2.1** in the account menu, sign-in, real HTTP/HTTPS and TCP/UDP responses, certificates, notifications and nodes. If an existing installation shows first-admin setup, stop and check the mounts. User API tokens issued before 2.1 are revoked: re-issue those you need. Server and gateway tokens stay valid.
 
 ```sh
 docker image inspect "$(docker inspect nginx-web-ui --format '{{.Image}}')" --format '{{.Architecture}}'
@@ -426,13 +430,13 @@ docker exec nginx-web-ui nwui-db-upgrade auto-status
 
 Check startup at the existing host admin port (normally `http://<Docker server address>:8080`) and in the logs. Allow up to 600 seconds for a clean stop; do not force-stop immediately. While startup is in progress, a management domain served by the same container's 80/443 may be unavailable.
 
-If the container is stopped, keep it and its mounts and use this read-only status command. For ARM64 use `2.2.0-arm64`; pass any separately configured storage environment variables explicitly because `--volumes-from` does not copy them.
+If the container is stopped, keep it and its mounts and use this read-only status command. For ARM64 use `2.2.1-arm64`; pass any separately configured storage environment variables explicitly because `--volumes-from` does not copy them.
 
 ```sh
 docker run --rm --pull=never --security-opt no-new-privileges:true --network none \
   --volumes-from nginx-web-ui \
   --entrypoint /usr/local/bin/nwui-db-upgrade \
-  ghcr.io/xelexis-dev/nginx-web-ui:2.2.0 auto-status
+  ghcr.io/xelexis-dev/nginx-web-ui:2.2.1 auto-status
 ```
 
 ### Returning to 1.19.11 and removing a retained backup
@@ -443,7 +447,7 @@ An installation already migrated by 2.0 keeps its PG15 backup and the 「PG15 �
 
 ### Nodes and stopping
 
-Within 2.x, update the gateway first, then the nodes. A 2.2 gateway can manage 2.0, 2.1 and 2.2 nodes, but HTTP/2 on needs a 2.1-or-later node. A gateway does not manage a node of a newer minor version than itself, so if a node is updated to 2.2.0 first, a 2.1-or-older gateway cannot manage it. 2.1 and 2.2 gateways do not manage 1.19 nodes: finish moving 1.19 nodes to 2.0.3 while the gateway is on 2.0.3, then raise the gateway to 2.2.0 and update the nodes. The gateway and each node set their own 「기록 보관」 (record retention) settings. Never start an older image normally on a database used by a newer one; restore the pre-update database and app backup pair to go back.
+Within 2.x, update the gateway first, then the nodes. A 2.2 gateway can manage 2.0, 2.1 and 2.2 nodes, but HTTP/2 on needs a 2.1-or-later node. A gateway does not manage a node of a newer minor version than itself, so if a node is updated to 2.2.1 first, a 2.1-or-older gateway cannot manage it. 2.1 and 2.2 gateways do not manage 1.19 nodes: finish moving 1.19 nodes to 2.0.3 while the gateway is on 2.0.3, then raise the gateway to 2.2.1 and update the nodes. The gateway and each node set their own 「기록 보관」 (record retention) settings. When going back to a version that uses an older database structure, restore the pre-update database and app backup pair.
 
 For a temporary stop and restart:
 
@@ -467,6 +471,9 @@ docker compose -f compose.yaml start
 | After a power loss, a forced stop or a crash, the container runs but nginx does not start, and the log repeats `[nginx-guard] nginx start deferred: restore_incomplete` | Fixed in 2.1.3. On an older version, keep the volumes and re-create the container with `docker compose -f compose.yaml up -d --force-recreate`. Updating to 2.1.3 also re-creates it |
 | Behind an HTTPS front proxy, the logs page stays at 「연결 중」 (connecting) | 2.1.3 and later ask the proxy directly in front of the gateway not to buffer the log stream, and an nginx-based proxy there follows this. With more than one proxy layer, or a front proxy that ignores this, turn response buffering off for `/api/` on the outer front proxy (in nginx, `proxy_buffering off;`) or use HTTP/2 between the browser and that front proxy |
 | Proxy returns 502 or 504 | The target address, port and Docker network. With runtime name resolution on, check that the target has started, the DNS response, and the internal DNS service. `localhost` means this container itself |
+| Certificate issuance fails | Before starting HTTP-01, confirm that public DNS already resolves the certificate name to your host and that port 80 is reachable. For DNS-01, confirm that the challenge TXT record is visible in public DNS before submitting it. Use the staging CA for a trial run. |
+| An upstream needs a request ID | In the reverse proxy location’s header picker, add `X-Request-ID: $request_id`. Save and apply. |
+| An IP allow list blocks expected clients | Before saving the list, check the client source address in the access log. Behind NAT, internal clients can appear as the router’s address. |
 | Errors about the database password or encryption key | Whether `nwu-pg` and `nwu-app` are volumes of the same installation. Do not delete or replace only one of them; check the backup in which both were kept together |
 
 ### When startup is refused because of data paths
@@ -483,7 +490,7 @@ docker logs --tail=100 nginx-web-ui
 | Code | What to check |
 | --- | --- |
 | `insufficient_space` | Compare the required space and inodes shown in the status with the available space. Fix the cause and restart the same image |
-| `requires_2_0_first` | Finish migration or recovery with 2.0.3 before starting 2.2.0. Keep both volumes and follow the 2.0.3 guide. Existing data was not changed |
+| `requires_2_0_first` | Finish migration or recovery with 2.0.3 before starting 2.2.1. Keep both volumes and follow the 2.0.3 guide. Existing data was not changed |
 | `storage_busy` | Whether a container or admin command is using the same database and app volumes. Stop the concurrent use |
 | `nginx_test_failed` | Check the file named in the nginx error lines of the log. Fix the errors in the base configuration or additional included files, then restart. Startup can also stop when isolation of user configuration could not finish or the final check failed |
 | `trusted_input_unsafe` | Whether the user that handles admin requests owns, or can write, the nginx executable, configuration or included files named in the error |

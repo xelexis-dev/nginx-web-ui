@@ -1,17 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { HistoryDetailView } from "@/lib/overview-views";
-import { HistoryList } from "@/components/history/history-list";
+import { HistoryList, NODE_HISTORY_LIST_INFO } from "@/components/history/history-list";
 import { HistoryDetail } from "@/components/history/history-detail";
 import { AuditList } from "@/components/audit/audit-list";
 import { AuditDetail } from "@/components/audit/audit-detail";
-import { NodeHistoryActions } from "@/app/(node)/nodes/[id]/history/rollback-button";
 import { ProductFrame } from "./frame";
 
 const iso = "2026-11-11T09:00:00Z";
 const info =
   "설정 적용(apply) 시점마다 저장된 스냅샷 이력을 확인합니다. 최근 50건을 표시하며, 각 항목을 열면 스냅샷 내용과 롤백 버튼을 확인할 수 있습니다.";
-const nodeInfo =
-  "이 노드에 적용된 설정 스냅샷 이력입니다. 게이트웨이는 스냅샷 내용을 읽을 수 없어 개수·작성자 열은 표시하지 않습니다.";
 const rows = [0, 1, 2].map((i) => ({
   id: `snapshot-${i}`,
   iso,
@@ -75,28 +72,9 @@ function Pages(args: Props) {
   if (args.mode === "history")
     return (
       <HistoryList
-        info={args.node ? nodeInfo : info}
-        notice={
-          args.node ? "스냅샷 내용은 노드에서만 볼 수 있습니다." : undefined
-        }
-        basePath={args.node ? undefined : basePath}
+        info={args.node ? NODE_HISTORY_LIST_INFO : info}
+        basePath={basePath}
         data={{ items: args.empty ? [] : rows, showDetails: !args.node }}
-        renderRowAction={
-          args.node
-            ? (row) => (
-                <NodeHistoryActions
-                  nodeUrl="https://node.example.test"
-                  nodeId="wp3e-node"
-                  nodeName="서울 운영 노드"
-                  snapshotId={row.id}
-                  label={row.label}
-                  iso={row.iso}
-                  retryHref={basePath}
-                  canRollback={!args.viewer}
-                />
-              )
-            : undefined
-        }
       />
     );
   if (args.mode === "history-detail")

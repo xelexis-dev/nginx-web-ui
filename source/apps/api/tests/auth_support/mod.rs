@@ -88,6 +88,23 @@ pub async fn test_db_with_migrations(extra: &[(&str, &str)], directory: &Path) -
     }
 }
 
+pub async fn expect_log_source(body: &mut axum::body::Body, source: &[u8]) {
+    use http_body_util::BodyExt;
+    use std::time::Duration;
+
+    let expected = [b": keepalive\n\n".as_slice(), source].concat();
+    tokio::time::timeout(Duration::from_secs(2), async {
+        let mut bytes = Vec::new();
+        while bytes.len() < expected.len() {
+            let frame = body.frame().await.expect("stream closed before delivering the source");
+            bytes.extend_from_slice(&frame.unwrap().into_data().unwrap());
+        }
+        assert_eq!(bytes, expected);
+    })
+    .await
+    .expect("stream did not deliver the source");
+}
+
 pub fn ctx() -> RequestContext {
     RequestContext {
         ip: Some("198.51.100.7".into()),

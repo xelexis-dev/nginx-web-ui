@@ -94,6 +94,15 @@ it("starts connecting, then waits for the first line with a live status", () => 
   expect(html()).toContain("실시간 수신 중");
   expect(html()).toContain("대기 중입니다.");
 });
+it("centres the waiting state in both log panes and the Raw connection state", () => {
+  change(SegmentedControl, "label", "보기 모드", "raw");
+  expect(html()).toMatch(/data-align="center"><p[^>]*>연결하는 중…<\/p>/);
+  live();
+  expect(html()).toMatch(/data-align="center"><p[^>]*>대기 중입니다\./);
+  change(SegmentedControl, "label", "보기 모드", "table");
+  expect(html()).toContain(`class="${styles.empty}"`);
+  expect(html()).toMatch(/data-align="center"><p[^>]*>대기 중입니다\./);
+});
 it("batches arrivals and caps buffered and visible lines at 2,000", () => {
   FakeSource.last.onmessage({ data: access("/first") });
   vi.advanceTimersByTime(199); render();
@@ -248,16 +257,24 @@ it("also reconciles the manual reconnect tail, and appends an unrelated tail", (
   expect(paths()).toEqual(["/kept", "/fresh", "/rotated"]);
 });
 it.each([
-  { top: 800, bottom: 1000, height: 200, delta: 500 },
-  { top: 200, bottom: 300, height: 100, delta: 0 },
-  { top: 550, bottom: 1150, height: 600, delta: 418 },
-])("scrolls only the viewport as needed for opened detail: $delta", ({ top, bottom, height, delta }) => {
+  { rowTop: 760, top: 800, bottom: 1000, height: 200, delta: 500 },
+  { rowTop: 160, top: 200, bottom: 300, height: 100, delta: 0 },
+  { rowTop: 473, top: 550, bottom: 1150, height: 600, delta: 341 },
+  { rowTop: 473, top: 550, bottom: 1150, height: 600, delta: 373, narrow: true },
+  { rowTop: 180, top: 230, bottom: 590, height: 360, delta: 48 },
+])("scrolls the opened detail without hiding its log row: $delta", ({ rowTop, top, bottom, height, delta, narrow = false }) => {
   live(); send(access("/detail")); click(button("보기"));
   const viewport = elements(tree).find((node) => node.props["data-log-view"] === "table")!.props.ref as { current: unknown };
   const detail = elements(tree).find((node) => node.type === "div" && node.props.ref && !node.props["data-log-view"])!.props.ref as { current: unknown };
   const scrollBy = vi.fn();
-  viewport.current = { getBoundingClientRect: () => ({ top: 100 }), clientTop: 0, clientHeight: 400, querySelector: () => ({ offsetHeight: 32 }), scrollBy };
-  detail.current = { getBoundingClientRect: () => ({ top, bottom, height }) };
+  vi.stubGlobal("getComputedStyle", () => ({ position: narrow ? "absolute" : "static" }));
+  viewport.current = { getBoundingClientRect: () => ({ top: 100 }), clientTop: 0, clientHeight: 400, querySelector: () => ({ offsetHeight: narrow ? 1 : 32 }), scrollBy };
+  detail.current = {
+    parentElement: {
+      getBoundingClientRect: () => ({ top, bottom, height }),
+      parentElement: { previousElementSibling: { getBoundingClientRect: () => ({ top: rowTop }) } },
+    },
+  };
   click(button("접기")); click(button("보기"));
   expect(html()).toContain("일시 정지");
   if (delta) expect(scrollBy).toHaveBeenCalledExactlyOnceWith({ top: delta });

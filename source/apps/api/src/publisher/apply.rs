@@ -689,9 +689,15 @@ async fn mutate_locked(
         return Ok(if let Some(output)=refusal {OpResult::Ok{apply:Some(ApplyResult{ok:false,output,rolled_back_to:None}),skipped:Vec::new(),uncertain:super::confirmation::uncertain(&state.config).await,phase:"done".into()}}
         else {OpResult::Failed{code:"snapshot_not_found".into(),output:"스냅샷을 찾을 수 없습니다.".into()}});
     };
-    if let Err(error)=super::vocab::validate(&state.config,&outcome.rendered.conf,&outcome.rendered.stream) {
+    let refusal = match super::vocab::validate(&state.config, &outcome.rendered.conf, &outcome.rendered.stream) {
+        Err(error) => Some(error.to_string()),
+        Ok(()) if !matches!(super::confirmation::nginx_running(&state.config).await, Ok(super::confirmation::NginxState::Running)) =>
+            Some("nginx 프로세스를 확인하지 못해 설정을 적용하지 않았습니다. 잠시 후 다시 시도하세요.".into()),
+        Ok(()) => None,
+    };
+    if let Some(output) = refusal {
         tx.rollback().await?;
-        return Ok(OpResult::Ok{apply:Some(ApplyResult{ok:false,output:error.to_string(),rolled_back_to:None}),skipped:outcome.skipped,uncertain:super::confirmation::uncertain(&state.config).await,phase:"done".into()});
+        return Ok(OpResult::Ok{apply:Some(ApplyResult{ok:false,output,rolled_back_to:None}),skipped:outcome.skipped,uncertain:super::confirmation::uncertain(&state.config).await,phase:"done".into()});
     }
     let mut mutation=Mutation::begin(&state.config,store.clone(),operation,validated).await?;
     let staged=stage_durable(state,&outcome.rendered,&previous,budget,&mut mutation).await;

@@ -6,7 +6,7 @@ use super::{
 use chrono::{DateTime, Utc};
 use instant_acme::{
     Account, AuthorizationStatus, ChallengeType, HttpClient, Identifier, Key, NewOrder, Order,
-    OrderStatus, RetryPolicy,
+    OrderStatus, Problem, RetryPolicy,
 };
 use rustls_pki_types::{PrivatePkcs8KeyDer, pem::PemObject};
 use serde::{Deserialize, Serialize};
@@ -18,6 +18,7 @@ use std::{
     sync::{Arc, Mutex},
     time::Duration,
 };
+use tokio::time::Instant;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -240,6 +241,104 @@ impl HttpClient for BoundedHttp {
     }
 }
 
+fn invalid_order_message(
+    status: OrderStatus,
+    order_problem: Option<&Problem>,
+    challenge_problems: &[(String, Problem)],
+) -> String {
+    let start = format!("ACME 주문 상태가 유효하지 않습니다: {status:?}.");
+    let mut by_name = BTreeMap::<Option<String>, Vec<String>>::new();
+    for (name, problem) in order_problem
+        .into_iter()
+        .map(|problem| (None, problem))
+        .chain(
+            challenge_problems
+                .iter()
+                .map(|(name, problem)| (Some(name), problem)),
+        )
+    {
+        let reasons = std::iter::once((
+            name.cloned(),
+            problem.r#type.as_deref(),
+            problem.detail.as_deref(),
+        ))
+        .chain(problem.subproblems.iter().map(|sub| {
+            let name = sub
+                .identifier
+                .as_ref()
+                .map(|id| id.authorized(false).to_string())
+                .or_else(|| name.cloned());
+            (name, sub.r#type.as_deref(), sub.detail.as_deref())
+        }));
+        for (name, kind, detail) in reasons {
+            let Some(reason) = format_acme_problem(kind, detail) else {
+                continue;
+            };
+            let name = name.map(|name| strip_controls(&name));
+            let entries = by_name.entry(name).or_default();
+            if !entries.contains(&reason) {
+                entries.push(reason);
+            }
+        }
+    }
+    if by_name.is_empty() {
+        return format!("{start} 인증기관이 실패 이유를 알려 주지 않았습니다.");
+    }
+    let mut reasons = by_name.remove(&None).unwrap_or_default();
+    let hidden = by_name.len().saturating_sub(5);
+    reasons.extend(
+        by_name.into_iter().take(5).map(|(name, entries)| {
+            format!("{}: {}", name.unwrap_or_default(), entries.join("; "))
+        }),
+    );
+    if hidden > 0 {
+        reasons.push(format!("외 {hidden}개"));
+    }
+    format!("{start} 인증기관이 알려 준 이유 — {}", reasons.join("; "))
+}
+
+fn strip_controls(text: &str) -> String {
+    text.chars().filter(|c| !c.is_control()).collect()
+}
+
+fn format_acme_problem(kind: Option<&str>, detail: Option<&str>) -> Option<String> {
+    let kind = strip_controls(kind.unwrap_or_default());
+    let kind = kind.trim();
+    let kind = kind
+        .strip_prefix("urn:ietf:params:acme:error:")
+        .unwrap_or(kind);
+    let detail = strip_controls(detail.unwrap_or_default());
+    let mut chars = detail.trim().chars();
+    let mut detail: String = chars.by_ref().take(300).collect();
+    if chars.next().is_some() {
+        detail.push('…');
+    }
+    let mut reason = match (kind.is_empty(), detail.is_empty()) {
+        (false, false) => format!("{kind} — {detail}"),
+        (false, true) => kind.to_owned(),
+        (true, false) => detail,
+        (true, true) => return None,
+    };
+    let hint = match kind {
+        "connection" => "인증기관이 이 서버의 80 포트에 연결하지 못했습니다. 해외에서도 80 포트로 접속되는지 확인하세요.",
+        "dns" => "인증기관이 이 도메인의 DNS 레코드를 찾지 못했습니다.",
+        "unauthorized" => "검증 주소의 응답이 맞지 않습니다. 도메인이 이 서버를 가리키는지, 앞단 프록시가 요청을 그대로 넘기는지 확인하세요.",
+        "caa" => "도메인의 CAA 레코드가 이 인증기관의 발급을 막고 있습니다.",
+        _ => "",
+    };
+    if !hint.is_empty() {
+        reason.push(' ');
+        reason.push_str(hint);
+    }
+    Some(reason)
+}
+
+#[derive(Default)]
+pub(crate) struct IssuanceTrace {
+    pub(crate) order_url: Option<String>,
+    pub(crate) secrets: Vec<String>,
+}
+
 pub struct AcmeClient {
     directory_url: String,
     timeout: Duration,
@@ -267,11 +366,12 @@ impl AcmeClient {
     async fn bounded<T>(
         &self,
         cancel: &Cancellation,
+        deadline: Instant,
         future: impl Future<Output = Result<T>>,
     ) -> Result<T> {
         tokio::select! {biased;
             _=cancel.cancelled()=>Err(CertificateError::Aborted),
-            result=tokio::time::timeout(self.timeout,future)=>result.map_err(|_|CertificateError::Timeout)?,
+            result=tokio::time::timeout_at(deadline,future)=>result.map_err(|_|CertificateError::Timeout)?,
         }
     }
     async fn account(
@@ -324,10 +424,22 @@ impl AcmeClient {
         domains: &[String],
         cancel: &Cancellation,
     ) -> Result<DnsBeginResult> {
+        self.begin_dns_traced(account_key_pem, email, domains, cancel, &mut IssuanceTrace::default()).await
+    }
+
+    pub(crate) async fn begin_dns_traced(
+        &self,
+        account_key_pem: &str,
+        email: &str,
+        domains: &[String],
+        cancel: &Cancellation,
+        trace: &mut IssuanceTrace,
+    ) -> Result<DnsBeginResult> {
         validate_domains(domains, true)?;
-        self.bounded(cancel,async {
+        self.bounded(cancel,Instant::now() + self.timeout, async {
             let expiries=OrderExpiries::default();
             let mut order=self.new_order(account_key_pem,email,domains,Some(expiries.clone())).await?;
+            trace.order_url = Some(order.url().to_owned());
             let mut records=Vec::new();
             let mut authorizations=order.authorizations();
             while let Some(auth)=authorizations.next().await {
@@ -337,7 +449,10 @@ impl AcmeClient {
                 if auth.status!=AuthorizationStatus::Pending {return Err(CertificateError::Invalid(format!("ACME authorization 상태가 유효하지 않습니다: {:?}",auth.status)));}
                 let challenge=auth.challenge(ChallengeType::Dns01).ok_or_else(||CertificateError::Invalid("이 CA가 dns-01 challenge를 제공하지 않습니다.".into()))?;
                 let Identifier::Dns(domain)=challenge.identifier().identifier else {return Err(CertificateError::Invalid("DNS 도메인만 지원합니다.".into()));};
-                records.push(DnsChallengeRecord {domain:domain.clone(),record_name:format!("_acme-challenge.{domain}"),record_value:challenge.key_authorization().dns_value()});
+                let authorization = challenge.key_authorization();
+                let value = authorization.dns_value();
+                trace.secrets.extend([challenge.token.clone(), authorization.as_str().to_owned(), value.clone()]);
+                records.push(DnsChallengeRecord {domain:domain.clone(),record_name:format!("_acme-challenge.{domain}"),record_value:value});
             }
             let url=order.url().to_owned();let state=order.state();
             let mut saved=json!({"url":url,"status":format!("{:?}",state.status).to_lowercase(),"identifiers":domains.iter().map(|d|json!({"type":"dns","value":d})).collect::<Vec<_>>(),"authorizations":state.authorizations.iter().map(|a|a.url.clone()).collect::<Vec<_>>(),"finalize":state.finalize,"certificate":state.certificate});
@@ -354,13 +469,25 @@ impl AcmeClient {
         csr_pem: &str,
         cancel: &Cancellation,
     ) -> Result<DnsCompleteResult> {
+        self.complete_dns_traced(account_key_pem, saved_order, csr_pem, cancel, &mut IssuanceTrace::default()).await
+    }
+
+    pub(crate) async fn complete_dns_traced(
+        &self,
+        account_key_pem: &str,
+        saved_order: &Value,
+        csr_pem: &str,
+        cancel: &Cancellation,
+        trace: &mut IssuanceTrace,
+    ) -> Result<DnsCompleteResult> {
         let url = saved_order["url"]
             .as_str()
             .filter(|s| !s.is_empty())
             .ok_or_else(|| {
                 CertificateError::Invalid("저장된 ACME 주문에 order.url이 없습니다.".into())
             })?;
-        self.bounded(cancel, async {
+        let deadline = Instant::now() + self.timeout;
+        self.bounded(cancel, deadline, async {
             let account = self.account(account_key_pem, None, None).await?;
             let mut order = account.order(url.into()).await?;
             if order.state().status == OrderStatus::Pending {
@@ -376,32 +503,62 @@ impl AcmeClient {
                             auth.status
                         )));
                     }
-                    auth.challenge(ChallengeType::Dns01)
+                    let mut challenge = auth.challenge(ChallengeType::Dns01)
                         .ok_or_else(|| {
                             CertificateError::Invalid(
                                 "이 CA가 dns-01 challenge를 제공하지 않습니다.".into(),
                             )
-                        })?
-                        .set_ready()
-                        .await?;
+                        })?;
+                    let authorization = challenge.key_authorization();
+                    trace.secrets.extend([challenge.token.clone(), authorization.as_str().to_owned(), authorization.dns_value()]);
+                    challenge.set_ready().await?;
                 }
             }
-            self.finish(&mut order, csr_pem).await
+            self.finish(&mut order, csr_pem, deadline).await
         })
         .await
     }
-    async fn finish(&self, order: &mut Order, csr_pem: &str) -> Result<DnsCompleteResult> {
+    async fn finish(
+        &self,
+        order: &mut Order,
+        csr_pem: &str,
+        deadline: Instant,
+    ) -> Result<DnsCompleteResult> {
         let retry = RetryPolicy::new().timeout(self.timeout);
         let mut status = order.state().status;
         if status == OrderStatus::Pending {
-            status = order.poll_ready(&retry).await?;
+            match order.poll_ready(&retry).await {
+                Ok(ready) => status = ready,
+                // poll_ready returns an API error before returning an invalid status with a problem.
+                Err(_) if order.state().status == OrderStatus::Invalid => {
+                    status = OrderStatus::Invalid;
+                }
+                Err(error) => return Err(error.into()),
+            }
         }
         match status {
             OrderStatus::Ready => order.finalize_csr(&csr_der(csr_pem)?).await?,
             OrderStatus::Processing | OrderStatus::Valid => {}
             _ => {
-                return Err(CertificateError::Invalid(format!(
-                    "ACME 주문 상태가 유효하지 않습니다: {status:?}"
+                let order_problem = order.state().error.clone();
+                let mut problems = Vec::new();
+                let mut authorizations = order.authorizations();
+                // Poll this lookup against the issuance deadline so a slow CA cannot mask the invalid order.
+                let _ = tokio::time::timeout_at(deadline, async {
+                    while let Some(result) = authorizations.next().await {
+                        if let Ok(auth) = result {
+                            let name = auth.identifier().to_string();
+                            problems.extend(auth.challenges.iter().filter_map(|challenge| {
+                                Some((name.clone(), challenge.error.as_ref()?.clone()))
+                            }));
+                        }
+                    }
+                })
+                .await;
+                return Err(CertificateError::Invalid(invalid_order_message(
+                    status,
+                    order_problem.as_ref(),
+                    &problems,
                 )));
             }
         }
@@ -425,16 +582,30 @@ impl AcmeClient {
         store: &S,
         cancel: &Cancellation,
     ) -> Result<IssueResult> {
+        self.issue_http_traced(account_key_pem, email, domains, store, cancel, &mut IssuanceTrace::default()).await
+    }
+
+    pub(crate) async fn issue_http_traced<S: HttpChallengeStore>(
+        &self,
+        account_key_pem: &str,
+        email: &str,
+        domains: &[String],
+        store: &S,
+        cancel: &Cancellation,
+        trace: &mut IssuanceTrace,
+    ) -> Result<IssueResult> {
         validate_domains(domains, false)?;
         let mut tokens = Vec::new();
         // The issuance watchdog may drop its borrow of a write, but must not
         // drop the write itself: an already-sent DB INSERT can still commit.
         let mut pending_write: Option<Pin<Box<dyn Future<Output = Result<()>> + Send + '_>>> = None;
+        let deadline = Instant::now() + self.timeout;
         let result = self
-            .bounded(cancel, async {
+            .bounded(cancel, deadline, async {
                 let mut order = self
                     .new_order(account_key_pem, email, domains, None)
                     .await?;
+                trace.order_url = Some(order.url().to_owned());
                 let names = domains.to_vec();
                 let csr = tokio::task::spawn_blocking(move || create_csr(&names))
                     .await
@@ -459,6 +630,7 @@ impl AcmeClient {
                     tokens.push(challenge.token.clone());
                     let token = challenge.token.clone();
                     let authorization = challenge.key_authorization().as_str().to_owned();
+                    trace.secrets.extend([token.clone(), authorization.clone()]);
                     pending_write =
                         Some(Box::pin(
                             async move { store.set(&token, &authorization).await },
@@ -468,7 +640,7 @@ impl AcmeClient {
                     written?;
                     challenge.set_ready().await?;
                 }
-                let cert = self.finish(&mut order, &csr.csr_pem).await?;
+                let cert = self.finish(&mut order, &csr.csr_pem, deadline).await?;
                 Ok(IssueResult {
                     cert_pem: cert.cert_pem,
                     key_pem: csr.key_pem,
@@ -664,5 +836,95 @@ mod response_body_tests {
     #[tokio::test]
     async fn cloudflare_boundary_body_succeeds() {
         cloudflare(Mode::Boundary, true).await;
+    }
+}
+
+#[cfg(test)]
+mod invalid_order_tests {
+    use super::*;
+
+    #[test]
+    fn known_types_include_hints_and_unknown_types_are_preserved() {
+        for (kind, hint) in [
+            ("connection", "인증기관이 이 서버의 80 포트에 연결하지 못했습니다. 해외에서도 80 포트로 접속되는지 확인하세요."),
+            ("dns", "인증기관이 이 도메인의 DNS 레코드를 찾지 못했습니다."),
+            ("unauthorized", "검증 주소의 응답이 맞지 않습니다. 도메인이 이 서버를 가리키는지, 앞단 프록시가 요청을 그대로 넘기는지 확인하세요."),
+            ("caa", "도메인의 CAA 레코드가 이 인증기관의 발급을 막고 있습니다."),
+        ] {
+            let problem_type = format!("urn:ietf:params:acme:error:{kind}");
+            assert_eq!(
+                format_acme_problem(Some(&problem_type), Some("detail")),
+                Some(format!("{kind} — detail {hint}")),
+                "{kind}"
+            );
+        }
+        assert_eq!(
+            format_acme_problem(Some("urn:other:problem"), Some("detail")),
+            Some("urn:other:problem — detail".into())
+        );
+    }
+
+    #[test]
+    fn missing_detail_keeps_the_type() {
+        assert_eq!(
+            format_acme_problem(Some("custom"), None),
+            Some("custom".into())
+        );
+        assert_eq!(
+            format_acme_problem(None, Some("detail")),
+            Some("detail".into())
+        );
+    }
+
+    #[test]
+    fn ca_text_drops_control_characters_and_caps_multibyte_detail() {
+        let problem = serde_json::from_value(json!({
+            "type": "cus\rtom",
+            "detail": format!("{}\n가\u{1b}", "가".repeat(300))
+        })).unwrap();
+        let message = invalid_order_message(
+            OrderStatus::Invalid, None, &[("name\u{7}".into(), problem)],
+        );
+        assert_eq!(
+            message,
+            format!("ACME 주문 상태가 유효하지 않습니다: Invalid. 인증기관이 알려 준 이유 — name: custom — {}…", "가".repeat(300))
+        );
+        let boundary = "가".repeat(300);
+        assert_eq!(format_acme_problem(None, Some(&boundary)), Some(boundary));
+    }
+
+    #[test]
+    fn five_distinct_names_include_all_their_reasons() {
+        let problem: Problem = serde_json::from_value(json!({"type": "custom"})).unwrap();
+        let mut challenges: Vec<_> = (1..=7)
+            .map(|i| (format!("name-{i}"), problem.clone()))
+            .collect();
+        challenges.push(("name-1".into(), serde_json::from_value(json!({"type": "other"})).unwrap()));
+        challenges.push(challenges[0].clone());
+        let message = invalid_order_message(OrderStatus::Invalid, None, &challenges);
+        assert!(message.ends_with("name-1: custom; other; name-2: custom; name-3: custom; name-4: custom; name-5: custom; 외 2개"), "{message}");
+    }
+
+    #[test]
+    fn order_problem_includes_named_subproblems() {
+        let problem = serde_json::from_value(json!({
+            "type": "order",
+            "detail": "rejected",
+            "subproblems": [{
+                "identifier": {"type": "dns", "value": "name"},
+                "type": "sub",
+                "detail": "failed"
+            }]
+        })).unwrap();
+        let message = invalid_order_message(OrderStatus::Invalid, Some(&problem), &[]);
+        assert!(message.ends_with("order — rejected; name: sub — failed"), "{message}");
+    }
+
+    #[test]
+    fn no_problem_uses_the_no_reason_text() {
+        let expected = "ACME 주문 상태가 유효하지 않습니다: Invalid. 인증기관이 실패 이유를 알려 주지 않았습니다.";
+        assert_eq!(invalid_order_message(OrderStatus::Invalid, None, &[]), expected);
+        let empty = serde_json::from_value(json!({"type": "", "detail": "\n"})).unwrap();
+        assert_eq!(invalid_order_message(OrderStatus::Invalid, Some(&empty), &[]), expected);
     }
 }

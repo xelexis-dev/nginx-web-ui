@@ -64,11 +64,21 @@ describe("certificate delete confirmation", () => {
   });
 });
 
-it("keeps delete quiet on the page and danger inside its existing confirmation", () => {
+it("keeps delete outlined on the page and danger inside its existing confirmation", () => {
   const { form, dialog } = render();
   const button = elements(form.props.children as ReactNode).find(e => e.type === Button)!;
-  expect(button.props.variant).toBe("dangerQuiet");
+  expect(button.props.variant).toBe("dangerOutline");
   expect(dialog.props.confirmLabel).toBe("삭제");
+});
+
+it("keeps the linked certificate's delete outlined and disabled", () => {
+  const { form } = render({ linkedCount: 1 });
+  const button = elements(form.props.children as ReactNode).find(e => e.type === Button);
+  expect(button?.props).toMatchObject({
+    variant: "dangerOutline",
+    disabled: true,
+    children: "삭제 (연결 해제 필요)",
+  });
 });
 
 it("orders ACME actions before delete and keeps edit last", () => {

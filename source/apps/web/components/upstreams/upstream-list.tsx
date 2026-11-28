@@ -91,7 +91,7 @@ export function UpstreamList({
     <div className={layout.page}>
       <PageHeader
         title="Upstreams"
-        info="Reverse Proxy 서버가 참조하는 upstream 그룹을 관리합니다."
+        info="리버스 프록시 서버가 참조하는 upstream 그룹을 관리합니다."
         actions={
           canWrite ? (
             <Link href={`${basePath}/new`} className={buttonClassName()}>
@@ -128,7 +128,7 @@ export function UpstreamList({
             {items.length === 0 ? (
               <Tr>
                 <Td colSpan={2}>
-                  <EmptyState title="등록된 upstream이 없습니다" />
+                  <EmptyState description="등록된 upstream이 없습니다." />
                 </Td>
               </Tr>
             ) : null}

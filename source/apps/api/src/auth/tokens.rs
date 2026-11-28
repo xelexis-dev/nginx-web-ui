@@ -142,7 +142,8 @@ fn validation(fields: BTreeMap<String, String>) -> ApiError {
 
 /// `{tokens, issuableScopes}` — the list and what the issue form may offer this caller.
 pub async fn list_view(state: &AppState, actor: &SessionPrincipal, scope: &TokenScope) -> Result<Value, ApiError> {
-    let rows = list(state, actor, scope, super::principal::now_unix_ms()).await.map_err(list_error)?;
+    let mut rows = list(state, actor, scope, super::principal::now_unix_ms()).await.map_err(list_error)?;
+    rows.retain(|row| row.revoked_at.is_none());
     let kind = if *scope == TokenScope::Server { TokenKind::Server } else { TokenKind::User };
     Ok(json!({"tokens": rows, "issuableScopes": issuable_scopes(kind, actor.role)}))
 }
@@ -171,7 +172,12 @@ pub async fn revoke_from_form(state: &AppState, actor: &SessionPrincipal, ctx: &
     }
     revoke(state, actor, ctx, scope, id).await.map_err(revoke_error)?;
     // `result.ok` clears a previous error in the browser action state (TS `RevokeTokenState`).
-    Ok(FormResult { result: Some(json!({"ok": true})), refresh: Some(true), ..FormResult::default() })
+    let path = match scope {
+        TokenScope::Server => "/admin/tokens",
+        TokenScope::User { .. } => "/account/tokens",
+    };
+    let query = url::form_urlencoded::Serializer::new(String::new()).append_pair("revoked", id).finish();
+    Ok(FormResult { result: Some(json!({"ok": true})), redirect_to: Some(format!("{path}?{query}")), ..FormResult::default() })
 }
 
 /// The scopes a token of `kind` may be given by `role` (TS `issuableScopes`): a server token's

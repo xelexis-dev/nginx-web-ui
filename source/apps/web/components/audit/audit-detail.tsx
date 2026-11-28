@@ -38,7 +38,10 @@ export interface AuditDetailVM {
   afterJson: string | null;
 }
 
-/** Pretty-prints a `before`/`after` value for display. `null`/`undefined` render as "—". */
+const MISSING_BEFORE = "이전 값이 없습니다.";
+const MISSING_AFTER = "이후 값이 없습니다.";
+
+/** Pretty-prints a `before`/`after` value for display. */
 export function formatAuditJson(value: unknown): string | null {
   if (value === null || value === undefined) return null;
   try {
@@ -76,7 +79,7 @@ export function AuditDetail({
               className={linkClassName({ variant: "back" })}
             >
               <Icon name="arrowLeft" size={14} />
-              목록으로
+              감사 로그 목록
             </Link>{" "}
           </>
         }
@@ -99,18 +102,18 @@ export function AuditDetail({
 
       <div className={layout.page}>
         {beforeJson === null ? (
-          <Surface title="before">
-            <EmptyState description="—" />
+          <Surface title="이전">
+            <EmptyState description={MISSING_BEFORE} />
           </Surface>
         ) : (
-          <CodePane title="before" code={beforeJson} copyLabel={false} />
+          <CodePane title="이전" code={beforeJson} copyLabel={false} />
         )}
         {afterJson === null ? (
-          <Surface title="after">
-            <EmptyState description="—" />
+          <Surface title="이후">
+            <EmptyState description={MISSING_AFTER} />
           </Surface>
         ) : (
-          <CodePane title="after" code={afterJson} copyLabel={false} />
+          <CodePane title="이후" code={afterJson} copyLabel={false} />
         )}
       </div>
     </section>

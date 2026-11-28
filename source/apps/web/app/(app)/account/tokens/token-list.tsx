@@ -1,4 +1,5 @@
 import {
+  Banner,
   EmptyState,
   StatusBadge,
   type Tone,
@@ -32,7 +33,7 @@ export interface TokenListProps {
   rows: TokenRowView[];
   /** 목록이 사는 경로. 행 링크는 `${basePath}/${row.id}` 다. */
   basePath: string;
-  /** 비어 있을 때의 문구 — 종류에 따라 다르다("아직 만든 토큰이 없습니다" 등). */
+  /** 비어 있을 때의 문구 — 종류에 따라 다르다("토큰이 없습니다" 등). */
   emptyMessage?: string;
 }
 
@@ -45,7 +46,7 @@ const BADGE_TONE: Record<TokenStatus, Tone> = {
 export function TokenList({
   rows,
   basePath,
-  emptyMessage = "아직 만든 토큰이 없습니다.",
+  emptyMessage = "토큰이 없습니다.",
 }: TokenListProps) {
   return (
     <Surface flush>
@@ -64,7 +65,7 @@ export function TokenList({
           {rows.length === 0 ? (
             <Tr>
               <Td colSpan={6}>
-                <EmptyState description={emptyMessage} />
+                <EmptyState description={emptyMessage} align="center" />
               </Td>
             </Tr>
           ) : null}
@@ -117,9 +118,18 @@ export function TokenList({
   );
 }
 
+interface TokensViewProps {
+  rows: TokenRowView[];
+  revokedName?: string;
+}
+
+function RevokedTokenBanner({ name }: { name?: string }) {
+  if (name === undefined) return null;
+  return <Banner tone="success" role="status" title={`"${name}" 토큰을 해지했습니다.`} />;
+}
+
 /** The route and Storybook share the same list composition; API reads stay in the route. */
-export function AccountTokensView({ rows }: { rows: TokenRowView[] }) {
-  const views = rows;
+export function AccountTokensView({ rows, revokedName }: TokensViewProps) {
   return (
     <section className={layout.page}>
       <PageHeader
@@ -139,36 +149,32 @@ export function AccountTokensView({ rows }: { rows: TokenRowView[] }) {
           </>
         }
       />
+      <RevokedTokenBanner name={revokedName} />
 
       <Facts
         layout="strip"
         items={[
-          { term: "토큰", value: views.length },
+          { term: "토큰", value: rows.length },
           {
             term: STATUS_LABELS.active,
-            value: views.filter((row) => row.status === "active").length,
+            value: rows.filter((row) => row.status === "active").length,
           },
           {
             term: STATUS_LABELS.expired,
-            value: views.filter((row) => row.status === "expired").length,
-          },
-          {
-            term: STATUS_LABELS.revoked,
-            value: views.filter((row) => row.status === "revoked").length,
+            value: rows.filter((row) => row.status === "expired").length,
           },
         ]}
       />
       <TokenList
-        rows={views}
+        rows={rows}
         basePath="/account/tokens"
-        emptyMessage="아직 만든 토큰이 없습니다."
       />
     </section>
   );
 }
 
 /** Same server-token list composition for the route and safe fixtures. */
-export function ServerTokensView({ rows }: { rows: TokenRowView[] }) {
+export function ServerTokensView({ rows, revokedName }: TokensViewProps) {
   return (
     <section className={layout.page}>
       <PageHeader
@@ -204,11 +210,12 @@ export function ServerTokensView({ rows }: { rows: TokenRowView[] }) {
           </>
         }
       />
+      <RevokedTokenBanner name={revokedName} />
 
       <TokenList
         rows={rows}
         basePath="/admin/tokens"
-        emptyMessage="아직 발급한 서버 토큰이 없습니다. 다른 게이트웨이가 이 서버에 연결하게 하려면 node:pair 권한을 가진 토큰을 발급해 그쪽에 전달하세요."
+        emptyMessage="서버 토큰이 없습니다. 다른 게이트웨이가 이 서버에 연결하게 하려면 node:pair 권한을 가진 토큰을 발급해 그쪽에 전달하세요."
       />
     </section>
   );

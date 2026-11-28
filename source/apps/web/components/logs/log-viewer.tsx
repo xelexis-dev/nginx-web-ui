@@ -573,14 +573,19 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
 
   useEffect(() => {
     const viewport = viewportRef.current;
-    const detail = detailRef.current;
-    if (expanded === null || view !== "table" || !viewport || !detail) return;
+    const cell = detailRef.current?.parentElement;
+    const row = cell?.parentElement?.previousElementSibling;
+    if (expanded === null || view !== "table" || !viewport || !cell || !row) return;
     const box = viewport.getBoundingClientRect();
-    const top = box.top + viewport.clientTop + (viewport.querySelector("thead")?.offsetHeight ?? 0);
+    const header = viewport.querySelector("thead");
+    // The absolutely positioned narrow header is for screen readers.
+    const headerHeight = header && getComputedStyle(header).position !== "absolute" ? header.offsetHeight : 0;
+    const top = box.top + viewport.clientTop + headerHeight;
     const bottom = box.top + viewport.clientTop + viewport.clientHeight;
-    const bounds = detail.getBoundingClientRect();
-    const delta = bounds.height > bottom - top || bounds.top < top
+    const bounds = cell.getBoundingClientRect();
+    const detailDelta = bounds.height > bottom - top || bounds.top < top
       ? bounds.top - top : Math.max(0, bounds.bottom - bottom);
+    const delta = Math.min(detailDelta, row.getBoundingClientRect().top - top);
     if (delta) viewport.scrollBy({ top: delta });
   }, [expanded, view]);
 
@@ -655,7 +660,7 @@ export function LogViewer({ streamPath }: { streamPath: string }) {
               {file === "access" ? <><Th>메서드</Th><Th>도메인</Th><Th>경로</Th><Th align="end">크기</Th><Th>IP</Th></> : <Th>메시지</Th>}
               <Th>상세</Th></Tr></thead>
             <tbody>
-              {!shown.length && connection === "connecting" ? Array.from({ length: 6 }, (_, row) => <Tr key={row} aria-hidden="true">{Array.from({ length: file === "access" ? 8 : 4 }, (_, cell) => <Td key={cell} cell={cell === 1 ? "status" : cell === (file === "access" ? 4 : 2) ? "primary" : cell === (file === "access" ? 7 : 3) ? "action" : "meta"}><span className={styles.skeleton} /></Td>)}</Tr>) : !shown.length ? <Tr><Td colSpan={file === "access" ? 8 : 4}><div className={styles.empty}>{empty}</div></Td></Tr> : shown.map((line) => {
+              {!shown.length && connection === "connecting" ? Array.from({ length: 6 }, (_, row) => <Tr key={row} aria-hidden="true">{Array.from({ length: file === "access" ? 8 : 4 }, (_, cell) => <Td key={cell} cell={cell === 1 ? "status" : cell === (file === "access" ? 4 : 2) ? "primary" : cell === (file === "access" ? 7 : 3) ? "action" : "meta"}><span className={styles.skeleton} /></Td>)}</Tr>) : !shown.length ? <Tr><Td className={styles.empty} colSpan={file === "access" ? 8 : 4}>{empty}</Td></Tr> : shown.map((line) => {
                 const r = line.rec;
                 const open = expanded === line.id;
                 const title = r.kind === "access" ? r.path : r.kind === "error" ? r.message : line.text;

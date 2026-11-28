@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { EmptyState, Icon, StatusDot, IconButton } from "@repo/ui";
+import { EmptyState, Icon, StatusBadge, StatusDot, IconButton } from "@repo/ui";
 import type { NotificationSeverity } from "@/lib/notification-presentation";
 import styles from "./notification-bell.module.css";
 
@@ -67,12 +67,15 @@ export function NotificationBellView({
         className={styles.trigger}
         aria-haspopup="menu"
         aria-expanded={open}
-        label="알림"
+        label={unread > 0 ? `알림 ${unread}건` : "알림"}
+        data-unread={unread > 0 ? "" : undefined}
         onClick={toggle}
       >
         <Icon name="bell" size={16} />
         {unread > 0 ? (
-          <span className={styles.badge}>{unread > 99 ? "99+" : unread}</span>
+          <StatusBadge tone="error" variant="solid" size="sm" dot={false} aria-hidden="true">
+            {unread > 99 ? "99+" : unread}
+          </StatusBadge>
         ) : null}
       </IconButton>
       {open ? (

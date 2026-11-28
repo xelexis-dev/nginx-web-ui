@@ -143,7 +143,7 @@ export function CertificateList({
             {data.items.length === 0 ? (
               <Tr>
                 <Td colSpan={4}>
-                  <EmptyState title="발급된 인증서가 없습니다" />
+                  <EmptyState description="발급된 인증서가 없습니다." />
                 </Td>
               </Tr>
             ) : null}

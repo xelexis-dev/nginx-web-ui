@@ -10,6 +10,7 @@ import {
   StatusDot,
   KpiRow,
   Facts,
+  EmptyState,
   Surface,
 } from "@repo/ui";
 import { ConfirmDialog } from "../../../packages/ui/src/confirm-dialog";
@@ -101,6 +102,32 @@ it.each([false, true])(
     expect(/<button[^>]*disabled/.test(html)).toBe(pending);
   },
 );
+
+it("uses the custom pending label only while confirmation is pending", () => {
+  const props = {
+    open: true,
+    title: "토큰 해지",
+    description: "되돌릴 수 없습니다.",
+    confirmLabel: "해지 확인",
+    pendingLabel: "해지하는 중...",
+    onClose: () => {},
+    onConfirm: () => {},
+  };
+  const pending = renderToStaticMarkup(<ConfirmDialog {...props} pending />);
+  expect(pending).toContain("해지하는 중...");
+  expect(pending).not.toContain("처리 중...");
+  const idle = renderToStaticMarkup(<ConfirmDialog {...props} />);
+  expect(idle).toContain("해지 확인");
+  expect(idle).not.toContain("해지하는 중...");
+});
+
+it("centres the EmptyState and its action by default", () => {
+  const html = renderToStaticMarkup(
+    <EmptyState title="비어 있음" description="비어 있습니다." action={<button>만들기</button>} />,
+  );
+  expect(html).toContain('data-align="center"');
+  expect(html).toContain("<button>만들기</button>");
+});
 
 it("keeps explicit polite errors and non-error status roles", () => {
   expect(

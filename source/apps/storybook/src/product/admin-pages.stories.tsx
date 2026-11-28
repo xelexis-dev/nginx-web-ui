@@ -1,5 +1,5 @@
 // WP-3H: production admin/account-token components, safe DTO fixtures, no network or stored secrets.
-import { expect, userEvent, within } from "storybook/test";
+import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import {
   AdminTwoFactor,
   AdminUserResultNotice,
@@ -41,6 +41,7 @@ import {
   AccountTokensView,
   ServerTokensView,
 } from "@/app/(app)/account/tokens/token-list";
+import type { RevokeTokenState } from "@/app/(app)/account/tokens/form-types";
 import { TokenDetail } from "@/app/(app)/account/tokens/token-detail";
 import type { TokenScope } from "@repo/contracts";
 import layout from "@/components/page-layout.module.css";
@@ -606,6 +607,67 @@ export const UserTokenNew: Story = { args: { kind: "user-token-new" } };
 export const ViewerTokenNew: Story = { args: { kind: "viewer-token-new" } };
 export const UserTokenList: Story = { args: { kind: "user-token-list" } };
 export const UserTokenDetail: Story = { args: { kind: "user-token-detail" } };
+
+export const ServerTokensEmpty: Story = {
+  args: { kind: "server-token-list" },
+  render: () => <ServerTokensView rows={[]} />,
+};
+export const UserTokensEmpty: Story = {
+  args: { kind: "user-token-list" },
+  render: () => <AccountTokensView rows={[]} />,
+};
+export const ServerTokenRevokedNotice: Story = {
+  args: { kind: "server-token-list" },
+  render: () => <ServerTokensView rows={[token]} revokedName="이전 연결" />,
+};
+export const UserTokenRevokedNotice: Story = {
+  args: { kind: "user-token-list" },
+  render: () => <AccountTokensView rows={[token]} revokedName="이전 연결" />,
+};
+
+function tokenRevokeStory(server: boolean): Story {
+  let complete: ((state: RevokeTokenState) => void) | undefined;
+  const revoke = fn((_state: RevokeTokenState, _form: FormData) =>
+    new Promise<RevokeTokenState>((resolve) => { complete = resolve; }),
+  );
+  return {
+    args: { kind: server ? "server-token-detail" : "user-token-detail" },
+    render: () => <TokenDetail view={token} basePath={server ? "/admin/tokens" : "/account/tokens"} revoke={revoke} />,
+    play: async ({ canvasElement }) => {
+      revoke.mockClear();
+      const canvas = within(canvasElement);
+      const trigger = canvas.getByRole("button", { name: "토큰 해지" });
+      await userEvent.click(trigger);
+      const dialog = await canvas.findByRole("dialog", { name: "토큰 해지" });
+      const panel = within(dialog);
+      await expect(panel.getByText(`${token.name} · ${token.masked}`)).toBeVisible();
+      await userEvent.click(panel.getByRole("button", { name: "취소" }));
+      await waitFor(() => expect(dialog).not.toBeVisible());
+      await expect(revoke).not.toHaveBeenCalled();
+
+      await userEvent.click(trigger);
+      await userEvent.click(panel.getByRole("button", { name: "토큰 해지" }));
+      try {
+        await expect(await panel.findByRole("button", { name: "해지하는 중..." })).toBeDisabled();
+        await expect(panel.getByRole("button", { name: "취소" })).toBeDisabled();
+        await expect(panel.getByRole("button", { name: "닫기" })).toBeDisabled();
+        await expect(revoke).toHaveBeenCalledTimes(1);
+        const [, form] = revoke.mock.calls[0]!;
+        await expect(Array.from(form.entries())).toEqual([["id", token.id]]);
+      } finally {
+        complete?.({ ok: false, error: "다시 시도하세요." });
+      }
+
+      await expect(await canvas.findByText("해지하지 못했습니다")).toBeVisible();
+      await expect(canvas.getByText("다시 시도하세요.")).toBeVisible();
+      await waitFor(() => expect(dialog).not.toBeVisible());
+    },
+  };
+}
+
+export const ServerTokenRevoke: Story = tokenRevokeStory(true);
+export const UserTokenRevoke: Story = tokenRevokeStory(false);
+
 
 export const UserTwoFactorOn: Story = { args: { kind: "user-2fa-on" } };
 export const UserTwoFactorOff: Story = { args: { kind: "user-2fa-off" } };

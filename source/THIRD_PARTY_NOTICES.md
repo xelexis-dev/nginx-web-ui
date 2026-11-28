@@ -12,16 +12,16 @@ are available from https://snapshot.debian.org/ at the source versions listed be
 
 - apps/api/Cargo.lock: 2a998011bcae3c4c88853a10e26a0bec55b86871d8f8430bafd12bdb26d42ff5
 - docker/licenses/spdx-lock.json: bb7bc66d0b482f11e0d66ea76f3967ffc47995c48803536d70c2f2e23bfb28ed
-- docker/pins/inventory/api-builder-amd64.tsv: 212f2a6c7deb81ec4b72117170969aae0702d6c121e1007783f5db74671c52c5
-- docker/pins/inventory/api-builder-arm64.tsv: 2ef95bd779af5df65d0325641967a21d2d845546f99a2c8fff5f4da7f7382617
-- docker/pins/inventory/keyring-amd64.tsv: f2564682b63467a45f05eb1d18b4ce3ceaa10de78ef56fbc86c7e7005dc961e9
-- docker/pins/inventory/keyring-arm64.tsv: 3b9989b7397e269399fc448bc342ced3692373e5802b9b7dc2d7dbaef6834347
-- docker/pins/inventory/runtime-amd64.tsv: a724c9e95ea4c7f7e1124b9651b714204b911b81b53221dea20f9b2ffeb887d7
-- docker/pins/inventory/runtime-arm64.tsv: 009306526ad24b7aae2adb526e761695cad0f6ab4b33ac9c3c9c201726d284df
+- docker/pins/inventory/api-builder-amd64.tsv: b1d23e5fcfc9649e48f9f3ce5206a0f2c83ef0bd9c328a8e6261f65166b91718
+- docker/pins/inventory/api-builder-arm64.tsv: a6fa1c0f1095b95e1640b299c15344e00c3733513b43305284b7772e4527bafe
+- docker/pins/inventory/keyring-amd64.tsv: fcd29d49c794ab030492cf0d59b568fbefe7e07b6f9d262fe7f34a69c33b10d8
+- docker/pins/inventory/keyring-arm64.tsv: 30f4189f30257813c50f72e84013f2836ec5aa4967218b3a42080fdf06275614
+- docker/pins/inventory/runtime-amd64.tsv: a6d284ce805efcc9263fe536fc41e54348f2b2c3ac0a9b95c42c668f2eb9d143
+- docker/pins/inventory/runtime-arm64.tsv: af17fa290528fab1a5ecf36417dce863883f1b04a32ce78324eeb6458152471d
 - docker/turbo/package-lock.json: 90541d8aac02c8edc1506278f64156743e6bc4f4278be7bb0ecb28a7b3e82254
 - package.json: 91af8c58d9fa0674485207703d6ddc2e31aa5b95192e5295da22f1ad9cfe7731
 - yarn.lock: 52e904d286c71d11a978d7c41d712fd594824517e16cda67dcf0ed7fd7da113d
-- Dockerfile:ARG: 02591a8eb313b55bedb2bfbc8c914851ba8e46be125bd6f683bca6d93b573a48
+- Dockerfile:ARG: bbe1c2fa04e2eea5388d74388eb4533c15e8ee97968aec01754b53f4c4164bac
 
 ## Text 000cbb5bea6f21829c8f0d9e1fe87410bd5ef0453412ffc017845982a3e19824
 
@@ -30445,12 +30445,12 @@ Referenced common licence texts are reproduced in the DEBIAN_COMMON_LICENSES blo
 <!-- /nwui-text:335d86448f09b2550bfd27e31ff827b7613adf84b0f475ca924a8de2a4412115 -->
 
 Applies to:
-- deb:api-builder-amd64.tsv:libzstd1=1.5.7+dfsg-1 — debian/copyright
-- deb:api-builder-arm64.tsv:libzstd1=1.5.7+dfsg-1 — debian/copyright
-- deb:keyring-amd64.tsv:libzstd1=1.5.7+dfsg-1 — debian/copyright
-- deb:keyring-arm64.tsv:libzstd1=1.5.7+dfsg-1 — debian/copyright
-- deb:runtime-amd64.tsv:libzstd1=1.5.7+dfsg-1 — debian/copyright
-- deb:runtime-arm64.tsv:libzstd1=1.5.7+dfsg-1 — debian/copyright
+- deb:api-builder-amd64.tsv:libzstd1=1.5.7+dfsg-1+deb13u1 — debian/copyright
+- deb:api-builder-arm64.tsv:libzstd1=1.5.7+dfsg-1+deb13u1 — debian/copyright
+- deb:keyring-amd64.tsv:libzstd1=1.5.7+dfsg-1+deb13u1 — debian/copyright
+- deb:keyring-arm64.tsv:libzstd1=1.5.7+dfsg-1+deb13u1 — debian/copyright
+- deb:runtime-amd64.tsv:libzstd1=1.5.7+dfsg-1+deb13u1 — debian/copyright
+- deb:runtime-arm64.tsv:libzstd1=1.5.7+dfsg-1+deb13u1 — debian/copyright
 
 ## Text 33643545660788c0503e0f3c616ebc093bab9d82bdd81a33105f5e32200d382a
 
@@ -77471,26 +77471,26 @@ Referenced common licence texts are reproduced in the DEBIAN_COMMON_LICENSES blo
 <!-- /nwui-text:9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39 -->
 
 Applies to:
-- deb:api-builder-amd64.tsv:libc-bin=2.41-12+deb13u4 — debian/copyright
-- deb:api-builder-amd64.tsv:libc-dev-bin=2.41-12+deb13u4 — debian/copyright
-- deb:api-builder-amd64.tsv:libc6-dev=2.41-12+deb13u4 — debian/copyright
-- deb:api-builder-amd64.tsv:libc6=2.41-12+deb13u4 — debian/copyright
-- deb:api-builder-arm64.tsv:libc-bin=2.41-12+deb13u4 — debian/copyright
-- deb:api-builder-arm64.tsv:libc-dev-bin=2.41-12+deb13u4 — debian/copyright
-- deb:api-builder-arm64.tsv:libc6-dev=2.41-12+deb13u4 — debian/copyright
-- deb:api-builder-arm64.tsv:libc6=2.41-12+deb13u4 — debian/copyright
-- deb:keyring-amd64.tsv:libc-bin=2.41-12+deb13u4 — debian/copyright
-- deb:keyring-amd64.tsv:libc6=2.41-12+deb13u4 — debian/copyright
-- deb:keyring-arm64.tsv:libc-bin=2.41-12+deb13u4 — debian/copyright
-- deb:keyring-arm64.tsv:libc6=2.41-12+deb13u4 — debian/copyright
-- deb:runtime-amd64.tsv:libc-bin=2.41-12+deb13u4 — debian/copyright
-- deb:runtime-amd64.tsv:libc-l10n=2.41-12+deb13u4 — debian/copyright
-- deb:runtime-amd64.tsv:libc6=2.41-12+deb13u4 — debian/copyright
-- deb:runtime-amd64.tsv:locales=2.41-12+deb13u4 — debian/copyright
-- deb:runtime-arm64.tsv:libc-bin=2.41-12+deb13u4 — debian/copyright
-- deb:runtime-arm64.tsv:libc-l10n=2.41-12+deb13u4 — debian/copyright
-- deb:runtime-arm64.tsv:libc6=2.41-12+deb13u4 — debian/copyright
-- deb:runtime-arm64.tsv:locales=2.41-12+deb13u4 — debian/copyright
+- deb:api-builder-amd64.tsv:libc-bin=2.41-12+deb13u5 — debian/copyright
+- deb:api-builder-amd64.tsv:libc-dev-bin=2.41-12+deb13u5 — debian/copyright
+- deb:api-builder-amd64.tsv:libc6-dev=2.41-12+deb13u5 — debian/copyright
+- deb:api-builder-amd64.tsv:libc6=2.41-12+deb13u5 — debian/copyright
+- deb:api-builder-arm64.tsv:libc-bin=2.41-12+deb13u5 — debian/copyright
+- deb:api-builder-arm64.tsv:libc-dev-bin=2.41-12+deb13u5 — debian/copyright
+- deb:api-builder-arm64.tsv:libc6-dev=2.41-12+deb13u5 — debian/copyright
+- deb:api-builder-arm64.tsv:libc6=2.41-12+deb13u5 — debian/copyright
+- deb:keyring-amd64.tsv:libc-bin=2.41-12+deb13u5 — debian/copyright
+- deb:keyring-amd64.tsv:libc6=2.41-12+deb13u5 — debian/copyright
+- deb:keyring-arm64.tsv:libc-bin=2.41-12+deb13u5 — debian/copyright
+- deb:keyring-arm64.tsv:libc6=2.41-12+deb13u5 — debian/copyright
+- deb:runtime-amd64.tsv:libc-bin=2.41-12+deb13u5 — debian/copyright
+- deb:runtime-amd64.tsv:libc-l10n=2.41-12+deb13u5 — debian/copyright
+- deb:runtime-amd64.tsv:libc6=2.41-12+deb13u5 — debian/copyright
+- deb:runtime-amd64.tsv:locales=2.41-12+deb13u5 — debian/copyright
+- deb:runtime-arm64.tsv:libc-bin=2.41-12+deb13u5 — debian/copyright
+- deb:runtime-arm64.tsv:libc-l10n=2.41-12+deb13u5 — debian/copyright
+- deb:runtime-arm64.tsv:libc6=2.41-12+deb13u5 — debian/copyright
+- deb:runtime-arm64.tsv:locales=2.41-12+deb13u5 — debian/copyright
 
 ## Text 9a31612889eeb93b49b3a474c38546104f6276ee553c11159a4e154bbf40945a
 
@@ -80906,10 +80906,10 @@ Referenced common licence texts are reproduced in the DEBIAN_COMMON_LICENSES blo
 <!-- /nwui-text:a251db5d58060412621ce7a207c7f8d8e4380ba0bed00fa95680b7b7ec9bbbf8 -->
 
 Applies to:
-- deb:api-builder-amd64.tsv:libnghttp2-14=1.64.0-1.1+deb13u1 — debian/copyright
-- deb:api-builder-arm64.tsv:libnghttp2-14=1.64.0-1.1+deb13u1 — debian/copyright
-- deb:keyring-amd64.tsv:libnghttp2-14=1.64.0-1.1+deb13u1 — debian/copyright
-- deb:keyring-arm64.tsv:libnghttp2-14=1.64.0-1.1+deb13u1 — debian/copyright
+- deb:api-builder-amd64.tsv:libnghttp2-14=1.64.0-1.1+deb13u2 — debian/copyright
+- deb:api-builder-arm64.tsv:libnghttp2-14=1.64.0-1.1+deb13u2 — debian/copyright
+- deb:keyring-amd64.tsv:libnghttp2-14=1.64.0-1.1+deb13u2 — debian/copyright
+- deb:keyring-arm64.tsv:libnghttp2-14=1.64.0-1.1+deb13u2 — debian/copyright
 
 ## Text a2730ea7b7de8fb60b965beabf13e8b260a64762ba5ad675b22ff687ff00e82e
 
@@ -83047,14 +83047,14 @@ Referenced common licence texts are reproduced in the DEBIAN_COMMON_LICENSES blo
 <!-- /nwui-text:a97dae6796a98c8c1278023cb8321e548a77e8f9dda88a5297dc36550c3e4afd -->
 
 Applies to:
-- deb:runtime-amd64.tsv:postgresql-client-common=278 — postgresql-common/debian/copyright
-- deb:runtime-amd64.tsv:postgresql-common-dev=278 — postgresql-common/debian/copyright
-- deb:runtime-amd64.tsv:postgresql-common=278 — postgresql-common/debian/copyright
-- deb:runtime-amd64.tsv:postgresql=17+278 — postgresql-common/debian/copyright
-- deb:runtime-arm64.tsv:postgresql-client-common=278 — postgresql-common/debian/copyright
-- deb:runtime-arm64.tsv:postgresql-common-dev=278 — postgresql-common/debian/copyright
-- deb:runtime-arm64.tsv:postgresql-common=278 — postgresql-common/debian/copyright
-- deb:runtime-arm64.tsv:postgresql=17+278 — postgresql-common/debian/copyright
+- deb:runtime-amd64.tsv:postgresql-client-common=278+deb13u1 — postgresql-common/debian/copyright
+- deb:runtime-amd64.tsv:postgresql-common-dev=278+deb13u1 — postgresql-common/debian/copyright
+- deb:runtime-amd64.tsv:postgresql-common=278+deb13u1 — postgresql-common/debian/copyright
+- deb:runtime-amd64.tsv:postgresql=17+278+deb13u1 — postgresql-common/debian/copyright
+- deb:runtime-arm64.tsv:postgresql-client-common=278+deb13u1 — postgresql-common/debian/copyright
+- deb:runtime-arm64.tsv:postgresql-common-dev=278+deb13u1 — postgresql-common/debian/copyright
+- deb:runtime-arm64.tsv:postgresql-common=278+deb13u1 — postgresql-common/debian/copyright
+- deb:runtime-arm64.tsv:postgresql=17+278+deb13u1 — postgresql-common/debian/copyright
 
 ## Text a981c9e5cdc04a3030ba39fe643051bfde08ceb944fc8a2bea6882f42f585f83
 
@@ -84408,18 +84408,18 @@ Referenced common licence texts are reproduced in the DEBIAN_COMMON_LICENSES blo
 <!-- /nwui-text:ab9f5c9869c54a96e4c5566e74ebbe2ac982fbf55091ab1e84f88b7e621d7ece -->
 
 Applies to:
-- deb:api-builder-amd64.tsv:login.defs=1:4.17.4-2 — debian/copyright
-- deb:api-builder-amd64.tsv:passwd=1:4.17.4-2 — debian/copyright
-- deb:api-builder-arm64.tsv:login.defs=1:4.17.4-2 — debian/copyright
-- deb:api-builder-arm64.tsv:passwd=1:4.17.4-2 — debian/copyright
-- deb:keyring-amd64.tsv:login.defs=1:4.17.4-2 — debian/copyright
-- deb:keyring-amd64.tsv:passwd=1:4.17.4-2 — debian/copyright
-- deb:keyring-arm64.tsv:login.defs=1:4.17.4-2 — debian/copyright
-- deb:keyring-arm64.tsv:passwd=1:4.17.4-2 — debian/copyright
-- deb:runtime-amd64.tsv:login.defs=1:4.17.4-2 — debian/copyright
-- deb:runtime-amd64.tsv:passwd=1:4.17.4-2 — debian/copyright
-- deb:runtime-arm64.tsv:login.defs=1:4.17.4-2 — debian/copyright
-- deb:runtime-arm64.tsv:passwd=1:4.17.4-2 — debian/copyright
+- deb:api-builder-amd64.tsv:login.defs=1:4.17.4-2+deb13u1 — debian/copyright
+- deb:api-builder-amd64.tsv:passwd=1:4.17.4-2+deb13u1 — debian/copyright
+- deb:api-builder-arm64.tsv:login.defs=1:4.17.4-2+deb13u1 — debian/copyright
+- deb:api-builder-arm64.tsv:passwd=1:4.17.4-2+deb13u1 — debian/copyright
+- deb:keyring-amd64.tsv:login.defs=1:4.17.4-2+deb13u1 — debian/copyright
+- deb:keyring-amd64.tsv:passwd=1:4.17.4-2+deb13u1 — debian/copyright
+- deb:keyring-arm64.tsv:login.defs=1:4.17.4-2+deb13u1 — debian/copyright
+- deb:keyring-arm64.tsv:passwd=1:4.17.4-2+deb13u1 — debian/copyright
+- deb:runtime-amd64.tsv:login.defs=1:4.17.4-2+deb13u1 — debian/copyright
+- deb:runtime-amd64.tsv:passwd=1:4.17.4-2+deb13u1 — debian/copyright
+- deb:runtime-arm64.tsv:login.defs=1:4.17.4-2+deb13u1 — debian/copyright
+- deb:runtime-arm64.tsv:passwd=1:4.17.4-2+deb13u1 — debian/copyright
 
 ## Text abbd35af6a36427976584d5e3587bf1e83197e3310c830217fd910919ec2e112
 
@@ -122609,8 +122609,8 @@ Referenced common licence texts are reproduced in the DEBIAN_COMMON_LICENSES blo
 <!-- /nwui-text:f76450a64ce4978e3f85f327f8aea339657e52d94d8184e9a825680e2d8df1df -->
 
 Applies to:
-- deb:api-builder-amd64.tsv:patch=2.8-2 — debian/copyright
-- deb:api-builder-arm64.tsv:patch=2.8-2 — debian/copyright
+- deb:api-builder-amd64.tsv:patch=2.8-2+deb13u1 — debian/copyright
+- deb:api-builder-arm64.tsv:patch=2.8-2+deb13u1 — debian/copyright
 
 ## Text f76b7831ee8f42d3ac38919101e4ceb9f56aeb7796cdfe8a5ef52e26acedcbbf
 
@@ -132186,32 +132186,32 @@ Evidence: archive; source archive SHA-256: 648ed0dac9a041ba6951e0cca521628aa3994
 Debian source: bzip2 1.0.8-6.
 - Text 3639ce20c51362dbbc240a0705486c78b92c8465bffc7726066686d3c4546891
 
-### deb:api-builder-amd64.tsv:libc-bin=2.41-12+deb13u4
+### deb:api-builder-amd64.tsv:libc-bin=2.41-12+deb13u5
 
 Coverage: build; architecture: amd64; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
-### deb:api-builder-amd64.tsv:libc-dev-bin=2.41-12+deb13u4
+### deb:api-builder-amd64.tsv:libc-dev-bin=2.41-12+deb13u5
 
 Coverage: build; architecture: amd64; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
-### deb:api-builder-amd64.tsv:libc6-dev=2.41-12+deb13u4
+### deb:api-builder-amd64.tsv:libc6-dev=2.41-12+deb13u5
 
 Coverage: build; architecture: amd64; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
-### deb:api-builder-amd64.tsv:libc6=2.41-12+deb13u4
+### deb:api-builder-amd64.tsv:libc6=2.41-12+deb13u5
 
 Coverage: build; architecture: amd64; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
 ### deb:api-builder-amd64.tsv:libcap-ng0=0.8.5-4+b1
@@ -132529,11 +132529,11 @@ Evidence: archive; source archive SHA-256: 2d40d02ddac5985d8833532a17a0ef96cb685
 Debian source: nettle 3.10.1-1.
 - Text 1076e6b81a5340f4dbdaba228f29c9f008de7d727fb58109bfb95600b8cddfae
 
-### deb:api-builder-amd64.tsv:libnghttp2-14=1.64.0-1.1+deb13u1
+### deb:api-builder-amd64.tsv:libnghttp2-14=1.64.0-1.1+deb13u2
 
 Coverage: build; architecture: amd64; licence: LicenseRef-c1dd305a9fbc35dd87dd729e.
-Evidence: archive; source archive SHA-256: e16478701c5c007aa8761dc30c01090b2217199558bd1017b1d237db463d758c.
-Debian source: nghttp2 1.64.0-1.1+deb13u1.
+Evidence: archive; source archive SHA-256: 9dacf0e0eb1870bc6bf30b03733639ef6729f402bed9482e6ac5cabb52ce2f5f.
+Debian source: nghttp2 1.64.0-1.1+deb13u2.
 - Text a251db5d58060412621ce7a207c7f8d8e4380ba0bed00fa95680b7b7ec9bbbf8
 
 ### deb:api-builder-amd64.tsv:libnghttp3-9=1.8.0-1
@@ -132816,11 +132816,11 @@ Evidence: archive; source archive SHA-256: 13824bfb2b2367225dfe3090d0ae050614f1c
 Debian source: xxhash 0.8.3-2.
 - Text 8bc13874a8e849c74cdb5c2e311d637acc710dea1bed43ab3ef0c0e02a8bf280
 
-### deb:api-builder-amd64.tsv:libzstd1=1.5.7+dfsg-1
+### deb:api-builder-amd64.tsv:libzstd1=1.5.7+dfsg-1+deb13u1
 
 Coverage: build; architecture: amd64; licence: LicenseRef-ff0948cc0b8ac49a03a3bca7.
-Evidence: archive; source archive SHA-256: 5e88424d919941291f79e1bfada6cb1a6f748671d9de7d4b7d931f361f183a15.
-Debian source: libzstd 1.5.7+dfsg-1.
+Evidence: archive; source archive SHA-256: adc44c628b74a7a4eff4fbed4681e8fdc8ffe8e4bc31aa9ea6a41a07a2281d23.
+Debian source: libzstd 1.5.7+dfsg-1+deb13u1.
 - Text 335d86448f09b2550bfd27e31ff827b7613adf84b0f475ca924a8de2a4412115
 
 ### deb:api-builder-amd64.tsv:linux-libc-dev=6.12.107-1
@@ -132830,11 +132830,11 @@ Evidence: archive; source archive SHA-256: d8c003ecac7c54f59c69dc61258f93d937dce
 Debian source: linux 6.12.107-1.
 - Text d2cbaadc8cf73be379b75a858b1c425cc1d88bdafc1032a1fa511d9f3198159c
 
-### deb:api-builder-amd64.tsv:login.defs=1:4.17.4-2
+### deb:api-builder-amd64.tsv:login.defs=1:4.17.4-2+deb13u1
 
 Coverage: build; architecture: all; licence: LicenseRef-d0b3e8e91d796705ce2f87ca.
-Evidence: archive; source archive SHA-256: 97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23.
-Debian source: shadow 1:4.17.4-2.
+Evidence: archive; source archive SHA-256: 765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1.
+Debian source: shadow 1:4.17.4-2+deb13u1.
 - Text ab9f5c9869c54a96e4c5566e74ebbe2ac982fbf55091ab1e84f88b7e621d7ece
 
 ### deb:api-builder-amd64.tsv:login=1:4.16.0-2+really2.41.5-0+deb13u1
@@ -132893,18 +132893,18 @@ Evidence: archive; source archive SHA-256: 0a427fdc3e773f4119a7dd5b36d1f0903a163
 Debian source: openssl 3.5.7-1~deb13u3.
 - Text 18723e4a29f9d93b8f46042928ff891963b2d00ee6e15704022bcfbc804547d5
 
-### deb:api-builder-amd64.tsv:passwd=1:4.17.4-2
+### deb:api-builder-amd64.tsv:passwd=1:4.17.4-2+deb13u1
 
 Coverage: build; architecture: amd64; licence: LicenseRef-d0b3e8e91d796705ce2f87ca.
-Evidence: archive; source archive SHA-256: 97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23.
-Debian source: shadow 1:4.17.4-2.
+Evidence: archive; source archive SHA-256: 765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1.
+Debian source: shadow 1:4.17.4-2+deb13u1.
 - Text ab9f5c9869c54a96e4c5566e74ebbe2ac982fbf55091ab1e84f88b7e621d7ece
 
-### deb:api-builder-amd64.tsv:patch=2.8-2
+### deb:api-builder-amd64.tsv:patch=2.8-2+deb13u1
 
 Coverage: build; architecture: amd64; licence: LicenseRef-a68ca8256439389187b76cda.
-Evidence: archive; source archive SHA-256: 9a740460988c910c5538e4d24df00d9961d19dee014c63e92f5d60e611fa60c4.
-Debian source: patch 2.8-2.
+Evidence: archive; source archive SHA-256: c52f4a6086db53d8efd31485c7ec71047759a2a7a257da8643410e01ceef6587.
+Debian source: patch 2.8-2+deb13u1.
 - Text f76450a64ce4978e3f85f327f8aea339657e52d94d8184e9a825680e2d8df1df
 
 ### deb:api-builder-amd64.tsv:perl-base=5.40.1-6+deb13u1
@@ -133383,32 +133383,32 @@ Evidence: archive; source archive SHA-256: 648ed0dac9a041ba6951e0cca521628aa3994
 Debian source: bzip2 1.0.8-6.
 - Text 3639ce20c51362dbbc240a0705486c78b92c8465bffc7726066686d3c4546891
 
-### deb:api-builder-arm64.tsv:libc-bin=2.41-12+deb13u4
+### deb:api-builder-arm64.tsv:libc-bin=2.41-12+deb13u5
 
 Coverage: build; architecture: arm64; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
-### deb:api-builder-arm64.tsv:libc-dev-bin=2.41-12+deb13u4
+### deb:api-builder-arm64.tsv:libc-dev-bin=2.41-12+deb13u5
 
 Coverage: build; architecture: arm64; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
-### deb:api-builder-arm64.tsv:libc6-dev=2.41-12+deb13u4
+### deb:api-builder-arm64.tsv:libc6-dev=2.41-12+deb13u5
 
 Coverage: build; architecture: arm64; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
-### deb:api-builder-arm64.tsv:libc6=2.41-12+deb13u4
+### deb:api-builder-arm64.tsv:libc6=2.41-12+deb13u5
 
 Coverage: build; architecture: arm64; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
 ### deb:api-builder-arm64.tsv:libcap-ng0=0.8.5-4+b1
@@ -133726,11 +133726,11 @@ Evidence: archive; source archive SHA-256: 2d40d02ddac5985d8833532a17a0ef96cb685
 Debian source: nettle 3.10.1-1.
 - Text 1076e6b81a5340f4dbdaba228f29c9f008de7d727fb58109bfb95600b8cddfae
 
-### deb:api-builder-arm64.tsv:libnghttp2-14=1.64.0-1.1+deb13u1
+### deb:api-builder-arm64.tsv:libnghttp2-14=1.64.0-1.1+deb13u2
 
 Coverage: build; architecture: arm64; licence: LicenseRef-c1dd305a9fbc35dd87dd729e.
-Evidence: archive; source archive SHA-256: e16478701c5c007aa8761dc30c01090b2217199558bd1017b1d237db463d758c.
-Debian source: nghttp2 1.64.0-1.1+deb13u1.
+Evidence: archive; source archive SHA-256: 9dacf0e0eb1870bc6bf30b03733639ef6729f402bed9482e6ac5cabb52ce2f5f.
+Debian source: nghttp2 1.64.0-1.1+deb13u2.
 - Text a251db5d58060412621ce7a207c7f8d8e4380ba0bed00fa95680b7b7ec9bbbf8
 
 ### deb:api-builder-arm64.tsv:libnghttp3-9=1.8.0-1
@@ -134006,11 +134006,11 @@ Evidence: archive; source archive SHA-256: 13824bfb2b2367225dfe3090d0ae050614f1c
 Debian source: xxhash 0.8.3-2.
 - Text 8bc13874a8e849c74cdb5c2e311d637acc710dea1bed43ab3ef0c0e02a8bf280
 
-### deb:api-builder-arm64.tsv:libzstd1=1.5.7+dfsg-1
+### deb:api-builder-arm64.tsv:libzstd1=1.5.7+dfsg-1+deb13u1
 
 Coverage: build; architecture: arm64; licence: LicenseRef-ff0948cc0b8ac49a03a3bca7.
-Evidence: archive; source archive SHA-256: 5e88424d919941291f79e1bfada6cb1a6f748671d9de7d4b7d931f361f183a15.
-Debian source: libzstd 1.5.7+dfsg-1.
+Evidence: archive; source archive SHA-256: adc44c628b74a7a4eff4fbed4681e8fdc8ffe8e4bc31aa9ea6a41a07a2281d23.
+Debian source: libzstd 1.5.7+dfsg-1+deb13u1.
 - Text 335d86448f09b2550bfd27e31ff827b7613adf84b0f475ca924a8de2a4412115
 
 ### deb:api-builder-arm64.tsv:linux-libc-dev=6.12.107-1
@@ -134020,11 +134020,11 @@ Evidence: archive; source archive SHA-256: d8c003ecac7c54f59c69dc61258f93d937dce
 Debian source: linux 6.12.107-1.
 - Text d2cbaadc8cf73be379b75a858b1c425cc1d88bdafc1032a1fa511d9f3198159c
 
-### deb:api-builder-arm64.tsv:login.defs=1:4.17.4-2
+### deb:api-builder-arm64.tsv:login.defs=1:4.17.4-2+deb13u1
 
 Coverage: build; architecture: all; licence: LicenseRef-d0b3e8e91d796705ce2f87ca.
-Evidence: archive; source archive SHA-256: 97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23.
-Debian source: shadow 1:4.17.4-2.
+Evidence: archive; source archive SHA-256: 765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1.
+Debian source: shadow 1:4.17.4-2+deb13u1.
 - Text ab9f5c9869c54a96e4c5566e74ebbe2ac982fbf55091ab1e84f88b7e621d7ece
 
 ### deb:api-builder-arm64.tsv:login=1:4.16.0-2+really2.41.5-0+deb13u1
@@ -134083,18 +134083,18 @@ Evidence: archive; source archive SHA-256: 0a427fdc3e773f4119a7dd5b36d1f0903a163
 Debian source: openssl 3.5.7-1~deb13u3.
 - Text 18723e4a29f9d93b8f46042928ff891963b2d00ee6e15704022bcfbc804547d5
 
-### deb:api-builder-arm64.tsv:passwd=1:4.17.4-2
+### deb:api-builder-arm64.tsv:passwd=1:4.17.4-2+deb13u1
 
 Coverage: build; architecture: arm64; licence: LicenseRef-d0b3e8e91d796705ce2f87ca.
-Evidence: archive; source archive SHA-256: 97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23.
-Debian source: shadow 1:4.17.4-2.
+Evidence: archive; source archive SHA-256: 765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1.
+Debian source: shadow 1:4.17.4-2+deb13u1.
 - Text ab9f5c9869c54a96e4c5566e74ebbe2ac982fbf55091ab1e84f88b7e621d7ece
 
-### deb:api-builder-arm64.tsv:patch=2.8-2
+### deb:api-builder-arm64.tsv:patch=2.8-2+deb13u1
 
 Coverage: build; architecture: arm64; licence: LicenseRef-a68ca8256439389187b76cda.
-Evidence: archive; source archive SHA-256: 9a740460988c910c5538e4d24df00d9961d19dee014c63e92f5d60e611fa60c4.
-Debian source: patch 2.8-2.
+Evidence: archive; source archive SHA-256: c52f4a6086db53d8efd31485c7ec71047759a2a7a257da8643410e01ceef6587.
+Debian source: patch 2.8-2+deb13u1.
 - Text f76450a64ce4978e3f85f327f8aea339657e52d94d8184e9a825680e2d8df1df
 
 ### deb:api-builder-arm64.tsv:perl-base=5.40.1-6+deb13u1
@@ -134475,18 +134475,18 @@ Evidence: archive; source archive SHA-256: 648ed0dac9a041ba6951e0cca521628aa3994
 Debian source: bzip2 1.0.8-6.
 - Text 3639ce20c51362dbbc240a0705486c78b92c8465bffc7726066686d3c4546891
 
-### deb:keyring-amd64.tsv:libc-bin=2.41-12+deb13u4
+### deb:keyring-amd64.tsv:libc-bin=2.41-12+deb13u5
 
 Coverage: build; architecture: amd64; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
-### deb:keyring-amd64.tsv:libc6=2.41-12+deb13u4
+### deb:keyring-amd64.tsv:libc6=2.41-12+deb13u5
 
 Coverage: build; architecture: amd64; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
 ### deb:keyring-amd64.tsv:libcap-ng0=0.8.5-4+b1
@@ -134692,11 +134692,11 @@ Evidence: archive; source archive SHA-256: 2d40d02ddac5985d8833532a17a0ef96cb685
 Debian source: nettle 3.10.1-1.
 - Text 1076e6b81a5340f4dbdaba228f29c9f008de7d727fb58109bfb95600b8cddfae
 
-### deb:keyring-amd64.tsv:libnghttp2-14=1.64.0-1.1+deb13u1
+### deb:keyring-amd64.tsv:libnghttp2-14=1.64.0-1.1+deb13u2
 
 Coverage: build; architecture: amd64; licence: LicenseRef-c1dd305a9fbc35dd87dd729e.
-Evidence: archive; source archive SHA-256: e16478701c5c007aa8761dc30c01090b2217199558bd1017b1d237db463d758c.
-Debian source: nghttp2 1.64.0-1.1+deb13u1.
+Evidence: archive; source archive SHA-256: 9dacf0e0eb1870bc6bf30b03733639ef6729f402bed9482e6ac5cabb52ce2f5f.
+Debian source: nghttp2 1.64.0-1.1+deb13u2.
 - Text a251db5d58060412621ce7a207c7f8d8e4380ba0bed00fa95680b7b7ec9bbbf8
 
 ### deb:keyring-amd64.tsv:libnghttp3-9=1.8.0-1
@@ -134909,18 +134909,18 @@ Evidence: archive; source archive SHA-256: 13824bfb2b2367225dfe3090d0ae050614f1c
 Debian source: xxhash 0.8.3-2.
 - Text 8bc13874a8e849c74cdb5c2e311d637acc710dea1bed43ab3ef0c0e02a8bf280
 
-### deb:keyring-amd64.tsv:libzstd1=1.5.7+dfsg-1
+### deb:keyring-amd64.tsv:libzstd1=1.5.7+dfsg-1+deb13u1
 
 Coverage: build; architecture: amd64; licence: LicenseRef-ff0948cc0b8ac49a03a3bca7.
-Evidence: archive; source archive SHA-256: 5e88424d919941291f79e1bfada6cb1a6f748671d9de7d4b7d931f361f183a15.
-Debian source: libzstd 1.5.7+dfsg-1.
+Evidence: archive; source archive SHA-256: adc44c628b74a7a4eff4fbed4681e8fdc8ffe8e4bc31aa9ea6a41a07a2281d23.
+Debian source: libzstd 1.5.7+dfsg-1+deb13u1.
 - Text 335d86448f09b2550bfd27e31ff827b7613adf84b0f475ca924a8de2a4412115
 
-### deb:keyring-amd64.tsv:login.defs=1:4.17.4-2
+### deb:keyring-amd64.tsv:login.defs=1:4.17.4-2+deb13u1
 
 Coverage: build; architecture: all; licence: LicenseRef-d0b3e8e91d796705ce2f87ca.
-Evidence: archive; source archive SHA-256: 97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23.
-Debian source: shadow 1:4.17.4-2.
+Evidence: archive; source archive SHA-256: 765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1.
+Debian source: shadow 1:4.17.4-2+deb13u1.
 - Text ab9f5c9869c54a96e4c5566e74ebbe2ac982fbf55091ab1e84f88b7e621d7ece
 
 ### deb:keyring-amd64.tsv:login=1:4.16.0-2+really2.41.5-0+deb13u1
@@ -134972,11 +134972,11 @@ Evidence: archive; source archive SHA-256: 0a427fdc3e773f4119a7dd5b36d1f0903a163
 Debian source: openssl 3.5.7-1~deb13u3.
 - Text 18723e4a29f9d93b8f46042928ff891963b2d00ee6e15704022bcfbc804547d5
 
-### deb:keyring-amd64.tsv:passwd=1:4.17.4-2
+### deb:keyring-amd64.tsv:passwd=1:4.17.4-2+deb13u1
 
 Coverage: build; architecture: amd64; licence: LicenseRef-d0b3e8e91d796705ce2f87ca.
-Evidence: archive; source archive SHA-256: 97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23.
-Debian source: shadow 1:4.17.4-2.
+Evidence: archive; source archive SHA-256: 765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1.
+Debian source: shadow 1:4.17.4-2+deb13u1.
 - Text ab9f5c9869c54a96e4c5566e74ebbe2ac982fbf55091ab1e84f88b7e621d7ece
 
 ### deb:keyring-amd64.tsv:perl-base=5.40.1-6+deb13u1
@@ -135315,18 +135315,18 @@ Evidence: archive; source archive SHA-256: 648ed0dac9a041ba6951e0cca521628aa3994
 Debian source: bzip2 1.0.8-6.
 - Text 3639ce20c51362dbbc240a0705486c78b92c8465bffc7726066686d3c4546891
 
-### deb:keyring-arm64.tsv:libc-bin=2.41-12+deb13u4
+### deb:keyring-arm64.tsv:libc-bin=2.41-12+deb13u5
 
 Coverage: build; architecture: arm64; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
-### deb:keyring-arm64.tsv:libc6=2.41-12+deb13u4
+### deb:keyring-arm64.tsv:libc6=2.41-12+deb13u5
 
 Coverage: build; architecture: arm64; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
 ### deb:keyring-arm64.tsv:libcap-ng0=0.8.5-4+b1
@@ -135532,11 +135532,11 @@ Evidence: archive; source archive SHA-256: 2d40d02ddac5985d8833532a17a0ef96cb685
 Debian source: nettle 3.10.1-1.
 - Text 1076e6b81a5340f4dbdaba228f29c9f008de7d727fb58109bfb95600b8cddfae
 
-### deb:keyring-arm64.tsv:libnghttp2-14=1.64.0-1.1+deb13u1
+### deb:keyring-arm64.tsv:libnghttp2-14=1.64.0-1.1+deb13u2
 
 Coverage: build; architecture: arm64; licence: LicenseRef-c1dd305a9fbc35dd87dd729e.
-Evidence: archive; source archive SHA-256: e16478701c5c007aa8761dc30c01090b2217199558bd1017b1d237db463d758c.
-Debian source: nghttp2 1.64.0-1.1+deb13u1.
+Evidence: archive; source archive SHA-256: 9dacf0e0eb1870bc6bf30b03733639ef6729f402bed9482e6ac5cabb52ce2f5f.
+Debian source: nghttp2 1.64.0-1.1+deb13u2.
 - Text a251db5d58060412621ce7a207c7f8d8e4380ba0bed00fa95680b7b7ec9bbbf8
 
 ### deb:keyring-arm64.tsv:libnghttp3-9=1.8.0-1
@@ -135749,18 +135749,18 @@ Evidence: archive; source archive SHA-256: 13824bfb2b2367225dfe3090d0ae050614f1c
 Debian source: xxhash 0.8.3-2.
 - Text 8bc13874a8e849c74cdb5c2e311d637acc710dea1bed43ab3ef0c0e02a8bf280
 
-### deb:keyring-arm64.tsv:libzstd1=1.5.7+dfsg-1
+### deb:keyring-arm64.tsv:libzstd1=1.5.7+dfsg-1+deb13u1
 
 Coverage: build; architecture: arm64; licence: LicenseRef-ff0948cc0b8ac49a03a3bca7.
-Evidence: archive; source archive SHA-256: 5e88424d919941291f79e1bfada6cb1a6f748671d9de7d4b7d931f361f183a15.
-Debian source: libzstd 1.5.7+dfsg-1.
+Evidence: archive; source archive SHA-256: adc44c628b74a7a4eff4fbed4681e8fdc8ffe8e4bc31aa9ea6a41a07a2281d23.
+Debian source: libzstd 1.5.7+dfsg-1+deb13u1.
 - Text 335d86448f09b2550bfd27e31ff827b7613adf84b0f475ca924a8de2a4412115
 
-### deb:keyring-arm64.tsv:login.defs=1:4.17.4-2
+### deb:keyring-arm64.tsv:login.defs=1:4.17.4-2+deb13u1
 
 Coverage: build; architecture: all; licence: LicenseRef-d0b3e8e91d796705ce2f87ca.
-Evidence: archive; source archive SHA-256: 97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23.
-Debian source: shadow 1:4.17.4-2.
+Evidence: archive; source archive SHA-256: 765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1.
+Debian source: shadow 1:4.17.4-2+deb13u1.
 - Text ab9f5c9869c54a96e4c5566e74ebbe2ac982fbf55091ab1e84f88b7e621d7ece
 
 ### deb:keyring-arm64.tsv:login=1:4.16.0-2+really2.41.5-0+deb13u1
@@ -135812,11 +135812,11 @@ Evidence: archive; source archive SHA-256: 0a427fdc3e773f4119a7dd5b36d1f0903a163
 Debian source: openssl 3.5.7-1~deb13u3.
 - Text 18723e4a29f9d93b8f46042928ff891963b2d00ee6e15704022bcfbc804547d5
 
-### deb:keyring-arm64.tsv:passwd=1:4.17.4-2
+### deb:keyring-arm64.tsv:passwd=1:4.17.4-2+deb13u1
 
 Coverage: build; architecture: arm64; licence: LicenseRef-d0b3e8e91d796705ce2f87ca.
-Evidence: archive; source archive SHA-256: 97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23.
-Debian source: shadow 1:4.17.4-2.
+Evidence: archive; source archive SHA-256: 765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1.
+Debian source: shadow 1:4.17.4-2+deb13u1.
 - Text ab9f5c9869c54a96e4c5566e74ebbe2ac982fbf55091ab1e84f88b7e621d7ece
 
 ### deb:keyring-arm64.tsv:perl-base=5.40.1-6+deb13u1
@@ -136071,25 +136071,25 @@ Evidence: archive; source archive SHA-256: 648ed0dac9a041ba6951e0cca521628aa3994
 Debian source: bzip2 1.0.8-6.
 - Text 3639ce20c51362dbbc240a0705486c78b92c8465bffc7726066686d3c4546891
 
-### deb:runtime-amd64.tsv:libc-bin=2.41-12+deb13u4
+### deb:runtime-amd64.tsv:libc-bin=2.41-12+deb13u5
 
 Coverage: runtime; architecture: amd64; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
-### deb:runtime-amd64.tsv:libc-l10n=2.41-12+deb13u4
+### deb:runtime-amd64.tsv:libc-l10n=2.41-12+deb13u5
 
 Coverage: runtime; architecture: all; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
-### deb:runtime-amd64.tsv:libc6=2.41-12+deb13u4
+### deb:runtime-amd64.tsv:libc6=2.41-12+deb13u5
 
 Coverage: runtime; architecture: amd64; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
 ### deb:runtime-amd64.tsv:libcap-ng0=0.8.5-4+b1
@@ -136533,25 +136533,25 @@ Evidence: archive; source archive SHA-256: 25a36c2b45e85b24620da6dec8fbb2095d41c
 Debian source: z3 4.13.3-1.
 - Text a981c9e5cdc04a3030ba39fe643051bfde08ceb944fc8a2bea6882f42f585f83
 
-### deb:runtime-amd64.tsv:libzstd1=1.5.7+dfsg-1
+### deb:runtime-amd64.tsv:libzstd1=1.5.7+dfsg-1+deb13u1
 
 Coverage: runtime; architecture: amd64; licence: LicenseRef-ff0948cc0b8ac49a03a3bca7.
-Evidence: archive; source archive SHA-256: 5e88424d919941291f79e1bfada6cb1a6f748671d9de7d4b7d931f361f183a15.
-Debian source: libzstd 1.5.7+dfsg-1.
+Evidence: archive; source archive SHA-256: adc44c628b74a7a4eff4fbed4681e8fdc8ffe8e4bc31aa9ea6a41a07a2281d23.
+Debian source: libzstd 1.5.7+dfsg-1+deb13u1.
 - Text 335d86448f09b2550bfd27e31ff827b7613adf84b0f475ca924a8de2a4412115
 
-### deb:runtime-amd64.tsv:locales=2.41-12+deb13u4
+### deb:runtime-amd64.tsv:locales=2.41-12+deb13u5
 
 Coverage: runtime; architecture: all; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
-### deb:runtime-amd64.tsv:login.defs=1:4.17.4-2
+### deb:runtime-amd64.tsv:login.defs=1:4.17.4-2+deb13u1
 
 Coverage: runtime; architecture: all; licence: LicenseRef-d0b3e8e91d796705ce2f87ca.
-Evidence: archive; source archive SHA-256: 97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23.
-Debian source: shadow 1:4.17.4-2.
+Evidence: archive; source archive SHA-256: 765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1.
+Debian source: shadow 1:4.17.4-2+deb13u1.
 - Text ab9f5c9869c54a96e4c5566e74ebbe2ac982fbf55091ab1e84f88b7e621d7ece
 
 ### deb:runtime-amd64.tsv:login=1:4.16.0-2+really2.41.5-0+deb13u1
@@ -136617,11 +136617,11 @@ Evidence: archive; source archive SHA-256: 0a427fdc3e773f4119a7dd5b36d1f0903a163
 Debian source: openssl 3.5.7-1~deb13u3.
 - Text 18723e4a29f9d93b8f46042928ff891963b2d00ee6e15704022bcfbc804547d5
 
-### deb:runtime-amd64.tsv:passwd=1:4.17.4-2
+### deb:runtime-amd64.tsv:passwd=1:4.17.4-2+deb13u1
 
 Coverage: runtime; architecture: amd64; licence: LicenseRef-d0b3e8e91d796705ce2f87ca.
-Evidence: archive; source archive SHA-256: 97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23.
-Debian source: shadow 1:4.17.4-2.
+Evidence: archive; source archive SHA-256: 765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1.
+Debian source: shadow 1:4.17.4-2+deb13u1.
 - Text ab9f5c9869c54a96e4c5566e74ebbe2ac982fbf55091ab1e84f88b7e621d7ece
 
 ### deb:runtime-amd64.tsv:perl-base=5.40.1-6+deb13u1
@@ -136659,32 +136659,32 @@ Evidence: archive; source archive SHA-256: 2e02b8b27ec24abf8ee8ed3395703b02708bd
 Debian source: postgresql-17 17.12-0+deb13u1.
 - Text 7c8965337f9188c9d17715441aad8b0ddac2783e119320409b7bcc3e7d33bd1d
 
-### deb:runtime-amd64.tsv:postgresql-client-common=278
+### deb:runtime-amd64.tsv:postgresql-client-common=278+deb13u1
 
 Coverage: runtime; architecture: all; licence: LicenseRef-3336b93b3134e630a73a9a4b.
-Evidence: archive; source archive SHA-256: fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45.
-Debian source: postgresql-common 278.
+Evidence: archive; source archive SHA-256: e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f.
+Debian source: postgresql-common 278+deb13u1.
 - Text a97dae6796a98c8c1278023cb8321e548a77e8f9dda88a5297dc36550c3e4afd
 
-### deb:runtime-amd64.tsv:postgresql-common-dev=278
+### deb:runtime-amd64.tsv:postgresql-common-dev=278+deb13u1
 
 Coverage: runtime; architecture: all; licence: LicenseRef-3336b93b3134e630a73a9a4b.
-Evidence: archive; source archive SHA-256: fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45.
-Debian source: postgresql-common 278.
+Evidence: archive; source archive SHA-256: e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f.
+Debian source: postgresql-common 278+deb13u1.
 - Text a97dae6796a98c8c1278023cb8321e548a77e8f9dda88a5297dc36550c3e4afd
 
-### deb:runtime-amd64.tsv:postgresql-common=278
+### deb:runtime-amd64.tsv:postgresql-common=278+deb13u1
 
 Coverage: runtime; architecture: all; licence: LicenseRef-3336b93b3134e630a73a9a4b.
-Evidence: archive; source archive SHA-256: fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45.
-Debian source: postgresql-common 278.
+Evidence: archive; source archive SHA-256: e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f.
+Debian source: postgresql-common 278+deb13u1.
 - Text a97dae6796a98c8c1278023cb8321e548a77e8f9dda88a5297dc36550c3e4afd
 
-### deb:runtime-amd64.tsv:postgresql=17+278
+### deb:runtime-amd64.tsv:postgresql=17+278+deb13u1
 
 Coverage: runtime; architecture: all; licence: LicenseRef-3336b93b3134e630a73a9a4b.
-Evidence: archive; source archive SHA-256: fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45.
-Debian source: postgresql-common 278.
+Evidence: archive; source archive SHA-256: e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f.
+Debian source: postgresql-common 278+deb13u1.
 - Text a97dae6796a98c8c1278023cb8321e548a77e8f9dda88a5297dc36550c3e4afd
 
 ### deb:runtime-amd64.tsv:procps=2:4.0.4-9
@@ -136960,25 +136960,25 @@ Evidence: archive; source archive SHA-256: 648ed0dac9a041ba6951e0cca521628aa3994
 Debian source: bzip2 1.0.8-6.
 - Text 3639ce20c51362dbbc240a0705486c78b92c8465bffc7726066686d3c4546891
 
-### deb:runtime-arm64.tsv:libc-bin=2.41-12+deb13u4
+### deb:runtime-arm64.tsv:libc-bin=2.41-12+deb13u5
 
 Coverage: runtime; architecture: arm64; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
-### deb:runtime-arm64.tsv:libc-l10n=2.41-12+deb13u4
+### deb:runtime-arm64.tsv:libc-l10n=2.41-12+deb13u5
 
 Coverage: runtime; architecture: all; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
-### deb:runtime-arm64.tsv:libc6=2.41-12+deb13u4
+### deb:runtime-arm64.tsv:libc6=2.41-12+deb13u5
 
 Coverage: runtime; architecture: arm64; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
 ### deb:runtime-arm64.tsv:libcap-ng0=0.8.5-4+b1
@@ -137422,25 +137422,25 @@ Evidence: archive; source archive SHA-256: 25a36c2b45e85b24620da6dec8fbb2095d41c
 Debian source: z3 4.13.3-1.
 - Text a981c9e5cdc04a3030ba39fe643051bfde08ceb944fc8a2bea6882f42f585f83
 
-### deb:runtime-arm64.tsv:libzstd1=1.5.7+dfsg-1
+### deb:runtime-arm64.tsv:libzstd1=1.5.7+dfsg-1+deb13u1
 
 Coverage: runtime; architecture: arm64; licence: LicenseRef-ff0948cc0b8ac49a03a3bca7.
-Evidence: archive; source archive SHA-256: 5e88424d919941291f79e1bfada6cb1a6f748671d9de7d4b7d931f361f183a15.
-Debian source: libzstd 1.5.7+dfsg-1.
+Evidence: archive; source archive SHA-256: adc44c628b74a7a4eff4fbed4681e8fdc8ffe8e4bc31aa9ea6a41a07a2281d23.
+Debian source: libzstd 1.5.7+dfsg-1+deb13u1.
 - Text 335d86448f09b2550bfd27e31ff827b7613adf84b0f475ca924a8de2a4412115
 
-### deb:runtime-arm64.tsv:locales=2.41-12+deb13u4
+### deb:runtime-arm64.tsv:locales=2.41-12+deb13u5
 
 Coverage: runtime; architecture: all; licence: LicenseRef-dc3f0699be7b4f3b6c701e83.
-Evidence: archive; source archive SHA-256: dda4153511bfd543502d18e5bc9323110996fe9c531f14ae3fad6eb17f027c7d.
-Debian source: glibc 2.41-12+deb13u4.
+Evidence: archive; source archive SHA-256: 9f2cc9eaafec40954c7120e593376d6c964f531d596005529409dbaffdba16a6.
+Debian source: glibc 2.41-12+deb13u5.
 - Text 9a2f4d8461da6ddd5fd9c7cef2ae2a2e13a2f31bf4660158f73e9d39a3c3fc39
 
-### deb:runtime-arm64.tsv:login.defs=1:4.17.4-2
+### deb:runtime-arm64.tsv:login.defs=1:4.17.4-2+deb13u1
 
 Coverage: runtime; architecture: all; licence: LicenseRef-d0b3e8e91d796705ce2f87ca.
-Evidence: archive; source archive SHA-256: 97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23.
-Debian source: shadow 1:4.17.4-2.
+Evidence: archive; source archive SHA-256: 765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1.
+Debian source: shadow 1:4.17.4-2+deb13u1.
 - Text ab9f5c9869c54a96e4c5566e74ebbe2ac982fbf55091ab1e84f88b7e621d7ece
 
 ### deb:runtime-arm64.tsv:login=1:4.16.0-2+really2.41.5-0+deb13u1
@@ -137506,11 +137506,11 @@ Evidence: archive; source archive SHA-256: 0a427fdc3e773f4119a7dd5b36d1f0903a163
 Debian source: openssl 3.5.7-1~deb13u3.
 - Text 18723e4a29f9d93b8f46042928ff891963b2d00ee6e15704022bcfbc804547d5
 
-### deb:runtime-arm64.tsv:passwd=1:4.17.4-2
+### deb:runtime-arm64.tsv:passwd=1:4.17.4-2+deb13u1
 
 Coverage: runtime; architecture: arm64; licence: LicenseRef-d0b3e8e91d796705ce2f87ca.
-Evidence: archive; source archive SHA-256: 97eaf0b3682a8a1a1ae6e4c4fac00885a7433d2487e636bde7c1c406e66bdb23.
-Debian source: shadow 1:4.17.4-2.
+Evidence: archive; source archive SHA-256: 765f5e4b0fff4f0aaf9dec140d620330ece7db5e2b0a595b8a7a5066ce738bd1.
+Debian source: shadow 1:4.17.4-2+deb13u1.
 - Text ab9f5c9869c54a96e4c5566e74ebbe2ac982fbf55091ab1e84f88b7e621d7ece
 
 ### deb:runtime-arm64.tsv:perl-base=5.40.1-6+deb13u1
@@ -137548,32 +137548,32 @@ Evidence: archive; source archive SHA-256: 2e02b8b27ec24abf8ee8ed3395703b02708bd
 Debian source: postgresql-17 17.12-0+deb13u1.
 - Text 7c8965337f9188c9d17715441aad8b0ddac2783e119320409b7bcc3e7d33bd1d
 
-### deb:runtime-arm64.tsv:postgresql-client-common=278
+### deb:runtime-arm64.tsv:postgresql-client-common=278+deb13u1
 
 Coverage: runtime; architecture: all; licence: LicenseRef-3336b93b3134e630a73a9a4b.
-Evidence: archive; source archive SHA-256: fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45.
-Debian source: postgresql-common 278.
+Evidence: archive; source archive SHA-256: e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f.
+Debian source: postgresql-common 278+deb13u1.
 - Text a97dae6796a98c8c1278023cb8321e548a77e8f9dda88a5297dc36550c3e4afd
 
-### deb:runtime-arm64.tsv:postgresql-common-dev=278
+### deb:runtime-arm64.tsv:postgresql-common-dev=278+deb13u1
 
 Coverage: runtime; architecture: all; licence: LicenseRef-3336b93b3134e630a73a9a4b.
-Evidence: archive; source archive SHA-256: fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45.
-Debian source: postgresql-common 278.
+Evidence: archive; source archive SHA-256: e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f.
+Debian source: postgresql-common 278+deb13u1.
 - Text a97dae6796a98c8c1278023cb8321e548a77e8f9dda88a5297dc36550c3e4afd
 
-### deb:runtime-arm64.tsv:postgresql-common=278
+### deb:runtime-arm64.tsv:postgresql-common=278+deb13u1
 
 Coverage: runtime; architecture: all; licence: LicenseRef-3336b93b3134e630a73a9a4b.
-Evidence: archive; source archive SHA-256: fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45.
-Debian source: postgresql-common 278.
+Evidence: archive; source archive SHA-256: e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f.
+Debian source: postgresql-common 278+deb13u1.
 - Text a97dae6796a98c8c1278023cb8321e548a77e8f9dda88a5297dc36550c3e4afd
 
-### deb:runtime-arm64.tsv:postgresql=17+278
+### deb:runtime-arm64.tsv:postgresql=17+278+deb13u1
 
 Coverage: runtime; architecture: all; licence: LicenseRef-3336b93b3134e630a73a9a4b.
-Evidence: archive; source archive SHA-256: fb29a25bef377d84c8e67fdabac7a97712439cab3d30c21f6d5c7bc2f22c2d45.
-Debian source: postgresql-common 278.
+Evidence: archive; source archive SHA-256: e519e044e02244887c9556759f5cfcd066fd69c8c3b1b94d845c242a9359382f.
+Debian source: postgresql-common 278+deb13u1.
 - Text a97dae6796a98c8c1278023cb8321e548a77e8f9dda88a5297dc36550c3e4afd
 
 ### deb:runtime-arm64.tsv:procps=2:4.0.4-9

@@ -320,14 +320,10 @@ pub(crate) fn warning(path:&Path,identity:Option<&str>)->Option<StorageWarning> 
 }
 /// R1-3: at most 2048 bytes; at most 12 fixed lines and 8 deep pairs, then 「그 밖에 N개 항목」.
 fn message(report:&Report)->String {
-    let head=if report.fixed.iter().any(|f|f.exact) {
-        "시작 전에 저장소 권한을 정리했습니다. 그룹·기타 사용자의 쓰기 권한을 빼고, 비밀 값·인증서 파일과 폴더는 검사가 허용하는 권한으로 맞췄습니다. 파일 내용과 소유자는 바꾸지 않았습니다."
-    }else{"시작 전에 저장소 권한을 정리했습니다. 그룹·기타 사용자의 쓰기 권한을 뺐고, 파일 내용과 소유자는 바꾸지 않았습니다."};
-    let tail=" 이 권한은 1.19.11로 되돌려도 그대로 사용할 수 있습니다.";
     let items=report.fixed.iter().take(FIXED_LINES).map(|f|(format!("{} {:04o} → {:04o}",f.path,f.old,f.new),1))
         .chain(report.deep.iter().take(DEEP_PAIRS).map(|d|(format!("{} 아래 {}개 {:04o} → {:04o}",d.path,d.count,d.old,d.new),d.count)));
-    let reserve=tail.len()+", 그 밖에 18446744073709551615개 항목.".len();
-    let mut out=format!("{head} 바뀐 항목: ");let mut listed=0u64;let mut first=true;
+    let reserve=", 그 밖에 18446744073709551615개 항목.".len();
+    let mut out=String::from("시작 전에 저장소 접근 권한을 줄였습니다. 파일 내용과 소유자는 그대로입니다. 바뀐 항목: ");let mut listed=0u64;let mut first=true;
     for (text,count) in items {
         let separator=if first{""}else{", "};
         if out.len()+separator.len()+text.len()+reserve>MAX_MESSAGE {continue;}
@@ -335,7 +331,7 @@ fn message(report:&Report)->String {
     }
     let other=report.changed().saturating_sub(listed);
     if other>0 {out.push_str(&format!("{}그 밖에 {other}개 항목",if first{""}else{", "}));}
-    out.push('.');out.push_str(tail);out
+    out.push('.');out
 }
 
 #[cfg(test)] mod restored_tests {use super::*;use std::{collections::BTreeMap,os::unix::fs::{symlink,chown},path::PathBuf};struct Fixture{_t:tempfile::TempDir,roots:Roots,locks:StorageLocks,outside:PathBuf}
@@ -372,8 +368,11 @@ fn damage(f:&Fixture,_nested:bool){set(&f.roots.app,0o775);set(&f.roots.app.join
     #[test]
     fn r4_1_p0_keeps_the_root_detail_and_a_read_only_root_refuses_first() {
         let f=fixture(false);set(&f.roots.app,0o775);
-        set(&f.roots.app,0o755);let snapshot=crate::db_upgrade::files::snapshot(f._t.path()).unwrap();
-        let detail=normalize_seams(&f.roots,&f.locks,false,&Seams{chmod:&proc_chmod,cancelled:&||false,readonly:Some(true)}).unwrap_err().detail.unwrap();
+        let snapshot=crate::db_upgrade::files::snapshot(f._t.path()).unwrap();
+        let error=normalize_seams(&f.roots,&f.locks,false,&Seams{chmod:&proc_chmod,cancelled:&||false,readonly:Some(true)}).unwrap_err();
+        assert_eq!(error.code,"storage_permissions");
+        assert_eq!(error.message,"저장소 권한을 자동으로 정리하지 못했습니다. 파일 내용과 소유자는 변경하지 않았습니다.");
+        let detail=error.detail.unwrap();
         assert!(detail.contains("읽기 전용으로 연결돼")&&detail.contains(&f.roots.app.display().to_string()),"{detail}");
         assert_eq!(crate::db_upgrade::files::snapshot(f._t.path()).unwrap(),snapshot);
     }
@@ -450,6 +449,51 @@ fn damage(f:&Fixture,_nested:bool){set(&f.roots.app,0o775);set(&f.roots.app.join
         let f=fixture(false);set(&f.roots.db,0o750);
         let snapshot=crate::db_upgrade::files::snapshot(f._t.path()).unwrap();
         assert_eq!(run(&f,false).unwrap().changed(),0);assert_eq!(crate::db_upgrade::files::snapshot(f._t.path()).unwrap(),snapshot);
+    }
+    #[test]
+    fn storage_warning_describes_read_only_write_only_and_mixed_mode_changes() {
+        for initial_mode in [0o644, 0o622, 0o666] {
+            let f = fixture(false);
+            let secret = f.roots.app.join("secrets/auth_secret");
+            set(&secret, initial_mode);
+            let before = fs::metadata(&secret).unwrap();
+            let mut report = run(&f, false).unwrap();
+            assert_eq!(report.changed(), 1);
+            assert_eq!(mode(&secret), 0o600);
+            assert_eq!(fs::read(&secret).unwrap(), b"fixture-auth");
+            let after = fs::metadata(&secret).unwrap();
+            assert_eq!((after.uid(), after.gid()), (before.uid(), before.gid()));
+
+            let path = f.outside.join("report.json");
+            report.boot_identity = Some("a".repeat(64));
+            write_report(&path, &report).unwrap();
+            let warning = warning(&path, report.boot_identity.as_deref()).unwrap();
+            let notice = super::super::status::storage_notification(&warning);
+            assert_eq!(notice.kind, "system.storage_modes_normalized");
+            assert_eq!(notice.severity, "warning");
+            assert_eq!(notice.body, format!(
+                "시작 전에 저장소 접근 권한을 줄였습니다. 파일 내용과 소유자는 그대로입니다. 바뀐 항목: {} {initial_mode:04o} → 0600.",
+                secret.display()
+            ));
+        }
+    }
+    #[test]
+    fn unchanged_storage_boot_does_not_replay_the_previous_warning() {
+        let f = fixture(false);
+        set(&f.roots.app, 0o722);
+        let path = f.outside.join("report.json");
+        let mut first = run(&f, false).unwrap();
+        first.boot_identity = Some("a".repeat(64));
+        write_report(&path, &first).unwrap();
+        assert!(warning(&path, first.boot_identity.as_deref()).is_some());
+
+        let next_boot = "b".repeat(64);
+        let mut second = run(&f, false).unwrap();
+        assert_eq!(second.changed(), 0);
+        assert!(warning(&path, Some(&next_boot)).is_none());
+        second.boot_identity = Some(next_boot);
+        write_report(&path, &second).unwrap();
+        assert!(warning(&path, second.boot_identity.as_deref()).is_none());
     }
     #[test]
     fn u12_warning_is_bounded_and_bound_to_this_container_start() {

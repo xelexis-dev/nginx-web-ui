@@ -42,7 +42,7 @@ export function RecipientDetailView({
             className={linkClassName({ variant: "back" })}
           >
             <Icon name="arrowLeft" size={14} />
-            목록
+            메일 수신처 목록
           </Link>
         }
         actions={detailActions}

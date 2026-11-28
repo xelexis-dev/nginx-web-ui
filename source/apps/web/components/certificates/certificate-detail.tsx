@@ -105,7 +105,7 @@ export function CertificateDetail({
         }
         eyebrow={
           <Link href={basePath} className={linkClassName({ variant: "back" })}>
-            <Icon name="back" size={14} />
+            <Icon name="arrowLeft" size={14} />
             인증서 목록
           </Link>
         }
@@ -177,7 +177,15 @@ export function CertificateDetail({
         ) : null}
 
         {dnsPanel}
-        <Surface title={`연결된 서버 (${data.linkedServers.length})`} flush>
+        <Surface
+          title="연결된 서버"
+          tag={
+            <StatusBadge tone="neutral" size="sm" dot={false}>
+              {data.linkedServers.length}개
+            </StatusBadge>
+          }
+          flush
+        >
           <Table label="연결된 서버">
             <thead>
               <tr>

@@ -68,7 +68,7 @@ export function StreamDetailActions({
           approvedId.current = null;
         }}>
           <input type="hidden" name="id" value={id} />
-          <Button type="submit" variant="dangerQuiet" disabled={deletePending}>
+          <Button type="submit" variant="dangerOutline" disabled={deletePending}>
             삭제
           </Button>
         </form>

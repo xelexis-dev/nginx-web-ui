@@ -383,30 +383,35 @@ mod live {
                 .0,
             403
         );
-        assert_eq!(
-            response(
-                &app,
-                form(
-                    "/api/ui/v1/forms/apply.applyConfig",
-                    "_apiArgs=%5B%22unexpected%22%5D",
-                    true
-                )
-            )
-            .await
-            .0,
-            400
-        );
+        // Exercise the published local apply examples through the real handler and form decoder.
+        const APPLY: &str = "/api/ui/v1/forms/apply.applyConfig";
+        let contract: Value =
+            serde_json::from_str(include_str!("../../../packages/contracts/openapi.json")).unwrap();
+        let examples = &contract["paths"][APPLY]["post"]["requestBody"]["content"]
+            ["application/x-www-form-urlencoded"]["examples"];
+        let encoded = |case: &str| {
+            let mut body = url::form_urlencoded::Serializer::new(String::new());
+            for (name, value) in examples[case]["value"].as_object().unwrap() {
+                body.append_pair(name, value.as_str().unwrap());
+            }
+            body.finish()
+        };
+        let (status, error) = response(&app, form(APPLY, &encoded("invalid"), true)).await;
+        assert_eq!(status, 400);
+        assert_eq!(error["error"]["code"], "bad_request");
         assert_eq!(
             response(&app, form("/api/ui/v1/forms/history.rollback", "", true))
                 .await
                 .0,
             400
         );
-        let (status, result) =
-            response(&app, form("/api/ui/v1/forms/apply.applyConfig", "", true)).await;
+        let (status, result) = response(&app, form(APPLY, &encoded("valid"), true)).await;
+        let expected = &contract["paths"][APPLY]["post"]["responses"]["200"]["content"]
+            ["application/json"]["examples"]["success"]["value"];
         assert_eq!(status, 200);
-        assert_eq!(result["result"]["ok"], true);
-        assert_eq!(result["refresh"], true);
+        assert_eq!(result["result"]["ok"], expected["result"]["ok"]);
+        assert_eq!(result["refresh"], expected["refresh"]);
+        assert!(result["result"]["output"].is_string());
         let (status, result) = response(
             &app,
             form(

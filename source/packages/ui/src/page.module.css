@@ -100,6 +100,11 @@
   padding: 0;
   text-align: start;
 }
+.empty[data-align="center"] {
+  justify-items: center;
+  padding-block: var(--sp-12);
+  text-align: center;
+}
 .emptyTitle {
   margin: 0;
   color: var(--text-1);
@@ -111,6 +116,7 @@
   margin: 0;
   color: var(--text-2);
   font-size: var(--fs-sm);
+  font-weight: 400;
   line-height: var(--lh-sm);
 }
 .emptyAction {
@@ -138,6 +144,9 @@
   border-radius: var(--r-1);
 }
 @media (max-width: 768px) {
+  .empty[data-align="center"] {
+    padding-block: var(--sp-8);
+  }
   .pageHeader {
     flex-direction: column;
     align-items: stretch;

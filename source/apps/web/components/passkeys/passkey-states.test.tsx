@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { BasicFormState } from "@repo/contracts";
+import { buttonClassName } from "@repo/ui";
 import type { PasskeyListView } from "@/lib/passkey-api";
 const mocks = vi.hoisted(() => ({
   phase: "idle",
@@ -83,9 +84,9 @@ describe("account list", () => {
   it("renders empty, OAuth-only, limit and removal-success states", () => {
     const empty = data();
     empty.passkeys = [];
-    expect(html(<AccountPasskeys data={empty} />)).toContain(
-      "등록한 패스키가 없습니다",
-    );
+    const emptyOutput = html(<AccountPasskeys data={empty} />);
+    expect(emptyOutput).toMatch(/<h2[^>]*>패스키<\/h2><span[^>]*data-tag=""[^>]*>0\/10<\/span>/);
+    expect(emptyOutput).toContain("등록한 패스키가 없습니다");
     const oauth = data();
     oauth.hasPassword = false;
     oauth.passkeys = [];
@@ -97,10 +98,10 @@ describe("account list", () => {
       ...row,
       id: `${i}`,
     }));
-    expect(html(<AccountPasskeys data={limit} />)).toContain(
-      "10개를 모두 등록했습니다.",
-    );
-    expect(html(<AccountPasskeys data={limit} />)).not.toContain(
+    const limitOutput = html(<AccountPasskeys data={limit} />);
+    expect(limitOutput).toMatch(/<span[^>]*data-tag=""[^>]*>10\/10<\/span>/);
+    expect(limitOutput).toContain("10개를 모두 등록했습니다.");
+    expect(limitOutput).not.toContain(
       'href="/account/passkeys/new"',
     );
   });
@@ -310,6 +311,8 @@ it("describes a scheme-only mismatch and the historical backup state truthfully"
   expect(output).toContain("등록 시 또는 마지막 패스키 로그인에서 확인한 상태");
   expect(output).toContain('data-notes=""');
   expect(output).not.toContain("기기를 잃어도");
+  const opener = output.match(/<button[^>]*>삭제<\/button>/)?.[0];
+  expect(opener).toContain(`class="${buttonClassName({ variant: "dangerOutline" })}"`);
 });
 it("keeps an admin table name plain and retains the action column", () => {
   const output = html(

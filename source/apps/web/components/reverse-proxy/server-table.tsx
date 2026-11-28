@@ -108,7 +108,6 @@ export function ServerTable({
             ]}
           />
           <SearchField
-            size="sm"
             label="서버 검색"
             value={query}
             onChange={setQuery}

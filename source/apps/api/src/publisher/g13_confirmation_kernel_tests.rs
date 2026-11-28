@@ -42,7 +42,7 @@ async fn a_successful_signal_with_only_the_old_generation_never_reports_apply_or
     .unwrap();
     std::fs::set_permissions(&bin, std::fs::Permissions::from_mode(0o700)).unwrap();
     let pid = temp.path().join("nginx.pid");
-    std::fs::write(&pid, std::process::id().to_string()).unwrap();
+    let _master = crate::publisher::identity_fixture::FakeMaster::spawn(&pid, true);
     let main = temp.path().join("nginx.conf");
     std::fs::write(&main,format!("pid {}; events {{}} http {{ server {{ listen 127.0.0.1:{port}; location = /nginx_status {{ stub_status; allow 127.0.0.3; deny all; include {}/.nwui-generation; }} }} }}\n",pid.display(),conf.display())).unwrap();
     std::fs::write(

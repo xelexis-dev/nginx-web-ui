@@ -150,11 +150,7 @@ pub(super) async fn finish_restore(config:&crate::config::RuntimeConfig,store:&s
     crate::publisher::confirmation::publish(config,&first).await?;
     super::command::execute(store.clone(),config.nginx_bin.clone(),vec!["-t".into()],validate_until.checked_duration_since(std::time::Instant::now()).context("Restore validation deadline exceeded")?).await?;
     let witness=crate::publisher::confirmation::Witness::from_config(config)?;
-    let child_store=store.clone();let bin=config.nginx_bin.clone();
-    witness.confirm_with(config,&first,deadline.min(std::time::Instant::now()+std::time::Duration::from_secs(15)),move |timeout| {
-        let store=child_store.clone();let bin=bin.clone();
-        async move {super::command::execute(store,bin,vec!["-s".into(),"reload".into()],timeout).await.map(|_|()).map_err(anyhow::Error::from)}
-    },|phase|operation.advance(store,if phase==0 {Phase::R1}else{Phase::R2})).await?;
+    witness.confirm_with(config,&first,deadline.min(std::time::Instant::now()+std::time::Duration::from_secs(15)),store,|phase|operation.advance(store,if phase==0 {Phase::R1}else{Phase::R2})).await?;
     operation.advance(store,Phase::Restored)?;
     if !operation.commit_unknown && !operation.previous_uncertain {
         crate::publisher::confirmation::clear_uncertain(config).await?;
@@ -351,9 +347,10 @@ pub(super) mod tests {
         let operation=unfinished(&store,&old,&new,Phase::P);
         crate::publisher::files::restore_payload_files(&config,&store.payload(&new).unwrap().files).await.unwrap();
         let before=crate::publisher::files::capture_payload_files(&config).await.unwrap();
-        std::fs::write(temp.path().join("nginx.pid"),std::process::id().to_string()).unwrap();
+        let master = crate::publisher::identity_fixture::FakeMaster::spawn(&temp.path().join("nginx.pid"), true);
         assert!(before_start(&config,&store).await.unwrap_err().to_string().contains("still running"));
         assert_eq!(Operation::load(&store,&operation.id).unwrap().phase,Phase::P);
+        drop(master);
         std::fs::remove_file(temp.path().join("nginx.pid")).unwrap();
         std::fs::remove_dir_all(store.root.join("payloads").join(&old)).unwrap();
         let error=before_start(&config,&store).await.unwrap_err();

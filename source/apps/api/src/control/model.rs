@@ -150,6 +150,9 @@ pub fn skipped_summary(skipped: &[SkippedRecord]) -> String {
         text.push_str(&format!("\n- {kind} {}: {}", s.label, s.reason));
         if s.kept_previous { text.push_str(" — 직전 적용본을 유지합니다"); }
         else if any_kept { text.push_str(" — 이 항목은 지금 동작하지 않습니다"); }
+        if s.reason.contains("host not found in upstream") {
+            text.push_str("\n  설정을 적용할 때 대상 이름의 주소를 찾지 못했습니다. 이름이 맞는지 확인하세요. 대상이 늘 켜져 있지 않거나 주소가 바뀔 수 있다면 대상의 이름 확인 방식을 「실행 중에 이름 확인」으로 바꾸세요.");
+        }
     }
     text
 }
@@ -444,5 +447,42 @@ mod publisher_read_tests {
         assert!(apply_uncertain(&config).await);assert_eq!(std::fs::read(&marker).unwrap(),b"unknown outcome");
         std::fs::remove_file(&marker).unwrap();std::fs::create_dir(&marker).unwrap();
         assert!(apply_uncertain(&config).await);assert!(marker.is_dir());
+    }
+}
+
+#[cfg(test)]
+mod skipped_summary_tests {
+    use super::*;
+
+    #[test]
+    fn unresolved_targets_get_one_hint_after_each_item() {
+        let hint = "  설정을 적용할 때 대상 이름의 주소를 찾지 못했습니다. 이름이 맞는지 확인하세요. 대상이 늘 켜져 있지 않거나 주소가 바뀔 수 있다면 대상의 이름 확인 방식을 「실행 중에 이름 확인」으로 바꾸세요.";
+        let unresolved = SkippedRecord {
+            kind: SkippedKind::Server,
+            id: "one".into(),
+            label: "one.example.test".into(),
+            reason: "nginx: [emerg] host not found in upstream \"target.example.test\"".into(),
+            kept_previous: false,
+        };
+        let other = SkippedRecord {
+            id: "two".into(),
+            label: "two.example.test".into(),
+            reason: "duplicate listen".into(),
+            ..unresolved.clone()
+        };
+        let kept = SkippedRecord {
+            id: "three".into(),
+            label: "three.example.test".into(),
+            kept_previous: true,
+            ..unresolved.clone()
+        };
+        let excluded = skipped_summary(std::slice::from_ref(&unresolved));
+        assert!(excluded.contains("적용에서 제외한 설정 1개"));
+        assert!(excluded.ends_with(&format!("{}\n{hint}", unresolved.reason)));
+
+        let mixed = skipped_summary(&[unresolved, other, kept]);
+        assert_eq!(mixed.lines().filter(|line| *line == hint).count(), 2);
+        assert!(mixed.contains(&format!(" — 이 항목은 지금 동작하지 않습니다\n{hint}\n- 리버스 프록시 two.example.test: duplicate listen — 이 항목은 지금 동작하지 않습니다\n-")));
+        assert!(mixed.ends_with(&format!(" — 직전 적용본을 유지합니다\n{hint}")));
     }
 }

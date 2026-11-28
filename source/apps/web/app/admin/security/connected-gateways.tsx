@@ -52,7 +52,7 @@ export function ConnectedGateways({ rows }: { rows: GatewayView[] }) {
           {rows.length === 0 ? (
             <Tr>
               <Td colSpan={7}>
-                <EmptyState title="연결된 게이트웨이가 없습니다." />
+                <EmptyState description="연결된 게이트웨이가 없습니다." />
               </Td>
             </Tr>
           ) : null}

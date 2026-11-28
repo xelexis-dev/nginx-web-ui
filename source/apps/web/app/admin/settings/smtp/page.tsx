@@ -1,6 +1,5 @@
-import { FormStack } from "@repo/ui";
 import layout from "@/components/page-layout.module.css";
-import { Banner, PageHeader } from "@repo/ui";
+import { Banner, FormStack, PageHeader, linkClassName } from "@repo/ui";
 import Link from "next/link";
 import type { SmtpView } from "@repo/contracts";
 import { readPageApi } from "@/lib/api-page";
@@ -21,7 +20,7 @@ export default async function SmtpPage() {
         description={
           <>
             받을 사람은{" "}
-            <Link href="/admin/notifications/mail">알림 → 메일</Link>에서
+            <Link href="/admin/notifications/mail" className={linkClassName()}>알림 → 메일</Link>에서
             정합니다.
           </>
         }

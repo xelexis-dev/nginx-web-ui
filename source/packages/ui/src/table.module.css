@@ -383,6 +383,9 @@
   box-shadow: none;
   border-bottom: 0;
 }
+.table td[colspan]:has(> [data-align="center"]) {
+  padding-block: 0;
+}
 .table :is(button, input, select, [data-size], :global(.nwui-btn)) {
   --size-ctl: var(--size-ctl-sm);
 }
@@ -408,6 +411,10 @@
     gap: var(--sp-1);
     padding-block: var(--sp-3);
   }
+  .table tbody tr:has(> td[colspan] > [data-align="center"]) {
+    padding-block: 0;
+  }
+  .table tbody tr:has(> td[colspan] > [data-align="center"])::after,
   .table[data-narrow="stacked"] tbody tr::after {
     content: none;
   }

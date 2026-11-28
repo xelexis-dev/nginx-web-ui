@@ -17,6 +17,10 @@
   padding: var(--pad-card);
 }
 
+.emptyInset {
+  padding-inline: var(--pad-card);
+}
+
 /* Separate blocks inside a card body (a list and the notes under it). */
 .stack {
   display: grid;

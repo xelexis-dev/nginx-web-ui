@@ -1,5 +1,6 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { buttonClassName } from "@repo/ui";
 import { emptyDirectiveState } from "@repo/presentation/nginx/directive-state";
 import type { LocationInput } from "./server-form-vm";
 const captured = vi.hoisted(() => ({
@@ -191,4 +192,38 @@ it("keeps retry limits visible and moves only the three-second definition into i
   expect(visible).toContain(
     "대상이 하나뿐이면 다른 대상으로 재시도할 수 없지만 연결 제한은 적용됩니다.",
   );
+});
+
+it("outlines the request, response and rewrite text row deletes", () => {
+  const directives = {
+    ...emptyDirectiveState(),
+    headers: [{ name: "Host", value: "$host" }],
+    addHeaders: [{ name: "Cache-Control", value: "no-store" }],
+    rewrites: [{ from: "^/old", to: "/new", flag: "" }],
+  };
+  const html = render(route({ directives }));
+  const variant = `class="${buttonClassName({ variant: "dangerOutline" })}"`;
+  const headers = html.match(/<button[^>]*aria-label="헤더 삭제"[^>]*>/g) ?? [];
+  expect(headers).toHaveLength(2);
+  for (const header of headers) expect(header).toContain(variant);
+  expect(html.match(/<button[^>]*aria-label="rewrite 삭제"[^>]*>/)?.[0]).toContain(variant);
+});
+
+it("keeps the route's icon-only delete quiet", () => {
+  const html = renderToStaticMarkup(
+    <RoutesView
+      locations={[route(), route({ path: "/other" })]}
+      upstreams={[]}
+      open={new Set([0])}
+      onToggle={() => {}}
+      onMove={() => {}}
+      onRemove={() => {}}
+      onAdd={() => {}}
+      converted={false}
+      editor={() => null}
+    />,
+  );
+  const trash = html.match(/<button[^>]*aria-label="이 경로 삭제"[^>]*>/g) ?? [];
+  expect(trash).toHaveLength(2);
+  for (const button of trash) expect(button).toContain(buttonClassName({ variant: "dangerQuiet", size: "sm" }));
 });
